@@ -4,8 +4,8 @@
   const BRAND_VERSION = '2026.09.07-b';
   const OFFICIAL_DESCRIPTION = '머릿속에 숨어버린 단어 찾기';
 
-  // Compatibility layer only: legacy state/property/storage identifiers remain untouched.
-  // This file normalizes only user-facing copy and metadata to the current Hide & Seek world.
+  // Compatibility layer only for generic legacy world/case language.
+  // Product identity and storage identifiers are native Hide & Seek.
   const replacements = [
     [/Word Detective Team/g, 'Hidden Word Trail'],
 
