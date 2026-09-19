@@ -7,10 +7,6 @@
   // Compatibility layer only: legacy state/property/storage identifiers remain untouched.
   // This file normalizes only user-facing copy and metadata to the current Hide & Seek world.
   const replacements = [
-    [/내 ZPD 프로필/g, '내 Hide & Seek 프로필'],
-    [/ZPD WORD/g, 'HIDE & SEEK'],
-    [/ZPD Word/g, 'Hide & Seek'],
-    [/ZPD 워드/g, 'Hide & Seek'],
     [/Word Detective Team/g, 'Hidden Word Trail'],
 
     [/ACTIVE CASE/g, 'ACTIVE TRAIL'],
