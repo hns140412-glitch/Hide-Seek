@@ -36,7 +36,7 @@ Preserve and revalidate:
 ## WORLD regression scan
 
 FAIL if visible current UI contains:
-- ZPD Word as current brand,
+- Hide & Seek as current brand,
 - police / detective / arrest world framing,
 - 경찰 / 형사 / 수사 / 사건 / 사건파일 / 체포 / 검거 / 범인,
 - legacy case-file identity as the dominant user experience.
