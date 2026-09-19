@@ -3,8 +3,6 @@
   const HIDE_RUNTIME_VERSION = '2026.09.07-a';
   const CAPTURE_STATE_KEY = 'hideSeekCaptureSession';
   const legacyBrandReplacements = [
-    [/ZPD WORD/g, 'HIDE & SEEK'],
-    [/ZPD Word/g, 'Hide & Seek'],
     [/Word Detective Team/g, 'Hidden Word Trail'],
     [/ACTIVE CASE/g, 'ACTIVE TRAIL'],
     [/시험지 · 사건 파일/g, '시험지 · 단어 탐험'],
