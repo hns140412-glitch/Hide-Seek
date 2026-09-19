@@ -5,8 +5,6 @@
   const EVENT_LIMIT = 120;
   const SHARED_PARAM_NAMES = ['session_id', 'goal_id', 'task_id', 'lap_id', 'return_target', 'snap_target', 'child_id'];
   const legacyTerms = [
-    [/ZPD WORD/g, 'HIDE & SEEK'],
-    [/ZPD Word/g, 'Hide & Seek'],
     [/Word Detective Team/g, 'Hidden Word Trail'],
     [/사건 파일/g, '단어 탐험'],
     [/수사/g, '탐험'],
