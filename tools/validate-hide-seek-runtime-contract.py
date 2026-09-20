@@ -232,11 +232,17 @@ for forbidden in [
     "firstUnsure').onclick=()=>{w.wrong",
     "connectionMismatch=(w.learningStats.connectionMismatch||0)+1;w.wrong",
     "if(!ok){w.wrong=(w.wrong||0)+1",
+    "meaningAnswer(btn,w,ok){$('[data-choice]').forEach",
+    "if(ok){$(",
+    "if($('.tile:not(.matched)').length===0)",
 ]:
     if forbidden in app:
         fail.append("TRACE_CONTAMINATION:"+forbidden)
 
 for needle in [
+    "$$('[data-choice]').forEach",
+    "if(ok){$$(",
+    "if($$('.tile:not(.matched)').length===0)",
     "learningStats.unsure",
     "addWordTrace(w,'acquisition'",
     "addWordTrace(w,'recognition'",
