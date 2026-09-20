@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const HIDE_RUNTIME_VERSION = '2026.09.20-b';
+  const HIDE_RUNTIME_VERSION = '2026.09.21-a';
   const CAPTURE_STATE_KEY = 'hideSeekCaptureSession';
   const legacyBrandReplacements = [
     [/Word Detective Team/g, 'Hidden Word Trail'],
