@@ -455,7 +455,13 @@
       sourcePageId: row.sourcePageId,
       sourcePageOrder: row.sourcePageOrder,
       reviewResolved: row.reviewResolved ?? !row.needsReview,
-      manuallyEdited: !!row.manuallyEdited
+      manuallyEdited: !!row.manuallyEdited,
+      ocrProvider: row.ocrProvider || null,
+      ocrModel: row.ocrModel || null,
+      ocrAnalysisVersion: row.ocrAnalysisVersion || null,
+      ocrAnalysisDomain: row.ocrAnalysisDomain || 'HIDE_VOCABULARY',
+      ocrEvidenceItemId: row.ocrEvidenceItemId || row.sourcePageId || null,
+      ocrWarnings: Array.isArray(row.ocrWarnings) ? [...row.ocrWarnings] : []
     }));
 
     const view = document.querySelector('#view');
