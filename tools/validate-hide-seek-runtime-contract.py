@@ -203,6 +203,33 @@ for needle in [
         fail.append("FUNCTION_SPEC_REV08_CONTRACT:"+needle)
 
 
+
+trace_spec=read("docs/LEARNING_TRACE_STANDARD_REV_01.md")
+for needle in [
+    "UNSURE ≠ WRONG",
+    "CONNECTION MISMATCH ≠ FINAL RETRIEVAL WRONG",
+    "assisted success ≠ independent recall",
+    "sourceEvidence per sheet",
+]:
+    if needle not in trace_spec:
+        fail.append("LEARNING_TRACE_STANDARD:"+needle)
+
+for forbidden in [
+    "firstUnsure').onclick=()=>{w.wrong",
+    "connectionMismatch=(w.learningStats.connectionMismatch||0)+1;w.wrong",
+]:
+    if forbidden in app:
+        fail.append("TRACE_CONTAMINATION:"+forbidden)
+
+for needle in [
+    "learningStats.unsure",
+    "learningStats.connectionMismatch",
+    "sourceEvidence",
+    "legacyBaseline",
+]:
+    if needle not in app:
+        fail.append("TRACE_SEPARATION_CONTRACT:"+needle)
+
 if fail:
     print("FAIL: Hide & Seek runtime contract")
     for item in fail:
