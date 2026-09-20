@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const BRIDGE_VERSION = '2026.09.20-c';
+  const BRIDGE_VERSION = '2026.09.20-d';
   const EVENT_LIMIT = 120;
   const SHARED_PARAM_NAMES = ['session_id', 'goal_id', 'task_id', 'lap_id', 'return_target', 'snap_target', 'child_id'];
   const legacyTerms = [
@@ -146,7 +146,7 @@
     return event;
   }
 
-  function safeReturnUrl(taskState = 'PARTIAL') {
+  function safeReturnUrl(taskState = 'PARTIAL', event = null) {
     const context = getContext();
     if (!context.return_target) return null;
     try {
@@ -158,6 +158,9 @@
       if (context.lap_id) url.searchParams.set('lap_id', context.lap_id);
       url.searchParams.set('task_state', taskState);
       url.searchParams.set('from_app', 'hide-seek');
+      if (event?.event_id) url.searchParams.set('event_id', event.event_id);
+      const summary = event?.payload?.memorySummary;
+      if (summary) url.searchParams.set('memory_summary', JSON.stringify(summary));
       return url.href;
     } catch {
       return null;
@@ -165,14 +168,14 @@
   }
 
   function returnToBase(taskState = 'PARTIAL', payload = {}) {
-    emit(
+    const event = emit(
       taskState === 'COMPLETED' ? 'TASK_COMPLETED' :
       taskState === 'BLOCKED' ? 'TASK_BLOCKED' :
       taskState === 'HELP_NEEDED' ? 'HELP_NEEDED' :
       'TASK_PARTIAL',
       { ...buildTaskSnapshot(), ...payload }
     );
-    const url = safeReturnUrl(taskState);
+    const url = safeReturnUrl(taskState, event);
     if (url) location.href = url;
     else toast('베이스캠프 연결 주소가 없어요. 현재 결과는 기기에 보존했어요.');
   }
