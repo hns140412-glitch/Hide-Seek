@@ -41,6 +41,7 @@ function migrate(raw){
  s.learning=Object.assign({},DEFAULT_STATE.learning,raw?.learning||raw?.study||{});s.codeRed=Object.assign({},DEFAULT_STATE.codeRed,raw?.codeRed||{});s.memory=raw?.memory||{};s.lexicon=raw?.lexicon||{};s.memoryEvents=Object.assign({},DEFAULT_STATE.memoryEvents,raw?.memoryEvents||{});s.memoryEvents.shownBySheet=s.memoryEvents.shownBySheet||{};
  if(!Array.isArray(s.sheets))s.sheets=[];
  s.sheets=s.sheets.map((sh,si)=>({...sh,sheetId:sh.sheetId||`sheet-${si}`,updatedAt:sh.updatedAt||sh.createdAt||nowISO(),status:sh.status||"READY",caseMastery:Number(sh.caseMastery||0),items:(sh.items||[]).map(normalizeWord),recognitionMeta:sh.recognitionMeta||{},learningProvenance:sh.learningProvenance||{}}));
+ s.sheets=s.sheets.filter(sh=>!(sh.sheetId==="sample"&&sh.sourceType==="sample"&&!(sh.recognitionMeta&&Object.keys(sh.recognitionMeta).length)));
  if(!s.sheets.find(x=>x.sheetId===s.activeSheetId))s.activeSheetId=s.sheets[0]?.sheetId||"";
  return s;
 }
