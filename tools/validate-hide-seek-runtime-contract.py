@@ -131,6 +131,8 @@ for needle in [
     "hiddenWordActivityModel",
     "renderHiddenWordActivity",
     "HIDDEN_WORD_OUTCOME",
+    "seekAgainResolved",
+    "if(w.learningStats?.needsUnassistedRecall)return !!attempt.spacedEvidence",
     "$('.speak-retrace').forEach",
 ]:
     if needle not in app:
