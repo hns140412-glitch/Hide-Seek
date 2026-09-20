@@ -23,6 +23,24 @@ for needle in [
 ]:
     pass
 
+
+for needle in [
+    "S.captureSession",
+    "renderCaptureSession",
+    "analyzeCaptureBatch",
+    "captureFiles(",
+]:
+    if needle in app:
+        fail.append("DUPLICATE_LEGACY_CAPTURE_OWNER:"+needle)
+
+for needle in [
+    "const CAPTURE_STATE_KEY = 'hideSeekCaptureSession'",
+    "migrateLegacyCaptureSession",
+    "delete S.captureSession",
+]:
+    if needle not in runtime:
+        fail.append("MISSING_CANONICAL_CAPTURE_MIGRATION:"+needle)
+
 for needle in [
     "captureSessionId",
     "analysisBatches",
