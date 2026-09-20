@@ -27,7 +27,7 @@ const names=[
   'senseKey','lexiconEntry','traceList','addWordTrace',
   'memoryWeaknessProfile','memorySceneCue','memoryChunks',
   'lastConfusionTrace','lastPersonalErrorTrace','hintCueCost',
-  'deriveMemorySignature','buildMemoryLadder','syncSheetToLexicon','recallSpacingEvidence'
+  'deriveMemorySignature','buildMemoryLadder','hiddenWordStrategy','hiddenWordPriority','syncSheetToLexicon','recallSpacingEvidence'
 ];
 const sandbox={
   console,Date,Math,Set,Number,Object,Array,String,
@@ -77,6 +77,17 @@ const recoveredWord={id:'rec',eng:'present',kor:'현재의',wrong:0,pass:0,hint:
 const recoveredSig=sandbox.deriveMemorySignature(recoveredWord);
 assert(recoveredSig.recoveryStatus==='SPACED_RECOVERED','spaced unassisted recall must be reflected in Memory Signature');
 assert(recoveredSig.hintDependency>0,'assistance cost must contribute to hint dependency');
+
+const sceneStrategy=sandbox.hiddenWordStrategy(sceneWord);
+const confusionStrategy=sandbox.hiddenWordStrategy(confusionWord);
+const errorStrategy=sandbox.hiddenWordStrategy(errorWord);
+assert(['SEMANTIC_CONTRAST','CONFUSION_CONTRAST'].includes(sceneStrategy.type),'semantic uncertainty must choose semantic reinforcement');
+assert(confusionStrategy.type==='CONFUSION_CONTRAST','confusion-heavy word must choose confusion contrast');
+assert(errorStrategy.type==='ORTHOGRAPHIC_SCAFFOLD','spelling error must choose orthographic scaffold');
+assert(sandbox.hiddenWordPriority(errorWord)>0,'adaptive hidden word priority must be positive for weak word');
+
+const spacingWord={id:'space',eng:'remember',kor:'기억하다',wrong:0,pass:0,hint:0,learningStats:{needsUnassistedRecall:true}};
+assert(sandbox.hiddenWordStrategy(spacingWord).type==='SPACED_RECALL','pending unassisted recall must route to spaced recall');
 
 const scene=sandbox.memorySceneCue(sceneWord);
 assert(scene&&scene.source==='PAST_EXPOSURE'&&scene.text.includes('_____'),'SCENE cue must come from actual past exposure');
