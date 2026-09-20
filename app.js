@@ -1,7 +1,7 @@
 const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>[...r.querySelectorAll(s)];
-const APP_REV="REV_07";
-const SCHEMA_VERSION=7;
+const APP_REV="REV_08";
+const SCHEMA_VERSION=8;
 const STORAGE_KEY="hide_seek_state";
 const SESSION_API_KEY="hide_seek_runtime_api_key";
 const ASSET_DB_NAME="hide-seek-assets";
