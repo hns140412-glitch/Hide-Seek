@@ -79,7 +79,8 @@ test('printed handout becomes Hide exploration mission and enters FIRST FIND',as
       analysisDomain:mission.recognitionMeta?.analysisDomain,
       providers:mission.recognitionMeta?.providers,
       evidenceItemIds:mission.recognitionMeta?.evidenceItemIds,
-      validCount:mission.items.filter(x=>x.eng&&x.kor&&!x.needsReview).length
+      validCount:mission.items.filter(x=>x.eng&&x.kor&&!x.needsReview).length,
+      latestOutbox:(raw.takyLearningOutbox||[]).at(-1)||null
     };
   });
 
@@ -88,6 +89,12 @@ test('printed handout becomes Hide exploration mission and enters FIRST FIND',as
   expect(snapshot.providers).toContain('FIXTURE_VISION');
   expect(snapshot.evidenceItemIds.length).toBeGreaterThan(0);
   expect(snapshot.validCount).toBe(2);
+  expect(snapshot.latestOutbox?.app).toBe('hide-seek');
+  expect(snapshot.latestOutbox?.actor_role).toBe('CHILD');
+  expect(snapshot.latestOutbox?.payload?.explorationMissionId).toBe(snapshot.activeSheetId);
+  expect(snapshot.latestOutbox?.payload?.inputActorRole).toBe('CHILD');
+  expect(snapshot.latestOutbox?.payload?.validWordCount).toBe(2);
+  expect(snapshot.latestOutbox?.payload?.memorySummary).toBeTruthy();
 
   await page.getByRole('button',{name:'학습'}).click();
   await page.getByRole('button',{name:'FIRST FIND'}).click();
