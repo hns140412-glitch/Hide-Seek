@@ -122,14 +122,6 @@ for needle in ['"name":"Hide & Seek"','"orientation":"any"']:
     if needle.replace(" ","") not in manifest.replace(" ",""):
         fail.append("MANIFEST_CONTRACT:"+needle)
 
-if fail:
-    print("FAIL: Hide & Seek runtime contract")
-    for item in fail:
-        print(item)
-    raise SystemExit(1)
-
-print("PASS: Hide & Seek capture, review, shared-session, device and active-world contracts")
-
 if css.count("@media (min-width:768px) and (orientation:landscape)") > 1:
     fail.append("DUPLICATE_TABLET_LANDSCAPE_RULE")
 
@@ -154,3 +146,11 @@ for needle in [
     if needle not in source:
         fail.append("IMPORT_MIGRATION_CONTRACT:"+needle)
 
+
+if fail:
+    print("FAIL: Hide & Seek runtime contract")
+    for item in fail:
+        print(item)
+    raise SystemExit(1)
+
+print("PASS: Hide & Seek capture, review, shared-session, device, cache, migration and active-world contracts")
