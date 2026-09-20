@@ -13,14 +13,16 @@ for p in ROOT.rglob("*"):
         fail.append(f"SUPERSEDED_NAME:{p.relative_to(ROOT)}")
 
 app=(ROOT/"app.js").read_text(encoding="utf-8")
+ocr=(ROOT/"hide-family-ocr-adapter.js").read_text(encoding="utf-8")
 for needle in [
     'const STORAGE_KEY="hide_seek_state";',
-    'const SESSION_API_KEY="hide_seek_runtime_api_key";',
     'const ASSET_DB_NAME="hide-seek-assets";',
+    'window.FamilyCaptureOcrAdapter'
     'function discoverCompatibleLegacyState()',
     'function discoverCompatibleLegacyAsset(k)'
 ]:
-    if needle not in app:
+    source = ocr if needle == 'window.FamilyCaptureOcrAdapter' else app
+    if needle not in source:
         fail.append("MISSING_MIGRATION_OR_NATIVE_ID:"+needle)
 
 if fail:
