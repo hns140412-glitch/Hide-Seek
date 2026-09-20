@@ -304,7 +304,7 @@
     view.querySelectorAll('[data-retake]').forEach(btn => {
       btn.onclick = () => openRapidCamera(btn.dataset.retake);
     });
-    setPartner('찍은 장은 임시 저장돼 있어. 더 찍어도 되고, 여기까지만 분석해도 돼.', 'note');
+    setPartner('더 찍을까, 아니면 여기까지 살펴볼까?', 'note');
   }
 
   async function analyzePage(page) {
@@ -536,7 +536,7 @@ ${JSON.stringify(see)}`;
       viewStack = [];
       render();
     };
-    setPartner('애매한 단어만 확인하면 돼. 분석이 끝나도 촬영은 계속 이어갈 수 있어.', 'note');
+    setPartner('애매한 단어만 골라서 같이 확인해보자.', 'note');
   }
 
   function interceptLegacyCapture() {
