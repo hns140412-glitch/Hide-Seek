@@ -12,6 +12,9 @@ app=read("app.js")
 runtime=read("hide-runtime.js")
 bridge=read("hide-bridge.js")
 css=read("styles.css")
+runtime_css=read("hide-runtime.css")
+bridge_css=read("hide-bridge.css")
+all_css=css+"\n"+runtime_css+"\n"+bridge_css
 manifest=read("manifest.json")
 
 for token in ["ZPD","수사","사건","체포","검거","경찰","CODE RED","Case Mastery","FIRST CONTACT","MEANING CHECK","WEAK WORD"]:
@@ -106,12 +109,13 @@ for needle in [
 for needle in [
     ".hide-camera-overlay",
     ".hide-phone-orientation-guard",
+    ".hide-retake",
     ".slot.hint-target",
     "Tablet contract",
     "@media (min-width:768px)",
     "orientation:landscape",
 ]:
-    if needle not in css:
+    if needle not in all_css:
         fail.append("MISSING_DEVICE_OR_CAPTURE_STYLE:"+needle)
 
 for needle in ['"name":"Hide & Seek"','"orientation":"any"']:
@@ -125,3 +129,7 @@ if fail:
     raise SystemExit(1)
 
 print("PASS: Hide & Seek capture, review, shared-session, device and active-world contracts")
+
+if css.count("@media (min-width:768px) and (orientation:landscape)") > 1:
+    fail.append("DUPLICATE_TABLET_LANDSCAPE_RULE")
+
