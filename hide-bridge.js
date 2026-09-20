@@ -203,7 +203,10 @@
     const event = emit('HANDOFF_TO_SNAP', {
       word: String(word || '').trim(),
       context: String(contextText || '').trim(),
-      sourceSheetId: S.activeSheetId || null
+      sourceSheetId: S.activeSheetId || null,
+      crewMemberId: S.crewMember?.explorerId || null,
+      crewMemberName: S.crewMember?.name || null,
+      crewRulesVersion: S.crewMember?.rulesVersion || null
     });
     if (!context.snap_target) return event;
     try {
@@ -215,6 +218,9 @@
       if (context.lap_id) url.searchParams.set('lap_id', context.lap_id);
       if (context.return_target) url.searchParams.set('return_target', context.return_target);
       if (context.child_id) url.searchParams.set('child_id', context.child_id);
+      if (event.payload.crewMemberId) url.searchParams.set('crew_member_id', event.payload.crewMemberId);
+      if (event.payload.crewMemberName) url.searchParams.set('crew_member_name', event.payload.crewMemberName);
+      if (event.payload.crewRulesVersion) url.searchParams.set('crew_rules_version', event.payload.crewRulesVersion);
       url.searchParams.set('from_app', 'hide-seek');
       url.searchParams.set('word', event.payload.word);
       if (event.payload.context) url.searchParams.set('word_context', event.payload.context);
