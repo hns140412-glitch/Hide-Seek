@@ -28,7 +28,7 @@ const DEFAULT_STATE={
  settings:{sound:true,partnerVoice:true,reducedMotion:false,pressureReduced:false},
  sheets:[],
  activeSheetId:"",sessions:[],xp:0,streak:0,lastStudy:"",memory:{},lexicon:{},memoryEvents:{shownBySheet:{},lastLexicalId:""},ocrDraft:null,
- learning:{phase:"first",firstIndex:0,meaningIndex:0,connectionRound:0,weakRound:0,combo:0,flow:0,fever:false,history:[]},
+ learning:{phase:"first",firstIndex:0,meaningIndex:0,connectionRound:0,weakRound:0,weakQueue:[],weakIndex:0,weakCompleted:[],combo:0,flow:0,fever:false,history:[]},
  codeRed:{index:0,results:{},history:[],retrace:[],retryOnly:false,targetIds:[]},
  onboardingStep:0,onboardingDone:false
 };
@@ -290,7 +290,26 @@ function hiddenWordActivityModel(w,strategy){
  if(strategy.type==='SPACED_RECALL')return {...base,mode:'SPELL',title:'힌트 없이 다시 꺼내기',prompt:w.kor,cue:'UNASSISTED'};
  return {...base,mode:'REVIEW',title:'가볍게 다시 확인하기',prompt:w.kor,cue:'LIGHT'}
 }
-function recordHiddenWordOutcome(w,strategy,result,detail={}){addWordTrace(w,'reinforcement',{event:'HIDDEN_WORD_OUTCOME',strategy:strategy.type,result,...detail});S.learning.history.push({at:nowISO(),mode:'hidden',wordId:w.id,strategy:strategy.type,result});markStudy(result==='SUCCESS'?3:1);save()}
+function recordHiddenWordOutcome(w,strategy,result,detail={}){addWordTrace(w,'reinforcement',{event:'HIDDEN_WORD_OUTCOME',strategy:strategy.type,result,...detail});S.learning.history.push({at:nowISO(),mode:'hidden',wordId:w.id,strategy:strategy.type,result});markStudy(result==='SUCCESS'?3:1);save();if(result==='SUCCESS'&&(S.learning.weakQueue||[]).includes(w.id))completeWeakQueueWord(w)}
+function beginWeakQueue(words){
+ const ids=words.map(w=>w.id),done=new Set(S.learning.weakCompleted||[]);
+ S.learning.weakQueue=ids.filter(id=>!done.has(id));
+ S.learning.weakIndex=0;
+ save();
+ if(!S.learning.weakQueue.length)return renderWeak();
+ const first=validWords().find(w=>w.id===S.learning.weakQueue[0]);
+ if(!first)return renderWeak();
+ renderHiddenWordActivity(first,hiddenWordStrategy(first))
+}
+function completeWeakQueueWord(w){
+ const done=new Set(S.learning.weakCompleted||[]);done.add(w.id);S.learning.weakCompleted=[...done];
+ const queue=S.learning.weakQueue||[],idx=queue.indexOf(w.id);
+ S.learning.weakIndex=idx>=0?idx+1:Number(S.learning.weakIndex||0)+1;
+ save();
+ const nextId=queue[S.learning.weakIndex],next=validWords().find(x=>x.id===nextId);
+ if(next){setTimeout(()=>renderHiddenWordActivity(next,hiddenWordStrategy(next)),280)}
+ else{setTimeout(()=>renderWeak(),280)}
+}
 function renderHiddenWordActivity(w,strategy){
  const model=hiddenWordActivityModel(w,strategy);S.learning.phase='weak';hiddenWordTrace(w,strategy);save();
  if(model.mode==='CHOICE'){
@@ -308,7 +327,16 @@ function renderHiddenWordActivity(w,strategy){
  $('#hiddenBack').onclick=()=>renderWeak();
  setPartner('같은 반복이 아니라, 네가 남긴 기억 흔적에 맞춰 한 번씩 다르게 보강할게.','focus')
 }
-function renderWeak(){const ordered=[...validWords()].sort((a,b)=>hiddenWordPriority(b)-hiddenWordPriority(a)),weak=ordered.filter(w=>hiddenWordPriority(w)>0),top=(weak.length?weak:ordered).slice(0,Math.min(6,ordered.length)),strategies=new Map(top.map(w=>[w.id,hiddenWordStrategy(w)]));S.learning.phase='weak';top.forEach(w=>hiddenWordTrace(w,strategies.get(w.id)));save();$('#view').innerHTML=`<section class="learning-shell"><div class="learn-head"><div><span class="phase-chip">HIDDEN WORDS</span><h2 style="margin:5px 0 0">기억 흔적 맞춤 보강</h2></div><b>${top.length}개</b></div><section class="card"><div class="flow-gauge">${[0,1,2,3,4,5].map(i=>`<i class="${i<S.learning.flow?'on':''}"></i>`).join('')}</div><div class="weak-list" style="margin-top:13px">${top.map(w=>{const st=strategies.get(w.id);return `<div class="weak-item"><div><b>${esc(w.eng)}</b><div style="font-size:10px;color:#66736a">${esc(w.kor)}</div></div><span class="badge ${st.score>=40?'weak':'mid'}">${esc(st.label)}</span></div>`}).join('')}</div><div class="btn-row" style="margin-top:13px"><button class="btn secondary" id="weakReplay" type="button">맞춤 보강 시작</button><button class="btn danger" id="weakToCode" type="button">FINAL SEEK</button></div></section></section>`;$('#weakReplay').onclick=()=>{const first=top[0],strategy=strategies.get(first.id);renderHiddenWordActivity(first,strategy)};$('#weakToCode').onclick=()=>startCodeRed(false);setPartner('이제 약한 단어를 똑같이 반복하지 않고, 네 기억 흔적에 맞는 방식으로 다시 만나자.','focus')}
+function renderWeak(){
+ const ordered=[...validWords()].sort((a,b)=>hiddenWordPriority(b)-hiddenWordPriority(a)),weak=ordered.filter(w=>hiddenWordPriority(w)>0),top=(weak.length?weak:ordered).slice(0,Math.min(6,ordered.length)),strategies=new Map(top.map(w=>[w.id,hiddenWordStrategy(w)]));
+ S.learning.phase='weak';top.forEach(w=>hiddenWordTrace(w,strategies.get(w.id)));
+ const done=new Set(S.learning.weakCompleted||[]),remaining=top.filter(w=>!done.has(w.id)),complete=top.length>0&&remaining.length===0;
+ save();
+ $('#view').innerHTML=`<section class="learning-shell"><div class="learn-head"><div><span class="phase-chip">HIDDEN WORDS</span><h2 style="margin:5px 0 0">기억 흔적 맞춤 보강</h2></div><b>${top.length-remaining.length}/${top.length}</b></div><section class="card"><div class="flow-gauge">${[0,1,2,3,4,5].map(i=>`<i class="${i<S.learning.flow?'on':''}"></i>`).join('')}</div><div class="weak-list" style="margin-top:13px">${top.map(w=>{const st=strategies.get(w.id),isDone=done.has(w.id);return `<div class="weak-item"><div><b>${esc(w.eng)}</b><div style="font-size:10px;color:#66736a">${esc(w.kor)}</div></div><span class="badge ${isDone?'good':st.score>=40?'weak':'mid'}">${isDone?'보강 완료':esc(st.label)}</span></div>`}).join('')}</div><div class="btn-row" style="margin-top:13px"><button class="btn secondary" id="weakReplay" type="button" ${complete?'disabled':''}>${remaining.length<(top.length)?'보강 이어가기':'맞춤 보강 시작'}</button><button class="btn danger" id="weakToCode" type="button" ${complete?'':'disabled'}>FINAL SEEK</button></div>${complete?'<p style="margin-top:10px">맞춤 보강을 모두 마쳤어요. 이제 전체 철자를 확인할 수 있어요.</p>':'<p style="margin-top:10px">보강 대상 단어를 모두 끝내야 FINAL SEEK가 열려요.</p>'}</section></section>`;
+ $('#weakReplay').onclick=()=>{if(remaining.length)beginWeakQueue(remaining)};
+ $('#weakToCode').onclick=()=>{if(complete)startCodeRed(false)};
+ setPartner(complete?'맞춤 보강 완료. 이제 전체 철자를 확인해보자.':'약한 단어를 하나씩 끝내면 마지막 탐험이 열려.','focus')
+}
 function triggerFever(next){S.learning.fever=true;save();$('#view').innerHTML=`<section class="card fever-stage"><div class="food-rain"><i class="food" style="left:8%">PIZZA</i><i class="food">DONUT</i><i class="food">JUICE</i><i class="food">BURGER</i><i class="food">FRUIT</i></div><div style="position:relative;z-index:2;text-align:center;padding-top:54px"><h1 style="font-size:35px;margin:0;color:#4d783e">FEVER TIME</h1><p>연속 성공 보너스 · 학습 판정은 그대로</p><div class="flow-gauge" style="max-width:290px;margin:17px auto">${[0,1,2,3,4,5].map(()=>'<i class="on"></i>').join('')}</div><button class="btn primary" id="leaveFever" type="button">계속 학습</button></div></section>`;setPartner('흐름 좋네. 잠깐 축제다. 문제는 그대로 차분하게 가자.','fever',true);$('#leaveFever').onclick=()=>{S.learning.fever=false;S.learning.flow=0;save();next()}}
 function blankCount(word){const n=word.length;return n<=5?Math.min(2,Math.max(1,n-2)):n<=8?3:Math.min(4,n-2)}
 function memoryWeaknessProfile(w){
