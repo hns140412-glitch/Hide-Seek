@@ -17,7 +17,7 @@ ocr=(ROOT/"hide-family-ocr-adapter.js").read_text(encoding="utf-8")
 for needle in [
     'const STORAGE_KEY="hide_seek_state";',
     'const ASSET_DB_NAME="hide-seek-assets";',
-    'window.FamilyCaptureOcrAdapter'
+    'window.FamilyCaptureOcrAdapter',
     'function discoverCompatibleLegacyState()',
     'function discoverCompatibleLegacyAsset(k)'
 ]:
