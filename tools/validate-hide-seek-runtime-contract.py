@@ -133,3 +133,24 @@ print("PASS: Hide & Seek capture, review, shared-session, device and active-worl
 if css.count("@media (min-width:768px) and (orientation:landscape)") > 1:
     fail.append("DUPLICATE_TABLET_LANDSCAPE_RULE")
 
+
+sw=read("sw.js")
+
+for needle in [
+    'const CACHE="hide-seek-capture-v04"',
+    '"./hide-runtime.js"',
+    '"./hide-runtime.css"',
+    '"./hide-bridge.js"',
+    '"./hide-bridge.css"',
+]:
+    if needle not in sw:
+        fail.append("SERVICE_WORKER_CACHE_CONTRACT:"+needle)
+
+for needle in [
+    "migrateLegacyState",
+    "window.HideCaptureRuntime?.migrateLegacyState?.()",
+]:
+    source = runtime if needle == "migrateLegacyState" else app
+    if needle not in source:
+        fail.append("IMPORT_MIGRATION_CONTRACT:"+needle)
+
