@@ -171,6 +171,8 @@ for needle in [
     "reasonCounts",
     "needsUnassistedRecallCount",
     "topReviewPriorities",
+    "memory_summary",
+    "safeReturnUrl(taskState, event)",
 ]:
     if needle not in bridge:
         fail.append("MISSING_SHARED_SESSION_CONTRACT:"+needle)
@@ -205,7 +207,7 @@ if css.count("@media (min-width:768px) and (orientation:landscape)") > 1:
 sw=read("sw.js")
 
 for needle in [
-    'const CACHE="hide-seek-capture-v05"',
+    'const CACHE="hide-seek-capture-v06"',
     '"./hide-runtime.js"',
     '"./hide-runtime.css"',
     '"./hide-bridge.js"',
@@ -238,7 +240,7 @@ for needle in [
         fail.append("RUNTIME_VERSION_CONTRACT:"+needle)
 
 for needle in [
-    "const BRIDGE_VERSION = '2026.09.20-c'",
+    "const BRIDGE_VERSION = '2026.09.20-d'",
 ]:
     if needle not in bridge:
         fail.append("BRIDGE_VERSION_CONTRACT:"+needle)
