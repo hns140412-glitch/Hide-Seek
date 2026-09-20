@@ -133,6 +133,10 @@ for needle in [
     "HIDDEN_WORD_OUTCOME",
     "seekAgainResolved",
     "if(w.learningStats?.needsUnassistedRecall)return !!attempt.spacedEvidence",
+    "memoryQualityModel",
+    "reviewDecay",
+    "reviewStrengthDelta",
+    "memoryQuality:{recoveryBonus:quality.recoveryBonus,weaknessPenalty:quality.weaknessPenalty}",
     "$('.speak-retrace').forEach",
 ]:
     if needle not in app:
