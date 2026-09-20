@@ -91,7 +91,30 @@ function speakWord(word){if(!("speechSynthesis" in window))return toast("이 기
 function markStudy(xp=2){const d=today();if(S.lastStudy!==d){S.streak=S.lastStudy?S.streak+1:1;S.lastStudy=d;S.sessions.push({date:d,count:0})}const r=S.sessions.find(x=>x.date===d);if(r)r.count++;S.xp+=xp;save()}
 function lexiconEntry(w){return S.lexicon?.[w?.lexicalId||senseKey(w)]||null}
 function memoryStrength(){const ws=validWords();if(!ws.length)return 0;const measured=ws.map(w=>lexiconEntry(w)?.memoryStrength).filter(v=>Number.isFinite(v));if(!measured.length)return 0;return Math.round(measured.reduce((a,v)=>a+v,0)/measured.length)}
-function syncSheetToLexicon(sh=sheet()){if(!sh)return;S.lexicon=S.lexicon||{};for(const w of (sh.items||[]).filter(x=>x.eng&&x.kor&&!x.needsReview)){const key=w.lexicalId||senseKey(w),prev=S.lexicon[key]||{},attempts=(S.codeRed.history||[]).filter(a=>a.wordId===w.id),correct=attempts.filter(a=>["CORRECT","SLOW_CORRECT"].includes(a.type)).length,wrong=attempts.filter(a=>["WRONG","PASS","TIMEOUT","HINT_USED"].includes(a.type)).length,lastWrong=[...attempts].reverse().find(a=>["WRONG","PASS","TIMEOUT","HINT_USED"].includes(a.type))?.at||prev.lastWrong||null,sourceRefs=[...new Set([...(prev.sourceRefs||[]),sh.sheetId])],base=Number.isFinite(prev.memoryStrength)?prev.memoryStrength:60,delta=Math.min(18,correct*4)-Math.min(28,wrong*6),memory=Math.max(10,Math.min(100,base+delta)),priority=Math.max(0,100-memory+wrong*8+(w.learningStats?.timeout||0)*5+(w.learningStats?.slowCorrect||0)*2);S.lexicon[key]={lexicalId:key,canonicalSpelling:w.eng.toLowerCase(),sense:w.kor,firstSeen:prev.firstSeen||sh.createdAt||nowISO(),lastSeen:nowISO(),sourceRefs,correctTotal:Number(prev.correctTotal||0)+correct,wrongTotal:Number(prev.wrongTotal||0)+wrong,consecutiveCorrect:wrong?0:Number(prev.consecutiveCorrect||0)+correct,lastWrong,memoryStrength:memory,nextReviewPriority:priority}}}
+function syncSheetToLexicon(sh=sheet()){
+ if(!sh)return;S.lexicon=S.lexicon||{};
+ for(const w of (sh.items||[]).filter(x=>x.eng&&x.kor&&!x.needsReview)){
+  const key=w.lexicalId||senseKey(w),prev=S.lexicon[key]||{},attempts=(S.codeRed.history||[]).filter(a=>a.wordId===w.id);
+  const correct=attempts.filter(a=>["CORRECT","SLOW_CORRECT"].includes(a.type)).length;
+  const wrong=attempts.filter(a=>["WRONG","PASS","TIMEOUT","HINT_USED"].includes(a.type)).length;
+  const lastWrong=[...attempts].reverse().find(a=>["WRONG","PASS","TIMEOUT","HINT_USED"].includes(a.type))?.at||prev.lastWrong||null;
+  const sourceRefs=[...new Set([...(prev.sourceRefs||[]),sh.sheetId])];
+  const existingEvidence=prev.sourceEvidence||{};
+  const hadCurrentSource=(prev.sourceRefs||[]).includes(sh.sheetId);
+  const legacy=prev.legacyBaseline||{
+   correctTotal:Math.max(0,Number(prev.correctTotal||0)-(hadCurrentSource?correct:0)),
+   wrongTotal:Math.max(0,Number(prev.wrongTotal||0)-(hadCurrentSource?wrong:0))
+  };
+  const sourceEvidence={...existingEvidence,[sh.sheetId]:{correct,wrong,lastSeen:nowISO()}};
+  const evidenceValues=Object.values(sourceEvidence);
+  const correctTotal=Number(legacy.correctTotal||0)+evidenceValues.reduce((a,x)=>a+Number(x.correct||0),0);
+  const wrongTotal=Number(legacy.wrongTotal||0)+evidenceValues.reduce((a,x)=>a+Number(x.wrong||0),0);
+  const reviewStrengthDelta=Number(prev.reviewStrengthDelta||0);
+  const memory=Math.max(10,Math.min(100,60+Math.min(28,correctTotal*4)-Math.min(42,wrongTotal*6)+reviewStrengthDelta));
+  const priority=Math.max(0,100-memory+wrongTotal*8+(w.learningStats?.timeout||0)*5+(w.learningStats?.slowCorrect||0)*2);
+  S.lexicon[key]={...prev,lexicalId:key,canonicalSpelling:w.eng.toLowerCase(),sense:w.kor,firstSeen:prev.firstSeen||sh.createdAt||nowISO(),lastSeen:nowISO(),sourceRefs,sourceEvidence,legacyBaseline:legacy,correctTotal,wrongTotal,consecutiveCorrect:wrong?0:Number(prev.consecutiveCorrect||0)+correct,lastWrong,memoryStrength:memory,nextReviewPriority:priority}
+ }
+}
 function selectPastMemoryEvent(){const active=sheet()?.sheetId;if(!active||S.memoryEvents?.shownBySheet?.[active])return null;const pool=Object.values(S.lexicon||{}).filter(x=>(x.sourceRefs||[]).some(id=>id!==active)).sort((a,b)=>(b.nextReviewPriority||0)-(a.nextReviewPriority||0));if(!pool.length)return null;return pool.find(x=>x.lexicalId!==S.memoryEvents?.lastLexicalId)||pool[0]}
 function markMemoryEventShown(entry){const active=sheet()?.sheetId;if(!active||!entry)return;S.memoryEvents=S.memoryEvents||{shownBySheet:{},lastLexicalId:""};S.memoryEvents.shownBySheet=S.memoryEvents.shownBySheet||{};S.memoryEvents.shownBySheet[active]={lexicalId:entry.lexicalId,shownAt:nowISO()};S.memoryEvents.lastLexicalId=entry.lexicalId;save()}
 function learningProgress(){const ws=validWords();if(!ws.length)return 0;const p={first:15,meaning:42,connection:68,weak:82,code:90,done:100}[S.learning.phase]||0;return p}
