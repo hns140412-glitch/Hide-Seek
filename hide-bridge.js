@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const BRIDGE_VERSION = '2026.09.21-a';
+  const BRIDGE_VERSION = '2026.09.21-b';
   const EVENT_LIMIT = 120;
   const SHARED_PARAM_NAMES = ['session_id', 'goal_id', 'task_id', 'lap_id', 'return_target', 'snap_target', 'child_id', 'actor_role'];
   const legacyTerms = [
@@ -165,6 +165,20 @@
       if (event?.event_id) url.searchParams.set('event_id', event.event_id);
       const summary = event?.payload?.memorySummary;
       if (summary) url.searchParams.set('memory_summary', JSON.stringify(summary));
+      if (event?.payload) {
+        const p = event.payload;
+        const report = {
+          explorationMissionId: p.explorationMissionId || null,
+          explorationMissionTitle: p.explorationMissionTitle || null,
+          inputActorRole: p.inputActorRole || context.actor_role || null,
+          validWordCount: Number(p.validWordCount || 0),
+          trailMastery: Number(p.trailMastery || 0),
+          learningPhase: p.learningPhase || null,
+          finalSeekAttemptCount: Number(p.finalSeekAttemptCount || 0),
+          seekAgainRemainingCount: Number(p.seekAgainRemainingCount || 0)
+        };
+        url.searchParams.set('specialist_report', JSON.stringify(report));
+      }
       return url.href;
     } catch {
       return null;
