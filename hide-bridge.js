@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const BRIDGE_VERSION = '2026.09.20-b';
+  const BRIDGE_VERSION = '2026.09.20-c';
   const EVENT_LIMIT = 120;
   const SHARED_PARAM_NAMES = ['session_id', 'goal_id', 'task_id', 'lap_id', 'return_target', 'snap_target', 'child_id'];
   const legacyTerms = [
@@ -59,6 +59,30 @@
     return 'TASK_PROGRESS';
   }
 
+  function buildMemorySummary() {
+    let words = [];
+    try { words = validWords(); } catch {}
+    const reasonCounts = { recovery: 0, confusion: 0, orthographic: 0, latency: 0, hint: 0, decay: 0, stable: 0 };
+    const priorities = [];
+    let measured = 0;
+    let strengthTotal = 0;
+    for (const w of words) {
+      let view = null;
+      try { view = memoryStatusView(w); } catch {}
+      const key = view?.reason?.key || 'stable';
+      if (key in reasonCounts) reasonCounts[key] += 1;
+      if (Number.isFinite(view?.strength)) { measured += 1; strengthTotal += Number(view.strength); }
+      if (Number.isFinite(view?.priority)) priorities.push({ lexicalId: w.lexicalId || senseKey(w), priority: Math.round(Number(view.priority)), reason: key });
+    }
+    priorities.sort((a, b) => b.priority - a.priority);
+    return {
+      averageMemoryStrength: measured ? Math.round(strengthTotal / measured) : 0,
+      reasonCounts,
+      needsUnassistedRecallCount: reasonCounts.recovery,
+      topReviewPriorities: priorities.slice(0, 5)
+    };
+  }
+
   function buildTaskSnapshot() {
     let sh = null;
     try { sh = sheet(); } catch {}
@@ -75,7 +99,8 @@
       finalSeekAttemptCount: Array.isArray(S.codeRed?.history) ? S.codeRed.history.length : 0,
       seekAgainRemainingCount: Array.isArray(S.codeRed?.retrace) ? S.codeRed.retrace.length : 0,
       learningProvenance: sh?.learningProvenance ? { ...sh.learningProvenance } : {},
-      cumulativeLexiconCount: Object.keys(S.lexicon || {}).length
+      cumulativeLexiconCount: Object.keys(S.lexicon || {}).length,
+      memorySummary: buildMemorySummary()
     };
   }
 
@@ -370,6 +395,7 @@
       returnToBase,
       sendToSnap,
       requestImaginationCloud,
+      buildMemorySummary,
       isSafeUpdatePoint
     });
   }
