@@ -32,8 +32,6 @@ jobs:
           node --check hide-runtime.js
           node --check hide-family-ocr-adapter.js
       - name: Install browser test harness
-        run: |
-          npm install
-          npx playwright install --with-deps chromium
+        run: npm install
       - name: Verify exploration mission browser flow
         run: npx playwright test tests/hide-exploration-mission-e2e.spec.js --project=chromium
