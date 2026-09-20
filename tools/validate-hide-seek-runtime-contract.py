@@ -137,6 +137,15 @@ for needle in [
     "reviewDecay",
     "reviewStrengthDelta",
     "memoryQuality:{recoveryBonus:quality.recoveryBonus,weaknessPenalty:quality.weaknessPenalty}",
+    "memoryReasonLabel",
+    "memoryStatusView",
+    "memoryRecordSummary",
+    "무힌트 재회상 필요",
+    "뜻 혼동",
+    "철자 취약",
+    "느린 회상",
+    "힌트 의존",
+    "장기기억 약화",
     "$('.speak-retrace').forEach",
 ]:
     if needle not in app:
