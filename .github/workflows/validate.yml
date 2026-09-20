@@ -19,9 +19,12 @@ jobs:
         run: python tools/validate-hide-seek-runtime-contract.py
       - name: Verify Memory Trail behavior
         run: node tools/validate-hide-seek-memory-behavior.js
+      - name: Verify Family OCR adapter
+        run: node tools/validate-hide-family-ocr-adapter.js
       - name: Check JavaScript syntax
         run: |
           node --check app.js
           node --check hide-brand-current.js
           node --check hide-bridge.js
           node --check hide-runtime.js
+          node --check hide-family-ocr-adapter.js
