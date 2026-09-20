@@ -74,7 +74,8 @@
       learningHistoryCount: Array.isArray(S.learning?.history) ? S.learning.history.length : 0,
       finalSeekAttemptCount: Array.isArray(S.codeRed?.history) ? S.codeRed.history.length : 0,
       seekAgainRemainingCount: Array.isArray(S.codeRed?.retrace) ? S.codeRed.retrace.length : 0,
-      learningProvenance: sh?.learningProvenance ? { ...sh.learningProvenance } : {}
+      learningProvenance: sh?.learningProvenance ? { ...sh.learningProvenance } : {},
+      cumulativeLexiconCount: Object.keys(S.lexicon || {}).length
     };
   }
 
