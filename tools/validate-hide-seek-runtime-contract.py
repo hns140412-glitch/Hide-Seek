@@ -94,6 +94,26 @@ for needle in [
     "learningProvenance",
     "finalSeekAttempts",
     "seekAgainCycles",
+    "traceList",
+    "addWordTrace",
+    "acquisitionTrace",
+    "recognitionTrace",
+    "associationTrace",
+    "retrievalTrace",
+    "assistanceTrace",
+    "recoveryTrace",
+    "selectedId",
+    "confusedWithId",
+    "CONFUSION_TRACE",
+    "lastConfusionTrace",
+    "lastPersonalErrorTrace",
+    "hintCueCost",
+    "cueCost",
+    "hintTypes",
+    "interveningItemCount",
+    "elapsedSinceAssistMs",
+    "spacedEvidence",
+    "immediateRecallAt",
 ]:
     if needle not in app:
         fail.append("MISSING_LEARNING_RESUME_OR_PROVENANCE:"+needle)
@@ -217,15 +237,23 @@ for needle in [
 for forbidden in [
     "firstUnsure').onclick=()=>{w.wrong",
     "connectionMismatch=(w.learningStats.connectionMismatch||0)+1;w.wrong",
+    "if(!ok){w.wrong=(w.wrong||0)+1",
 ]:
     if forbidden in app:
         fail.append("TRACE_CONTAMINATION:"+forbidden)
 
 for needle in [
     "learningStats.unsure",
+    "learningStats.meaningWrong",
     "learningStats.connectionMismatch",
     "sourceEvidence",
     "legacyBaseline",
+    "event:'EXPOSURE'",
+    "event:'LEARNER_UNSURE'",
+    "result:'MISMATCH'",
+    "sourceSide:selectedTile.dataset.side",
+    "source:'MEMORY_TRAIL'",
+    "result:'UNASSISTED_RECALL'",
 ]:
     if needle not in app:
         fail.append("TRACE_SEPARATION_CONTRACT:"+needle)
