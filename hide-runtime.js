@@ -385,7 +385,9 @@
         ocrProvider: result.provider || null,
         ocrModel: result.model || null,
         ocrAnalysisVersion: result.analysis_version || null,
-        ocrAnalysisDomain: result.analysis_domain || 'HIDE_VOCABULARY'
+        ocrAnalysisDomain: result.analysis_domain || 'HIDE_VOCABULARY',
+        ocrEvidenceItemId: x.evidenceItemId || page.pageId,
+        ocrWarnings: Array.isArray(x.warnings) ? [...x.warnings] : []
       };
     });
   }
