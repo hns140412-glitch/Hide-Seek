@@ -220,7 +220,17 @@ function renderSheets(){
  setPartner('탐험 미션을 고르고, 필요하면 원본부터 다시 확인할 수 있어.','note')
 }
 function renderOCRReview(rows){
- let data=rows.map(normalizeWord);
+ let data=rows.map((w,i)=>({
+  ...normalizeWord(w,i),
+  sourcePageId:w.sourcePageId||"",
+  sourcePageOrder:Number(w.sourcePageOrder||0),
+  ocrProvider:w.ocrProvider||null,
+  ocrModel:w.ocrModel||null,
+  ocrAnalysisVersion:w.ocrAnalysisVersion||null,
+  ocrAnalysisDomain:w.ocrAnalysisDomain||null,
+  ocrEvidenceItemId:w.ocrEvidenceItemId||null,
+  ocrWarnings:Array.isArray(w.ocrWarnings)?[...w.ocrWarnings]:[]
+ }));
  $("#view").innerHTML=`<section class="card"><div class="hero-kicker"><span>WORD REVIEW</span><span>${data.length}개</span></div><h2>탐험 미션 단어 확인</h2><p>탐험 미션의 단어와 뜻을 수정하거나 제외할 수 있어요.</p><div class="table" id="ocrRows" style="margin-top:12px"></div><div class="btn-row" style="margin-top:13px"><button class="btn secondary" id="addOcrRow" type="button">행 추가</button><button class="btn primary" id="commitSheet" type="button">변경 저장</button></div></section>`;
  const draw=()=>{
   $("#ocrRows").innerHTML=data.map((w,i)=>`<div class="row review-row" data-i="${i}"><input class="eng" value="${esc(w.eng)}" aria-label="${i+1}번 영어 단어"><input class="kor" value="${esc(w.kor)}" aria-label="${i+1}번 뜻"><span class="badge ${w.needsReview?"weak":"good"}">${w.needsReview?"확인 필요":"확인"}</span>${w.needsReview?`<button class="review-confirm" data-confirm="${i}" type="button">확인 완료</button>`:""}<button class="row-delete" data-del="${i}" type="button" aria-label="${i+1}번 행 삭제">×</button></div>`).join("");
@@ -230,7 +240,7 @@ function renderOCRReview(rows){
  draw();
  $("#addOcrRow").onclick=()=>{data.push(normalizeWord({id:`manual-${Date.now()}`,eng:"",kor:"",confidence:"manual",needsReview:true},data.length));draw()};
  $("#commitSheet").onclick=()=>{
-  const out=$$("#ocrRows .row").map((r,i)=>{const eng=$(".eng",r).value.trim(),kor=$(".kor",r).value.trim(),edited=eng!==String(data[i].eng||"").trim()||kor!==String(data[i].kor||"").trim();return normalizeWord({...data[i],eng,kor,needsReview:!!data[i].needsReview,manuallyEdited:!!data[i].manuallyEdited||edited,reviewConfirmed:!!data[i].reviewConfirmed},i)}).filter(x=>x.eng&&x.kor);
+  const out=$("#ocrRows .row").map((r,i)=>{const eng=$(".eng",r).value.trim(),kor=$(".kor",r).value.trim(),edited=eng!==String(data[i].eng||"").trim()||kor!==String(data[i].kor||"").trim(),base=normalizeWord({...data[i],eng,kor,needsReview:!!data[i].needsReview,manuallyEdited:!!data[i].manuallyEdited||edited,reviewConfirmed:!!data[i].reviewConfirmed},i);return {...base,sourcePageId:data[i].sourcePageId||"",sourcePageOrder:Number(data[i].sourcePageOrder||0),ocrProvider:data[i].ocrProvider||null,ocrModel:data[i].ocrModel||null,ocrAnalysisVersion:data[i].ocrAnalysisVersion||null,ocrAnalysisDomain:data[i].ocrAnalysisDomain||null,ocrEvidenceItemId:data[i].ocrEvidenceItemId||null,ocrWarnings:Array.isArray(data[i].ocrWarnings)?[...data[i].ocrWarnings]:[]}}).filter(x=>x.eng&&x.kor);
   if(!out.length)return toast("단어와 뜻을 한 개 이상 입력해 주세요.");
   const unresolved=out.filter(x=>x.needsReview).length,sh=sheet();
   sh.items=out;sh.updatedAt=nowISO();sh.status=unresolved?"REVIEW_REQUIRED":"READY";sh.caseMastery=0;sh.recognitionMeta={...(sh.recognitionMeta||{}),reviewedAt:nowISO(),count:out.length,unresolved};
