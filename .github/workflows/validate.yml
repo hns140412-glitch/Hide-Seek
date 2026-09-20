@@ -1,0 +1,23 @@
+name: Validate Hide & Seek
+
+on:
+  pull_request:
+  push:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Guard product identity
+        run: python tools/validate-hide-seek-name-purge.py
+      - name: Check JavaScript syntax
+        run: |
+          node --check app.js
+          node --check hide-brand-current.js
+          node --check hide-bridge.js
+          node --check hide-runtime.js
