@@ -17,6 +17,8 @@ jobs:
         run: python tools/validate-hide-seek-name-purge.py
       - name: Guard runtime contracts
         run: python tools/validate-hide-seek-runtime-contract.py
+      - name: Verify Memory Trail behavior
+        run: node tools/validate-hide-seek-memory-behavior.js
       - name: Check JavaScript syntax
         run: |
           node --check app.js
