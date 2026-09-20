@@ -189,6 +189,15 @@ Hard:
 이 값은 원시 trace에서 파생한다.
 원시 trace를 덮어쓰거나 버리고 점수만 저장하지 않는다.
 
+현재 runtime 구현:
+- `deriveMemorySignature(w)`가 raw trace에서 위 축을 파생한다.
+- 결과는 현재 단어의 Memory Trail routing과 cumulative lexicon의 `memorySignature`에 사용한다.
+- `semantic / recognition / phonological / orthographic / timeout / hint dependency / recovery` 축은 서로 독립적으로 유지한다.
+- `recoveryStatus`는 `UNPROVEN / NEEDS_UNASSISTED_RECALL / IMMEDIATE_ONLY / SPACED_RECOVERED`를 구분한다.
+- 원시 trace는 보존되며 signature는 언제든 재계산 가능한 projection이다.
+- 실행형 fixture에서 trace profile별 signature 차이와 lexicon persistence를 검증한다.
+- CI Run #81 = SUCCESS.
+
 **TRACE FIRST → PROFILE DERIVED**
 
 ---
