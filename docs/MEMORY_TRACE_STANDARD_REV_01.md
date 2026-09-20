@@ -328,9 +328,10 @@ assisted recall을 unassisted recall로 바꾸는 회복 단계.
    - 단일 `HINT_USED` 결과만으로 도움 강도를 해석하지 않음.
 
 10. behavior-level validation
-    - OPEN: 현재 CI는 contract/static guard 중심.
-    - 다음 단계는 fixture 기반 trace behavior validation.
-    - 특히 idempotent aggregation, adaptive route selection, spacing recovery semantics를 실행형 fixture로 검증해야 함.
+    - IMPLEMENTED: `tools/validate-hide-seek-memory-behavior.js`.
+    - 실제 `app.js` 함수 소스를 추출해 실행하는 fixture 방식.
+    - adaptive route selection / actual exposure SCENE provenance / immediate-vs-spaced recall / lexicon idempotent re-sync를 검증.
+    - CI Run #77에서 behavior fixture 포함 SUCCESS.
 
 ---
 
