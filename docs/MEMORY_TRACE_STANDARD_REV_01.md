@@ -265,6 +265,23 @@ SOURCE MEANING / SOUND / GENERATED SHAPE를 제한적으로 사용.
 - 실행형 fixture에서 spaced > immediate-only > unresolved pending, weakness penalty, explicit reviewDecay를 검증한다.
 - CI Run #99 = SUCCESS.
 
+### 단어장/기록 Memory Signature 표시
+- 단어 상태는 더 이상 `약함 / 확인 / 안정` 하나로 축약하지 않는다.
+- `memoryReasonLabel(w)`가 live trace + lexicon evidence에서 대표 원인을 파생한다.
+- 우선 표시 원인:
+  - 무힌트 재회상 필요
+  - 뜻 혼동
+  - 철자 취약
+  - 느린 회상
+  - 힌트 의존
+  - 장기기억 약화
+  - 현재 안정
+- 내 단어장은 `nextReviewPriority` 기준으로 정렬하고 Memory Strength와 대표 원인을 함께 표시한다.
+- 기록 화면은 Trail Mastery와 Memory Strength를 분리 유지하면서 원인별 단어 분포를 보여준다.
+- UI 상태는 저장된 임의 라벨이 아니라 현재 trace에서 다시 계산 가능한 projection이다.
+- 실행형 fixture에서 confusion / orthographic / pending-recall 원인 및 lexicon strength/priority 결합을 검증한다.
+- CI Run #103 = SUCCESS.
+
 ---
 
 # 4. Cue Cost — 도움 강도
