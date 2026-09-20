@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const BRIDGE_VERSION = '2026.09.07-a';
+  const BRIDGE_VERSION = '2026.09.20-b';
   const EVENT_LIMIT = 120;
   const SHARED_PARAM_NAMES = ['session_id', 'goal_id', 'task_id', 'lap_id', 'return_target', 'snap_target', 'child_id'];
   const legacyTerms = [
