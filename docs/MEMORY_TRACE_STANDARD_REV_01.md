@@ -292,9 +292,12 @@ SOURCE MEANING / SOUND / GENERATED SHAPE를 제한적으로 사용.
   - 상위 5개 `topReviewPriorities[{lexicalId, priority, reason}]`
 - 이 summary는 기존 `taskState / trailMastery / learningPhase / finalSeekAttemptCount / seekAgainRemainingCount`와 함께 handoff된다.
 - Ready는 완료 여부와 함께 다음 학습 계획에 필요한 약점 신호를 받을 수 있지만 Hide의 내부 trace 구조에는 직접 결합하지 않는다.
-- bridge revision: `2026.09.20-c`
-- PWA cache revision: `hide-seek-capture-v05`
-- CI Run #106 = SUCCESS.
+- same-window Ready 복귀 시 postMessage만으로 전달되지 않으므로 `event_id + memory_summary` compact JSON을 return query에도 포함한다.
+- Ready는 return query를 처리한 뒤 해당 파라미터를 URL에서 제거한다.
+- postMessage가 가능한 컨텍스트에서는 동일 compact payload 계약을 사용한다.
+- bridge revision: `2026.09.20-d`
+- PWA cache revision: `hide-seek-capture-v06`
+- CI Run #111 = SUCCESS.
 
 ---
 
