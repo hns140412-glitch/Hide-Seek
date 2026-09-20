@@ -114,6 +114,10 @@ test('two-word mission follows the guided learning path through Final Seek',asyn
       return idx%2===1?w.eng:w.kor;
     });
     await page.getByRole('button',{name:correct,exact:true}).click();
+    await page.waitForFunction(expected=>{
+      const s=JSON.parse(localStorage.getItem('hide_seek_state'));
+      return s.learning.phase!=='meaning'||Number(s.learning.meaningIndex)===expected;
+    },i===0?1:0);
     if(i===0) await expect(page.getByText('MEANING CLUE',{exact:true})).toBeVisible();
   }
 
