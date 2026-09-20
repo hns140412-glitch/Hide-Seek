@@ -48,10 +48,10 @@ test('printed handout becomes Hide exploration mission and enters FIRST FIND',as
 
   await expect(page.getByRole('heading',{name:'새 탐험 미션',exact:true})).toBeVisible();
 
-  await page.evaluate(async()=>{
-    const blob=new Blob(['fake-image-content'],{type:'image/jpeg'});
-    const file=new File([blob],'vocab.jpg',{type:'image/jpeg'});
-    await window.HideCaptureRuntime.addFiles([file],'library');
+  await page.locator('#sheetLibraryInput').setInputFiles({
+    name:'vocab.jpg',
+    mimeType:'image/jpeg',
+    buffer:Buffer.from('fake-image-content')
   });
 
   await page.waitForFunction(()=>window.HideCaptureRuntime?.currentSession?.()?.pages?.length===1);
@@ -140,11 +140,12 @@ test('parent can create the same Hide exploration mission intake path',async({pa
 
   await page.goto('/?actor_role=PARENT&session_id=session-parent&task_id=task-parent&lap_id=lap-parent');
 
-  await page.evaluate(async()=>{
-    const blob=new Blob(['parent-image-content'],{type:'image/jpeg'});
-    const file=new File([blob],'parent-vocab.jpg',{type:'image/jpeg'});
-    await window.HideCaptureRuntime.addFiles([file],'library');
+  await page.locator('#sheetLibraryInput').setInputFiles({
+    name:'parent-vocab.jpg',
+    mimeType:'image/jpeg',
+    buffer:Buffer.from('parent-image-content')
   });
+  await page.waitForFunction(()=>window.HideCaptureRuntime?.currentSession?.()?.pages?.length===1);
 
   await page.getByRole('button',{name:'지금 분석'}).click();
   await expect(page.locator('#hideBatchRows .eng').nth(0)).toHaveValue('challenge');
