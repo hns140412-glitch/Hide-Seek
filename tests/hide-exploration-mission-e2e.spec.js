@@ -46,7 +46,7 @@ test('printed handout becomes Hide exploration mission and enters FIRST FIND',as
 
   await page.goto('/?actor_role=CHILD&session_id=session-e2e&task_id=task-e2e&lap_id=lap-e2e');
 
-  await expect(page.getByText('새 탐험 미션')).toBeVisible();
+  await expect(page.getByRole('heading',{name:'새 탐험 미션',exact:true})).toBeVisible();
 
   const file=Buffer.from('fake-image-content');
   await page.locator('#sheetLibraryInput').setInputFiles({
