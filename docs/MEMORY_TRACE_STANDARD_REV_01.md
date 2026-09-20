@@ -282,6 +282,20 @@ SOURCE MEANING / SOUND / GENERATED SHAPE를 제한적으로 사용.
 - 실행형 fixture에서 confusion / orthographic / pending-recall 원인 및 lexicon strength/priority 결합을 검증한다.
 - CI Run #103 = SUCCESS.
 
+### Ready & Set shared-session Memory Summary
+- Hide 내부 raw trace 전체를 외부로 노출하지 않는다.
+- `buildMemorySummary()`가 Ready & Set이 사용할 수 있는 compact projection만 생성한다.
+- payload:
+  - `averageMemoryStrength`
+  - `reasonCounts`
+  - `needsUnassistedRecallCount`
+  - 상위 5개 `topReviewPriorities[{lexicalId, priority, reason}]`
+- 이 summary는 기존 `taskState / trailMastery / learningPhase / finalSeekAttemptCount / seekAgainRemainingCount`와 함께 handoff된다.
+- Ready는 완료 여부와 함께 다음 학습 계획에 필요한 약점 신호를 받을 수 있지만 Hide의 내부 trace 구조에는 직접 결합하지 않는다.
+- bridge revision: `2026.09.20-c`
+- PWA cache revision: `hide-seek-capture-v05`
+- CI Run #106 = SUCCESS.
+
 ---
 
 # 4. Cue Cost — 도움 강도
