@@ -69,7 +69,12 @@
       legacyCaseMastery: Number(sh?.caseMastery || 0),
       taskState: taskStateForStatus(sh?.status || null),
       validWordCount: (() => { try { return validWords().length; } catch { return 0; } })(),
-      captureActive: !!(S.hideSeekCaptureSession && S.hideSeekCaptureSession.status === 'CAPTURING')
+      captureActive: !!(S.hideSeekCaptureSession && S.hideSeekCaptureSession.status === 'CAPTURING'),
+      learningPhase: S.learning?.phase || null,
+      learningHistoryCount: Array.isArray(S.learning?.history) ? S.learning.history.length : 0,
+      finalSeekAttemptCount: Array.isArray(S.codeRed?.history) ? S.codeRed.history.length : 0,
+      seekAgainRemainingCount: Array.isArray(S.codeRed?.retrace) ? S.codeRed.retrace.length : 0,
+      learningProvenance: sh?.learningProvenance ? { ...sh.learningProvenance } : {}
     };
   }
 
