@@ -53,11 +53,6 @@ button:focus-visible,input:focus-visible{outline:3px solid rgba(62,126,87,.35);o
 .review-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto auto auto}
 .review-confirm{min-height:34px;border:1px solid rgba(79,115,78,.2);border-radius:10px;background:#edf5e6;color:var(--forest2);padding:0 9px;font-size:9px;font-weight:900}
 .btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
-@media (min-width:768px) and (orientation:landscape){
- .view{max-width:min(760px,calc(100dvh * .92));}
- .partner-bar{width:min(700px,calc(100dvh * .88));}
- .app-shell{background-size:cover;background-position:center}
-}
 @media(max-width:390px){
  .review-row{grid-template-columns:1fr 1fr auto}
  .review-row .badge{grid-column:1/3}
@@ -65,33 +60,6 @@ button:focus-visible,input:focus-visible{outline:3px solid rgba(62,126,87,.35);o
  .review-row .row-delete{grid-column:3;grid-row:1}
 }
 
-
-/* Hide & Seek runtime surfaces: Rapid Capture / shared-session system UI */
-.hide-camera-overlay{position:fixed;inset:0;z-index:140;background:#0c1712;display:grid;place-items:center;padding:max(env(safe-area-inset-top),12px) 12px max(env(safe-area-inset-bottom),12px)}
-.hide-camera-stage{position:relative;width:min(100%,760px);height:100%;max-height:100dvh;overflow:hidden;border-radius:24px;background:#07100c;display:grid;grid-template-rows:1fr auto}
-.hide-camera-stage video{width:100%;height:100%;min-height:0;object-fit:cover;background:#07100c}
-.hide-camera-guide{position:absolute;left:12px;right:12px;top:12px;padding:11px 13px;border-radius:15px;background:rgba(15,33,24,.72);backdrop-filter:blur(10px);color:#fff;pointer-events:none}
-.hide-camera-guide b{display:block;font-size:13px}.hide-camera-guide span{display:block;margin-top:3px;font-size:10px;line-height:1.4;opacity:.88}
-.hide-camera-controls{display:grid;grid-template-columns:1fr 76px 1fr;align-items:center;gap:16px;padding:14px;background:rgba(8,20,14,.92)}
-.hide-camera-secondary{min-height:46px;border:1px solid rgba(255,255,255,.18);border-radius:14px;background:rgba(255,255,255,.1);color:white;font-weight:850}
-.hide-camera-shutter{width:72px;height:72px;border-radius:50%;border:7px solid rgba(255,255,255,.95);background:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.18) inset}
-.hide-camera-shutter.saving{transform:scale(.92);opacity:.72}
-.hide-capture-shell{border-radius:25px;padding:16px;background:linear-gradient(145deg,rgba(255,253,247,.96),rgba(226,243,231,.95));border:1px solid rgba(75,108,75,.14);box-shadow:var(--shadow)}
-.hide-capture-shell h2{margin:6px 0}.hide-capture-shell>p{margin:0;color:var(--muted);font-size:11.5px;line-height:1.55}
-.hide-capture-pages{display:grid;gap:8px;margin-top:14px;max-height:46dvh;overflow:auto}
-.hide-capture-empty{padding:22px;border-radius:15px;text-align:center;background:rgba(255,255,255,.6);color:var(--muted);font-size:11px}
-.hide-capture-page{display:grid;grid-template-columns:74px minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px;border-radius:16px;background:rgba(255,255,255,.72);border:1px solid rgba(75,108,75,.12)}
-.hide-capture-thumb{position:relative;width:74px;aspect-ratio:4/5;border-radius:12px;overflow:hidden;background:#dce8d8;display:grid;place-items:center}
-.hide-capture-thumb img{width:100%;height:100%;object-fit:cover}.hide-capture-thumb span{position:absolute;right:5px;bottom:5px;min-width:20px;height:20px;padding:0 5px;border-radius:99px;display:grid;place-items:center;background:rgba(24,55,37,.82);color:white;font-size:9px;font-weight:900}
-.hide-capture-meta{min-width:0}.hide-capture-meta b{display:block;font-size:12px}.hide-capture-meta small{display:block;margin-top:3px;color:var(--muted);font-size:9.5px}
-.hide-capture-actions,.hide-review-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:13px}
-.hide-review-row{grid-template-columns:34px minmax(0,1fr) minmax(0,1fr) auto auto auto}
-.hide-page-no{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:#e4efdf;color:var(--forest2);font-size:9px;font-weight:950}
-.hide-confirm-row{min-height:34px;border:1px solid rgba(79,115,78,.2);border-radius:10px;background:#edf5e6;color:var(--forest2);padding:0 9px;font-size:9px;font-weight:900}
-.hide-system-chip,.hide-resume-chip{position:fixed;right:12px;z-index:72;min-height:40px;border:1px solid rgba(63,101,70,.2);border-radius:999px;padding:0 13px;background:rgba(249,252,246,.94);backdrop-filter:blur(12px);box-shadow:0 7px 20px rgba(38,70,45,.14);color:var(--forest2);font-size:10px;font-weight:900}
-.hide-resume-chip,.hide-system-chip-capture{bottom:calc(154px + var(--safe-bottom))}.hide-system-chip-base{bottom:calc(202px + var(--safe-bottom))}.hide-system-chip-update{bottom:calc(250px + var(--safe-bottom))}
-.hide-phone-orientation-guard{position:fixed;inset:0;z-index:220;background:linear-gradient(180deg,#eef6e9,#dcebdc);display:grid;place-items:center;padding:24px;text-align:center;color:var(--forest2)}
-.hide-phone-orientation-guard>div{max-width:360px}.hide-phone-orientation-guard b{display:block;font-size:20px}.hide-phone-orientation-guard span{display:block;margin-top:8px;font-size:11px;color:var(--muted);line-height:1.5}
 
 /* Tablet contract: keep the functional core bounded by usable height; spend extra width on world/environment. */
 @media (min-width:768px){
