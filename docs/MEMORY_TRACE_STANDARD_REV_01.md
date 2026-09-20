@@ -246,6 +246,15 @@ SOURCE MEANING / SOUND / GENERATED SHAPE를 제한적으로 사용.
 - 결과는 `HIDDEN_WORD_OUTCOME`으로 SUCCESS/RETRY 및 최소 근거를 남긴다.
 - CI Run #91 = SUCCESS.
 
+### SEEK AGAIN 종료 규칙
+- `ASSISTED SUCCESS ≠ RECOVERED MEMORY`를 종료 조건에 직접 적용한다.
+- 힌트/도움 이후 즉시 무힌트 성공은 `IMMEDIATE_ONLY`로 남기며 retrace에서 제거하지 않는다.
+- 이전 assistance requirement가 있는 단어는 `spacedEvidence=true`인 무힌트 CORRECT/SLOW_CORRECT에서만 retrace를 해제한다.
+- hint가 다시 사용된 성공은 retrace를 해제하지 않는다.
+- assistance requirement가 없는 순수 무힌트 성공은 정상 완료할 수 있다.
+- 실행형 fixture에서 immediate / spaced / hinted / clean-unassisted 4경로를 검증한다.
+- CI Run #95 = SUCCESS.
+
 ---
 
 # 4. Cue Cost — 도움 강도
