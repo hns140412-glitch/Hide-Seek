@@ -40,14 +40,16 @@ async function runCase(responseBody,status=200){
       analysis_domain:'HIDE_VOCABULARY',
       analysis_version:'HIDE_VOCABULARY_OCR_V1',
       rows:[
-        {eng:'benefit',kor:'혜택',confidence:'high'},
-        {eng:'essential',kor:'필수적인',confidence:'low'}
+        {eng:'benefit',kor:'혜택',confidence:'high',evidence_item_id:'page-1',warnings:[]},
+        {eng:'essential',kor:'필수적인',confidence:'low',evidence_item_id:'page-1',warnings:['뜻 일부 흐림']}
       ]
     }
   });
   assert(ok.ok===true,'valid Hide vocabulary rows must succeed');
   assert(ok.rows.length===2,'two rows must be preserved');
   assert(ok.rows[1].confidence==='low','confidence must be preserved');
+  assert(ok.rows[1].evidenceItemId==='page-1','source evidence item must be preserved');
+  assert(ok.rows[1].warnings[0]==='뜻 일부 흐림','OCR warning must be preserved');
   assert(ok.analysis_domain==='HIDE_VOCABULARY','analysis domain must remain explicit');
 
   const mismatch=await runCase({
