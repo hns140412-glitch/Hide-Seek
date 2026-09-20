@@ -610,6 +610,27 @@
     setPartner('애매한 단어만 골라서 같이 확인해보자.', 'note');
   }
 
+  function bindCaptureInputs() {
+    const cameraInput = document.querySelector('#sheetCameraInput');
+    const libraryInput = document.querySelector('#sheetLibraryInput');
+    if (cameraInput && cameraInput.dataset.hideCaptureBound !== '1') {
+      cameraInput.dataset.hideCaptureBound = '1';
+      cameraInput.addEventListener('change', async event => {
+        const files = Array.from(event.target.files || []);
+        event.target.value = '';
+        await addFiles(files, 'camera-fallback');
+      });
+    }
+    if (libraryInput && libraryInput.dataset.hideCaptureBound !== '1') {
+      libraryInput.dataset.hideCaptureBound = '1';
+      libraryInput.addEventListener('change', async event => {
+        const files = Array.from(event.target.files || []);
+        event.target.value = '';
+        await addFiles(files, 'library');
+      });
+    }
+  }
+
   function interceptLegacyCapture() {
     document.addEventListener('click', event => {
       const id = event.target?.id;
@@ -633,22 +654,6 @@
       }
     }, true);
 
-    document.addEventListener('change', event => {
-      if (event.target?.id === 'sheetCameraInput') {
-        event.stopPropagation();
-        event.stopImmediatePropagation();
-        const files = event.target.files;
-        event.target.value = '';
-        addFiles(files, 'camera-fallback');
-      }
-      if (event.target?.id === 'sheetLibraryInput') {
-        event.stopPropagation();
-        event.stopImmediatePropagation();
-        const files = event.target.files;
-        event.target.value = '';
-        addFiles(files, 'library');
-      }
-    }, true);
   }
 
   function normalizeBrandText(root = document.body) {
@@ -706,6 +711,7 @@
     migrateLegacyCaptureSession();
     document.title = 'Hide & Seek';
     document.querySelector('#sheetLibraryInput')?.setAttribute('multiple', '');
+    bindCaptureInputs();
     interceptLegacyCapture();
     startBrandObserver();
     phoneOrientationGuard();
@@ -727,6 +733,7 @@
     version: HIDE_RUNTIME_VERSION,
     openRapidCamera,
     addFiles,
+    bindCaptureInputs,
     renderCaptureHub,
     analyzeDirtyPages,
     migrateLegacyState: () => {
