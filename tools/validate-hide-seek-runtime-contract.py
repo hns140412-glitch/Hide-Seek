@@ -240,11 +240,31 @@ if css.count("@media (min-width:768px) and (orientation:landscape)") > 1:
     fail.append("DUPLICATE_TABLET_LANDSCAPE_RULE")
 
 
+family_ocr=read("hide-family-ocr-adapter.js")
+for needle in [
+    "analysis_domain",
+    "HIDE_VOCABULARY",
+    "FAMILY_CAPTURE_OCR_TRANSPORT",
+    "/api/capture/analyze",
+    "HIDE_VOCABULARY_RESULT_UNSUPPORTED",
+]:
+    if needle not in family_ocr:
+        fail.append("FAMILY_OCR_ADAPTER_CONTRACT:"+needle)
+
+for needle in [
+    "window.FamilyCaptureOcrAdapter",
+    "analyzeVocabularyPage",
+    "ocrAnalysisDomain",
+]:
+    if needle not in runtime:
+        fail.append("HIDE_SHARED_OCR_USAGE:"+needle)
+
 sw=read("sw.js")
 
 for needle in [
-    'const CACHE="hide-seek-capture-v07"',
-    '"./hide-runtime.js"',
+    'const CACHE="hide-seek-capture-v08"',
+    '"./hide-family-ocr-adapter.js",
+    "./hide-runtime.js"',
     '"./hide-runtime.css"',
     '"./hide-bridge.js"',
     '"./hide-bridge.css"',
@@ -270,7 +290,7 @@ for needle in [
         fail.append("APP_SCHEMA_REVISION_CONTRACT:"+needle)
 
 for needle in [
-    "const HIDE_RUNTIME_VERSION = '2026.09.21-a'",
+    "const HIDE_RUNTIME_VERSION = '2026.09.21-b'",
 ]:
     if needle not in runtime:
         fail.append("RUNTIME_VERSION_CONTRACT:"+needle)
@@ -283,6 +303,8 @@ for needle in [
 
 for needle in [
     "normalizedImageBase64",
+    "function gemini",
+    "Gemini API Key가 필요해요.",
     "function gemini",
     "renderManualEntry",
     "function dbDel",
