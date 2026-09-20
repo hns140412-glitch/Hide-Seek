@@ -227,6 +227,18 @@ CONFUSION TRACE → MEANING CONTRAST → SOUND/SHAPE
 SOURCE MEANING / SOUND / GENERATED SHAPE를 제한적으로 사용.
 "예전에 본 흔적"으로 표현하지 않는다.
 
+### HIDDEN WORDS 보강 전략
+- `hiddenWordStrategy(w)`가 Memory Signature에서 보강 방식을 선택한다.
+- `SEMANTIC_CONTRAST`: 의미 불확실성이 큰 단어.
+- `CONFUSION_CONTRAST`: 특정 단어/뜻과 실제 혼동 trace가 있는 단어.
+- `SOUND_REACTIVATION`: 소리·느린 회상·timeout 축이 높은 단어.
+- `ORTHOGRAPHIC_SCAFFOLD`: 철자 오류·고비용 hint 의존이 높은 단어.
+- `SPACED_RECALL`: 무힌트 회상이 아직 증명되지 않았거나 immediate-only인 단어.
+- 단순 weakScore 순위가 아니라 signature 기반 priority로 정렬한다.
+- 선택 전략은 `reinforcementTrace`의 `HIDDEN_WORD_STRATEGY` 이벤트로 남긴다.
+- 실행형 fixture에서 전략 분기와 우선순위를 검증한다.
+- CI Run #86 = SUCCESS.
+
 ---
 
 # 4. Cue Cost — 도움 강도
