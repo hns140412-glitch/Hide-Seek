@@ -147,6 +147,45 @@ for needle in [
         fail.append("IMPORT_MIGRATION_CONTRACT:"+needle)
 
 
+
+for needle in [
+    'const APP_REV="REV_08"',
+    'const SCHEMA_VERSION=8',
+]:
+    if needle not in app:
+        fail.append("APP_SCHEMA_REVISION_CONTRACT:"+needle)
+
+for needle in [
+    "const HIDE_RUNTIME_VERSION = '2026.09.20-b'",
+]:
+    if needle not in runtime:
+        fail.append("RUNTIME_VERSION_CONTRACT:"+needle)
+
+for needle in [
+    "const BRIDGE_VERSION = '2026.09.20-b'",
+]:
+    if needle not in bridge:
+        fail.append("BRIDGE_VERSION_CONTRACT:"+needle)
+
+for needle in [
+    "normalizedImageBase64",
+    "function gemini",
+    "renderManualEntry",
+    "function dbDel",
+]:
+    if needle in app:
+        fail.append("DEAD_LEGACY_OCR_PATH:"+needle)
+
+function_spec=read("docs/FUNCTION_SPEC_REV_08.md")
+for needle in [
+    "# Hide & Seek Function Specification — REV_08 WORLD MIGRATION",
+    "timeout, slow-correct",
+    "`SLOW_CORRECT`",
+]:
+    if needle not in function_spec:
+        fail.append("FUNCTION_SPEC_REV08_CONTRACT:"+needle)
+
+
 if fail:
     print("FAIL: Hide & Seek runtime contract")
     for item in fail:
