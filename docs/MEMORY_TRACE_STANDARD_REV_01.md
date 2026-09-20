@@ -255,6 +255,16 @@ SOURCE MEANING / SOUND / GENERATED SHAPE를 제한적으로 사용.
 - 실행형 fixture에서 immediate / spaced / hinted / clean-unassisted 4경로를 검증한다.
 - CI Run #95 = SUCCESS.
 
+### 장기기억 품질 모델
+- `memoryQualityModel(sig, correctTotal, wrongTotal, reviewStrengthDelta)`가 cumulative memory quality와 `nextReviewPriority`를 계산한다.
+- `SPACED_RECOVERED`는 명시적 recovery bonus를 받고, `IMMEDIATE_ONLY`와 `NEEDS_UNASSISTED_RECALL`은 서로 다른 penalty를 가진다.
+- hint dependency / timeout risk / orthographic weakness는 memoryStrength를 낮추고 review priority를 높인다.
+- `longTermDecay`는 더 이상 `100 - memoryStrength`로 자기참조하지 않는다.
+- 장기기억 이벤트는 독립 evidence인 `reviewDecay`와 `reviewStrengthDelta`를 갱신한다.
+- 동일 evidence 재동기화 시 memoryStrength / review priority가 자기참조로 흔들리지 않도록 idempotent 구조를 유지한다.
+- 실행형 fixture에서 spaced > immediate-only > unresolved pending, weakness penalty, explicit reviewDecay를 검증한다.
+- CI Run #99 = SUCCESS.
+
 ---
 
 # 4. Cue Cost — 도움 강도
