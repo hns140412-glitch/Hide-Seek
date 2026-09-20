@@ -377,3 +377,5 @@
     transition: none !important;
   }
 }
+
+.hide-retake{min-height:40px;white-space:nowrap}
