@@ -37,6 +37,15 @@ for needle in [
         fail.append("MISSING_CAPTURE_OR_REVIEW_CONTRACT:"+needle)
 
 for needle in [
+    "resumeCurrentLearning",
+    "learningProvenance",
+    "finalSeekAttempts",
+    "seekAgainCycles",
+]:
+    if needle not in app:
+        fail.append("MISSING_LEARNING_RESUME_OR_PROVENANCE:"+needle)
+
+for needle in [
     "taskStateForStatus",
     "status === 'COMPLETED' || status === 'TEST_READY'",
     "trailMastery:",
@@ -45,6 +54,10 @@ for needle in [
     "lap_id",
     "child_id",
     "return_target",
+    "learningHistoryCount",
+    "finalSeekAttemptCount",
+    "seekAgainRemainingCount",
+    "learningProvenance",
 ]:
     if needle not in bridge:
         fail.append("MISSING_SHARED_SESSION_CONTRACT:"+needle)
