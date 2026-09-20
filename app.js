@@ -204,7 +204,7 @@ function renderMissionDetail(sheetId){
  $('#missionWords').onclick=()=>{S.activeSheetId=sh.sheetId;save();renderOCRReview(sh.items||[])};
  $('#missionReanalyze').onclick=()=>{const result=window.HideCaptureRuntime?.reopenCommittedMission?.(sh.sheetId);if(!result?.ok)toast(result?.reason==='SOURCE_PAGES_UNAVAILABLE'?'원본 사진 정보가 없는 미션이에요.':'원본 사진을 다시 불러오지 못했어요.')};
  $('#missionArchive').onclick=()=>{sh.status=sh.status==='ARCHIVED'?'READY':'ARCHIVED';sh.updatedAt=nowISO();save();renderMissionDetail(sh.sheetId)};
- $('#missionDelete').onclick=e=>{if(e.currentTarget.dataset.armed!=='1'){e.currentTarget.dataset.armed='1';e.currentTarget.textContent='한 번 더 눌러 삭제';return}const wasActive=S.activeSheetId===sh.sheetId;S.sheets=S.sheets.filter(x=>x.sheetId!==sh.sheetId);if(wasActive){S.activeSheetId=S.sheets[0]?.sheetId||'';S.learning=clone(DEFAULT_STATE.learning);S.codeRed=clone(DEFAULT_STATE.codeRed)}save();toast('탐험 미션을 삭제했어요.');currentTab='sheets';viewStack=[];render()};
+ $('#missionDelete').onclick=async e=>{if(e.currentTarget.dataset.armed!=='1'){e.currentTarget.dataset.armed='1';e.currentTarget.textContent='한 번 더 눌러 삭제';return}await window.HideCaptureRuntime?.deleteMissionAssets?.(sh.sheetId);const wasActive=S.activeSheetId===sh.sheetId;S.sheets=S.sheets.filter(x=>x.sheetId!==sh.sheetId);if(wasActive){S.activeSheetId=S.sheets[0]?.sheetId||'';S.learning=clone(DEFAULT_STATE.learning);S.codeRed=clone(DEFAULT_STATE.codeRed)}save();toast('탐험 미션과 원본 사진을 삭제했어요.');currentTab='sheets';viewStack=[];render()};
  setPartner('탐험 미션의 원본과 단어, 학습 상태를 여기서 관리할 수 있어.','note')
 }
 
