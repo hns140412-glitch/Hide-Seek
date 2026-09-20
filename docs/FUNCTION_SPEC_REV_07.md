@@ -78,7 +78,7 @@ Next: HIDDEN WORDS / FINAL SEEK readiness.
 
 ## 10. HIDDEN WORDS PRIORITY
 
-Signals: wrong, pass, hint, slow-correct and repeated error.
+Signals: wrong, pass, hint, timeout, slow-correct and repeated error.
 Rule: weak words receive more study opportunity, but stable words are not permanently removed.
 Data: per-word counters plus `learningStats`.
 Next: FINAL SEEK.
@@ -94,7 +94,7 @@ Wrong key: immediate rejection; no slot occupation; `wrongAttempts` increments.
 Hint: progressive help state; hint-used success is not treated as fully secure.
 Timeout: separate TIMEOUT result.
 Pass: separate PASS result.
-Data: `CORRECT`, `WRONG`, `PASS`, `TIMEOUT`, `HINT_USED` are recorded separately.
+Data: `CORRECT`, `SLOW_CORRECT`, `WRONG`, `PASS`, `TIMEOUT`, `HINT_USED` are recorded separately.
 Next: SEEK AGAIN when unstable words exist; otherwise completion.
 
 Compatibility note: legacy internal property names such as `codeRed` may remain temporarily to avoid breaking existing learner data. They must not be shown as current child-facing product terminology.
