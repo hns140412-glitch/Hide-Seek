@@ -147,6 +147,7 @@ for needle in [
     "힌트 의존",
     "장기기억 약화",
     "$('.speak-retrace').forEach",
+    "$('.hidden-choice').forEach",
 ]:
     if needle not in app:
         fail.append("MISSING_LEARNING_RESUME_OR_PROVENANCE:"+needle)
@@ -159,6 +160,10 @@ for needle in [
     "task_id",
     "lap_id",
     "child_id",
+    "actor_role",
+    "explorationMissionId",
+    "explorationMissionTitle",
+    "inputActorRole",
     "return_target",
     "learningHistoryCount",
     "finalSeekAttemptCount",
@@ -176,6 +181,32 @@ for needle in [
 ]:
     if needle not in bridge:
         fail.append("MISSING_SHARED_SESSION_CONTRACT:"+needle)
+
+for forbidden in [
+    "S.guide.",
+    "GUIDE_OPTIONS",
+    "selectedGuide",
+    "selectedGuideName",
+]:
+    if forbidden in app:
+        fail.append("LEGACY_CREW_OWNER_REGRESSION:"+forbidden)
+
+for needle in [
+    'const CREW_AUTHORITY={owner:"snap-pop"',
+    'crewMember:clone(DEFAULT_CREW_MEMBER)',
+    'source:"LEGACY_GUIDE_MIGRATION"',
+    '탐험 미션',
+    '탐험대원',
+]:
+    if needle not in app:
+        fail.append("MISSING_CREW_OR_MISSION_CONTRACT:"+needle)
+
+for needle in [
+    "inputActorRole",
+    "S.sharedLearningContext?.actor_role",
+]:
+    if needle not in runtime:
+        fail.append("MISSING_PARENT_CHILD_INPUT_PROVENANCE:"+needle)
 
 for legacy in [
     "필요한 열쇠 하나가 살짝 반응했어.",
@@ -207,7 +238,7 @@ if css.count("@media (min-width:768px) and (orientation:landscape)") > 1:
 sw=read("sw.js")
 
 for needle in [
-    'const CACHE="hide-seek-capture-v06"',
+    'const CACHE="hide-seek-capture-v07"',
     '"./hide-runtime.js"',
     '"./hide-runtime.css"',
     '"./hide-bridge.js"',
@@ -234,13 +265,13 @@ for needle in [
         fail.append("APP_SCHEMA_REVISION_CONTRACT:"+needle)
 
 for needle in [
-    "const HIDE_RUNTIME_VERSION = '2026.09.20-b'",
+    "const HIDE_RUNTIME_VERSION = '2026.09.21-a'",
 ]:
     if needle not in runtime:
         fail.append("RUNTIME_VERSION_CONTRACT:"+needle)
 
 for needle in [
-    "const BRIDGE_VERSION = '2026.09.20-d'",
+    "const BRIDGE_VERSION = '2026.09.21-a'",
 ]:
     if needle not in bridge:
         fail.append("BRIDGE_VERSION_CONTRACT:"+needle)
