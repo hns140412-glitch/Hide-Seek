@@ -16,6 +16,11 @@ runtime_css=read("hide-runtime.css")
 bridge_css=read("hide-bridge.css")
 all_css=css+"\n"+runtime_css+"\n"+bridge_css
 manifest=read("manifest.json")
+index=read("index.html")
+
+for token in ["길잡이","Guide Companion"]:
+    if token.lower() in index.lower():
+        fail.append("CHILD_FACING_LEGACY_CREW_TERM:"+token)
 
 for token in ["ZPD","수사","사건","체포","검거","경찰","CODE RED","Case Mastery","FIRST CONTACT","MEANING CHECK","WEAK WORD"]:
     if token.lower() in app.lower():
