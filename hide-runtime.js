@@ -697,6 +697,11 @@ ${JSON.stringify(see)}`;
     openRapidCamera,
     renderCaptureHub,
     analyzeDirtyPages,
+    migrateLegacyState: () => {
+      migrateLegacyCaptureSession();
+      const session = currentSession();
+      return session ? JSON.parse(JSON.stringify(session)) : null;
+    },
     currentSession: () => {
       const session = currentSession();
       return session ? JSON.parse(JSON.stringify(session)) : null;
