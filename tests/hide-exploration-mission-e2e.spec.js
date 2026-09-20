@@ -94,3 +94,73 @@ test('printed handout becomes Hide exploration mission and enters FIRST FIND',as
   await expect(page.getByText('FIRST FIND')).toBeVisible();
   await expect(page.getByText('benefit')).toBeVisible();
 });
+
+
+test('parent can create the same Hide exploration mission intake path',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_state',JSON.stringify({
+      onboardingDone:true,
+      onboardingStep:4,
+      profile:{displayName:'부모 입력 테스트'},
+      sheets:[{
+        sheetId:'seed-parent',
+        title:'기존 미션',
+        createdAt:new Date().toISOString(),
+        updatedAt:new Date().toISOString(),
+        status:'READY',
+        caseMastery:0,
+        items:[]
+      }],
+      activeSheetId:'seed-parent'
+    }));
+  });
+
+  await page.route('**/api/capture/analyze',async route=>{
+    const body=route.request().postDataBuffer()?.toString('utf8')||'';
+    expect(body).toContain('HIDE_VOCABULARY');
+    await route.fulfill({
+      status:200,
+      contentType:'application/json',
+      body:JSON.stringify({
+        ok:true,
+        provider:'FIXTURE_VISION',
+        model:'fixture-parent-v1',
+        actor_role:'PARENT',
+        analysis_domain:'HIDE_VOCABULARY',
+        result:{
+          analysis_domain:'HIDE_VOCABULARY',
+          analysis_version:'HIDE_VOCABULARY_OCR_V1',
+          rows:[
+            {eng:'challenge',kor:'도전',confidence:'high',evidence_item_id:'fixture-parent-page',warnings:[]}
+          ]
+        }
+      })
+    });
+  });
+
+  await page.goto('/?actor_role=PARENT&session_id=session-parent&task_id=task-parent&lap_id=lap-parent');
+
+  await page.evaluate(async()=>{
+    const blob=new Blob(['parent-image-content'],{type:'image/jpeg'});
+    const file=new File([blob],'parent-vocab.jpg',{type:'image/jpeg'});
+    await window.HideCaptureRuntime.addFiles([file],'library');
+  });
+
+  await page.getByRole('button',{name:'지금 분석'}).click();
+  await expect(page.locator('#hideBatchRows .eng').nth(0)).toHaveValue('challenge');
+  await page.getByRole('button',{name:'탐험 미션 만들기'}).click();
+
+  const snapshot=await page.evaluate(()=>{
+    const raw=JSON.parse(localStorage.getItem('hide_seek_state'));
+    const mission=raw.sheets.find(x=>x.sheetId===raw.activeSheetId);
+    return {
+      inputActorRole:mission.recognitionMeta?.inputActorRole,
+      analysisDomain:mission.recognitionMeta?.analysisDomain,
+      validCount:mission.items.filter(x=>x.eng&&x.kor&&!x.needsReview).length
+    };
+  });
+
+  expect(snapshot.inputActorRole).toBe('PARENT');
+  expect(snapshot.analysisDomain).toBe('HIDE_VOCABULARY');
+  expect(snapshot.validCount).toBe(1);
+});
