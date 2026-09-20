@@ -554,7 +554,13 @@
       const items = data.map((x, i) => ({
         ...normalizeWord({ ...x, needsReview: false }, i),
         sourcePageId: x.sourcePageId,
-        sourcePageOrder: x.sourcePageOrder
+        sourcePageOrder: x.sourcePageOrder,
+        ocrProvider: x.ocrProvider || null,
+        ocrModel: x.ocrModel || null,
+        ocrAnalysisVersion: x.ocrAnalysisVersion || null,
+        ocrAnalysisDomain: x.ocrAnalysisDomain || 'HIDE_VOCABULARY',
+        ocrEvidenceItemId: x.ocrEvidenceItemId || x.sourcePageId || null,
+        ocrWarnings: Array.isArray(x.ocrWarnings) ? [...x.ocrWarnings] : []
       }));
       const newSheet = {
         sheetId,
