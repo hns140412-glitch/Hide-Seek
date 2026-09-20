@@ -37,6 +37,11 @@ for needle in [
         fail.append("MISSING_CAPTURE_OR_REVIEW_CONTRACT:"+needle)
 
 for needle in [
+    "SLOW_CORRECT",
+    "learningStats?.timeout",
+    "learningStats?.slowCorrect",
+    "codeSession.hintLevel>=4",
+    "['CORRECT','SLOW_CORRECT'].includes",
     "resumeCurrentLearning",
     "learningProvenance",
     "finalSeekAttempts",
@@ -65,6 +70,7 @@ for needle in [
 for needle in [
     ".hide-camera-overlay",
     ".hide-phone-orientation-guard",
+    ".slot.hint-target",
     "Tablet contract",
     "@media (min-width:768px)",
     "orientation:landscape",
