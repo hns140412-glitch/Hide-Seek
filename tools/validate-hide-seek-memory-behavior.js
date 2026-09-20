@@ -27,7 +27,7 @@ const names=[
   'senseKey','lexiconEntry','traceList','addWordTrace','weakScore',
   'memoryWeaknessProfile','memorySceneCue','memoryChunks','memoryShapeCue',
   'lastConfusionTrace','lastPersonalErrorTrace','hintCueCost',
-  'deriveMemorySignature','buildMemoryLadder','hiddenWordStrategy','hiddenWordPriority','hiddenWordActivityModel','memoryQualityModel','syncSheetToLexicon','recallSpacingEvidence','seekAgainResolved'
+  'deriveMemorySignature','buildMemoryLadder','hiddenWordStrategy','hiddenWordPriority','hiddenWordActivityModel','memoryQualityModel','memoryReasonLabel','memoryStatusView','memoryRecordSummary','syncSheetToLexicon','recallSpacingEvidence','seekAgainResolved'
 ];
 const sandbox={
   console,Date,Math,Set,Number,Object,Array,String,
@@ -149,5 +149,18 @@ const decayWord={id:'decay',lexicalId:'decay::감소',eng:'decay',kor:'감소',w
 sandbox.S.lexicon[decayWord.lexicalId]={memoryStrength:70,reviewDecay:40};
 const decaySig=sandbox.deriveMemorySignature(decayWord);
 assert(decaySig.longTermDecay===40,'long-term decay must come from explicit reviewDecay evidence, not inverse memoryStrength');
+
+const reasonConf=sandbox.memoryReasonLabel(confusionWord);
+const reasonOrtho=sandbox.memoryReasonLabel(errorWord);
+const pendingWord={id:'pending',eng:'hold',kor:'잡다',learningStats:{needsUnassistedRecall:true}};
+const reasonPending=sandbox.memoryReasonLabel(pendingWord);
+assert(reasonConf.key==='confusion','confusion trace must surface as 뜻 혼동');
+assert(reasonOrtho.key==='orthographic','retrieval spelling weakness must surface as 철자 취약');
+assert(reasonPending.key==='recovery','pending unassisted recall must have highest recovery reason');
+
+sandbox.S.lexicon[confusionWord.lexicalId||sandbox.senseKey(confusionWord)]={memoryStrength:55,nextReviewPriority:88,reviewDecay:0};
+sandbox.S.lexicon[errorWord.lexicalId||sandbox.senseKey(errorWord)]={memoryStrength:48,nextReviewPriority:96,reviewDecay:0};
+const view=sandbox.memoryStatusView(errorWord);
+assert(view.reason.key==='orthographic'&&view.strength===48&&view.priority===96,'word status view must combine live reason with lexicon strength/priority');
 
 console.log('PASS: Hide & Seek Memory Trail behavior fixtures');
