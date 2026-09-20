@@ -120,6 +120,14 @@ for needle in [
     "recoveryStatus",
     "longTermDecay",
     "memorySignature:sig",
+    "hiddenWordStrategy",
+    "hiddenWordPriority",
+    "HIDDEN_WORD_STRATEGY",
+    "SEMANTIC_CONTRAST",
+    "CONFUSION_CONTRAST",
+    "SOUND_REACTIVATION",
+    "ORTHOGRAPHIC_SCAFFOLD",
+    "SPACED_RECALL",
 ]:
     if needle not in app:
         fail.append("MISSING_LEARNING_RESUME_OR_PROVENANCE:"+needle)
