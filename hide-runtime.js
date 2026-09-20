@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const HIDE_RUNTIME_VERSION = '2026.09.21-a';
+  const HIDE_RUNTIME_VERSION = '2026.09.21-b';
   const CAPTURE_STATE_KEY = 'hideSeekCaptureSession';
   const legacyBrandReplacements = [
     [/Word Detective Team/g, 'Hidden Word Trail'],
@@ -353,17 +353,22 @@
   async function analyzePage(page) {
     const blob = await dbGet(page.blobKey);
     if (!blob) throw new Error(`${page.displayOrder}번째 장의 임시 사진을 찾지 못했어요.`);
-    if (!navigator.onLine) throw new Error('OCR 분석은 온라인 연결이 필요해요.');
-    if (!runtimeApiKey) throw new Error('Gemini API Key가 필요해요.');
-
-    const img = await normalizedImageBase64(blob);
-    const seePrompt = `사진에 실제로 보이는 영어 단어와 한글 뜻만 행 순서대로 전사하세요. 원본에 없는 단어를 만들지 말고, 예문/힌트/정답 추측을 하지 마세요. 불확실하면 confidence를 low로 표시하세요. JSON만 출력: {"rows":[{"eng":"...","kor":"...","confidence":"high|medium|low"}]}`;
-    const see = await gemini(seePrompt, img.b64, img.mime);
-    const pairPrompt = `아래 SEE OCR 행만 사용해 영어 단어-한국어 뜻의 짝을 검증하세요. 원본에 없는 새 단어를 만들지 마세요. 헤더/번호/잡음은 제외하고 원래 순서를 유지하세요. 애매한 행은 low로 남기세요. JSON만 출력: {"rows":[{"eng":"...","kor":"...","confidence":"high|medium|low"}]}
-SEE:
-${JSON.stringify(see)}`;
-    const paired = await gemini(pairPrompt);
-    return (paired.rows || see.rows || []).filter(x => x.eng || x.kor).map((x, i) => {
+    const adapter = window.FamilyCaptureOcrAdapter;
+    if (!adapter?.analyzeVocabularyPage) throw new Error('공용 OCR 어댑터를 찾지 못했어요.');
+    const result = await adapter.analyzeVocabularyPage({
+      captureSessionId: ensureCaptureSession().captureSessionId,
+      page,
+      blob
+    });
+    if (!result?.ok) {
+      const reason = result?.reason || 'OCR_ANALYSIS_FAILED';
+      if (reason === 'HIDE_VOCABULARY_RESULT_UNSUPPORTED') {
+        throw new Error('공용 OCR 분석기가 아직 단어 프린트 형식을 지원하지 않아요. 원본은 그대로 보존했어요.');
+      }
+      if (reason === 'OCR_OFFLINE') throw new Error('OCR 분석은 온라인 연결이 필요해요.');
+      throw new Error(result?.message || `OCR 분석 실패 · ${reason}`);
+    }
+    return (result.rows || []).filter(x => x.eng || x.kor).map((x, i) => {
       const confidence = x.confidence || 'medium';
       return {
         ...normalizeWord({
@@ -376,7 +381,11 @@ ${JSON.stringify(see)}`;
         }, i),
         sourcePageId: page.pageId,
         sourcePageOrder: page.displayOrder,
-        reviewResolved: confidence !== 'low'
+        reviewResolved: confidence !== 'low',
+        ocrProvider: result.provider || null,
+        ocrModel: result.model || null,
+        ocrAnalysisVersion: result.analysis_version || null,
+        ocrAnalysisDomain: result.analysis_domain || 'HIDE_VOCABULARY'
       };
     });
   }
