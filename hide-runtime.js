@@ -71,6 +71,7 @@
       status: 'CAPTURING',
       createdAt: nowISO(),
       updatedAt: nowISO(),
+      inputActorRole: String(S.sharedLearningContext?.actor_role || S.sharedLearningContext?.role || 'UNSPECIFIED').toUpperCase(),
       pages: [],
       analysisBatches: [],
       lastRows: [],
@@ -145,6 +146,7 @@
       page.blobKey = blobKey;
       page.capturedAt = nowISO();
       page.source = source;
+      page.inputActorRole = session.inputActorRole || 'UNSPECIFIED';
       page.quality = quality;
       page.revision = Number(page.revision || 0) + 1;
       page.dirty = true;
@@ -157,6 +159,7 @@
         blobKey,
         capturedAt: nowISO(),
         source,
+        inputActorRole: session.inputActorRole || 'UNSPECIFIED',
         quality,
         revision: 1,
         dirty: true
