@@ -91,7 +91,14 @@ Primary input: Drag & Drop.
 Accessibility fallback: Tap Key → Tap Slot.
 Fake-key rule: fake letters never duplicate required blank characters in the current key set.
 Wrong key: immediate rejection; no slot occupation; `wrongAttempts` increments.
-Hint: progressive help state; hint-used success is not treated as fully secure.
+Hint: adaptive **Memory Trail** rather than a fixed reveal ladder.
+- Candidate cues: SCENE → MEANING → SOUND → SHAPE → PERSONAL ERROR TRACE → FRAGMENT → MINIMUM REVEAL.
+- The actual path is selected from the learner's prior meaning/spelling/timeout/hint history; irrelevant cues may be skipped.
+- Earlier cues must reactivate memory before exposing letters.
+- Personal error trace may reuse the learner's own recent wrong-key location as a cue.
+- Minimum Reveal is the final fallback and reveals only one necessary letter.
+- Every cue type and timestamp is recorded in `hintTrace`.
+- hint-used success is assisted recall, not secure recall.
 Timeout: separate TIMEOUT result.
 Pass: separate PASS result.
 Data: `CORRECT`, `SLOW_CORRECT`, `WRONG`, `PASS`, `TIMEOUT`, `HINT_USED` are recorded separately.
@@ -105,6 +112,7 @@ Entry: FINAL SEEK collected unstable target ids.
 Purpose: learn again before recall again.
 Interaction: meaning/spelling/TTS exposure for only the unstable pool.
 Rule: no immediate same-answer repetition directly after failure.
+Hint-dependent words set `needsUnassistedRecall=true`. During targeted FINAL SEEK, a later CORRECT/SLOW_CORRECT with no hint records `recoveredWithoutHintAt` and clears that flag.
 Next: targeted FINAL SEEK with only unstable targets.
 
 Compatibility note: legacy internal property names such as `retrace` may remain internally during migration.
