@@ -21,7 +21,7 @@ Child-facing experience:
 Core fantasy:
 - words hide like treasure,
 - the learner explores and finds them,
-- the Guide accompanies the learner,
+- the exploration crew member accompanies the learner,
 - missed words hide again and are found again,
 - success means retrieval, not arrest/capture.
 
@@ -39,7 +39,7 @@ Active world language:
 - 찾기 / Seek
 - 발견 / Find
 - 다시 찾기 / Seek Again
-- 길잡이 / Guide
+- 탐험대원
 
 Possible hiding environments may include forest, beach, cave, ruins, underground spaces, secret boxes, trees, rocks, maps, paths and other original island locations.
 
@@ -103,7 +103,7 @@ If a historical rule is needed to explain current behavior, trace it to the acti
 
 ## 4.1 SHARED ASSIGNMENT / RAPID CAPTURE INHERITANCE — HARD LOCK
 
-When Hide & Seek renders or calls the shared GUIDE assignment/camera intake, it inherits:
+When Hide & Seek captures a printed vocabulary handout, it inherits the family shared Capture/OCR transport contract. Ready & Set is the current family learning-status/base-camp owner; Hide must not fork an independent OCR transport when the shared adapter is available.
 
 `SHUTTER → IMMEDIATE TEMP SAVE → NEXT SHOT`
 
@@ -158,12 +158,36 @@ Do not present police/case terminology as the learner's progress model.
 ## 7. CONNECTED SESSION CONTRACT
 
 When called from Ready & Set:
+- receive the current input actor role when available (`PARENT` / `CHILD`),
+- treat the printed vocabulary intake as an `탐험 미션`,
+- report learning status back to Ready & Set after specialist progress/result changes,
 - inherit `session_id / goal_id / task_id / lap_id / return_target`,
 - app switch does not pause/reset the shared timer,
 - app switch does not end the current Lap,
 - Hide & Seek owns vocabulary-task results only,
 - return `COMPLETED / PARTIAL / BLOCKED / HELP_NEEDED` as task-level state,
 - never close the full Ready & Set session.
+
+
+## 7.1 READY & SET LEARNING STATUS REPORT — HARD LOCK
+
+Ready & Set is the family learning-status / Learning Master / Planner owner.
+Hide & Seek SHALL report specialist evidence rather than independently deciding the family's next study allocation.
+
+Minimum report projection:
+- explorationMissionId / explorationMissionTitle
+- inputActorRole when known (`PARENT` / `CHILD`)
+- validWordCount
+- Trail Mastery
+- Memory Strength summary
+- needsUnassistedRecallCount
+- reasonCounts: recovery / confusion / orthographic / latency / hint / decay / stable
+- topReviewPriorities
+- taskState
+- session_id / goal_id / task_id / lap_id
+
+Authority boundary:
+`HIDE LEARNING EVIDENCE != READY ASSIGNMENT FACT != READY PLANNER AUTHORITY`
 
 ## 8. SNAP & POP HANDOFF
 
@@ -174,18 +198,18 @@ Example:
 
 Do not create a duplicate independent long-term vocabulary registry inside Snap & Pop.
 
-## 9. GUIDE
+## 9. EXPLORATION CREW MEMBER
 
-Use the shared Guide persona and connection concept.
+Exploration crew identity, personality, intervention grammar and reaction rules are owned and coordinated by Snap & Pop `SNAP-EXPLORATION-CREW-MASTER`. Hide & Seek consumes those rules and SHALL NOT define an independent crew personality system.
 
-Guide may give a minimal clue or short support, but must not reveal every answer immediately.
+The active exploration crew member may give a minimal clue or short support, but must not reveal every answer immediately.
 
 Clue use is a learning event, not a punishment.
 
-Preferred Guide voice:
-- 탐험 친구
-- 길잡이
+Preferred exploration crew behavior:
+- 탐험대원
 - 단서를 건네는 동료
+- Snap & Pop 탐험대 규칙을 따르는 동행
 
 Do not use police/detective-partner framing.
 
