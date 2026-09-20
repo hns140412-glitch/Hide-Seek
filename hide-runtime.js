@@ -714,6 +714,7 @@
   window.HideCaptureRuntime = Object.freeze({
     version: HIDE_RUNTIME_VERSION,
     openRapidCamera,
+    addFiles,
     renderCaptureHub,
     analyzeDirtyPages,
     migrateLegacyState: () => {
