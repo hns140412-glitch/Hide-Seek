@@ -287,35 +287,50 @@ assisted recall을 unassisted recall로 바꾸는 회복 단계.
 
 ---
 
-# 7. 현재 코드에서 확인된 교정 대상
+# 7. 현재 코드 반영 상태 — 2026-09-20 branch readback
 
-1. FIRST FIND `아직 헷갈려`가 `wrong++`으로 처리됨.
-   - FAIL: UNCERTAINTY ≠ WRONG.
+1. FIRST FIND uncertainty / exposure trace
+   - IMPLEMENTED: `EXPOSURE`와 `LEARNER_UNSURE`를 분리 저장.
+   - `UNSURE ≠ WRONG` 유지.
+   - 실제 FIRST FIND에 표시된 sceneText / meaningText를 provenance와 함께 보존.
 
-2. CONNECTION 오연결이 단순 wrong 증가로 축약됨.
-   - confusion pair trace 필요.
+2. CONNECTION confusion trace
+   - IMPLEMENTED: MISMATCH 시 `confusedWithId / confusedWithEng / confusedWithKor / sourceSide` 보존.
+   - CONNECTION MISMATCH는 FINAL RETRIEVAL WRONG으로 승격하지 않음.
 
-3. MEANING CLUE가 wrong 선택 상대를 충분히 보존하지 않음.
-   - selectedChoice/confusedWith 필요.
+3. MEANING selected-choice trace
+   - IMPLEMENTED: result / elapsedMs / selectedId / selectedEng / selectedKor / direction 보존.
+   - recognition wrong은 별도 `meaningWrong` current-sheet signal로 유지하고 spelling lifetime wrong에 직접 합치지 않음.
 
-4. SCENE cue가 실제 FIRST FIND exposure 저장본이 아니라 예문에서 사후 생성됨.
-   - GENERATED_STRUCTURE로 강등하고 실제 scene exposure provenance 필요.
+4. SCENE cue provenance
+   - IMPLEMENTED: 실제 FIRST FIND에서 보여준 sceneText가 있을 때만 `PAST_EXPOSURE` scene cue 사용.
+   - 실제 exposure가 없으면 과거 기억인 것처럼 SCENE을 생성하지 않음.
 
-5. ERROR_TRACE가 현재 Final Seek session 중심.
-   - word-level/session-level trace history로 승격 필요.
+5. ERROR_TRACE persistence
+   - IMPLEMENTED: FINAL SEEK retrievalTrace에 errorTrace를 word-level history로 보존.
+   - Memory Trail은 현재 attempt 오류가 없을 때도 실제 과거 retrieval error를 재사용 가능.
 
-6. Memory Trail plan이 FIRST FIND unsure / CONNECTION confusion을 아직 활용하지 못함.
+6. Adaptive Memory Trail routing
+   - IMPLEMENTED: learner unsure / meaning weakness / confusion pair / slow recall / timeout / spelling error / hint dependency에 따라 경로를 달리 구성.
+   - `CONFUSION_TRACE` 및 실제 `ERROR_TRACE` 재사용 포함.
 
-7. SEEK AGAIN이 "후속" 재회상은 하지만 spacingDistance/interveningItemCount 기준이 명시되지 않음.
-   - immediate repeat 방지 증명 필요.
+7. SEEK AGAIN spacing evidence
+   - IMPLEMENTED: `interveningItemCount / elapsedSinceAssistMs / spacedEvidence` 기록.
+   - 무힌트 성공이라도 spacing evidence가 없으면 `immediateRecallAt`로만 기록하고 `recoveredWithoutHintAt`로 승격하지 않음.
+   - current-sheet Trail Mastery와 long-term recovery claim은 분리.
 
-8. cumulative lexicon은 동일 evidence 재동기화 시 idempotency를 다시 검증해야 함.
+8. cumulative lexicon idempotency
+   - IMPLEMENTED STRUCTURE: sourceEvidence per sheet + legacyBaseline 기반 재동기화 구조 유지.
+   - BEHAVIOR FIXTURE는 추가 검증 필요.
 
-9. `HINT_USED` 하나로 도움의 종류/강도를 축약하면 안 됨.
-   - hintTrace/cueCost 기반 해석 필요.
+9. Assistance detail
+   - IMPLEMENTED: `hintTypes / hintTrace / cueCost` 보존.
+   - 단일 `HINT_USED` 결과만으로 도움 강도를 해석하지 않음.
 
-10. 현재 static CI는 trace semantics의 실제 행동을 증명하지 못함.
-    - fixture 기반 behavior validation 필요.
+10. behavior-level validation
+    - OPEN: 현재 CI는 contract/static guard 중심.
+    - 다음 단계는 fixture 기반 trace behavior validation.
+    - 특히 idempotent aggregation, adaptive route selection, spacing recovery semantics를 실행형 fixture로 검증해야 함.
 
 ---
 
