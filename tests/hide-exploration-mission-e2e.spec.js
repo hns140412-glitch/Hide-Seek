@@ -96,8 +96,7 @@ test('printed handout becomes Hide exploration mission and enters FIRST FIND',as
   expect(snapshot.latestOutbox?.payload?.validWordCount).toBe(2);
   expect(snapshot.latestOutbox?.payload?.memorySummary).toBeTruthy();
 
-  await page.getByRole('button',{name:'학습'}).click();
-  await page.getByRole('button',{name:'FIRST FIND'}).click();
+  await page.getByRole('button',{name:'탐험 시작'}).click();
   await expect(page.getByText('FIRST FIND')).toBeVisible();
   await expect(page.getByText('benefit')).toBeVisible();
 });
