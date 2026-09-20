@@ -48,15 +48,13 @@ test('printed handout becomes Hide exploration mission and enters FIRST FIND',as
 
   await expect(page.getByRole('heading',{name:'새 탐험 미션',exact:true})).toBeVisible();
 
-  const file=Buffer.from('fake-image-content');
-  await page.locator('#sheetLibraryInput').setInputFiles({
-    name:'vocab.jpg',
-    mimeType:'image/jpeg',
-    buffer:file
+  await page.evaluate(async()=>{
+    const blob=new Blob(['fake-image-content'],{type:'image/jpeg'});
+    const file=new File([blob],'vocab.jpg',{type:'image/jpeg'});
+    await window.HideCaptureRuntime.addFiles([file],'library');
   });
 
   await page.waitForFunction(()=>window.HideCaptureRuntime?.currentSession?.()?.pages?.length===1);
-  await page.waitForTimeout(50);
   await expect(page.getByRole('heading',{name:'숨은 단어 촬영',exact:true})).toBeVisible();
   await page.getByRole('button',{name:'지금 분석'}).click();
 
@@ -90,7 +88,7 @@ test('printed handout becomes Hide exploration mission and enters FIRST FIND',as
   expect(snapshot.validCount).toBe(2);
 
   await page.getByRole('button',{name:'학습'}).click();
-  await page.getByRole('button',{name:/학습 시작|이어하기/}).click();
+  await page.getByRole('button',{name:'FIRST FIND'}).click();
   await expect(page.getByText('FIRST FIND')).toBeVisible();
   await expect(page.getByText('benefit')).toBeVisible();
 });
