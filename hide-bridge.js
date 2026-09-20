@@ -3,7 +3,7 @@
 
   const BRIDGE_VERSION = '2026.09.20-d';
   const EVENT_LIMIT = 120;
-  const SHARED_PARAM_NAMES = ['session_id', 'goal_id', 'task_id', 'lap_id', 'return_target', 'snap_target', 'child_id'];
+  const SHARED_PARAM_NAMES = ['session_id', 'goal_id', 'task_id', 'lap_id', 'return_target', 'snap_target', 'child_id', 'actor_role'];
   const legacyTerms = [
     [/Word Detective Team/g, 'Hidden Word Trail'],
     [/사건 파일/g, '단어 탐험'],
@@ -88,6 +88,9 @@
     try { sh = sheet(); } catch {}
     return {
       activeSheetId: S.activeSheetId || null,
+      explorationMissionId: S.activeSheetId || null,
+      explorationMissionTitle: sh?.title || null,
+      inputActorRole: S.hideSeekCaptureSession?.inputActorRole || getContext().actor_role || null,
       sheetStatus: sh?.status || null,
       trailMastery: Number(sh?.caseMastery || 0),
       legacyCaseMastery: Number(sh?.caseMastery || 0),
@@ -128,6 +131,7 @@
       task_id: context.task_id || null,
       lap_id: context.lap_id || null,
       child_id: context.child_id || null,
+      actor_role: context.actor_role || null,
       payload
     };
 
