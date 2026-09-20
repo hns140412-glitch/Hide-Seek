@@ -183,6 +183,9 @@ for needle in [
     "topReviewPriorities",
     "memory_summary",
     "safeReturnUrl(taskState, event)",
+    "specialist_report",
+    "explorationMissionId",
+    "inputActorRole",
 ]:
     if needle not in bridge:
         fail.append("MISSING_SHARED_SESSION_CONTRACT:"+needle)
@@ -262,7 +265,7 @@ for needle in [
 sw=read("sw.js")
 
 for needle in [
-    'const CACHE="hide-seek-capture-v08"',
+    'const CACHE="hide-seek-capture-v09"',
     '"./hide-family-ocr-adapter.js"',
     '"./hide-runtime.js"',
     '"./hide-runtime.css"',
@@ -296,7 +299,7 @@ for needle in [
         fail.append("RUNTIME_VERSION_CONTRACT:"+needle)
 
 for needle in [
-    "const BRIDGE_VERSION = '2026.09.21-a'",
+    "const BRIDGE_VERSION = '2026.09.21-b'",
 ]:
     if needle not in bridge:
         fail.append("BRIDGE_VERSION_CONTRACT:"+needle)
