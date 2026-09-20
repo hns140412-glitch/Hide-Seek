@@ -37,6 +37,12 @@ for needle in [
         fail.append("MISSING_CAPTURE_OR_REVIEW_CONTRACT:"+needle)
 
 for needle in [
+    "meaningStartedAt",
+    "elapsedMs",
+    "optionLabel",
+    "function connectionSet",
+    "baseRounds",
+    "hasWeak",
     "memoryEvents",
     "shownBySheet",
     "lastLexicalId",
