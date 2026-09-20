@@ -114,3 +114,5 @@ button:focus-visible,input:focus-visible{outline:3px solid rgba(62,126,87,.35);o
  .hide-review-row .badge,.hide-review-row .hide-confirm-row{grid-column:2/4}
  .hide-review-row .row-delete{grid-column:4;grid-row:1}
 }
+
+.slot.hint-target{border-color:#dfb75f;background:#fff8df;box-shadow:0 0 0 3px rgba(223,183,95,.18)}
