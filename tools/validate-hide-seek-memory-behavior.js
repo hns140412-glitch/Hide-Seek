@@ -27,7 +27,7 @@ const names=[
   'senseKey','lexiconEntry','traceList','addWordTrace','weakScore',
   'memoryWeaknessProfile','memorySceneCue','memoryChunks',
   'lastConfusionTrace','lastPersonalErrorTrace','hintCueCost',
-  'deriveMemorySignature','buildMemoryLadder','hiddenWordStrategy','hiddenWordPriority','syncSheetToLexicon','recallSpacingEvidence'
+  'deriveMemorySignature','buildMemoryLadder','hiddenWordStrategy','hiddenWordPriority','hiddenWordActivityModel','syncSheetToLexicon','recallSpacingEvidence'
 ];
 const sandbox={
   console,Date,Math,Set,Number,Object,Array,String,
@@ -88,6 +88,14 @@ assert(sandbox.hiddenWordPriority(errorWord)>0,'adaptive hidden word priority mu
 
 const spacingWord={id:'space',eng:'remember',kor:'기억하다',wrong:0,pass:0,hint:0,learningStats:{needsUnassistedRecall:true}};
 assert(sandbox.hiddenWordStrategy(spacingWord).type==='SPACED_RECALL','pending unassisted recall must route to spaced recall');
+const semanticModel=sandbox.hiddenWordActivityModel(sceneWord,sceneStrategy);
+const confusionModel=sandbox.hiddenWordActivityModel(confusionWord,confusionStrategy);
+const orthoModel=sandbox.hiddenWordActivityModel(errorWord,errorStrategy);
+const spacingModel=sandbox.hiddenWordActivityModel(spacingWord,sandbox.hiddenWordStrategy(spacingWord));
+assert(semanticModel.mode==='CHOICE','semantic strategy must render choice interaction');
+assert(confusionModel.mode==='CHOICE'&&confusionModel.contrast,'confusion strategy must preserve real contrast cue');
+assert(orthoModel.mode==='SPELL'&&orthoModel.cue==='SHAPE','orthographic strategy must render spelling scaffold');
+assert(spacingModel.mode==='SPELL'&&spacingModel.cue==='UNASSISTED','spaced recall must render unassisted spelling interaction');
 
 const scene=sandbox.memorySceneCue(sceneWord);
 assert(scene&&scene.source==='PAST_EXPOSURE'&&scene.text.includes('_____'),'SCENE cue must come from actual past exposure');
