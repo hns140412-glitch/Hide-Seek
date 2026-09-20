@@ -249,6 +249,8 @@ for needle in [
     "sourceEvidence",
     "legacyBaseline",
     "event:'EXPOSURE'",
+    "sceneText:w.example||''",
+    "source:'PAST_EXPOSURE'",
     "event:'LEARNER_UNSURE'",
     "result:'MISMATCH'",
     "sourceSide:selectedTile.dataset.side",
