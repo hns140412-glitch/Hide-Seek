@@ -25,7 +25,7 @@ function extractFunction(name){
 
 const names=[
   'senseKey','lexiconEntry','traceList','addWordTrace','weakScore',
-  'memoryWeaknessProfile','memorySceneCue','memoryChunks',
+  'memoryWeaknessProfile','memorySceneCue','memoryChunks','memoryShapeCue',
   'lastConfusionTrace','lastPersonalErrorTrace','hintCueCost',
   'deriveMemorySignature','buildMemoryLadder','hiddenWordStrategy','hiddenWordPriority','hiddenWordActivityModel','syncSheetToLexicon','recallSpacingEvidence'
 ];
