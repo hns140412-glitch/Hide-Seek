@@ -37,6 +37,12 @@ for needle in [
         fail.append("MISSING_CAPTURE_OR_REVIEW_CONTRACT:"+needle)
 
 for needle in [
+    "senseKey",
+    "lexiconEntry",
+    "syncSheetToLexicon",
+    "selectPastMemoryEvent",
+    "nextReviewPriority",
+    "canonicalSpelling",
     "SLOW_CORRECT",
     "learningStats?.timeout",
     "learningStats?.slowCorrect",
@@ -63,6 +69,7 @@ for needle in [
     "finalSeekAttemptCount",
     "seekAgainRemainingCount",
     "learningProvenance",
+    "cumulativeLexiconCount",
 ]:
     if needle not in bridge:
         fail.append("MISSING_SHARED_SESSION_CONTRACT:"+needle)
