@@ -199,6 +199,7 @@
       if (context.goal_id) url.searchParams.set('goal_id', context.goal_id);
       if (context.task_id) url.searchParams.set('task_id', context.task_id);
       if (context.lap_id) url.searchParams.set('lap_id', context.lap_id);
+      if (context.return_target) url.searchParams.set('return_target', context.return_target);
       if (context.child_id) url.searchParams.set('child_id', context.child_id);
       url.searchParams.set('from_app', 'hide-seek');
       url.searchParams.set('word', event.payload.word);
