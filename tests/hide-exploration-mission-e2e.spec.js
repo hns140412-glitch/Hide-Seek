@@ -55,7 +55,9 @@ test('printed handout becomes Hide exploration mission and enters FIRST FIND',as
     buffer:file
   });
 
-  await expect(page.getByText('숨은 단어 촬영')).toBeVisible();
+  await page.waitForFunction(()=>window.HideCaptureRuntime?.currentSession?.()?.pages?.length===1);
+  await page.waitForTimeout(50);
+  await expect(page.getByRole('heading',{name:'숨은 단어 촬영',exact:true})).toBeVisible();
   await page.getByRole('button',{name:'지금 분석'}).click();
 
   await expect(page.getByText('단어 결과 확인')).toBeVisible();
