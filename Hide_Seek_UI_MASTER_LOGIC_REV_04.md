@@ -112,7 +112,15 @@ When Hide & Seek captures a printed vocabulary handout, it inherits the family s
 
 A targeted retake SHALL preserve unaffected valid photos/results and reprocess only affected evidence where safe.
 
-Hide & Seek continues to own vocabulary-specific OCR/retrieval semantics; it does not absorb MAIN assignment authority.
+Hide & Seek continues to own vocabulary-specific interpretation/retrieval semantics; it does not absorb MAIN assignment authority.
+
+Family OCR transport contract:
+- endpoint: `/api/capture/analyze`
+- Ready default domain: `READY_ASSIGNMENT_FACT`
+- Hide domain: `HIDE_VOCABULARY`
+- Hide frontend SHALL NOT require a private Gemini API key or direct provider client.
+- assignment drafts MUST NOT be accepted as Hide vocabulary rows.
+- unsupported Hide-domain server response = explicit fail-closed, original capture preserved.
 
 ## 4.2 OCR REVIEW PROVENANCE — HARD LOCK
 
