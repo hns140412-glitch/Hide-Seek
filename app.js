@@ -40,7 +40,7 @@ function migrate(raw){
  s.profile=Object.assign({},DEFAULT_STATE.profile,raw?.profile||{});const legacyGuide=raw?.guide||null;s.crewMember=Object.assign({},DEFAULT_CREW_MEMBER,raw?.crewMember||{});if(!raw?.crewMember&&legacyGuide)s.crewMember={explorerId:legacyGuide.id||"",name:legacyGuide.name||"탐험대원",voice:legacyGuide.voice!==false,source:"LEGACY_GUIDE_MIGRATION"};delete s.guide;s.settings=Object.assign({},DEFAULT_STATE.settings,raw?.settings||{});
  s.learning=Object.assign({},DEFAULT_STATE.learning,raw?.learning||raw?.study||{});s.codeRed=Object.assign({},DEFAULT_STATE.codeRed,raw?.codeRed||{});s.memory=raw?.memory||{};s.lexicon=raw?.lexicon||{};s.memoryEvents=Object.assign({},DEFAULT_STATE.memoryEvents,raw?.memoryEvents||{});s.memoryEvents.shownBySheet=s.memoryEvents.shownBySheet||{};
  if(!Array.isArray(s.sheets))s.sheets=[];
- s.sheets=s.sheets.map((sh,si)=>({...sh,sheetId:sh.sheetId||`sheet-${si}`,updatedAt:sh.updatedAt||sh.createdAt||nowISO(),status:sh.status||"READY",caseMastery:Number(sh.caseMastery||0),items:(sh.items||[]).map(normalizeWord),recognitionMeta:sh.recognitionMeta||{},learningProvenance:sh.learningProvenance||{}}));
+ s.sheets=s.sheets.map((sh,si)=>({...sh,sheetId:sh.sheetId||`sheet-${si}`,updatedAt:sh.updatedAt||sh.createdAt||nowISO(),status:sh.status||"READY",caseMastery:Number(sh.caseMastery||0),items:(sh.items||[]).map(normalizeWord),recognitionMeta:sh.recognitionMeta||{},learningProvenance:sh.learningProvenance||{},runtimeState:sh.runtimeState||null}));
  s.sheets=s.sheets.filter(sh=>!(sh.sheetId==="sample"&&sh.sourceType==="sample"&&!(sh.recognitionMeta&&Object.keys(sh.recognitionMeta).length)));
  if(!s.sheets.find(x=>x.sheetId===s.activeSheetId))s.activeSheetId=s.sheets[0]?.sheetId||"";
  return s;
@@ -72,8 +72,20 @@ function load(){
  }catch{return clone(DEFAULT_STATE)}
 }
 let S=load(),currentTab="home",viewStack=[],selectedProfileFile=null,selectedTile=null,codeSession=null,codeTimer=null,selectedKey=null,toastTimer=null;
-function save(){S.schemaVersion=SCHEMA_VERSION;S.appRevision=APP_REV;localStorage.setItem(STORAGE_KEY,JSON.stringify(S))}
 function sheet(){return S.sheets.find(x=>x.sheetId===S.activeSheetId)||S.sheets[0]||null}
+function persistMissionRuntime(){
+ const sh=sheet();if(!sh)return;
+ sh.runtimeState={learning:clone(S.learning),codeRed:clone(S.codeRed),savedAt:nowISO()}
+}
+function save(){persistMissionRuntime();S.schemaVersion=SCHEMA_VERSION;S.appRevision=APP_REV;localStorage.setItem(STORAGE_KEY,JSON.stringify(S))}
+function activateMission(sheetId,{reset=false}={}){
+ const current=sheet();if(current)current.runtimeState={learning:clone(S.learning),codeRed:clone(S.codeRed),savedAt:nowISO()};
+ const target=S.sheets.find(x=>x.sheetId===sheetId);if(!target)return false;
+ S.activeSheetId=target.sheetId;
+ if(reset||!target.runtimeState){S.learning=clone(DEFAULT_STATE.learning);S.codeRed=clone(DEFAULT_STATE.codeRed)}
+ else{S.learning=Object.assign(clone(DEFAULT_STATE.learning),clone(target.runtimeState.learning||{}));S.codeRed=Object.assign(clone(DEFAULT_STATE.codeRed),clone(target.runtimeState.codeRed||{}))}
+ save();return true
+}
 function validWords(){return (sheet()?.items||[]).filter(w=>w.eng&&w.kor&&!w.needsReview)}
 function allWords(){return sheet()?.items||[]}
 function esc(v=""){return String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
@@ -200,11 +212,11 @@ function renderMissionDetail(sheetId){
  const valid=(sh.items||[]).filter(w=>w.eng&&w.kor&&!w.needsReview).length,unresolved=(sh.items||[]).filter(w=>w.needsReview).length,meta=sh.recognitionMeta||{},hasSourcePages=Array.isArray(meta.sourcePages)&&meta.sourcePages.length>0,actor=meta.inputActorRole||'UNSPECIFIED';
  $('#view').innerHTML=`<section class="card"><div class="hero-kicker"><span>EXPLORATION MISSION</span><span>${stateLabel(sh.status)}</span></div><label for="missionTitle">탐험 미션 이름</label><input id="missionTitle" class="input" value="${esc(sh.title)}" maxlength="60"><div class="section-title"><h2>미션 정보</h2><span>${valid}단어</span></div><div class="metric"><span>입력</span><b>${esc(actor)}</b></div><div class="metric"><span>원본</span><b>${Number(sh.sourceCount||meta.sourcePages?.length||0)}장</b></div><div class="metric"><span>확인 필요</span><b>${unresolved}개</b></div><div class="metric"><span>Trail Mastery</span><b>${Number(sh.caseMastery||0)}%</b></div><div class="btn-row" style="margin-top:14px"><button class="btn primary" id="missionStart" type="button">${['LEARNING','CODE_RED_READY','RETRACE_REQUIRED'].includes(sh.status)?'학습 이어하기':'학습 시작'}</button><button class="btn secondary" id="missionWords" type="button">단어 수정</button></div><div class="btn-row" style="margin-top:8px"><button class="btn secondary" id="missionReanalyze" type="button" ${hasSourcePages?'':'disabled'}>원본 다시 분석</button><button class="btn secondary" id="missionArchive" type="button">${sh.status==='ARCHIVED'?'보관 해제':'보관'}</button></div><button class="btn secondary full" id="missionSaveTitle" style="margin-top:8px" type="button">이름 저장</button><button class="btn danger full" id="missionDelete" style="margin-top:8px" type="button">탐험 미션 삭제</button>${hasSourcePages?'':'<p style="margin-top:10px">이 미션은 이전 버전에서 만들어져 원본 사진 재분석 정보가 없어요. 단어 수정은 계속 사용할 수 있어요.</p>'}</section>`;
  $('#missionSaveTitle').onclick=()=>{const title=$('#missionTitle').value.trim();if(!title)return toast('탐험 미션 이름을 입력해 주세요.');sh.title=title;sh.updatedAt=nowISO();save();toast('탐험 미션 이름을 저장했어요.')};
- $('#missionStart').onclick=()=>{if(sh.status==='ARCHIVED')return toast('보관을 해제한 뒤 학습할 수 있어요.');S.activeSheetId=sh.sheetId;save();currentTab='study';viewStack=[];render();setTimeout(()=>{if(['LEARNING','CODE_RED_READY','RETRACE_REQUIRED'].includes(sh.status))resumeCurrentLearning();},0)};
+ $('#missionStart').onclick=()=>{if(sh.status==='ARCHIVED')return toast('보관을 해제한 뒤 학습할 수 있어요.');activateMission(sh.sheetId);currentTab='study';viewStack=[];render();setTimeout(()=>{if(['LEARNING','CODE_RED_READY','RETRACE_REQUIRED'].includes(sh.status))resumeCurrentLearning();},0)};
  $('#missionWords').onclick=()=>{S.activeSheetId=sh.sheetId;save();renderOCRReview(sh.items||[])};
  $('#missionReanalyze').onclick=()=>{const result=window.HideCaptureRuntime?.reopenCommittedMission?.(sh.sheetId);if(!result?.ok)toast(result?.reason==='SOURCE_PAGES_UNAVAILABLE'?'원본 사진 정보가 없는 미션이에요.':'원본 사진을 다시 불러오지 못했어요.')};
  $('#missionArchive').onclick=()=>{sh.status=sh.status==='ARCHIVED'?'READY':'ARCHIVED';sh.updatedAt=nowISO();save();renderMissionDetail(sh.sheetId)};
- $('#missionDelete').onclick=async e=>{if(e.currentTarget.dataset.armed!=='1'){e.currentTarget.dataset.armed='1';e.currentTarget.textContent='한 번 더 눌러 삭제';return}await window.HideCaptureRuntime?.deleteMissionAssets?.(sh.sheetId);const wasActive=S.activeSheetId===sh.sheetId;S.sheets=S.sheets.filter(x=>x.sheetId!==sh.sheetId);if(wasActive){S.activeSheetId=S.sheets[0]?.sheetId||'';S.learning=clone(DEFAULT_STATE.learning);S.codeRed=clone(DEFAULT_STATE.codeRed)}save();toast('탐험 미션과 원본 사진을 삭제했어요.');currentTab='sheets';viewStack=[];render()};
+ $('#missionDelete').onclick=async e=>{if(e.currentTarget.dataset.armed!=='1'){e.currentTarget.dataset.armed='1';e.currentTarget.textContent='한 번 더 눌러 삭제';return}await window.HideCaptureRuntime?.deleteMissionAssets?.(sh.sheetId);const wasActive=S.activeSheetId===sh.sheetId;S.sheets=S.sheets.filter(x=>x.sheetId!==sh.sheetId);if(wasActive){const next=S.sheets[0];if(next){S.activeSheetId=next.sheetId;S.learning=Object.assign(clone(DEFAULT_STATE.learning),clone(next.runtimeState?.learning||{}));S.codeRed=Object.assign(clone(DEFAULT_STATE.codeRed),clone(next.runtimeState?.codeRed||{}))}else{S.activeSheetId='';S.learning=clone(DEFAULT_STATE.learning);S.codeRed=clone(DEFAULT_STATE.codeRed)}}save();toast('탐험 미션과 원본 사진을 삭제했어요.');currentTab='sheets';viewStack=[];render()};
  setPartner('탐험 미션의 원본과 단어, 학습 상태를 여기서 관리할 수 있어.','note')
 }
 
@@ -214,9 +226,9 @@ function renderSheets(){
  $('#view').innerHTML=`<div class="section-title"><h2>탐험 미션</h2><span>Print Capture</span></div><section class="primary-intake"><div><h2>새 탐험 미션 만들기</h2><p>프린트를 촬영하면 원본을 보존한 채 단어와 뜻을 확인하고 학습 미션으로 저장해요.</p><div class="btn-row" style="margin-top:10px"><button class="btn primary" id="cameraSheet" type="button">카메라로 찍기</button><button class="btn secondary" id="librarySheet" type="button">사진 보관함</button></div></div><img class="intake-illustration" src="${crewAsset('focus')}" alt=""></section><div class="section-title"><h2>진행 중 미션</h2><span>${active.length}개</span></div>${active.length?active.map(card).join(''):'<section class="card"><p>아직 탐험 미션이 없어요. 프린트를 촬영해 첫 미션을 만들어보세요.</p></section>'}${archived.length?`<div class="section-title"><h2>보관된 미션</h2><span>${archived.length}개</span></div>${archived.map(card).join('')}`:''}`;
  const capture=S.hideSeekCaptureSession;if(capture?.status==="CAPTURING"&&capture.pages?.length){const resume=document.createElement("section");resume.className="card tint-sky";resume.style.marginBottom="9px";resume.innerHTML=`<div class="hero-kicker"><span>RAPID CAPTURE</span><span>${capture.pages.length}장</span></div><h3>${capture.editingSheetId?'기존 미션 재분석':'진행 중인 촬영'}</h3><p>화면을 이동해도 임시저장된 사진은 유지됩니다.</p><button class="btn primary full" id="resumeCapture" style="margin-top:10px" type="button">촬영 이어가기</button>`;$("#view").prepend(resume);$("#resumeCapture").onclick=()=>window.HideCaptureRuntime?.renderCaptureHub()}
  $('#cameraSheet').onclick=()=>$('#sheetCameraInput').click();$('#librarySheet').onclick=()=>$('#sheetLibraryInput').click();
- $$('.start-sheet').forEach(b=>b.onclick=()=>{const sh=S.sheets.find(x=>x.sheetId===b.dataset.id);if(!sh||sh.status==='ARCHIVED')return toast('보관을 해제한 뒤 학습할 수 있어요.');S.activeSheetId=sh.sheetId;save();currentTab='study';render();if(['LEARNING','CODE_RED_READY','RETRACE_REQUIRED'].includes(sh.status))setTimeout(resumeCurrentLearning,0)});
+ $$('.start-sheet').forEach(b=>b.onclick=()=>{const sh=S.sheets.find(x=>x.sheetId===b.dataset.id);if(!sh||sh.status==='ARCHIVED')return toast('보관을 해제한 뒤 학습할 수 있어요.');activateMission(sh.sheetId);currentTab='study';render();if(['LEARNING','CODE_RED_READY','RETRACE_REQUIRED'].includes(sh.status))setTimeout(resumeCurrentLearning,0)});
  $$('.detail-sheet').forEach(b=>b.onclick=()=>renderMissionDetail(b.dataset.id));
- $$('.review-sheet').forEach(b=>b.onclick=()=>{S.activeSheetId=b.dataset.id;save();renderOCRReview(allWords())});
+ $$('.review-sheet').forEach(b=>b.onclick=()=>{activateMission(b.dataset.id);renderOCRReview(allWords())});
  setPartner('탐험 미션을 고르고, 필요하면 원본부터 다시 확인할 수 있어.','note')
 }
 function renderOCRReview(rows){
