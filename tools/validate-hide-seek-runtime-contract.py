@@ -58,6 +58,16 @@ for needle in [
         fail.append("MISSING_CAPTURE_OR_REVIEW_CONTRACT:"+needle)
 
 for needle in [
+    "memoryWeaknessProfile",
+    "buildMemoryLadder",
+    "memorySceneCue",
+    "memoryShapeCue",
+    "memoryFragmentCue",
+    "hintPlan:buildMemoryLadder(w)",
+    "hintTrace:[]",
+    "errorTrace:[]",
+    "needsUnassistedRecall",
+    "recoveredWithoutHintAt",
     "CONNECTION TRAIL",
     "meaningStartedAt",
     "elapsedMs",
@@ -105,6 +115,13 @@ for needle in [
 ]:
     if needle not in bridge:
         fail.append("MISSING_SHARED_SESSION_CONTRACT:"+needle)
+
+for legacy in [
+    "필요한 열쇠 하나가 살짝 반응했어.",
+    "정답 열쇠를 조금 더 눈여겨봐.",
+]:
+    if legacy in app:
+        fail.append("RIGID_HINT_LADDER_REGRESSION:"+legacy)
 
 for needle in [
     ".hide-camera-overlay",
