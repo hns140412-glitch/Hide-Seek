@@ -175,10 +175,9 @@ function renderOCRReview(rows,isDraft=false,message=""){
   if(!out.length)return toast("단어와 뜻을 한 개 이상 입력해 주세요.");
   const unresolved=out.filter(x=>x.needsReview).length,newId=isDraft?`sheet-${Date.now()}`:sheet().sheetId,capturePages=S.ocrDraft?.pageIds?.length||1,newSheet={sheetId:newId,title:isDraft?`${new Date().toLocaleDateString("ko-KR")} 시험지`:sheet().title,createdAt:isDraft?nowISO():sheet().createdAt,updatedAt:nowISO(),testDate:"",sourceType:isDraft?(S.ocrDraft?.captureSessionId?"capture-session":"photo"):"existing",sourceCount:isDraft?capturePages:(sheet().sourceCount||0),status:unresolved?"REVIEW_REQUIRED":"READY",caseMastery:0,items:out,recognitionMeta:{reviewedAt:nowISO(),count:out.length,unresolved,captureSessionId:S.ocrDraft?.captureSessionId||"",batchId:S.ocrDraft?.batchId||""}};
   if(isDraft){S.sheets.unshift(newSheet);S.activeSheetId=newId}else Object.assign(sheet(),newSheet);
-  if(S.captureSession&&S.ocrDraft?.captureSessionId===S.captureSession.sessionId){S.captureSession.lastCommittedAt=nowISO();S.captureSession.updatedAt=nowISO()}
   S.ocrDraft=null;S.learning=clone(DEFAULT_STATE.learning);S.codeRed=clone(DEFAULT_STATE.codeRed);save();
   toast(unresolved?`저장 완료 · 확인 필요 ${unresolved}개는 학습에서 제외돼요.`:"시험지 저장 완료");
-  if(S.captureSession?.status==="OPEN"){viewStack=[];renderCaptureSession("분석 결과를 저장했어요. 촬영 세션은 계속 열려 있습니다.")}else{currentTab="study";viewStack=[];render()}
+  currentTab="study";viewStack=[];render()
  };
  setPartner("확실한 건 두고, 애매한 행만 같이 확인해보자.","note")
 }
