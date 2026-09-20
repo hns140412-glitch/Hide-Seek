@@ -168,6 +168,9 @@ for needle in [
     "lap_id",
     "child_id",
     "actor_role",
+    "crew_member_id",
+    "crew_member_name",
+    "crew_rules_version",
     "explorationMissionId",
     "explorationMissionTitle",
     "inputActorRole",
@@ -270,7 +273,7 @@ for needle in [
 sw=read("sw.js")
 
 for needle in [
-    'const CACHE="hide-seek-capture-v09"',
+    'const CACHE="hide-seek-capture-v10"',
     '"./hide-family-ocr-adapter.js"',
     '"./hide-runtime.js"',
     '"./hide-runtime.css"',
