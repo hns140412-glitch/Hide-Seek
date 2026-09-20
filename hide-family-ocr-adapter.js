@@ -17,6 +17,8 @@
         eng:String(row?.eng||'').trim(),
         kor:String(row?.kor||'').trim(),
         confidence:normalizeConfidence(row?.confidence),
+        evidenceItemId:String(row?.evidence_item_id||'').trim()||null,
+        warnings:Array.isArray(row?.warnings)?row.warnings.map(String):[],
         sourceRowIndex:index
       }))
       .filter(row=>row.eng||row.kor);
