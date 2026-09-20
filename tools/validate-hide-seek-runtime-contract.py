@@ -108,6 +108,18 @@ for needle in [
     "elapsedSinceAssistMs",
     "spacedEvidence",
     "immediateRecallAt",
+    "deriveMemorySignature",
+    "semanticWeakness",
+    "recognitionWeakness",
+    "phonologicalWeakness",
+    "orthographicWeakness",
+    "confusionPattern",
+    "slowRecall",
+    "timeoutRisk",
+    "hintDependency",
+    "recoveryStatus",
+    "longTermDecay",
+    "memorySignature:sig",
 ]:
     if needle not in app:
         fail.append("MISSING_LEARNING_RESUME_OR_PROVENANCE:"+needle)
