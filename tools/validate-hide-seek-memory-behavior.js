@@ -27,7 +27,7 @@ const names=[
   'senseKey','lexiconEntry','traceList','addWordTrace','weakScore',
   'memoryWeaknessProfile','memorySceneCue','memoryChunks','memoryShapeCue',
   'lastConfusionTrace','lastPersonalErrorTrace','hintCueCost',
-  'deriveMemorySignature','buildMemoryLadder','hiddenWordStrategy','hiddenWordPriority','hiddenWordActivityModel','syncSheetToLexicon','recallSpacingEvidence','seekAgainResolved'
+  'deriveMemorySignature','buildMemoryLadder','hiddenWordStrategy','hiddenWordPriority','hiddenWordActivityModel','memoryQualityModel','syncSheetToLexicon','recallSpacingEvidence','seekAgainResolved'
 ];
 const sandbox={
   console,Date,Math,Set,Number,Object,Array,String,
@@ -133,5 +133,21 @@ assert(first.correctTotal===1&&first.wrongTotal===1,'first aggregation must refl
 assert(second.correctTotal===1&&second.wrongTotal===1,'re-sync must not double-count same sheet evidence');
 assert(second.sourceRefs.length===1&&second.sourceRefs[0]==='sheet-1','sourceRefs must remain de-duplicated');
 assert(second.memorySignature&&typeof second.memorySignature.orthographicWeakness==='number','lexicon must persist derived Memory Signature');
+assert(second.memoryQuality&&typeof second.memoryQuality.weaknessPenalty==='number','lexicon must persist memory quality decomposition');
+
+const baseSig={semanticWeakness:0,hintDependency:0,timeoutRisk:0,orthographicWeakness:0,longTermDecay:0,recoveryStatus:'UNPROVEN'};
+const spacedQ=sandbox.memoryQualityModel({...baseSig,recoveryStatus:'SPACED_RECOVERED'},2,0,0);
+const immediateQ=sandbox.memoryQualityModel({...baseSig,recoveryStatus:'IMMEDIATE_ONLY'},2,0,0);
+const pendingQ=sandbox.memoryQualityModel({...baseSig,recoveryStatus:'NEEDS_UNASSISTED_RECALL'},2,0,0);
+assert(spacedQ.memoryStrength>immediateQ.memoryStrength,'spaced recovery must score stronger than immediate-only');
+assert(immediateQ.memoryStrength>pendingQ.memoryStrength,'immediate-only must remain stronger than unresolved pending recall');
+const dependentQ=sandbox.memoryQualityModel({...baseSig,hintDependency:60,timeoutRisk:30,orthographicWeakness:50},2,0,0);
+assert(dependentQ.memoryStrength<spacedQ.memoryStrength,'hint/timeout/orthographic weakness must reduce memory quality');
+assert(dependentQ.nextReviewPriority>spacedQ.nextReviewPriority,'weaker signature must increase review priority');
+
+const decayWord={id:'decay',lexicalId:'decay::감소',eng:'decay',kor:'감소',wrong:0,pass:0,hint:0,learningStats:{}};
+sandbox.S.lexicon[decayWord.lexicalId]={memoryStrength:70,reviewDecay:40};
+const decaySig=sandbox.deriveMemorySignature(decayWord);
+assert(decaySig.longTermDecay===40,'long-term decay must come from explicit reviewDecay evidence, not inverse memoryStrength');
 
 console.log('PASS: Hide & Seek Memory Trail behavior fixtures');
