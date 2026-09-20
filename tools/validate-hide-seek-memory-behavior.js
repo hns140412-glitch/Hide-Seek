@@ -113,8 +113,8 @@ const assistedWord={id:'assist',learningStats:{needsUnassistedRecall:true}};
 const immediateAttempt={type:'CORRECT',hintLevel:0,spacedEvidence:false};
 const spacedAttempt={type:'CORRECT',hintLevel:0,spacedEvidence:true};
 const hintedAttempt={type:'CORRECT',hintLevel:1,spacedEvidence:true};
-assert(!sandbox.seekAgainResolved(assistedWord,immediateAttempt),'immediate unassisted success after assistance must remain in retrace');
-assert(sandbox.seekAgainResolved(assistedWord,spacedAttempt),'spaced unassisted success must resolve retrace');
+assert(sandbox.seekAgainResolved(assistedWord,immediateAttempt),'immediate unassisted success may close the current trail while memory recovery remains unproven');
+assert(sandbox.seekAgainResolved(assistedWord,spacedAttempt),'spaced unassisted success must resolve the current trail and may prove recovery');
 assert(!sandbox.seekAgainResolved(assistedWord,hintedAttempt),'hinted success must never resolve retrace');
 assert(sandbox.seekAgainResolved({id:'clean',learningStats:{}},{type:'CORRECT',hintLevel:0,spacedEvidence:false}),'clean unassisted success without pending recall requirement may resolve');
 
