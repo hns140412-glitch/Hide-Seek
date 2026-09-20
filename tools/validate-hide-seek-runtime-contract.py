@@ -128,6 +128,10 @@ for needle in [
     "SOUND_REACTIVATION",
     "ORTHOGRAPHIC_SCAFFOLD",
     "SPACED_RECALL",
+    "hiddenWordActivityModel",
+    "renderHiddenWordActivity",
+    "HIDDEN_WORD_OUTCOME",
+    "$('.speak-retrace').forEach",
 ]:
     if needle not in app:
         fail.append("MISSING_LEARNING_RESUME_OR_PROVENANCE:"+needle)
