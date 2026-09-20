@@ -27,7 +27,7 @@ const names=[
   'senseKey','lexiconEntry','traceList','addWordTrace','weakScore',
   'memoryWeaknessProfile','memorySceneCue','memoryChunks','memoryShapeCue',
   'lastConfusionTrace','lastPersonalErrorTrace','hintCueCost',
-  'deriveMemorySignature','buildMemoryLadder','hiddenWordStrategy','hiddenWordPriority','hiddenWordActivityModel','syncSheetToLexicon','recallSpacingEvidence'
+  'deriveMemorySignature','buildMemoryLadder','hiddenWordStrategy','hiddenWordPriority','hiddenWordActivityModel','syncSheetToLexicon','recallSpacingEvidence','seekAgainResolved'
 ];
 const sandbox={
   console,Date,Math,Set,Number,Object,Array,String,
@@ -108,6 +108,15 @@ assert(immediate.interveningItemCount===0&&!immediate.spacedEvidence,'immediate 
 assert(separated.interveningItemCount===1&&separated.spacedEvidence,'one intervening item must satisfy spacing evidence');
 const noAssist=sandbox.recallSpacingEvidence({learningStats:{}},3,now);
 assert(noAssist.interveningItemCount===null&&!noAssist.spacedEvidence,'no prior assistance must not fabricate spacing evidence');
+
+const assistedWord={id:'assist',learningStats:{needsUnassistedRecall:true}};
+const immediateAttempt={type:'CORRECT',hintLevel:0,spacedEvidence:false};
+const spacedAttempt={type:'CORRECT',hintLevel:0,spacedEvidence:true};
+const hintedAttempt={type:'CORRECT',hintLevel:1,spacedEvidence:true};
+assert(!sandbox.seekAgainResolved(assistedWord,immediateAttempt),'immediate unassisted success after assistance must remain in retrace');
+assert(sandbox.seekAgainResolved(assistedWord,spacedAttempt),'spaced unassisted success must resolve retrace');
+assert(!sandbox.seekAgainResolved(assistedWord,hintedAttempt),'hinted success must never resolve retrace');
+assert(sandbox.seekAgainResolved({id:'clean',learningStats:{}},{type:'CORRECT',hintLevel:0,spacedEvidence:false}),'clean unassisted success without pending recall requirement may resolve');
 
 const word={id:'w1',lexicalId:'maintain::유지하다',eng:'maintain',kor:'유지하다',wrong:0,pass:0,hint:0,learningStats:{}};
 const sh={sheetId:'sheet-1',createdAt:'2026-09-20T00:00:00Z',items:[word]};
