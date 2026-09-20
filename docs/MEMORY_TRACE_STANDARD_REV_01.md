@@ -237,7 +237,14 @@ SOURCE MEANING / SOUND / GENERATED SHAPE를 제한적으로 사용.
 - 단순 weakScore 순위가 아니라 signature 기반 priority로 정렬한다.
 - 선택 전략은 `reinforcementTrace`의 `HIDDEN_WORD_STRATEGY` 이벤트로 남긴다.
 - 실행형 fixture에서 전략 분기와 우선순위를 검증한다.
-- CI Run #86 = SUCCESS.
+- 전략 선택 후 실제 interaction도 분리한다:
+  - SEMANTIC_CONTRAST / CONFUSION_CONTRAST → choice comparison.
+  - SOUND_REACTIVATION → sound replay + typed recall.
+  - ORTHOGRAPHIC_SCAFFOLD → shape cue + typed recall.
+  - SPACED_RECALL → meaning cue + unassisted typed recall.
+  - LIGHT_REVIEW → non-penalizing lightweight review.
+- 결과는 `HIDDEN_WORD_OUTCOME`으로 SUCCESS/RETRY 및 최소 근거를 남긴다.
+- CI Run #91 = SUCCESS.
 
 ---
 
