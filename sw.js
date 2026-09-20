@@ -1,4 +1,4 @@
-const CACHE="hide-seek-capture-v08";
+const CACHE="hide-seek-capture-v09";
 const CORE=[
   "./","./index.html","./styles.css","./hide-runtime.css","./hide-bridge.css","./app.js","./hide-family-ocr-adapter.js",
   "./hide-runtime.js","./hide-bridge.js","./hide-brand-current.js","./manifest.json","./assets/asset-map.json",
