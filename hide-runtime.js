@@ -5,7 +5,7 @@
   const legacyBrandReplacements = [
     [/Word Detective Team/g, 'Hidden Word Trail'],
     [/ACTIVE CASE/g, 'ACTIVE TRAIL'],
-    [/시험지 · 사건 파일/g, '시험지 · 단어 탐험'],
+    [/시험지 · 사건 파일/g, '탐험 미션'],
     [/사건 파일 작성 완료/g, '단어 탐험 준비 완료'],
     [/사건 파일/g, '단어 탐험'],
     [/오늘의 수사 상태/g, '오늘의 탐험 상태'],
@@ -469,7 +469,7 @@
           <button id="hideReviewMore" class="btn secondary" type="button">촬영 더하기</button>
           <button id="hideReviewLibrary" class="btn secondary" type="button">앨범 추가</button>
           <button id="hideReviewAnalyze" class="btn secondary" type="button">변경 장 다시 분석</button>
-          <button id="hideReviewCommit" class="btn primary" type="button">시험지 만들기</button>
+          <button id="hideReviewCommit" class="btn primary" type="button">탐험 미션 만들기</button>
         </div>
       </section>`;
 
@@ -571,7 +571,12 @@
           reviewedAt: nowISO(),
           count: items.length,
           captureSessionId: session.captureSessionId,
-          analysisBatchIds: session.analysisBatches.map(b => b.batchId)
+          inputActorRole: session.inputActorRole || 'UNSPECIFIED',
+          analysisDomain: 'HIDE_VOCABULARY',
+          analysisBatchIds: session.analysisBatches.map(b => b.batchId),
+          providers: [...new Set(items.map(x => x.ocrProvider).filter(Boolean))],
+          models: [...new Set(items.map(x => x.ocrModel).filter(Boolean))],
+          evidenceItemIds: [...new Set(items.map(x => x.ocrEvidenceItemId).filter(Boolean))]
         }
       };
 
