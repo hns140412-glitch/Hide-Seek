@@ -130,6 +130,14 @@
     return { ok:true, session:JSON.parse(JSON.stringify(session)) };
   }
 
+  async function deleteMissionAssets(sheetId) {
+    const sh = (S.sheets || []).find(x => x.sheetId === sheetId);
+    const pages = Array.isArray(sh?.recognitionMeta?.sourcePages) ? sh.recognitionMeta.sourcePages : [];
+    const keys = [...new Set(pages.map(p => p.blobKey).filter(Boolean))];
+    for (const key of keys) await dbDelete(key).catch(() => {});
+    return { ok:true, deletedAssetCount:keys.length };
+  }
+
   function persistCaptureSession(session) {
     session.updatedAt = nowISO();
     S[CAPTURE_STATE_KEY] = session;
@@ -797,6 +805,7 @@
     renderCaptureHub,
     analyzeDirtyPages,
     reopenCommittedMission,
+    deleteMissionAssets,
     migrateLegacyState: () => {
       migrateLegacyCaptureSession();
       const session = currentSession();
