@@ -13,5 +13,5 @@ module.exports=defineConfig({
     port:4174,
     reuseExistingServer:true
   },
-  projects:[{name:'chromium',use:{browserName:'chromium'}}]
+  projects:[{name:'chromium',use:{browserName:'chromium',channel:'chrome'}}]
 });
