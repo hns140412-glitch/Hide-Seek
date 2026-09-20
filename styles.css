@@ -84,3 +84,8 @@ button:focus-visible,input:focus-visible{outline:3px solid rgba(62,126,87,.35);o
 }
 
 .slot.hint-target{border-color:#dfb75f;background:#fff8df;box-shadow:0 0 0 3px rgba(223,183,95,.18)}
+
+.memory-trace{margin:10px 0 12px;padding:11px 12px;border-radius:14px;background:rgba(238,247,230,.92);border:1px solid rgba(82,120,72,.16);display:grid;gap:4px}
+.memory-trace[hidden]{display:none}
+.memory-trace b{font-size:10px;letter-spacing:.04em;color:var(--forest2)}
+.memory-trace span{font-size:12px;line-height:1.5;color:var(--ink)}
