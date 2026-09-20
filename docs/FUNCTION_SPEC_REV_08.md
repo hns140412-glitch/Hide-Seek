@@ -41,11 +41,11 @@ Next: shared family OCR transport or manual-entry fallback.
 
 ## 5. SHARED OCR → HIDE WORD/MEANING INTERPRETER
 
-Shared OCR transport owns image/OCR execution when available. Hide owns vocabulary-domain interpretation only.
+Shared OCR transport owns image/OCR execution. Hide calls the family `/api/capture/analyze` transport with `analysis_domain=HIDE_VOCABULARY` and owns only the vocabulary-domain interpretation/review semantics.
 SEE: transcribe only visible word/meaning rows; no examples/hints/invention.
 PAIR: validate only the SEE rows and preserve sequence; no new source rows.
 Confidence: high/medium/low.
-Fallback: manual entry when OCR/network/API is unavailable.
+Fallback: manual entry when OCR/network/API is unavailable. If the family server does not yet return the `HIDE_VOCABULARY` rows contract, the client must fail closed with `HIDE_VOCABULARY_RESULT_UNSUPPORTED`; it must not fabricate rows or fall back to a private Gemini client.
 Next: Review.
 
 ## 6. Review Before Exploration Mission Commit
