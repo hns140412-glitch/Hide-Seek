@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const HIDE_RUNTIME_VERSION = '2026.09.21-b';
+  const HIDE_RUNTIME_VERSION = '2026.09.21-c';
   const CAPTURE_STATE_KEY = 'hideSeekCaptureSession';
   const legacyBrandReplacements = [
     [/Word Detective Team/g, 'Hidden Word Trail'],
@@ -87,6 +87,47 @@
     const s = currentSession();
     if (!s || s.status === 'COMMITTED' || s.status === 'CANCELLED') return newCaptureSession();
     return s;
+  }
+
+  function reopenCommittedMission(sheetId) {
+    const sh = (S.sheets || []).find(x => x.sheetId === sheetId);
+    if (!sh) return { ok:false, reason:'MISSION_NOT_FOUND' };
+    const sourcePages = Array.isArray(sh.recognitionMeta?.sourcePages) ? sh.recognitionMeta.sourcePages : [];
+    if (!sourcePages.length) return { ok:false, reason:'SOURCE_PAGES_UNAVAILABLE' };
+    const pages = sourcePages.map((p, i) => ({
+      pageId: p.pageId,
+      displayOrder: Number(p.displayOrder || i + 1),
+      blobKey: p.blobKey,
+      capturedAt: p.capturedAt || sh.createdAt || nowISO(),
+      source: p.source || 'mission-reopen',
+      inputActorRole: p.inputActorRole || sh.recognitionMeta?.inputActorRole || 'UNSPECIFIED',
+      quality: p.quality || { quality:'저장됨', warnings:[] },
+      revision: Number(p.revision || 1),
+      dirty: true
+    })).filter(p => p.pageId && p.blobKey);
+    if (!pages.length) return { ok:false, reason:'SOURCE_BLOBS_UNAVAILABLE' };
+    const session = {
+      captureSessionId: makeId('capture-reopen'),
+      status:'CAPTURING',
+      createdAt:nowISO(),
+      updatedAt:nowISO(),
+      inputActorRole: sh.recognitionMeta?.inputActorRole || 'UNSPECIFIED',
+      editingSheetId: sh.sheetId,
+      pages,
+      analysisBatches:[],
+      lastRows:(sh.items||[]).map(w=>({
+        ...w,
+        sourcePageId:w.sourcePageId||pages[0]?.pageId||'',
+        sourcePageOrder:w.sourcePageOrder||1,
+        reviewResolved:!w.needsReview
+      })),
+      dirtyPageIds:pages.map(p=>p.pageId),
+      committedSheetId:sh.sheetId
+    };
+    S[CAPTURE_STATE_KEY]=session;
+    save();
+    renderCaptureHub();
+    return { ok:true, session:JSON.parse(JSON.stringify(session)) };
   }
 
   function persistCaptureSession(session) {
@@ -556,7 +597,8 @@
       if (!data.length) return toast('단어와 뜻을 한 개 이상 확인해 주세요.');
       if (session.dirtyPageIds?.length) return toast('다시 찍은 장의 분석이 아직 남아 있어요.');
 
-      const sheetId = `sheet-${Date.now()}`;
+      const editingSheet = session.editingSheetId ? (S.sheets || []).find(x => x.sheetId === session.editingSheetId) : null;
+      const sheetId = editingSheet?.sheetId || `sheet-${Date.now()}`;
       const items = data.map((x, i) => ({
         ...normalizeWord({ ...x, needsReview: false }, i),
         sourcePageId: x.sourcePageId,
@@ -588,11 +630,29 @@
           analysisBatchIds: session.analysisBatches.map(b => b.batchId),
           providers: [...new Set(items.map(x => x.ocrProvider).filter(Boolean))],
           models: [...new Set(items.map(x => x.ocrModel).filter(Boolean))],
-          evidenceItemIds: [...new Set(items.map(x => x.ocrEvidenceItemId).filter(Boolean))]
+          evidenceItemIds: [...new Set(items.map(x => x.ocrEvidenceItemId).filter(Boolean))],
+          sourcePages: session.pages.map(p => ({
+            pageId:p.pageId,
+            displayOrder:p.displayOrder,
+            blobKey:p.blobKey,
+            capturedAt:p.capturedAt,
+            source:p.source,
+            inputActorRole:p.inputActorRole || session.inputActorRole || 'UNSPECIFIED',
+            quality:p.quality,
+            revision:p.revision
+          }))
         }
       };
 
-      S.sheets.unshift(newSheet);
+      if (editingSheet) {
+        const idx = S.sheets.findIndex(x => x.sheetId === editingSheet.sheetId);
+        newSheet.title = editingSheet.title;
+        newSheet.createdAt = editingSheet.createdAt;
+        newSheet.learningProvenance = editingSheet.learningProvenance || {};
+        S.sheets[idx] = newSheet;
+      } else {
+        S.sheets.unshift(newSheet);
+      }
       S.activeSheetId = sheetId;
       S.ocrDraft = null;
       S.learning = clone(DEFAULT_STATE.learning);
@@ -602,7 +662,7 @@
       persistCaptureSession(session);
       S[CAPTURE_STATE_KEY] = null;
       save();
-      toast('숨은 단어 준비 완료');
+      toast(editingSheet ? '탐험 미션 재분석 완료' : '탐험 미션 준비 완료');
       currentTab = 'study';
       viewStack = [];
       render();
@@ -736,6 +796,7 @@
     bindCaptureInputs,
     renderCaptureHub,
     analyzeDirtyPages,
+    reopenCommittedMission,
     migrateLegacyState: () => {
       migrateLegacyCaptureSession();
       const session = currentSession();
