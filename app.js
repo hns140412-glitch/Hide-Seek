@@ -111,8 +111,9 @@ function syncSheetToLexicon(sh=sheet()){
   const wrongTotal=Number(legacy.wrongTotal||0)+evidenceValues.reduce((a,x)=>a+Number(x.wrong||0),0);
   const reviewStrengthDelta=Number(prev.reviewStrengthDelta||0);
   const memory=Math.max(10,Math.min(100,60+Math.min(28,correctTotal*4)-Math.min(42,wrongTotal*6)+reviewStrengthDelta));
-  const priority=Math.max(0,100-memory+wrongTotal*8+(w.learningStats?.timeout||0)*5+(w.learningStats?.slowCorrect||0)*2);
-  S.lexicon[key]={...prev,lexicalId:key,canonicalSpelling:w.eng.toLowerCase(),sense:w.kor,firstSeen:prev.firstSeen||sh.createdAt||nowISO(),lastSeen:nowISO(),sourceRefs,sourceEvidence,legacyBaseline:legacy,correctTotal,wrongTotal,consecutiveCorrect:wrong?0:Number(prev.consecutiveCorrect||0)+correct,lastWrong,memoryStrength:memory,nextReviewPriority:priority}
+  const sig=deriveMemorySignature(w);
+  const priority=Math.max(0,100-memory+wrongTotal*8+Math.round((sig.timeoutRisk+sig.hintDependency+sig.orthographicWeakness)/12));
+  S.lexicon[key]={...prev,lexicalId:key,canonicalSpelling:w.eng.toLowerCase(),sense:w.kor,firstSeen:prev.firstSeen||sh.createdAt||nowISO(),lastSeen:nowISO(),sourceRefs,sourceEvidence,legacyBaseline:legacy,correctTotal,wrongTotal,consecutiveCorrect:wrong?0:Number(prev.consecutiveCorrect||0)+correct,lastWrong,memoryStrength:memory,nextReviewPriority:priority,memorySignature:sig}
  }
 }
 function selectPastMemoryEvent(){const active=sheet()?.sheetId;if(!active||S.memoryEvents?.shownBySheet?.[active])return null;const pool=Object.values(S.lexicon||{}).filter(x=>(x.sourceRefs||[]).some(id=>id!==active)).sort((a,b)=>(b.nextReviewPriority||0)-(a.nextReviewPriority||0));if(!pool.length)return null;return pool.find(x=>x.lexicalId!==S.memoryEvents?.lastLexicalId)||pool[0]}
@@ -122,6 +123,23 @@ function stateLabel(st){return ({DRAFT:"초안",REVIEW_REQUIRED:"확인 필요",
 function traceList(w,kind){w.learningStats=w.learningStats||{};const key=kind+'Trace';if(!Array.isArray(w.learningStats[key]))w.learningStats[key]=[];return w.learningStats[key]}
 function addWordTrace(w,kind,event){const list=traceList(w,kind);list.push({...event,at:event?.at||nowISO()});if(list.length>80)list.splice(0,list.length-80);return list.at(-1)}
 function weakScore(w){return (w.wrong||0)*5+(w.pass||0)*4+(w.hint||0)*3+(w.learningStats?.timeout||0)*4+(w.learningStats?.slowCorrect||0)*2+(w.learningStats?.unsure||0)*2+(w.learningStats?.meaningWrong||0)*3+(w.learningStats?.connectionMismatch||0)*2}
+function deriveMemorySignature(w){
+ const acq=traceList(w,'acquisition'),rec=traceList(w,'recognition'),assoc=traceList(w,'association'),retrieval=traceList(w,'retrieval'),assist=traceList(w,'assistance'),recovery=traceList(w,'recovery');
+ const semanticWeakness=Math.min(100,(acq.filter(x=>x.event==='LEARNER_UNSURE').length*18)+(rec.filter(x=>x.result==='WRONG').length*24)+(assoc.filter(x=>x.result==='MISMATCH').length*12));
+ const recognitionWeakness=Math.min(100,(rec.filter(x=>x.result==='WRONG').length*26)+(rec.filter(x=>x.result==='SLOW_CORRECT').length*14));
+ const phonologicalWeakness=Math.min(100,(acq.filter(x=>x.event==='SOUND_REPLAY').length*8)+(assist.filter(x=>x.step==='SOUND').length*18));
+ const retrievalWeak=retrieval.filter(x=>['WRONG','PASS','TIMEOUT','HINT_USED'].includes(x.result));
+ const orthographicWeakness=Math.min(100,retrievalWeak.length*22+retrieval.reduce((a,x)=>a+Number(x.wrongAttempts||0)*7,0));
+ const timeoutRisk=Math.min(100,(retrieval.filter(x=>x.result==='TIMEOUT').length*35)+(rec.filter(x=>x.result==='SLOW_CORRECT').length*10));
+ const cueCostTotal=assist.reduce((a,x)=>a+Number(x.cost||0),0),hintDependency=Math.min(100,(retrieval.filter(x=>x.result==='HINT_USED').length*28)+(cueCostTotal*6));
+ const confusionCount=assoc.filter(x=>x.result==='MISMATCH').length;
+ const lastRecovery=[...recovery].reverse().find(x=>x.result==='UNASSISTED_RECALL');
+ const recoveryStatus=lastRecovery?(lastRecovery.spacedEvidence?'SPACED_RECOVERED':'IMMEDIATE_ONLY'):(w.learningStats?.needsUnassistedRecall?'NEEDS_UNASSISTED_RECALL':'UNPROVEN');
+ const slowRecall=Math.min(100,(rec.filter(x=>x.result==='SLOW_CORRECT').length*20)+(retrieval.filter(x=>x.result==='SLOW_CORRECT').length*25));
+ const longTermDecay=Math.max(0,Math.min(100,100-Number(lexiconEntry(w)?.memoryStrength||100)));
+ return {semanticWeakness,recognitionWeakness,phonologicalWeakness,orthographicWeakness,confusionPattern:{count:confusionCount,last:lastConfusionTrace(w)},slowRecall,timeoutRisk,hintDependency,recoveryStatus,longTermDecay,traceCounts:{acquisition:acq.length,recognition:rec.length,association:assoc.length,retrieval:retrieval.length,assistance:assist.length,recovery:recovery.length}};
+}
+
 function updateChrome(){const onboard=!S.onboardingDone;$("#bottomNav").style.display=onboard?"none":"grid";$("#partnerBar").style.display=onboard?"none":"flex";$("#settingsBtn").style.visibility=onboard?"hidden":"visible";$("#backBtn").hidden=viewStack.length===0;$$('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===currentTab))}
 function pushView(fn){viewStack.push(()=>render());fn();updateChrome()}
 function goBack(){const fn=viewStack.pop();stopCodeTimer();if(fn)fn();else render();updateChrome()}
@@ -230,7 +248,7 @@ function memoryFragmentCue(word){return memoryChunks(word).join(' · ')}
 function lastConfusionTrace(w){return [...traceList(w,'association')].reverse().find(x=>x.result==='MISMATCH')||null}
 function lastPersonalErrorTrace(w){const current=codeSession?.word?.id===w.id?codeSession.errorTrace.at(-1):null;if(current)return current;const prior=[...traceList(w,'retrieval')].reverse().find(x=>Array.isArray(x.errorTrace)&&x.errorTrace.length);return prior?.errorTrace?.at(-1)||null}
 function hintCueCost(step){return ({SCENE:1,MEANING:1,SOUND:1,SHAPE:2,CONFUSION_TRACE:2,ERROR_TRACE:2,FRAGMENT:3,MINIMUM_REVEAL:5})[step]||1}
-function buildMemoryLadder(w){const p=memoryWeaknessProfile(w),steps=[],scene=memorySceneCue(w);if((p.learnerUnsure||p.meaningWeak)&&scene)steps.push('SCENE');if(p.learnerUnsure||p.meaningWeak)steps.push('MEANING');if(p.confusion)steps.push('CONFUSION_TRACE');if(p.recognitionSlow||p.timeout)steps.push('SOUND');if(p.spellingWeak||p.hintDependent)steps.push('SHAPE');if(lastPersonalErrorTrace(w)||p.spellingWeak)steps.push('ERROR_TRACE');if(!steps.length)steps.push('SOUND','SHAPE');steps.push('FRAGMENT','MINIMUM_REVEAL');return [...new Set(steps)]}
+function buildMemoryLadder(w){const p=memoryWeaknessProfile(w),sig=deriveMemorySignature(w),steps=[],scene=memorySceneCue(w);if((sig.semanticWeakness>0||p.learnerUnsure)&&scene)steps.push('SCENE');if(sig.semanticWeakness>0)steps.push('MEANING');if(sig.confusionPattern.count>0)steps.push('CONFUSION_TRACE');if(sig.phonologicalWeakness>0||sig.slowRecall>0||sig.timeoutRisk>0)steps.push('SOUND');if(sig.orthographicWeakness>0||sig.hintDependency>0)steps.push('SHAPE');if(lastPersonalErrorTrace(w)||sig.orthographicWeakness>0)steps.push('ERROR_TRACE');if(!steps.length)steps.push('SOUND','SHAPE');steps.push('FRAGMENT','MINIMUM_REVEAL');return [...new Set(steps)]}
 function showMemoryTrace(text,label){const el=$('#memoryTrace');if(el){el.innerHTML='<b>'+esc(label)+'</b><span>'+esc(text)+'</span>';el.hidden=false}}
 function makeCodeSession(w){const n=blankCount(w.eng),idx=shuffle([...w.eng].map((_,i)=>i)).slice(0,n).sort((a,b)=>a-b),real=idx.map((i,k)=>({id:`r${k}-${Math.random()}`,ch:w.eng[i].toLowerCase(),real:true})),required=new Set(real.map(x=>x.ch)),alphabet='abcdefghijklmnopqrstuvwxyz',fakes=[];while(fakes.length<Math.max(3,n)){const ch=alphabet[Math.floor(Math.random()*alphabet.length)];if(!required.has(ch))fakes.push({id:`f${fakes.length}-${Math.random()}`,ch,real:false})}return {word:w,blankIdx:idx,keys:shuffle([...real,...fakes]),answers:{},hintLevel:0,hintPlan:buildMemoryLadder(w),hintTrace:[],errorTrace:[],wrongAttempts:0,seconds:S.settings.pressureReduced?24:(w.eng.length<=5?15:w.eng.length<=8?18:21),start:Date.now()}}
 function codeTargets(){const ws=validWords();if(S.codeRed.retryOnly){const set=new Set(S.codeRed.targetIds.length?S.codeRed.targetIds:S.codeRed.retrace);return ws.filter(w=>set.has(w.id))}return ws}
