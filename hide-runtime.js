@@ -25,6 +25,46 @@
   const makeId = prefix => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const currentSession = () => S[CAPTURE_STATE_KEY] || null;
 
+  function migrateLegacyCaptureSession() {
+    const legacy = S.captureSession;
+    if (!legacy || S[CAPTURE_STATE_KEY]) {
+      if (legacy && S[CAPTURE_STATE_KEY]) {
+        delete S.captureSession;
+        save();
+      }
+      return;
+    }
+    const pages = Array.isArray(legacy.pages) ? legacy.pages.map((p, i) => ({
+      pageId: p.pageId || makeId('page'),
+      displayOrder: i + 1,
+      blobKey: p.blobKey || p.assetKey || '',
+      capturedAt: p.capturedAt || legacy.createdAt || nowISO(),
+      source: p.source || p.sourceType || 'legacy',
+      quality: {
+        width: Number(p.width || p.quality?.width || 0),
+        height: Number(p.height || p.quality?.height || 0),
+        warnings: Array.isArray(p.warnings) ? p.warnings : (p.quality?.warnings || []),
+        quality: p.quality?.quality || p.quality || '저장됨'
+      },
+      revision: Number(p.revision || 1),
+      dirty: !p.analyzedAt
+    })).filter(p => p.blobKey) : [];
+    S[CAPTURE_STATE_KEY] = {
+      captureSessionId: legacy.captureSessionId || legacy.sessionId || makeId('capture'),
+      status: legacy.status === 'CLOSED' ? 'CANCELLED' : 'CAPTURING',
+      createdAt: legacy.createdAt || nowISO(),
+      updatedAt: legacy.updatedAt || nowISO(),
+      pages,
+      analysisBatches: Array.isArray(legacy.analysisBatches) ? legacy.analysisBatches : [],
+      lastRows: S.ocrDraft?.captureSessionId === (legacy.captureSessionId || legacy.sessionId) ? (S.ocrDraft.rows || []) : [],
+      dirtyPageIds: pages.filter(p => p.dirty).map(p => p.pageId),
+      committedSheetId: legacy.committedSheetId || null,
+      migratedFromLegacyCapture: true
+    };
+    delete S.captureSession;
+    save();
+  }
+
   function newCaptureSession() {
     const s = {
       captureSessionId: makeId('capture'),
@@ -632,6 +672,7 @@ ${JSON.stringify(see)}`;
 
   function bootHideRuntime() {
     document.documentElement.dataset.hideRuntime = HIDE_RUNTIME_VERSION;
+    migrateLegacyCaptureSession();
     document.title = 'Hide & Seek';
     document.querySelector('#sheetLibraryInput')?.setAttribute('multiple', '');
     interceptLegacyCapture();
