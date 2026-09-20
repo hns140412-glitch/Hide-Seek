@@ -3,7 +3,7 @@
 
   const BRIDGE_VERSION = '2026.09.21-b';
   const EVENT_LIMIT = 120;
-  const SHARED_PARAM_NAMES = ['session_id', 'goal_id', 'task_id', 'lap_id', 'return_target', 'snap_target', 'child_id', 'actor_role'];
+  const SHARED_PARAM_NAMES = ['session_id', 'goal_id', 'task_id', 'lap_id', 'return_target', 'snap_target', 'child_id', 'actor_role', 'crew_member_id', 'crew_member_name', 'crew_rules_version'];
   const legacyTerms = [
     [/Word Detective Team/g, 'Hidden Word Trail'],
     [/사건 파일/g, '단어 탐험'],
@@ -390,6 +390,15 @@
     const incoming = readIncomingContext();
     if (Object.keys(incoming).length) {
       S.sharedLearningContext = { ...(S.sharedLearningContext || {}), ...incoming, receivedAt: iso() };
+      if (incoming.crew_member_id || incoming.crew_member_name) {
+        S.crewMember = {
+          ...(S.crewMember || {}),
+          explorerId: incoming.crew_member_id || S.crewMember?.explorerId || '',
+          name: incoming.crew_member_name || S.crewMember?.name || '탐험대원',
+          source: 'SNAP_POP_CANONICAL',
+          rulesVersion: incoming.crew_rules_version || S.crewMember?.rulesVersion || null
+        };
+      }
       persistBridgeState();
     }
     if (!S.sharedLearningContext) S.sharedLearningContext = {};
