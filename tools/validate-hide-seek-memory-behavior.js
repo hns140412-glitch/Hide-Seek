@@ -24,10 +24,10 @@ function extractFunction(name){
 }
 
 const names=[
-  'senseKey','syncSheetToLexicon','traceList','addWordTrace',
+  'senseKey','lexiconEntry','traceList','addWordTrace',
   'memoryWeaknessProfile','memorySceneCue','memoryChunks',
   'lastConfusionTrace','lastPersonalErrorTrace','hintCueCost',
-  'buildMemoryLadder','recallSpacingEvidence'
+  'deriveMemorySignature','buildMemoryLadder','syncSheetToLexicon','recallSpacingEvidence'
 ];
 const sandbox={
   console,Date,Math,Set,Number,Object,Array,String,
@@ -61,6 +61,23 @@ assert(scenePlan.includes('SCENE')&&scenePlan.includes('MEANING'),'scene/unsure 
 assert(confusionPlan.includes('CONFUSION_TRACE'),'confusion trace must route through CONFUSION_TRACE');
 assert(errorPlan.includes('ERROR_TRACE'),'retrieval error must route through ERROR_TRACE');
 assert(!same(scenePlan,confusionPlan)&&!same(confusionPlan,errorPlan),'different trace profiles must produce different Memory Trail routes');
+
+const sceneSig=sandbox.deriveMemorySignature(sceneWord);
+const confusionSig=sandbox.deriveMemorySignature(confusionWord);
+const errorSig=sandbox.deriveMemorySignature(errorWord);
+assert(sceneSig.semanticWeakness>0,'learner uncertainty must contribute to semantic weakness');
+assert(confusionSig.confusionPattern.count===1,'confusion signature must preserve mismatch count');
+assert(errorSig.orthographicWeakness>0,'retrieval spelling error must contribute to orthographic weakness');
+assert(sceneSig.recoveryStatus==='UNPROVEN','no recovery evidence must remain unproven');
+
+const recoveredWord={id:'rec',eng:'present',kor:'현재의',wrong:0,pass:0,hint:0,learningStats:{
+  recoveryTrace:[{result:'UNASSISTED_RECALL',spacedEvidence:true}],
+  assistanceTrace:[{step:'SHAPE',cost:2}]
+}};
+const recoveredSig=sandbox.deriveMemorySignature(recoveredWord);
+assert(recoveredSig.recoveryStatus==='SPACED_RECOVERED','spaced unassisted recall must be reflected in Memory Signature');
+assert(recoveredSig.hintDependency>0,'assistance cost must contribute to hint dependency');
+
 const scene=sandbox.memorySceneCue(sceneWord);
 assert(scene&&scene.source==='PAST_EXPOSURE'&&scene.text.includes('_____'),'SCENE cue must come from actual past exposure');
 
@@ -87,5 +104,6 @@ const second=JSON.parse(JSON.stringify(sandbox.S.lexicon[word.lexicalId]));
 assert(first.correctTotal===1&&first.wrongTotal===1,'first aggregation must reflect one correct + one wrong');
 assert(second.correctTotal===1&&second.wrongTotal===1,'re-sync must not double-count same sheet evidence');
 assert(second.sourceRefs.length===1&&second.sourceRefs[0]==='sheet-1','sourceRefs must remain de-duplicated');
+assert(second.memorySignature&&typeof second.memorySignature.orthographicWeakness==='number','lexicon must persist derived Memory Signature');
 
 console.log('PASS: Hide & Seek Memory Trail behavior fixtures');
