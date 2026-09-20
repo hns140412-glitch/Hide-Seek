@@ -2,6 +2,7 @@
 
 Status: FUNCTION SPEC APPROVED FOR CURRENT HIDE & SEEK BASELINE
 Master: `Hide_Seek_UI_MASTER_LOGIC_REV_04.md`
+Learning trace standard: `docs/MEMORY_TRACE_STANDARD_REV_01.md`
 
 ## 1. Onboarding / User Profile
 
