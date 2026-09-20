@@ -1,4 +1,4 @@
-const CACHE="hide-seek-runtime-20260920-capture-v02";
+const CACHE="hide-seek-capture-v03";
 const CORE=[
   "./","./index.html","./styles.css","./hide-runtime.css","./hide-bridge.css","./app.js","./hide-runtime.js","./hide-bridge.js","./hide-brand-current.js","./manifest.json","./assets/asset-map.json",
   "./assets/icons/icon-180x180.png","./assets/icons/icon-192x192.png","./assets/icons/icon-512x512.png",
