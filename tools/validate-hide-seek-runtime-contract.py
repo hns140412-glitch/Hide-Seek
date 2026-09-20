@@ -258,6 +258,9 @@ for needle in [
     "window.FamilyCaptureOcrAdapter",
     "analyzeVocabularyPage",
     "ocrAnalysisDomain",
+    "reopenCommittedMission",
+    "sourcePages",
+    "editingSheetId",
 ]:
     if needle not in runtime:
         fail.append("HIDE_SHARED_OCR_USAGE:"+needle)
@@ -293,7 +296,7 @@ for needle in [
         fail.append("APP_SCHEMA_REVISION_CONTRACT:"+needle)
 
 for needle in [
-    "const HIDE_RUNTIME_VERSION = '2026.09.21-b'",
+    "const HIDE_RUNTIME_VERSION = '2026.09.21-c'",
 ]:
     if needle not in runtime:
         fail.append("RUNTIME_VERSION_CONTRACT:"+needle)
