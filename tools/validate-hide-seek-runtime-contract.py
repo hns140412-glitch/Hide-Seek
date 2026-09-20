@@ -263,8 +263,8 @@ sw=read("sw.js")
 
 for needle in [
     'const CACHE="hide-seek-capture-v08"',
-    '"./hide-family-ocr-adapter.js",
-    "./hide-runtime.js"',
+    '"./hide-family-ocr-adapter.js"',
+    '"./hide-runtime.js"',
     '"./hide-runtime.css"',
     '"./hide-bridge.js"',
     '"./hide-bridge.css"',
