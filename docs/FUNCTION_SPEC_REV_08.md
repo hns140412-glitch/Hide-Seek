@@ -13,46 +13,47 @@ Data: display name in state; stylized avatar derivative in IndexedDB; original p
 Error/fallback: photo can be skipped; default avatar remains usable.
 Next: Guide creation or Home.
 
-## 2. Guide Creation
+## 2. Exploration Crew Member
 
-Entry: onboarding step after optional avatar.
-Input: animal companion choice, emphasis style, recommended/direct name, or skip.
-State/data: `guide.id`, `guide.name`, `guide.style`, `guide.voice`.
+Authority: Snap & Pop `SNAP-EXPLORATION-CREW-MASTER` owns 탐험대 / 탐험대원 / 탐험대 규칙.
+Hide consumes the active crew member and does not create an independent character roster or personality authority.
+Legacy `guide` state is migration input only; new Hide state uses `crewMember`.
 Rule: no learning-power differences by character/name.
-Child-facing role: Guide / 탐험 친구. Police/detective-partner framing is not allowed.
 Next: Home.
 
 ## 3. Home
 
-Primary action: **사진으로 시험지 만들기**.
+Primary action: **프린트로 탐험 미션 만들기**.
 Secondary action: continue active/recent trail.
 Displayed state: active sheet, Trail Mastery, current progress, user/guide separation.
 Rule: reward/stat/character content must not push the photo-first CTA below the primary hierarchy.
 
 ## 4. Camera / Photo Library Intake
 
-Entry: Home or 시험지 tab.
+Entry: Home or 탐험 미션 tab. Parent and child may both create an exploration mission from a printed vocabulary handout.
 Inputs: rear-camera capture and photo-library selection.
 Rapid capture rule: `SHUTTER → IMMEDIATE TEMP SAVE → NEXT SHOT`.
 Preflight: file existence/type/size, image decode, dimensions, simple quality warnings.
 Normalization: orientation-aware processing copy for OCR.
 Error: unsupported/invalid image produces a specific recovery message and does not alter committed sheet data.
-Next: OCR or manual-entry fallback.
+Input provenance: capture session/page preserves the current actor role when known (`PARENT` / `CHILD`).
+Next: shared family OCR transport or manual-entry fallback.
 
-## 5. OCR SEE / PAIR
+## 5. SHARED OCR → HIDE WORD/MEANING INTERPRETER
 
+Shared OCR transport owns image/OCR execution when available. Hide owns vocabulary-domain interpretation only.
 SEE: transcribe only visible word/meaning rows; no examples/hints/invention.
 PAIR: validate only the SEE rows and preserve sequence; no new source rows.
 Confidence: high/medium/low.
 Fallback: manual entry when OCR/network/API is unavailable.
 Next: Review.
 
-## 6. Review Before Commit
+## 6. Review Before Exploration Mission Commit
 
 Entry: successful OCR output, manual entry, or existing sheet review.
 Input: edit/delete/add word/meaning rows.
 Rule: nothing becomes a learning item until user commits the reviewed rows.
-Commit: create/update a sheet atomically after valid rows exist.
+Commit: create/update an exploration mission atomically after valid rows exist. Internal `sheet` identifiers may remain for compatibility.
 Data: `recognitionMeta`, `sourceType`, `sourceCount`, normalized word records.
 Next: Learning Hub.
 
@@ -158,3 +159,18 @@ FAIL if current UI reintroduces:
 
 Active world must remain:
 **Hide & Seek / treasure-seek / tag / hidden-word exploration.**
+
+## 18. READY & SET LEARNING STATUS REPORT
+
+Hide reports specialist evidence to Ready & Set; Ready owns cross-app learning status, Learning Master, Planner and TODAY.
+
+Report includes:
+- explorationMissionId / explorationMissionTitle
+- inputActorRole when known
+- validWordCount
+- taskState / Trail Mastery
+- learning phase / attempt counts / remaining Seek Again
+- compact Memory Summary and top review priorities
+- shared session/task/lap identifiers
+
+`HIDE REPORT != READY FACT AUTHORITY != READY PLANNER AUTHORITY`
