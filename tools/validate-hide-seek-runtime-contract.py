@@ -37,6 +37,7 @@ for needle in [
         fail.append("MISSING_CAPTURE_OR_REVIEW_CONTRACT:"+needle)
 
 for needle in [
+    "CONNECTION TRAIL",
     "meaningStartedAt",
     "elapsedMs",
     "optionLabel",
