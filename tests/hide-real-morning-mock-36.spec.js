@@ -86,10 +86,14 @@ test('real NEW 12 + REVIEW 24 follows mission, recall and morning mock-test memo
       await expect(page.locator('[data-scene-id="GROUND"]')).toHaveText(/평평한 땅/);
       await expect(page.locator('[data-scene-id="RISE"]')).toBeHidden();
       await expect(page.locator('[data-scene-id="PEAK"]')).toBeHidden();
+      await expect(page.locator('[data-scene-link-step="1"]')).toBeHidden();
+      await expect(page.locator('[data-scene-link-step="2"]')).toBeHidden();
       await page.getByRole('button',{name:'다음 장면 이어보기'}).click();
+      await expect(page.locator('[data-scene-link-step="1"]')).toBeVisible();
       await expect(page.locator('[data-scene-id="RISE"]')).toBeVisible();
       await expect(page.locator('[data-scene-id="RISE"]')).toHaveText(/위로 솟기/);
       await page.getByRole('button',{name:'다음 장면 이어보기'}).click();
+      await expect(page.locator('[data-scene-link-step="2"]')).toBeVisible();
       await expect(page.locator('[data-scene-id="PEAK"]')).toBeVisible();
       await expect(page.locator('[data-scene-id="PEAK"]')).toHaveText(/높은 꼭대기/);
       await expect(page.getByRole('button',{name:'장면 연결 완료'})).toBeDisabled();
