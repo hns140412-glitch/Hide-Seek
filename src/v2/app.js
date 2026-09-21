@@ -118,6 +118,10 @@
     const capture=globalThis.HideV2Capture?.state?.();
     const reviewReady=globalThis.HideV2Capture?.hasResumableReview?.()===true;
     const memory=HideV2Memory.dashboard();
+    const homeCrew=globalThis.HideV2Crew?.presentation?.({stage:'HOME',mission:m})||{displayName:'탐험대원',supportText:'오늘 찾을 단어 길을 같이 살펴봐요.',avatarText:'탐'};
+    const memoryMessage=memory.total
+      ?(memory.needsRecall>0?('다시 찾아볼 단어가 '+memory.needsRecall+'개 있어요. 오늘은 그 단어부터 만나도 좋아요.'):'지금은 기억이 꽤 안정적이에요. 다음 탐험에서도 스스로 떠오르는지 확인해봐요.')
+      :'첫 탐험을 마치면 기억 사다리가 여기서 이어져요.';
     const activeCount=s.missions.filter(x=>x.status!=='ARCHIVED').length;
     const missionAction=m?`<button class="btn primary quest-main-action" id="v2Start">${resumable?'탐험 이어가기':'탐험 시작'}</button>`:'';
     view().innerHTML=`
@@ -153,9 +157,14 @@
         <div class="trail-bridge__step"><span>3</span><b>기억 사다리</b><small>다음 탐험 준비</small></div>
       </section>
 
-      <section class="quest-status">
-        <div class="section-title"><div><p class="quest-overline">MY TRAIL</p><h2>지금의 기억 상태</h2></div><span>${memory.total?'기록 중':'첫 탐험 전'}</span></div>
-        <div class="quest-stat-row">
+      <section class="quest-status quest-status--story">
+        <div class="section-title"><div><p class="quest-overline">MY TRAIL</p><h2>다음 탐험은 이렇게 이어져요</h2></div><span>${memory.total?'기억 사다리 연결':'첫 탐험 전'}</span></div>
+        <p class="quest-status__story">${esc(memoryMessage)}</p>
+        <aside class="home-crew" aria-label="홈 탐험대원">
+          <span class="crew-strip__avatar">${esc(homeCrew.avatarText)}</span>
+          <span><b>${esc(homeCrew.displayName)}</b><small>${esc(homeCrew.supportText)}</small></span>
+        </aside>
+        <div class="quest-stat-row quest-stat-row--quiet" aria-label="기억 상태 보조 정보">
           <div class="quest-stat"><b>${memory.averageStrength||0}%</b><span>기억 힘</span></div>
           <div class="quest-stat"><b>${memory.needsRecall||0}</b><span>다시 찾기</span></div>
           <div class="quest-stat"><b>${memory.stable||0}</b><span>안정 단어</span></div>
