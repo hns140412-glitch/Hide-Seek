@@ -319,6 +319,11 @@ test('Hide V2 Hidden Words appears only for engine-detected weakness and keeps r
 
   await page.getByLabel('숨은 단어 보강 답 입력').fill('wrong');
   await page.getByRole('button',{name:'보강 기억 확인'}).click();
+  await expect(page.getByText('단서로 다시 찾기',{exact:true})).toBeVisible();
+  await expect(page.getByText('글자 골격 단서',{exact:true})).toBeVisible();
+
+  await page.getByLabel('숨은 단어 도움 답 입력').fill('wrong');
+  await page.getByRole('button',{name:'단서로 다시 확인'}).click();
   await expect(page.getByText('다시 만나기',{exact:true})).toBeVisible();
   await expect(page.getByText('benefit',{exact:true})).toBeVisible();
   await page.getByRole('button',{name:'다시 숨기고 마지막 찾기'}).click();
@@ -329,15 +334,70 @@ test('Hide V2 Hidden Words appears only for engine-detected weakness and keeps r
     return s.missions[0].items[0].evidence;
   });
   const hidden=evidence.find(x=>x.stage==='HIDDEN_WORDS');
+  const assist=evidence.find(x=>x.stage==='HIDDEN_WORDS_ASSIST');
   const relearn=evidence.find(x=>x.stage==='HIDDEN_WORDS_RELEARN');
   expect(hidden.result).toBe('WRONG');
   expect(hidden.objectiveRecall).toBe(true);
   expect(hidden.assisted).toBe(false);
   expect(hidden.reinforcementReason).toBe('recovery');
+  expect(assist.result).toBe('WRONG');
+  expect(assist.evidenceMode).toBe('ASSISTED_RECALL');
+  expect(assist.objectiveRecall).toBe(false);
+  expect(assist.recallScoreImpact).toBe(false);
+  expect(assist.assisted).toBe(true);
   expect(relearn.evidenceMode).toBe('RELEARN_EXPOSURE');
   expect(relearn.objectiveRecall).toBe(false);
   expect(relearn.recallScoreImpact).toBe(false);
   expect(relearn.assisted).toBe(true);
+});
+
+test('Hide V2 Hidden Words assisted retry success still requires unassisted Final Seek',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'보강 assisted'},missions:[{
+        id:'m-hidden-assist',title:'보강 assisted',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        sourceCount:0,provenance:{source:'TEST_FIXTURE'},
+        items:[{id:'w-hidden-assist',lexicalId:'benefit::혜택',token:'benefit',meaning:'혜택',example:'A benefit helps.',languageDomain:'ENGLISH',missionRole:'NEW',evidence:[],source:{}}]
+      }],activeMissionId:'m-hidden-assist',activeSession:null,captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'탐험 시작'}).click();
+  await page.getByRole('button',{name:'기억하고 찾아보기'}).click();
+  await page.getByLabel('회상 답 입력').fill('wrong');
+  await page.getByRole('button',{name:'기억 확인'}).click();
+  await page.getByRole('button',{name:'다시 숨기고 뜻 단서로'}).click();
+  await page.getByLabel('뜻 회상 입력').fill('혜택');
+  await page.getByRole('button',{name:'뜻 확인'}).click();
+  await page.getByRole('button',{name:'다음'}).click();
+
+  await page.getByLabel('숨은 단어 보강 답 입력').fill('wrong');
+  await page.getByRole('button',{name:'보강 기억 확인'}).click();
+  await expect(page.getByText('단서로 다시 찾기',{exact:true})).toBeVisible();
+
+  await page.getByLabel('숨은 단어 도움 답 입력').fill('benefit');
+  await page.getByRole('button',{name:'단서로 다시 확인'}).click();
+  await expect(page.getByText('마지막 찾기',{exact:true})).toBeVisible();
+
+  const assist=await page.evaluate(()=>{
+    const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
+    return s.missions[0].items[0].evidence.find(x=>x.stage==='HIDDEN_WORDS_ASSIST');
+  });
+  expect(assist.result).toBe('CORRECT');
+  expect(assist.objectiveVerified).toBe(true);
+  expect(assist.objectiveRecall).toBe(false);
+  expect(assist.recallScoreImpact).toBe(false);
+  expect(assist.assisted).toBe(true);
+
+  await page.getByLabel('최종 회상 답 입력').fill('benefit');
+  await page.getByRole('button',{name:'마지막 기억 확인'}).click();
+  await expect(page.getByRole('heading',{name:'탐험 완료'})).toBeVisible();
+  const final=await page.evaluate(()=>{
+    const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
+    return s.missions[0].items[0].evidence.find(x=>x.stage==='FINAL_SEEK');
+  });
+  expect(final.objectiveRecall).toBe(true);
+  expect(final.assisted).toBe(false);
 });
 
 test('Hide V2 skips Hidden Words for stable current evidence',async({page})=>{
