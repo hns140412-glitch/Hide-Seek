@@ -651,3 +651,82 @@ body.v2-runtime{
   .v2-runtime .trail-bridge__step b{font-size:11px}
   .v2-runtime .trail-bridge__step small{font-size:9px}
 }
+
+
+/* Child-readable Memory Ladder */
+.v2-runtime .ladder-board{
+  display:grid;
+  gap:10px;
+  margin:14px 0 18px;
+}
+.v2-runtime .ladder-rung{
+  display:grid;
+  gap:10px;
+  padding:13px;
+  border:1px solid var(--v2-line);
+  border-radius:20px;
+  background:rgba(255,255,255,.74);
+}
+.v2-runtime .ladder-rung__head{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.v2-runtime .ladder-rung__head>span{
+  width:34px;
+  height:34px;
+  display:grid;
+  place-items:center;
+  border-radius:12px;
+  font-weight:950;
+  background:rgba(215,228,210,.9);
+}
+.v2-runtime .ladder-rung__head>div{
+  display:grid;
+  gap:2px;
+}
+.v2-runtime .ladder-rung__head small{
+  color:var(--v2-muted);
+  font-weight:700;
+}
+.v2-runtime .ladder-rung__words{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+}
+.v2-runtime .ladder-rung__words button{
+  min-height:44px;
+  display:grid;
+  gap:2px;
+  min-width:86px;
+  padding:8px 11px;
+  border:0;
+  border-radius:14px;
+  background:rgba(244,247,241,.96);
+  color:var(--v2-ink);
+  text-align:left;
+  font:inherit;
+}
+.v2-runtime .ladder-rung__words button small{
+  color:var(--v2-muted);
+  font-size:10px;
+}
+.v2-runtime .ladder-rung--seek_again{
+  transform:translateX(0);
+}
+.v2-runtime .ladder-rung--climbing{
+  margin-left:18px;
+}
+.v2-runtime .ladder-rung--stable{
+  margin-left:36px;
+  background:rgba(240,248,232,.84);
+}
+.v2-runtime .ladder-empty{
+  color:var(--v2-muted);
+  font-size:11px;
+  padding:4px 0;
+}
+@media(max-width:390px){
+  .v2-runtime .ladder-rung--climbing{margin-left:10px}
+  .v2-runtime .ladder-rung--stable{margin-left:20px}
+}
