@@ -49,6 +49,8 @@
       to:String(x?.to||'').trim(),
       explanation:String(x?.explanation||'').trim()
     })).filter(x=>x.from&&x.to);
+    const coreMeaning=String(raw.coreMeaning||raw.core_meaning||'').trim();
+    if(!nodes.length||!coreMeaning)return null;
     return {
       domain,
       verified:true,
@@ -56,7 +58,7 @@
       sourceType,
       sourceRef,
       title:String(raw.title||'').trim(),
-      coreMeaning:String(raw.coreMeaning||raw.core_meaning||'').trim(),
+      coreMeaning,
       imageryCue:String(raw.imageryCue||raw.imagery_cue||'').trim(),
       memoryBridge:String(raw.memoryBridge||raw.memory_bridge||'').trim(),
       nodes,
