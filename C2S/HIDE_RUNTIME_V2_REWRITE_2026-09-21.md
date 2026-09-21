@@ -78,3 +78,13 @@ No merge, deploy, Netlify, production or device verification has occurred.
 - Wordbook now provides per-word Memory Detail and recent Evidence Trail.
 - Pre-doc code HEAD `ce0ad263af71a14d2c4939934f2c81cf5f7a3cad`: V2 #40 PASS, full Hide #494 PASS.
 - V2 PRODUCT_COMPLETION: ~48%; DEVICE_VERIFIED remains 0%.
+
+
+## Surgery increment — V2 PWA/offline ownership
+- Added V2-owned manifest, release descriptor, service worker and update controller.
+- V2 service worker has an isolated `hide-seek-v2:` cache namespace and excludes V1 runtime assets.
+- Offline shell reopen is browser-verified.
+- Update safe-point logic blocks activation during active learning and unfinished OCR capture/review.
+- Validation defect found and corrected: the main Playwright product-flow project had `serviceWorkers:'block'`, so prior PWA verification could not prove actual SW behavior.
+- Pre-doc code HEAD `eaafb969ff4b40c3bb547bbc81dea8f6240d030b`: V2 #54 PASS, full Hide #508 PASS.
+- V2 PRODUCT_COMPLETION: ~52%; DEVICE_VERIFIED remains 0%.
