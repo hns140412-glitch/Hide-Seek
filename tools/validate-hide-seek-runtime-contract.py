@@ -589,6 +589,10 @@ for needle in [
     "VERIFIED_MEANING_MAP",
     "supportStep",
     "ROOT_PROGRESSIVE_REVEAL",
+    ".scene-trail [data-scene-step][hidden]",
+    "scene-step-next",
+    "data-next-scene",
+    "SCENE_PROGRESSIVE_REVEAL",
     "supportType:plan?.type||null",
     "PARENT_CHILD",
 ]:
