@@ -39,10 +39,10 @@ test('Hide V2 presents one continuous child journey and a completion moment', as
   const path = page.locator('.journey-path');
   await expect(path).toBeVisible();
   await expect(path.locator('li')).toHaveCount(6);
-  await expect(path.locator('li.is-current small')).toHaveText('만나기');
+  await expect(path.locator('li.is-current small')).toHaveText('01 만나기');
 
   await page.getByRole('button', { name: '기억하고 찾아보기' }).click();
-  await expect(page.locator('.journey-path li.is-current small')).toHaveText('첫 찾기');
+  await expect(page.locator('.journey-path li.is-current small')).toHaveText('02 첫 찾기');
 
   await page.getByLabel('회상 답 입력').fill('island');
   await page.getByRole('button', { name: '기억 확인' }).click();
