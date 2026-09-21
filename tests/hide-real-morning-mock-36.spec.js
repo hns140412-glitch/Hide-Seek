@@ -55,6 +55,8 @@ test('real NEW 12 + REVIEW 24 follows mission, recall and morning mock-test memo
 
   await expect(page.getByText('새 단어 이해하고 외우기')).toBeVisible();
   await expect(page.getByText('environment',{exact:true})).toBeVisible();
+  await expect(page.getByText('지난 탐험에서 잘 통했던 단서',{exact:true})).toBeVisible();
+  await expect(page.getByText('어근·어원',{exact:true})).toBeVisible();
   let initial=await page.evaluate(()=>{
     const s=JSON.parse(localStorage.getItem('hide_seek_state'));
     const w=s.sheets[0].items[0];
