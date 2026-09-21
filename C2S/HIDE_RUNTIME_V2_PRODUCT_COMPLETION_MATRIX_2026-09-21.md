@@ -401,3 +401,21 @@ Head before matrix document: 63db5206a836050c3dfe5f2b9fd0238d6baeb464
 - The canonical six-stage child journey remains unchanged; FIRST_FIND_ASSIST is an internal recovery state mapped to FIRST FIND.
 - Exact code HEAD `56452289a112d338e2e9abd818a8acb9590794ee` passed V2 #300 / full Hide #758.
 - Conservative reporting rises one point for this newly runtime-proven child recovery path: PRODUCT ~77%, CODED ~93%, CI ~90%, Browser Runtime ~86%, Device 0%, Release 0%.
+
+
+### 2026-09-22 active inference Thinking Trail increment
+- MEMORIZE is no longer only a reveal/observe step when Thinking Trail support exists.
+- Child flow is now:
+  1. predict meaning/concept before reveal;
+  2. choose the clue used and confidence;
+  3. reveal verified/curated structure or semantic scene;
+  4. self-compare as MATCH / NEAR / MISS;
+  5. reuse accumulated clue tendencies only as optional guidance on later words.
+- Prediction and comparison remain learner self-report:
+  - objectiveVerified=false;
+  - objectiveRecall=false;
+  - recallScoreImpact=false.
+- `FIRST_SEEN_PREDICTION` events feed the existing `summarizeInferenceSkill()` path.
+- Adaptive guidance is conservative: ESTABLISHED evidence can surface a preferred clue, while the child may still choose another clue. No forced answer or recall scoring is introduced.
+- Exact HEAD `2714be8bd84985c7e3dde763aee270723486c1be` passed V2 #304 / full Hide #762.
+- Conservative reporting rises one point for this newly runtime-proven active inference loop: PRODUCT ~76%, CODED ~92%, CI ~89%, Browser Runtime ~85%, Device 0%, Release 0%.
