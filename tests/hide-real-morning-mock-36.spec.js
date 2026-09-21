@@ -53,6 +53,14 @@ test('real NEW 12 + REVIEW 24 follows mission, recall and morning mock-test memo
   for(let i=0;i<12;i++){
     const expected=fixture.items[i];
     await expect(page.getByText(expected.eng,{exact:true})).toBeVisible();
+    if(i===0){
+      await expect(page.getByText('먼저 생각해보기',{exact:true})).toBeVisible();
+      await expect(page.getByRole('button',{name:'외웠어요 · 다음'})).toBeDisabled();
+      await page.getByRole('button',{name:'장면 단서 보기'}).click();
+      await expect(page.getByText(/집, 학교, 공기, 물, 나무/)).toBeVisible();
+    }
+    await page.getByRole('button',{name:'뜻 확인하기'}).click();
+    await expect(page.getByText(expected.kor,{exact:true})).toBeVisible();
     await page.getByRole('button',{name:'외웠어요 · 다음'}).click();
   }
 
@@ -82,6 +90,7 @@ test('real NEW 12 + REVIEW 24 follows mission, recall and morning mock-test memo
     };
   });
   expect(firstRecall.prep).toBe(true);
+  expect(firstRecall.acquisition).toContain('MEANING_CONFIRMATION');
   expect(firstRecall.acquisition).toContain('MEMORIZATION_EXPOSURE');
   expect(firstRecall.retrieval).toContain('FIRST_RECALL_CORRECT');
 
