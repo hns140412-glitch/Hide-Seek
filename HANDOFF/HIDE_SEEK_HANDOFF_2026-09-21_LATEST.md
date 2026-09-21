@@ -132,7 +132,7 @@ Latest branch state must be checked live before work resumes. Do not reuse the o
 - Language Memory != homework / assignment / Hanja grade.
 - Ready Learning Engine owns homework interpretation, Learning Unit, and Hanja grade/level resolution.
 - Hide consumes resolved `learningContext` only.
-- Hide owns cumulative language-memory evidence and Memory Ladder adaptation.
+- Hide owns cumulative language-memory evidence and within-session Memory Ladder adaptation only; it emits review-need signals but does not schedule review dates.
 - Do not add independent Hanja-grade inference back into Hide.
 
 
@@ -142,7 +142,7 @@ Latest branch state must be checked live before work resumes. Do not reuse the o
 - Language Memory ownership is locked:
   - Ready owns homework / Learning Unit / Hanja level.
   - Hide consumes resolved `learningContext`.
-  - Hide owns cumulative memory evidence and Memory Ladder.
+  - Hide owns cumulative memory evidence and Memory Ladder state; Ready Learning Engine interprets review need and Ready & Set Planner schedules it.
 - Do not reintroduce independent Hanja-grade inference into Hide.
 - Continue pre-deploy implementation only.
 
