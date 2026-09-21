@@ -333,3 +333,12 @@ FALSE_CONVERGENCE = 0: live deploy/device/real-provider claims remain OPEN.
 - Unsupported domains fail closed; no Korean/Hanja shape cue is fabricated.
 - Exact code HEAD `56452289a112d338e2e9abd818a8acb9590794ee` passed V2 #300 / full Hide #758.
 - Locked reporting: PRODUCT ~77%, CODED ~93%, CI ~90%, Browser Runtime ~86%, Device 0%, Release 0%.
+
+
+## 25. 2026-09-22 active inference THINKING TRAIL
+- MEMORIZE now preserves an active inference loop: prediction → clue/confidence self-report → reveal → MATCH/NEAR/MISS self-comparison.
+- These inference records are transfer-skill/self-report evidence only and never objective recall.
+- Accumulated `FIRST_SEEN_PREDICTION` events are summarized through the existing inference-skill model.
+- Only established clue tendencies are surfaced as optional future guidance; the child can choose another clue.
+- Exact HEAD `2714be8bd84985c7e3dde763aee270723486c1be` passed V2 #304 / full Hide #762.
+- Locked reporting: PRODUCT ~76%, CODED ~92%, CI ~89%, Browser Runtime ~85%, Device 0%, Release 0%.
