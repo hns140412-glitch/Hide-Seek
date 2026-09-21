@@ -28,7 +28,7 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 | FIRST FIND | RUNTIME_VERIFIED | yes | fixture | correct/wrong/unsure + English shape + verified Korean meaning-map + verified Hanja sound assist + relearn truth-boundary browser flows | representative source breadth still open |
 | MEANING CLUE | RUNTIME_VERIFIED | yes | fixture | direct recall fallback + session-scoped bidirectional recognition + confusion handoff browser flow | broader representative confusion sets still open |
 | English CONNECTION | RUNTIME_VERIFIED | yes | fixture | established inference-history personalization + non-recall guidance browser flow | broader representative vocabulary/history still open |
-| Korean RESPONSE TRAIL | RUNTIME_VERIFIED | yes | fixture | production-evidence + target-use truth-boundary browser flow | semantic correctness is intentionally not auto-scored; richer teacher/parent feedback remains open |
+| Korean RESPONSE TRAIL | RUNTIME_VERIFIED | yes | fixture | production evidence + target-use feedback + scoped human-review handoff/completion note browser flow | external parent/teacher review UI and representative responses remain open |
 | Korean EVIDENCE TRAIL | RUNTIME_VERIFIED | yes when verified contextEvidence exists | verified-context fixture | browser evidence-selection truth-boundary flow | representative Korean source evidence still open |
 | Hanja SOUND FIND | RUNTIME_VERIFIED | yes when verified soundEvidence exists | verified-sound fixture | dedicated V2 browser sound-recall flow | representative Hanja source/device pronunciation workflow still open |
 | HIDDEN WORDS reinforcement | RUNTIME_VERIFIED | conditional | fixture | Memory Engine-gated + reason-specific + staged-assistance browser flows | deeper multi-step ladder remains partial beyond one safe clue escalation |
@@ -48,10 +48,10 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 
 ## Claim levels
 
-- PRODUCT_COMPLETION: approximately 78%
+- PRODUCT_COMPLETION: approximately 79%
 - CODED: approximately 94%
-- CI_VERIFIED: approximately 91%
-- BROWSER_RUNTIME_VERIFIED: approximately 87%
+- CI_VERIFIED: approximately 92%
+- BROWSER_RUNTIME_VERIFIED: approximately 88%
 - DEVICE_VERIFIED: 0%
 - RELEASE_VERIFIED: 0%
 
@@ -442,3 +442,13 @@ Head before matrix document: 63db5206a836050c3dfe5f2b9fd0238d6baeb464
 - The normal CONNECTION exposure record remains separate.
 - Exact HEAD `b307014e92b8e3448c48e697154b3a2e8cb60db9` passed V2 #319 / full Hide #777.
 - Conservative reporting moves one point for this runtime-proven adaptive connection path: PRODUCT ~78%, CODED ~94%, CI ~91%, Browser Runtime ~87%, Device 0%, Release 0%.
+
+
+### 2026-09-22 Korean expression human-review handoff increment
+- RESPONSE TRAIL now exports scoped expression review candidates through HIDE_SPECIALIST_RESULT_V2.
+- Each candidate preserves the submitted sentence, target-word-use fact, lexical/item identity and the explicit boundary `semanticCorrectnessClaimed=false` / `objectiveVerified=false`.
+- Review state is `HUMAN_SEMANTIC_REVIEW_AVAILABLE`; Hide does not assign a semantic correctness score.
+- Candidate projection obeys the active Ready-directed `session.queue`; unrelated mission expressions are not leaked into the result.
+- The child completion surface quietly reports how many expressions remain for parent/teacher semantic review.
+- Exact HEAD `50d04cf2f891b4844ddf16f225b40f4bf1a947cf` passed V2 #326 / full Hide #784.
+- Conservative reporting: PRODUCT ~79%, CODED stays ~94%, CI ~92%, Browser Runtime ~88%, Device 0%, Release 0%.
