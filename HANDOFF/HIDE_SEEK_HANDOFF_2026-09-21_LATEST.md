@@ -168,3 +168,9 @@ Latest branch state must be checked live before work resumes. Do not reuse the o
 
 ## Memory advisory handoff contract
 Hide exports `reviewAdvisories` as evidence, not a schedule. The packet may include memory strength, weakness dimensions, confusion, latency, hint dependence, recovery state, spaced-recall evidence and `nextReviewPriority`. Ready Learning Engine interprets the packet, and Ready & Set Planner decides when/where a review becomes a dated task.
+
+
+## Resolved context correlation lock
+- Word-level normalized state now preserves the semantic-light Ready-resolved `learningContext`; the prior discard bug is fixed.
+- `reviewAdvisories[].learningContextRef` may correlate Hide memory evidence to Ready context IDs/unit/range and upstream-resolved Hanja level metadata.
+- This is correlation only. Hide must not infer grade/range, identity/role, review policy, or schedule from the context.
