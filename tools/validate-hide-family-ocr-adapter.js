@@ -40,8 +40,8 @@ async function runCase(responseBody,status=200){
       analysis_domain:'HIDE_VOCABULARY',
       analysis_version:'HIDE_VOCABULARY_OCR_V1',
       rows:[
-        {eng:'benefit',kor:'혜택',confidence:'high',evidence_item_id:'page-1',warnings:[]},
-        {eng:'essential',kor:'필수적인',confidence:'low',evidence_item_id:'page-1',warnings:['뜻 일부 흐림']}
+        {eng:'benefit',kor:'혜택',confidence:'high',evidence_item_id:'page-1',source_column:'LEFT',source_row_index:0,source_column_index:0,warnings:[]},
+        {eng:'essential',kor:'필수적인',confidence:'low',evidence_item_id:'page-1',source_column:'RIGHT',source_row_index:0,source_column_index:0,warnings:['뜻 일부 흐림']}
       ]
     }
   });
@@ -50,6 +50,9 @@ async function runCase(responseBody,status=200){
   assert(ok.rows[1].confidence==='low','confidence must be preserved');
   assert(ok.rows[1].evidenceItemId==='page-1','source evidence item must be preserved');
   assert(ok.rows[1].warnings[0]==='뜻 일부 흐림','OCR warning must be preserved');
+  assert(ok.rows[0].sourceColumn==='LEFT','physical source column must be preserved');
+  assert(ok.rows[1].sourceColumn==='RIGHT','right source column must be preserved');
+  assert(ok.rows[0].sourceColumnIndex===0,'column-local row index must be preserved');
   assert(ok.analysis_domain==='HIDE_VOCABULARY','analysis domain must remain explicit');
 
   const mismatch=await runCase({
