@@ -151,3 +151,8 @@ Ready memory-review integration:
 - Ready draft PR #100 implements the branch-only roundtrip adapter.
 - Preserve ownership: Hide evidence only -> Ready policy -> Planner schedule -> Hide retrieval.
 - Do not merge Ready PR #100 or deploy without explicit gate/human approval.
+
+
+Session roundtrip:
+- Ready PR #100 carries review_directive into Hide launch and preserves Hide memorySummary on return.
+- Keep all scheduling/policy ownership unchanged.
