@@ -426,9 +426,15 @@
           kor: x.kor,
           confidence,
           needsReview: confidence === 'low',
-          manuallyEdited: false
+          manuallyEdited: false,
+          sourceColumn: x.sourceColumn || 'UNKNOWN',
+          sourceRowIndex: Number(x.sourceRowIndex ?? i),
+          sourceColumnIndex: Number(x.sourceColumnIndex ?? i)
         }, i),
         sourcePageId: page.pageId,
+        sourceColumn: x.sourceColumn || 'UNKNOWN',
+        sourceRowIndex: Number(x.sourceRowIndex ?? i),
+        sourceColumnIndex: Number(x.sourceColumnIndex ?? i),
         sourcePageOrder: page.displayOrder,
         reviewResolved: confidence !== 'low',
         ocrProvider: result.provider || null,
@@ -481,7 +487,17 @@
     }
 
     session.dirtyPageIds = (session.dirtyPageIds || []).filter(id => !succeeded.includes(id));
-    session.lastRows = [...cleanRows, ...newRows].sort((a, b) => (a.sourcePageOrder || 0) - (b.sourcePageOrder || 0));
+    session.lastRows = [...cleanRows, ...newRows].sort((a, b) => {
+      const pageDiff=(a.sourcePageOrder||0)-(b.sourcePageOrder||0);if(pageDiff)return pageDiff;
+      const colOrder={LEFT:0,CENTER:1,RIGHT:2,UNKNOWN:3};
+      const colDiff=(colOrder[a.sourceColumn]??3)-(colOrder[b.sourceColumn]??3);if(colDiff)return colDiff;
+      return Number(a.sourceColumnIndex??a.sourceRowIndex??0)-Number(b.sourceColumnIndex??b.sourceRowIndex??0);
+    });
+    const left=session.lastRows.filter(x=>x.sourceColumn==='LEFT');
+    const known=session.lastRows.filter(x=>x.sourceColumn!=='UNKNOWN');
+    session.sourceLayoutProfile=(session.lastRows.length===36&&left.length===12&&known.length===36)
+      ?'WEEKDAY_VOCAB_LEFT12_NEW_REST_REVIEW'
+      :(session.sourceLayoutProfile||'');
     session.analysisBatches.push({
       batchId: makeId('batch'),
       sourcePageIds: targets.map(p => p.pageId),
@@ -510,7 +526,10 @@
       ocrAnalysisVersion: row.ocrAnalysisVersion || null,
       ocrAnalysisDomain: row.ocrAnalysisDomain || 'HIDE_VOCABULARY',
       ocrEvidenceItemId: row.ocrEvidenceItemId || row.sourcePageId || null,
-      ocrWarnings: Array.isArray(row.ocrWarnings) ? [...row.ocrWarnings] : []
+      ocrWarnings: Array.isArray(row.ocrWarnings) ? [...row.ocrWarnings] : [],
+      sourceColumn: row.sourceColumn || 'UNKNOWN',
+      sourceRowIndex: Number(row.sourceRowIndex ?? i),
+      sourceColumnIndex: Number(row.sourceColumnIndex ?? i)
     }));
 
     const view = document.querySelector('#view');
@@ -618,7 +637,16 @@
         ocrEvidenceItemId: x.ocrEvidenceItemId || x.sourcePageId || null,
         ocrWarnings: Array.isArray(x.ocrWarnings) ? [...x.ocrWarnings] : []
       }));
-      items = typeof applyMissionRoles === 'function' ? applyMissionRoles(items, sheetId) : items;
+      if(session.sourceLayoutProfile==='WEEKDAY_VOCAB_LEFT12_NEW_REST_REVIEW'){
+        const hasPhysicalColumns=items.some(x=>x.sourceColumn&&x.sourceColumn!=='UNKNOWN');
+        items=items.map((x,i)=>({
+          ...x,
+          missionRole:hasPhysicalColumns?(x.sourceColumn==='LEFT'?'NEW':'REVIEW'):(i<12?'NEW':'REVIEW'),
+          missionRoleSource:hasPhysicalColumns?'SOURCE_LAYOUT_COLUMN':'SOURCE_LAYOUT_PROFILE_FALLBACK'
+        }));
+      }else{
+        items = typeof applyMissionRoles === 'function' ? applyMissionRoles(items, sheetId) : items;
+      }
       const newSheet = {
         sheetId,
         title: `${new Date().toLocaleDateString('ko-KR')} 숨은 단어`,
@@ -640,6 +668,10 @@
           providers: [...new Set(items.map(x => x.ocrProvider).filter(Boolean))],
           models: [...new Set(items.map(x => x.ocrModel).filter(Boolean))],
           evidenceItemIds: [...new Set(items.map(x => x.ocrEvidenceItemId).filter(Boolean))],
+          sourceLayoutProfile:session.sourceLayoutProfile||null,
+          sourceRoleRule:session.sourceLayoutProfile==='WEEKDAY_VOCAB_LEFT12_NEW_REST_REVIEW'
+            ?{newRule:'LEFT_COLUMN',newCount:12,reviewRule:'NON_LEFT',reviewCount:24}
+            :null,
           sourcePages: session.pages.map(p => ({
             pageId:p.pageId,
             displayOrder:p.displayOrder,
