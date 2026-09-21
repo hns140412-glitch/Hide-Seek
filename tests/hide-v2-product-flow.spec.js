@@ -39,6 +39,7 @@ test('Hide V2 boots without legacy app.js and completes a mission end-to-end',as
   const word=state.missions[0].items[0];
   expect(word.evidence.some(x=>x.stage==='FIRST_FIND'&&x.objectiveRecall===true)).toBeTruthy();
   expect(word.evidence.some(x=>x.stage==='MEANING'&&x.objectiveRecall===true)).toBeTruthy();
+  expect(word.evidence.some(x=>x.stage==='FINAL_SEEK'&&x.evidenceMode==='RECONSTRUCTION'&&x.objectiveRecall===true)).toBeTruthy();
   expect(state.missions[0].memorySummary.authority).toBe('SPECIALIST_MEMORY_ADVISORY_ONLY');
 });
 
@@ -90,6 +91,31 @@ test('Hide V2 OCR path uses the shared family adapter and commits reviewed rows'
   const state=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')));
   expect(state.missions).toHaveLength(1);
   expect(state.missions[0].items[0].token).toBe('environment');
+});
+
+test('Hide V2 persists OCR review state across reload',async({page})=>{
+  await page.route('**/api/capture/analyze',async route=>{
+    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
+      ok:true,provider:'FIXTURE_VISION',model:'v2-fixture',analysis_domain:'HIDE_VOCABULARY',
+      result:{analysis_domain:'HIDE_VOCABULARY',analysis_version:'HIDE_VOCABULARY_OCR_V1',
+        rows:[{eng:'island',kor:'섬',confidence:'high',warnings:[],mission_role:'NEW'}]}
+    })});
+  });
+  await page.goto('/v2.html');
+  await page.locator('#sheetLibraryInput').setInputFiles({name:'island.jpg',mimeType:'image/jpeg',buffer:Buffer.from('persistent-v2-image')});
+  await expect(page.getByRole('heading',{name:'분석 결과 확인'})).toBeVisible();
+  await expect(page.getByText('island',{exact:true})).toBeVisible();
+
+  await page.reload();
+  await expect(page.getByRole('heading',{name:'분석 결과가 남아 있어요'})).toBeVisible();
+  await page.getByRole('button',{name:'분석 결과 이어보기'}).click();
+  await expect(page.getByRole('heading',{name:'분석 결과 확인'})).toBeVisible();
+  await expect(page.getByText('island',{exact:true})).toBeVisible();
+
+  const capture=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')).captureSession);
+  expect(capture.status).toBe('REVIEW');
+  expect(capture.pages).toHaveLength(1);
+  expect(capture.lastRows[0].eng).toBe('island');
 });
 
 test('Hide V2 migrates V1 mission and memory traces without deleting legacy state',async({page})=>{
