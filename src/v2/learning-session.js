@@ -175,9 +175,33 @@
     return {session:advance(session,mission)};
   }
 
+  function useFinalSupport(session,mission,support={}){
+    const w=current(session,mission);
+    const next=clone(session);
+    next.attempts=next.attempts||{};
+    const key=`${w.id}:FINAL_SEEK_ASSIST`;
+    if(Number(next.attempts[key]||0)>0)return {session:next,alreadyUsed:true};
+    next.attempts[key]=1;
+    HideV2Memory.record(mission.id,w.id,{
+      stage:'FINAL_SEEK_SUPPORT',
+      evidenceMode:'ASSISTANCE',
+      axes:['MEANING','CONTEXT'],
+      result:'USED',
+      objectiveVerified:false,
+      objectiveRecall:false,
+      recallScoreImpact:false,
+      assisted:true,
+      supportType:String(support.supportType||'SEMANTIC_SCENE'),
+      sourceType:support.sourceType||null,
+      source:support.sourceRef||null
+    });
+    return {session:next,alreadyUsed:false};
+  }
+
   function checkFinalSeek(session,mission,answer){
     const w=current(session,mission);
     const attempt=recordAttempt(session,w.id,'FINAL_SEEK');
+    const assisted=Number(attempt.session.attempts?.[`${w.id}:FINAL_SEEK_ASSIST`]||0)>0;
     const a=String(answer||'').trim().normalize('NFKC').toLowerCase();
     const target=String(w?.token||'').trim().normalize('NFKC').toLowerCase();
     const ok=!!a&&a===target;
@@ -187,14 +211,16 @@
       axes:['FORM','RECALL','WRITE_OR_RECONSTRUCT'],
       result:ok?'CORRECT':'WRONG',
       objectiveVerified:true,
-      objectiveRecall:true,
-      assisted:false,
+      objectiveRecall:!assisted,
+      recallScoreImpact:!assisted,
+      assisted,
+      hintLevel:assisted?1:0,
       attempt:attempt.count
     });
-    if(ok)return {ok,session:nextItemOrComplete(attempt.session,mission)};
+    if(ok&&!assisted)return {ok,assisted:false,session:nextItemOrComplete(attempt.session,mission)};
     const next=clone(attempt.session);
     next.stage='SEEK_AGAIN_RELEARN';
-    return {ok,session:next};
+    return {ok,assisted,session:next};
   }
 
   function submitSeekAgainRelearn(session,mission){
@@ -236,6 +262,6 @@
   }
 
   window.HideV2Learning=Object.freeze({
-    STAGES,create,current,advance,submitMemorize,checkFirstFind,checkMeaning,submitDomainExtension,checkFinalSeek,submitSeekAgainRelearn,checkSeekAgain
+    STAGES,create,current,advance,submitMemorize,checkFirstFind,checkMeaning,submitDomainExtension,useFinalSupport,checkFinalSeek,submitSeekAgainRelearn,checkSeekAgain
   });
 })();
