@@ -622,6 +622,15 @@ for needle in [
     if needle not in app:
         fail.append("RECORDS_SELF_REPORT_RATE_CONTRACT:"+needle)
 
+if 'u.lang="en-US"' in app:
+    fail.append("SOUND_HINT_LANGUAGE_DOMAIN_CONTRACT:hardcoded_en_US")
+for needle in [
+    "speechLanguageForWord",
+    "domain==='ENGLISH'?'en-US':'ko-KR'",
+]:
+    if needle not in app:
+        fail.append("SOUND_HINT_LANGUAGE_DOMAIN_CONTRACT:"+needle)
+
 for needle in [
     "finalSeekUnits",
     "finalSeekDistractorPool",
