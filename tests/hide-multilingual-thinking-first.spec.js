@@ -81,10 +81,10 @@ test('verified Korean and Hanja meaning maps use thinking-first without fake ety
   await page.getByRole('button',{name:'내 추론 남기기'}).click();
   await page.getByRole('button',{name:'구조·장면 단서 보기'}).click();
   await expect(page.getByText(/부모 설명 한 줄 · VERIFIED_MEANING_STRUCTURE/)).toBeVisible();
-  const koAssist=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_state')).sheets[1].items[0].learningStats?.assistanceTrace?.at(-1));
+  const koAssist=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_state')).sheets.find(x=>x.sheetId==='multilingual-thinking-first')?.items[0].learningStats?.assistanceTrace?.at(-1));
   expect(koAssist).toMatchObject({step:'VERIFIED_MEANING_MAP',languageDomain:'KOREAN',historicalEtymologyClaim:false});
   await page.getByRole('button',{name:'다음 뜻의 흔적 보기'}).click();
-  const koProgressive=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_state')).sheets[1].items[0].learningStats?.assistanceTrace?.at(-1));
+  const koProgressive=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_state')).sheets.find(x=>x.sheetId==='multilingual-thinking-first')?.items[0].learningStats?.assistanceTrace?.at(-1));
   expect(koProgressive).toMatchObject({step:'ROOT_PROGRESSIVE_REVEAL',languageDomain:'KOREAN',supportType:'VERIFIED_MEANING_MAP',historicalEtymologyClaim:false,recallScoreImpact:false});
   await page.getByRole('button',{name:'뜻 확인하기'}).click();
   await page.getByRole('button',{name:'비슷했어'}).click();
@@ -106,8 +106,9 @@ test('verified Korean and Hanja meaning maps use thinking-first without fake ety
 
   const evidence=await page.evaluate(()=>{
     const s=JSON.parse(localStorage.getItem('hide_seek_state'));
-    const first=s.sheets[0].items[0];
-    return first.learningStats?.inferenceTrace?.at(-1);
+    const mission=s.sheets.find(x=>x.sheetId==='multilingual-thinking-first');
+    const first=mission?.items.find(x=>x.id==='ko-1');
+    return first?.learningStats?.inferenceTrace?.at(-1);
   });
   expect(evidence).toMatchObject({
     event:'FIRST_SEEN_PREDICTION',
