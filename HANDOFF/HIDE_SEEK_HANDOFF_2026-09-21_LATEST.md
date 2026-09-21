@@ -222,3 +222,10 @@ Hide exports `reviewAdvisories` as evidence, not a schedule. The packet may incl
 - Hide return memorySummary is validated and preserved in the Ready session task result.
 - Session wrap-up carries Hide specialistResult together with Planner outcome.
 - Keep Hide scheduling authority at zero; Ready Learning Engine owns policy and Planner owns dates/TODOs.
+
+
+## Evidence truth-boundary lock
+- Do not equate objective correctness with recall.
+- Use `objectiveVerified` for checkable recognition/association/evidence-selection.
+- Use `objectiveRecall` only for actual retrieval/reconstruction.
+- Memory summaries expose both counters and evidence modes.
