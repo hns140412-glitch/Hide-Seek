@@ -205,3 +205,13 @@ Hide exports `reviewAdvisories` as evidence, not a schedule. The packet may incl
 - Hide reuses the same `/api/capture/analyze` + TAKY vision-ingest boundary and must not duplicate the OCR engine.
 - Hide adds only HIDE_VOCABULARY domain semantics and vocabulary review/evidence normalization.
 - Implementation reporting must separate shared OCR foundation implementation from live-provider and device verification.
+
+
+## Ready ↔ Hide memory review roundtrip
+- Ready branch `integration/hide-memory-review-roundtrip-v01`, draft PR #100.
+- Canonical flow is now implemented branch-side:
+  `Hide evidence -> Ready review policy -> Planner confirmed-window dated TODO -> review directive -> Hide retrieval -> new evidence`.
+- Ready review-policy decision contains no schedule date.
+- Planner fails closed without confirmed availability.
+- Hide must continue to activate old-memory retrieval only from `EXPLICIT_READY_PLANNER_REVIEW_DIRECTIVE`.
+- Initial Ready integration/Runtime/Planner/TAKY CI all passed. No merge or deployment.
