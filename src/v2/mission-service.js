@@ -18,7 +18,15 @@
       soundEvidence:normalized.soundEvidence||null,
       missionRole:['NEW','REVIEW'].includes(clean(raw?.missionRole).toUpperCase())?clean(raw.missionRole).toUpperCase():'NEW',
       evidence:[],
-      source:{pageId:clean(raw?.sourcePageId),rowIndex:Number(raw?.sourceRowIndex??index)}
+      source:{
+        pageId:clean(raw?.sourcePageId),
+        rowIndex:Number(raw?.sourceRowIndex??index),
+        confidence:clean(raw?.confidence||'medium').toLowerCase(),
+        warnings:Array.isArray(raw?.warnings)?raw.warnings.map(String):[],
+        provider:clean(raw?.ocrProvider),
+        model:clean(raw?.ocrModel),
+        analysisVersion:clean(raw?.ocrAnalysisVersion)
+      }
     };
   }
   function createMission(input={}){
