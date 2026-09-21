@@ -113,7 +113,7 @@ Current code has moved from developer-shell UI toward child-facing exploration U
 - Hide & Seek remains installed/user-facing identity
 
 Important: final visual-design polish is NOT closed.
-The next conversation should continue UI/UX surgery against `Hide_Seek_UI_MASTER_LOGIC_REV_04.md`, but must first restore exact-head CI if the latest documentation/UI gate run is not green.
+Child-facing continuity is now browser-verified across home, mission map, learning journey, completion, Memory Ladder/memory detail, and OCR review/recovery. Exploration Crew presentation and reduced-motion-safe completion motion are implemented. The next conversation should continue final art-direction/device-ready polish against `Hide_Seek_UI_MASTER_LOGIC_REV_04.md`, but must first restore exact-head CI if the latest documentation/UI gate run is not green.
 
 ## 9. Frozen candidate
 Current governed frozen candidate:
@@ -138,10 +138,10 @@ The available Netlify deploy action accepts siteId only and cannot specify exact
 
 ## 11. Product completion — locked reporting
 Current last closed product-level estimate:
-- PRODUCT_COMPLETION: ~62%
-- CODED: ~79%
-- CI_VERIFIED: ~75%
-- Browser RUNTIME_VERIFIED: ~70%
+- PRODUCT_COMPLETION: ~66%
+- CODED: ~82%
+- CI_VERIFIED: ~79%
+- Browser RUNTIME_VERIFIED: ~75%
 - DEVICE_VERIFIED: 0%
 - RELEASE_VERIFIED: 0%
 
@@ -178,3 +178,20 @@ Recovered/locked material:
 UNMAPPED_MATERIAL = 0 within this rewrite scope.
 SILENT_LOSS = 0 within this rewrite scope.
 FALSE_CONVERGENCE = 0: live deploy/device/real-provider claims remain OPEN.
+
+
+## 14. 2026-09-22 child-facing continuity correction
+- Exploration Crew presentation is no longer only a skeleton: the V2 adapter/fallback and answer-safe presentation are browser-runtime verified.
+- Hide consumes crew presentation only; Snap & Pop remains owner of crew identity/personality/intervention grammar.
+- Child-facing surfaces now form one continuous product language:
+  `홈 → 오늘의 탐험 지도 → 6단계 단어 탐험 → 탐험 완료 → 기억 사다리/기억 길`.
+- Memory Ladder UI semantics were corrected to the actual Memory Engine. UI-only 80/45 thresholds were removed.
+- `primaryReason`, `needsUnassistedRecall`, and engine-owned `memoryStrength < 60` advisory criteria now drive child-facing path labels.
+- Technical memory diagnostics and OCR provider/warning codes remain inspectable but are not the primary child surface.
+- OCR review/recovery preserves edit/exclude/provenance and failed-page-only retry while using child-readable setup/recovery copy.
+- Completion celebration motion is browser-verified and fully disabled under `prefers-reduced-motion: reduce`.
+- Exact pre-document code HEAD: `6a3c31e70c2e30aa770e08733162f1eaad2cf7dc`.
+  - Validate Hide Runtime V2 #173: SUCCESS.
+  - Validate Hide & Seek #627: SUCCESS.
+- Locked reporting remains PRODUCT_COMPLETION ~66%, CODED ~82%, CI_VERIFIED ~79%, Browser RUNTIME_VERIFIED ~75%, DEVICE_VERIFIED 0%, RELEASE_VERIFIED 0%.
+- Remaining OPEN claims: representative live OCR prints/provider, physical camera/device/keyboard/PWA lifecycle, current frozen Ready↔Hide hosted roundtrip, final art direction, exact-ref release/deploy.
