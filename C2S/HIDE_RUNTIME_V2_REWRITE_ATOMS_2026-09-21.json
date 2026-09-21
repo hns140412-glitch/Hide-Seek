@@ -72,7 +72,7 @@
     {
       "id": "HIDE-V2-C2S-012",
       "type": "EVIDENCE",
-      "statement": "Locked last closed product estimate: Product 76, Coded 92, CI 89, Browser Runtime 85, Device 0, Release 0.",
+      "statement": "Locked last closed product estimate: Product 77, Coded 93, CI 90, Browser Runtime 86, Device 0, Release 0.",
       "destination": "status"
     },
     {
@@ -242,6 +242,24 @@
       "type": "DECISION",
       "statement": "Only ESTABLISHED and current-plan-applicable inference clue tendencies may surface as optional later guidance; LOW/EMERGING evidence must not become stable personalization.",
       "destination": "learning/adaptive-inference"
+    },
+    {
+      "id": "HIDE-V2-C2S-041",
+      "type": "EVIDENCE",
+      "statement": "English FIRST FIND wrong/UNSURE may use one safe shape cue before full relearn; assisted retry is objectively checkable but never objective recall.",
+      "destination": "learning/first-find"
+    },
+    {
+      "id": "HIDE-V2-C2S-042",
+      "type": "CORRECTION",
+      "statement": "A correct FIRST_FIND_ASSIST response must not be counted as unassisted recall or Memory Strength recall success.",
+      "destination": "memory-evidence/assistance-truth-boundary"
+    },
+    {
+      "id": "HIDE-V2-C2S-043",
+      "type": "DECISION",
+      "statement": "FIRST FIND assistance fails closed outside supported English shape cues; Korean/Hanja cues must not be fabricated.",
+      "destination": "learning/assistance"
     }
   ],
   "coverage": {
