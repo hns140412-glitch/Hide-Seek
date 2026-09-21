@@ -577,6 +577,8 @@ for needle in [
     "adaptiveClue",
     "evidenceLevel",
     "currentWordApplicable:true",
+    "currentWordApplicable:false",
+    "applicableInferenceProfile",
     "inferenceWordDomain",
     "languageDomain:currentDomain",
     "inferenceRecordSummary(currentDomain)",
