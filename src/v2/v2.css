@@ -1,0 +1,62 @@
+/* Hide & Seek Runtime V2 UI boundary.
+   V2 reuses visual tokens from styles.css but owns layout/hit-testing here. */
+body.v2-runtime{
+  min-height:100dvh;
+  overflow-x:hidden;
+}
+.v2-runtime .app-shell{
+  min-height:100dvh;
+}
+.v2-runtime .top-safe{
+  position:relative;
+  top:auto;
+  z-index:10;
+}
+.v2-runtime .view{
+  padding-top:12px;
+  padding-bottom:32px;
+  scroll-padding-top:12px;
+}
+.v2-runtime #partnerBar,
+.v2-runtime #bottomNav{
+  display:none!important;
+}
+.v2-runtime .world-hero{
+  min-height:300px;
+}
+.v2-runtime .hero-case{
+  pointer-events:auto;
+}
+.v2-runtime button,
+.v2-runtime input,
+.v2-runtime textarea{
+  touch-action:manipulation;
+}
+.v2-runtime .btn{
+  min-height:48px;
+}
+.v2-runtime .input{
+  font-size:16px;
+}
+.v2-runtime textarea.input{
+  min-height:112px;
+  resize:vertical;
+}
+.v2-runtime .v2-runtime-badge{
+  display:inline-flex;
+  align-items:center;
+  min-height:28px;
+  padding:5px 9px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:800;
+}
+@media(max-width:390px){
+  .v2-runtime .view{
+    padding-left:10px;
+    padding-right:10px;
+  }
+  .v2-runtime .hero-actions{
+    grid-template-columns:1fr;
+  }
+}
