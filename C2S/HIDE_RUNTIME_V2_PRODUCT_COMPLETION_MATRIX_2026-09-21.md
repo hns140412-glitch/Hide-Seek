@@ -48,10 +48,10 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 
 ## Claim levels
 
-- PRODUCT_COMPLETION: approximately 74%
-- CODED: approximately 90%
-- CI_VERIFIED: approximately 87%
-- BROWSER_RUNTIME_VERIFIED: approximately 83%
+- PRODUCT_COMPLETION: approximately 75%
+- CODED: approximately 91%
+- CI_VERIFIED: approximately 88%
+- BROWSER_RUNTIME_VERIFIED: approximately 84%
 - DEVICE_VERIFIED: 0%
 - RELEASE_VERIFIED: 0%
 
@@ -357,3 +357,18 @@ Head before matrix document: 63db5206a836050c3dfe5f2b9fd0238d6baeb464
 - The response is locked after submission before the journey continues, preventing accidental duplicate production evidence.
 - Exact HEAD `17ea285c2c8a53ab2735c6be08f99d5f34debfab` passed V2 #275 / full Hide #733.
 - Completion percentages remain unchanged because this closes a feedback/truth-boundary gap inside an already reachable Korean path.
+
+
+### 2026-09-22 Hanja SOUND miss recovery increment
+- A wrong Hanja SOUND FIND no longer silently advances.
+- Recovery path is now:
+  1. wrong typed sound is stored as objective SOUND recall evidence;
+  2. the verified source-linked reading is re-exposed once as assisted RELEARN_EXPOSURE;
+  3. the reading is hidden again;
+  4. the session explicitly hands off to SOUND-specific HIDDEN WORDS reinforcement;
+  5. FINAL SEEK remains separate form/retrieval verification.
+- No reading is inferred. Recovery is available only when canonical verified `soundEvidence` exists.
+- The generic Memory Engine recovery reason can mask a more specific sound axis, so the immediate recovery handoff carries an activity-only SOUND override. It does not change Memory Engine scores, review policy, or scheduling ownership.
+- A runtime API export omission in the first implementation was caught by exact-head browser CI and corrected.
+- Exact code HEAD `ad8872a9305a121b783142f00e4a8d2c22e6ad1c` passed V2 #284 / full Hide #742.
+- Conservative reporting moves one point for this newly runtime-proven language-domain recovery path: PRODUCT ~75%, CODED ~91%, CI ~88%, Browser Runtime ~84%, Device 0%, Release 0%.
