@@ -696,3 +696,88 @@ test('Hide V2 wrong final seek enters relearn and seek-again before completing',
   expect(trail.recoveredTodayCount).toBe(1);
   expect(trail.semantics).toBe('CURRENT_SESSION_OR_MISSION_READINESS_NOT_LONG_TERM_MEMORY');
 });
+
+
+test('Hide V2 product home prioritizes active mission and keeps secondary tools subordinate',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'UI'},missions:[{
+        id:'m-ui',title:'오늘 영어 탐험',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        items:[
+          {id:'w1',lexicalId:'island::섬',token:'island',meaning:'섬',languageDomain:'ENGLISH',missionRole:'NEW',evidence:[],source:{}},
+          {id:'w2',lexicalId:'planet::행성',token:'planet',meaning:'행성',languageDomain:'ENGLISH',missionRole:'NEW',evidence:[],source:{}}
+        ],sourceCount:0,provenance:{}
+      }],activeMissionId:'m-ui',activeSession:null,captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await expect(page.getByText('오늘의 탐험',{exact:true})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'오늘 영어 탐험'})).toBeVisible();
+  await expect(page.getByRole('button',{name:'탐험 시작'})).toBeVisible();
+  await expect(page.getByRole('button',{name:'탐험 미션'})).toBeVisible();
+  await expect(page.getByRole('button',{name:'기억 사다리'})).toBeVisible();
+
+  const metrics=await page.evaluate(()=>({
+    scrollWidth:document.documentElement.scrollWidth,
+    innerWidth:window.innerWidth,
+    hero:!!document.querySelector('.quest-hero'),
+    grid:!!document.querySelector('.quest-grid'),
+    stats:document.querySelectorAll('.quest-stat').length,
+    mainActionHeight:document.querySelector('.quest-main-action')?.getBoundingClientRect().height||0
+  }));
+  expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.innerWidth+1);
+  expect(metrics.hero).toBe(true);
+  expect(metrics.grid).toBe(true);
+  expect(metrics.stats).toBe(3);
+  expect(metrics.mainActionHeight).toBeGreaterThanOrEqual(48);
+});
+
+test('Hide V2 learning surface shows progress hierarchy without crowding the task card',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'UI 학습'},missions:[{
+        id:'m-progress',title:'진행도 탐험',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        items:[
+          {id:'w1',lexicalId:'island::섬',token:'island',meaning:'섬',languageDomain:'ENGLISH',missionRole:'NEW',evidence:[],source:{}},
+          {id:'w2',lexicalId:'planet::행성',token:'planet',meaning:'행성',languageDomain:'ENGLISH',missionRole:'NEW',evidence:[],source:{}}
+        ],sourceCount:0,provenance:{}
+      }],activeMissionId:'m-progress',activeSession:null,captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'탐험 시작'}).click();
+  await expect(page.locator('.quest-progress')).toBeVisible();
+  await expect(page.locator('.phase-chip')).toHaveText('단어 만나기');
+  const ui=await page.evaluate(()=>({
+    progress:document.querySelectorAll('.quest-progress').length,
+    learningWidth:document.querySelector('.learning-shell')?.getBoundingClientRect().width||0,
+    overflow:document.documentElement.scrollWidth-window.innerWidth
+  }));
+  expect(ui.progress).toBe(1);
+  expect(ui.learningWidth).toBeLessThanOrEqual(390);
+  expect(ui.overflow).toBeLessThanOrEqual(1);
+});
+
+test('Hide V2 mission and memory surfaces use product cards instead of raw status tables',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'UI 기록'},missions:[{
+        id:'m-card',title:'카드 미션',status:'COMPLETED',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        items:[{id:'w1',lexicalId:'island::섬',token:'island',meaning:'섬',languageDomain:'ENGLISH',missionRole:'REVIEW',source:{},evidence:[
+          {stage:'FINAL_SEEK',evidenceMode:'RECONSTRUCTION',axes:['FORM','RECALL'],result:'CORRECT',objectiveVerified:true,objectiveRecall:true,assisted:false,spacedEvidence:true}
+        ]}],sourceCount:0,provenance:{}
+      }],activeMissionId:'m-card',activeSession:null,captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'탐험 미션'}).click();
+  await expect(page.locator('.mission-card')).toHaveCount(1);
+  await expect(page.getByText('완료',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'홈으로'}).click();
+  await page.getByRole('button',{name:'기억 사다리'}).click();
+  await expect(page.locator('.memory-summary')).toBeVisible();
+  await expect(page.locator('.word-row')).toHaveCount(1);
+  await expect(page.getByRole('button',{name:'기억 보기'})).toBeVisible();
+});
