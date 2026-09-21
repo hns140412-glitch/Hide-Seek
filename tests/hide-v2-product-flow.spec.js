@@ -94,6 +94,13 @@ test('Hide V2 Final Seek support cannot count as unassisted recall',async({page}
   expect(recovered.objectiveRecall).toBe(true);
   expect(recovered.assisted).toBe(false);
   expect(recovered.spacedEvidence).toBe(false);
+
+  const memory=await page.evaluate(()=>{
+    const book=window.HideV2Memory.wordbook();
+    return book.find(x=>x.token==='island');
+  });
+  expect(memory.memorySignature.recoveryStatus).toBe('IMMEDIATE_ONLY');
+  expect(memory.needsUnassistedRecall).toBe(true);
 });
 
 test('Hide V2 Korean response stays production evidence, not recall inflation',async({page})=>{
