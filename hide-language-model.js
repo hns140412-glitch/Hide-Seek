@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION='2026.09.21-language-core-v10';
+  const VERSION='2026.09.21-language-core-v11';
 
   const MODELS={
     ENGLISH:{
@@ -193,7 +193,7 @@
   function clueLabel(key){return CLUE_LABELS[String(key||'OTHER')]||CLUE_LABELS.OTHER}
 
   function preferredAssistanceSteps(skillProfile={}){
-    const clue=String(skillProfile?.bestClue?.clue||'');
+    const clue=String(skillProfile?.adaptiveClue?.clue||'');
     if(clue==='ROOT_ETYMOLOGY')return ['MEANING_MAP','THINKING_SCENE'];
     if(clue==='WORD_PART')return ['THINKING_SCENE','SHAPE'];
     if(clue==='SCENE')return ['SCENE','THINKING_SCENE'];
@@ -227,7 +227,9 @@
     const ranked=Object.entries(byClue).map(([clue,v])=>({clue,...v,successRate:v.attempts?Math.round(v.success/v.attempts*100):0})).sort((a,b)=>b.successRate-a.successRate||b.attempts-a.attempts);
     const high=outcomeRows.filter(x=>x.confidence==='HIGH');
     const highMiss=high.filter(x=>x.outcome==='MISS').length;
-    return {attempts:rows.length,assessed:outcomeRows.length,success,successRate:outcomeRows.length?Math.round(success/outcomeRows.length*100):0,bestClue:ranked[0]||null,byClue:ranked,highConfidenceMisses:highMiss,calibrationFlag:high.length&&highMiss/high.length>=.5?'RECALIBRATE':'OK'};
+    const adaptiveClue=ranked.find(x=>x.attempts>=2&&x.successRate>=50)||null;
+    const evidenceLevel=outcomeRows.length>=6?'ESTABLISHED':outcomeRows.length>=2?'EMERGING':'LOW';
+    return {attempts:rows.length,assessed:outcomeRows.length,success,successRate:outcomeRows.length?Math.round(success/outcomeRows.length*100):0,bestClue:ranked[0]||null,adaptiveClue,evidenceLevel,byClue:ranked,highConfidenceMisses:highMiss,calibrationFlag:high.length&&highMiss/high.length>=.5?'RECALIBRATE':'OK'};
   }
 
   function renderStarterExplorationHtml(item,context={},esc=(x)=>String(x??'')){
@@ -240,7 +242,7 @@
     const sceneTrail=plan.visual?.length?'<div class="scene-trail">'+plan.visual.map((x,i)=>'<span><small>'+esc(String(i+1))+'</small><b>'+esc(x)+'</b></span>').join('<i>→</i>')+'</div>':'';
     const links=plan.links.length?'<div class="thinking-links"><b>전에 만난 연결</b>'+plan.links.map(x=>'<span>'+esc(x)+'</span>').join('')+'</div>':'';
     const truthBadge=plan.verified?(plan.claimsHistoricalEtymology?'검증 어원':'검증 의미 구조'):'현대 구조/의미 단서';
-    const priorSkill=context.skillProfile?.bestClue?'<div class="prior-skill-cue"><small>지난 탐험에서 잘 통했던 단서</small><b>'+esc(clueLabel(context.skillProfile.bestClue.clue))+'</b><span>참고만 하고, 이번 단어에서는 다른 단서를 골라도 돼.</span></div>':'';
+    const priorSkill=context.skillProfile?.adaptiveClue?'<div class="prior-skill-cue"><small>여러 번 도움이 됐던 단서</small><b>'+esc(clueLabel(context.skillProfile.adaptiveClue.clue))+'</b><span>참고만 하고, 이번 단어에서는 다른 단서를 골라도 돼.</span></div>':'';
     const parent= context.showParentExplanation?parentExplanation(item):null;
     const parentHtml=parent?'<div class="parent-explain-card"><small>부모 설명 한 줄 · '+esc(parent.mode)+'</small><b>'+esc(parent.text)+'</b></div>':'';
     return '<section class="thinking-map-card" data-thinking-word="'+esc(plan.word)+'" data-support-type="'+esc(plan.type)+'">'+
