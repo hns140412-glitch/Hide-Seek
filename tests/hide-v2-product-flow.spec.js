@@ -88,7 +88,7 @@ test('Hide V2 OCR path uses the shared family adapter and commits reviewed rows'
   await expect(page.getByLabel('OCR 단어 1')).toHaveValue('environment');
   await page.getByRole('button',{name:'미션으로 저장'}).click();
   await expect(page.getByRole('heading',{name:'탐험 미션'})).toBeVisible();
-  await expect(page.getByText(/1개 · READY/)).toBeVisible();
+  await expect(page.getByText('1개의 숨은 단어',{exact:true})).toBeVisible();
   const state=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')));
   expect(state.missions).toHaveLength(1);
   expect(state.missions[0].items[0].token).toBe('environment');
@@ -108,8 +108,8 @@ test('Hide V2 persists OCR review state across reload',async({page})=>{
   await expect(page.getByLabel('OCR 단어 1')).toHaveValue('island');
 
   await page.reload();
-  await expect(page.getByRole('heading',{name:'분석 결과가 남아 있어요'})).toBeVisible();
-  await page.getByRole('button',{name:'분석 결과 이어보기'}).click();
+  await expect(page.getByText('확인하던 단어가 남아 있어요',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'이어서 확인'}).click();
   await expect(page.getByRole('heading',{name:'분석 결과 확인'})).toBeVisible();
   await expect(page.getByLabel('OCR 단어 1')).toHaveValue('island');
 
@@ -302,7 +302,7 @@ test('Hide V2 Memory Ladder projects weakness reasons and wordbook from evidence
   await page.goto('/v2.html');
   await page.getByRole('button',{name:'기억 사다리'}).click();
   await expect(page.getByRole('heading',{name:'기억 사다리'})).toBeVisible();
-  await expect(page.getByRole('heading',{name:'단어장'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'단어 기록'})).toBeVisible();
   await expect(page.getByText('benefit',{exact:true})).toBeVisible();
   await expect(page.getByText('island',{exact:true})).toBeVisible();
   await expect(page.getByText('무힌트 재회상 필요',{exact:true})).toBeVisible();
@@ -630,7 +630,7 @@ test('Hide V2 returnToReady emits a V2 learning_event envelope with exact task c
 test('Hide V2 child-facing shell uses exploration language and hides runtime jargon',async({page})=>{
   await page.goto('/v2.html');
   await expect(page.locator('.brand-copy small')).toHaveText('숨은 단어 탐험');
-  await expect(page.getByText('탐험 준비',{exact:true})).toBeVisible();
+  await expect(page.getByText('새 탐험 준비',{exact:true})).toBeVisible();
   for(const forbidden of ['Runtime V2','HIDE V2','REWRITE','monolith-free','구조 분리형 런타임']){
     await expect(page.getByText(forbidden,{exact:true})).toHaveCount(0);
   }
