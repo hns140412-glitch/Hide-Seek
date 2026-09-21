@@ -323,3 +323,13 @@ FALSE_CONVERGENCE = 0: live deploy/device/real-provider claims remain OPEN.
 - This does not create a new learning-policy owner or override the learner's current clue choice.
 - Exact code HEAD `42a524f6474db74896fc507e7a61724ba99f48ee` passed V2 #292 / full Hide #750.
 - Locked reporting: PRODUCT ~76%, CODED ~92%, CI ~89%, Browser Runtime ~85%, Device 0%, Release 0%.
+
+
+## 26. 2026-09-22 bounded FIRST FIND assistance
+- FIRST FIND wrong/UNSURE may use one safe English shape cue before full relearn exposure.
+- Initial retrieval evidence remains unassisted recall evidence.
+- Shape-assisted retry is `ASSISTED_RECONSTRUCTION`, objectively verified, non-recall, and has no recall-score impact.
+- Assisted success moves to MEANING; assisted failure moves to the existing assisted/non-recall full relearn exposure.
+- Unsupported domains fail closed; no Korean/Hanja shape cue is fabricated.
+- Exact code HEAD `56452289a112d338e2e9abd818a8acb9590794ee` passed V2 #300 / full Hide #758.
+- Locked reporting: PRODUCT ~77%, CODED ~93%, CI ~90%, Browser Runtime ~86%, Device 0%, Release 0%.
