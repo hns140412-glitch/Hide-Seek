@@ -83,3 +83,33 @@ test('Hide V2 OCR path uses the shared family adapter and commits reviewed rows'
   expect(state.missions).toHaveLength(1);
   expect(state.missions[0].items[0].token).toBe('environment');
 });
+
+test('Hide V2 migrates V1 mission and memory traces without deleting legacy state',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_state',JSON.stringify({
+      profile:{displayName:'기존 탐험가'},
+      activeSheetId:'legacy-sheet',
+      sheets:[{
+        sheetId:'legacy-sheet',title:'기존 미션',status:'LEARNING',createdAt:'2026-09-20T00:00:00.000Z',
+        items:[{
+          id:'legacy-word',eng:'benefit',kor:'혜택',missionRole:'REVIEW',sourcePageId:'legacy-page',sourceRowIndex:0,
+          learningStats:{
+            retrievalTrace:[{stage:'FIRST_FIND',result:'WRONG',objectiveRecall:true}],
+            recoveryTrace:[{result:'UNASSISTED_RECALL',objectiveRecall:true,spacedEvidence:true}]
+          }
+        }]
+      }]
+    }));
+  });
+  await page.goto('/v2.html');
+  await expect(page.getByRole('heading',{name:'기존 미션'})).toBeVisible();
+  const state=await page.evaluate(()=>({
+    legacy:JSON.parse(localStorage.getItem('hide_seek_state')),
+    v2:JSON.parse(localStorage.getItem('hide_seek_v2_state'))
+  }));
+  expect(state.legacy.sheets).toHaveLength(1);
+  expect(state.v2.missions).toHaveLength(1);
+  expect(state.v2.missions[0].items[0].missionRole).toBe('REVIEW');
+  expect(state.v2.missions[0].items[0].evidence.some(x=>x.migratedFrom==='V1'&&x.legacyTraceKind==='RETRIEVAL')).toBeTruthy();
+  expect(state.v2.events.some(x=>x.type==='V1_DATA_MIGRATED')).toBeTruthy();
+});
