@@ -409,6 +409,7 @@ test('Hide V2 memory detail exposes evidence trail behind strength and priority'
   await expect(page.getByRole('heading',{name:'기억 흔적'})).toBeVisible();
   await expect(page.getByText('첫 찾기',{exact:true}).first()).toBeVisible();
   await expect(page.getByText('마지막 찾기',{exact:true}).first()).toBeVisible();
+  await page.getByText('기억 기록 자세히 보기',{exact:true}).click();
   await expect(page.getByText('IMMEDIATE_ONLY',{exact:true})).toBeVisible();
   await page.getByRole('button',{name:'기록으로'}).click();
   await expect(page.getByRole('heading',{name:'기억 사다리'})).toBeVisible();
