@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION='2026.09.21-language-core-v17';
+  const VERSION='2026.09.21-language-core-v18';
 
   const MODELS={
     ENGLISH:{
@@ -73,7 +73,7 @@
       ...item,
       languageDomain:domain,
       learningProfile,
-      learningContext:item.learningContext||item.learning_context||null,
+      learningContext:globalThis.HideLearningBasis?.projectLearningContext?.(domain,item.learningContext||item.learning_context)||null,
       meaningMap:normalizeMap(item.meaningMap||item.meaning_map,domain)
     };
   }
@@ -81,6 +81,11 @@
   function learningProfileFor(item={}){
     const domain=detectDomain(item);
     return globalThis.HideLearningBasis?.resolve?.(domain)||null;
+  }
+
+  function learningContextFor(item={}){
+    const domain=detectDomain(item);
+    return globalThis.HideLearningBasis?.projectLearningContext?.(domain,item.learningContext||item.learning_context)||null;
   }
 
   function hasVerifiedMeaningMap(item={}){
@@ -334,6 +339,7 @@
     starterExploration,
     renderStarterExplorationHtml,
     learningProfileFor,
+    learningContextFor,
     sceneBeat
   };
 })();
