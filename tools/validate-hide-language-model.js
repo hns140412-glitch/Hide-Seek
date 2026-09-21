@@ -65,4 +65,20 @@ assert(!opaque?.parts?.length,'island should not be split into fake parts');
 const thinkingHtml=api.renderStarterExplorationHtml({eng:'earthquake'},{encounteredWords:['environment']},x=>String(x));
 assert(thinkingHtml.includes('earth')&&thinkingHtml.includes('quake'),'earthquake compound pieces should render');
 assert(thinkingHtml.includes('environment'),'encountered link should render');
-console.log('PASS: language memory model supports multilingual verified maps and thinking-first starter exploration');
+
+const verifiedEnvironment=api.starterExploration({eng:'environment'},{encounteredWords:[]});
+assert(verifiedEnvironment?.type==='VERIFIED_ETYMOLOGY','environment should use verified etymology');
+assert(verifiedEnvironment?.sourceType==='ETYMONLINE','verified source type required');
+assert(verifiedEnvironment?.sourceRef?.includes('/environment'),'verified source ref required');
+assert(verifiedEnvironment?.claimsHistoricalEtymology===true,'verified etymology may claim historical origin');
+const verifiedGlacier=api.verifiedEvidence({eng:'glacier'});
+assert(verifiedGlacier?.center?.label==='glace','glacier verified center concept');
+const verifiedClimate=api.verifiedEvidence({eng:'climate'});
+assert(verifiedClimate?.nodes?.some(x=>x.label==='klima'),'climate historical path');
+const verifiedHarvest=api.verifiedEvidence({eng:'harvest'});
+assert(verifiedHarvest?.nodes?.some(x=>x.label==='*kerp-'),'harvest root path');
+const inferenceHtml=api.renderStarterExplorationHtml({eng:'environment'},{encounteredWords:[]},x=>String(x));
+assert(inferenceHtml.includes('inference-prediction')&&inferenceHtml.includes('inference-confidence'),'first-seen inference controls');
+assert(inferenceHtml.includes('검증 어원')&&inferenceHtml.includes('environ'),'verified visual grammar');
+
+console.log('PASS: language memory model supports truth-gated etymology, inference and multilingual exploration');
