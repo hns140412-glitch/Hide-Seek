@@ -20,10 +20,10 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 | V1 non-destructive migration | RUNTIME_VERIFIED | yes | partial | browser migration fixture | broader legacy variants not yet sampled |
 | Mission create/active ownership | RUNTIME_VERIFIED | yes | partial | browser + store tests | advanced filters/bulk operations not implemented |
 | Camera input path | PARTIAL | yes | no | code/browser file input | physical camera permission/device not verified |
-| Album multi-image intake | FUNCTIONAL | yes | partial | browser input | large/odd image sets not representative-tested |
+| Album multi-image intake | RUNTIME_VERIFIED | yes | synthetic multi-page | browser multi-page + retry flow | large/odd real image sets not representative-tested |
 | Capture blob persistence | RUNTIME_VERIFIED | yes | fixture blob | IndexedDB + reload test | storage quota/recovery not verified |
-| OCR shared adapter integration | RUNTIME_VERIFIED | yes | fixture only | OCR browser fixture | real varied prints/provider behavior unverified |
-| OCR review persistence/resume | RUNTIME_VERIFIED | yes | fixture only | reload + editable review browser tests | confidence guidance/duplicate merge UX still incomplete |
+| OCR shared adapter integration | RUNTIME_VERIFIED | yes | provider-shaped fixture only | multi-page partial-failure/retry browser flow | real varied prints/provider behavior unverified |
+| OCR review persistence/resume | RUNTIME_VERIFIED | yes | provider-shaped fixture only | reload + editable review + warning/provenance browser tests | duplicate merge UX and real-provider calibration incomplete |
 | MEMORIZE | FUNCTIONAL | yes | fixture | V2 browser flow | richer exploration assistance not yet ported |
 | FIRST FIND | FUNCTIONAL | yes | fixture | V2 browser flow | recovery/retry pedagogy still simplified |
 | MEANING recall | FUNCTIONAL | yes | fixture | V2 browser flow | recognition/contrast variants not yet ported |
@@ -39,15 +39,16 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 | Mission management surface | RUNTIME_VERIFIED | yes | N/A | selection/rename/archive/delete browser flow | richer history/filtering/bulk actions pending |
 | Records / wordbook surfaces | RUNTIME_VERIFIED | yes | fixture/history-shaped | cumulative wordbook + weakness dashboard + evidence detail browser flow | filtering/search/export pending |
 | PWA install/offline/update | RUNTIME_VERIFIED | yes | browser | isolated V2 manifest/SW/offline shell/update safe-point tests | physical install/device lifecycle still unverified |
-| Physical device behavior | NOT_STARTED | no | no | DEVICE_VERIFIED=0 | camera/touch/keyboard/install all pending |
+| Mobile 390×844 browser layout | RUNTIME_VERIFIED | yes | browser viewport | overflow/touch target/focus reduced-height tests | physical keyboard/touch/device browser still unverified |
+| Physical device behavior | NOT_STARTED | no | no | DEVICE_VERIFIED=0 | camera permission/touch/OS keyboard/install all pending |
 | Production/release | NOT_STARTED | no | no | none | intentional hold |
 
 ## Claim levels
 
-- PRODUCT_COMPLETION: approximately 52%
-- CODED: approximately 69%
-- CI_VERIFIED: approximately 64%
-- BROWSER_RUNTIME_VERIFIED: approximately 57%
+- PRODUCT_COMPLETION: approximately 56%
+- CODED: approximately 73%
+- CI_VERIFIED: approximately 69%
+- BROWSER_RUNTIME_VERIFIED: approximately 63%
 - DEVICE_VERIFIED: 0%
 - RELEASE_VERIFIED: 0%
 
@@ -133,3 +134,17 @@ Head before matrix document: 63db5206a836050c3dfe5f2b9fd0238d6baeb464
   - Validate Hide Runtime V2 #54 — SUCCESS
   - Validate Hide & Seek #508 — SUCCESS
 - Physical-device installation, camera permission and mobile browser lifecycle remain unverified and do not count toward DEVICE_VERIFIED.
+
+
+### OCR resilience / mobile browser surgery increment
+- V2 capture now persists per-page `analysisRows`.
+- If page 1 succeeds and page 2 fails, page 1 remains ANALYZED and is not sent to OCR again.
+- Retry analyzes failed pages only and merges preserved successful rows into REVIEW.
+- OCR confidence, warnings, provider/model/version provenance survive into mission item source metadata and are visible in review.
+- V2 mobile shell owns `visualViewport` height tracking and focused-control visibility.
+- 390×844 browser checks enforce no horizontal overflow and >=44px primary touch targets.
+- Reduced-height 390×520 checks verify focused recall input / Korean textarea remain within the visual viewport after focus.
+- Exact pre-document code HEAD `a5b4734bc06c49d37eb80c05752b7f75ca7538d8` passed:
+  - Validate Hide Runtime V2 #68 — SUCCESS
+  - Validate Hide & Seek #522 — SUCCESS
+- These are browser-runtime proofs only. They do not prove real OCR provider accuracy, real camera permission behavior, OS keyboard behavior, or DEVICE_VERIFIED.
