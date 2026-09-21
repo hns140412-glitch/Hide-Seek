@@ -29,15 +29,15 @@
   })[status]||'탐험 중';
   const languageLabel=domain=>({ENGLISH:'영어',KOREAN:'국어',HANJA:'한자'})[domain]||'언어';
   const childMemoryReason=entry=>{
-    const sig=entry?.memorySignature||{};
-    if((sig.confusionPattern?.count||0)>0)return '비슷한 뜻이랑 헷갈린 흔적이 있어요. 한 번 더 스스로 찾아보면 좋아요.';
-    if((sig.semanticWeakness||0)>0)return '뜻을 꺼낼 때 조금 막혔어요. 뜻부터 다시 떠올려 봐요.';
-    if((sig.orthographicWeakness||0)>0)return '글자 모양이 아직 완전히 익숙하지 않아요. 눈으로 보고 다시 찾아봐요.';
-    if((sig.phonologicalWeakness||0)>0)return '소리 연결이 아직 약해요. 소리를 떠올리며 다시 찾아봐요.';
-    if((sig.hintDependent||0)>0)return '힌트 도움을 받은 흔적이 있어요. 다음엔 힌트 없이 찾아보는 게 목표예요.';
-    if((sig.slowRecall||0)>0)return '생각해내는 데 시간이 조금 걸렸어요. 한 번 더 꺼내면 더 빨라질 수 있어요.';
-    if((entry?.memoryStrength||0)>=80)return '지금은 꽤 안정적으로 기억하고 있어요. 다음 탐험에서도 그대로 떠오르는지 확인해요.';
-    return '아직 혼자서 바로 꺼낸 기록이 충분하지 않아요. 한 번 더 스스로 찾아봐요.';
+    const key=entry?.primaryReason?.key||'stable';
+    if(key==='recovery')return '바로 다시 찾은 기록만 있어요. 다음에는 힌트 없이 스스로 떠올리는 게 목표예요.';
+    if(key==='confusion')return '비슷한 뜻이랑 헷갈린 흔적이 있어요. 뜻을 구분해서 다시 찾아봐요.';
+    if(key==='orthographic')return '글자 모양에서 막힌 흔적이 있어요. 형태를 눈으로 확인하고 다시 떠올려 봐요.';
+    if(key==='sound')return '소리로 꺼내는 길이 아직 약해요. 소리를 떠올리며 다시 찾아봐요.';
+    if(key==='latency')return '생각해내는 데 시간이 걸린 흔적이 있어요. 한 번 더 꺼내면 길이 더 빨라질 수 있어요.';
+    if(key==='hint')return '힌트 도움을 받은 흔적이 있어요. 다음엔 힌트 없이 찾아보는 게 목표예요.';
+    if(key==='decay')return '시간이 지나면 흐려질 수 있는 흔적이 있어요. 다음 탐험에서 다시 떠오르는지 확인해요.';
+    return '지금 기록에서는 특별히 약한 흔적이 보이지 않아요. 다음 탐험에서도 그대로 떠오르는지 확인해요.';
   };
   const crewHtml=(word,stage)=>{
     const crew=globalThis.HideV2Crew?.presentation?.({word,stage})||{displayName:'탐험대원',supportText:'필요할 때 짧은 단서를 함께 찾아봐요.',avatarText:'탐'};
@@ -337,7 +337,7 @@
 
   function records(){
     const book=HideV2Memory.wordbook(),dash=HideV2Memory.dashboard();
-    const ladderBand=x=>x.memoryStrength>=80?'STABLE':x.memoryStrength>=45?'CLIMBING':'SEEK_AGAIN';
+    const ladderBand=x=>(x.needsUnassistedRecall||x.memoryStrength<60)?'SEEK_AGAIN':x.primaryReason?.key==='stable'?'STABLE':'CLIMBING';
     const bandLabel={SEEK_AGAIN:'다시 찾을 단어',CLIMBING:'올라가는 단어',STABLE:'안정된 단어'};
     const bands=['SEEK_AGAIN','CLIMBING','STABLE'].map(key=>({key,items:book.filter(x=>ladderBand(x)===key)}));
     view().innerHTML=`
