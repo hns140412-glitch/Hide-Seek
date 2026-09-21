@@ -5,6 +5,7 @@
   const childStageLabel=stage=>({
     MEMORIZE:'단어 만나기',
     FIRST_FIND:'첫 찾기',
+    FIRST_FIND_ASSIST:'단서로 다시 찾기',
     FIRST_FIND_RELEARN:'다시 만나기',
     MEANING:'뜻 단서',
     DOMAIN_EXTENSION:'연결 길',
@@ -21,6 +22,7 @@
   const childEvidenceLabel=e=>({
     MEMORIZE:'단어 만나기',
     FIRST_FIND:'첫 찾기',
+    FIRST_FIND_ASSIST:'첫 찾기 단서',
     FIRST_FIND_RELEARN:'첫 찾기 다시 보기',
     MEANING:'뜻 단서',
     RESPONSE_TRAIL:'표현 길',
@@ -66,7 +68,7 @@
     const steps=[
       ['MEMORIZE','01 만나기'],['FIRST_FIND','02 첫 찾기'],['MEANING','03 뜻 단서'],['DOMAIN_EXTENSION','04 연결 길'],['FINAL_SEEK','05 마지막 찾기'],['SEEK_AGAIN','06 다시 찾기']
     ];
-    const normalized=stage==='FINAL_SEEK_RECONSTRUCT'?'FINAL_SEEK':stage==='SEEK_AGAIN_RELEARN'?'SEEK_AGAIN':stage==='FIRST_FIND_RELEARN'?'FIRST_FIND':(stage==='SOUND_FIND_RELEARN'||stage==='HIDDEN_WORDS'||stage==='HIDDEN_WORDS_ASSIST'||stage==='HIDDEN_WORDS_RELEARN')?'DOMAIN_EXTENSION':stage;
+    const normalized=stage==='FINAL_SEEK_RECONSTRUCT'?'FINAL_SEEK':stage==='SEEK_AGAIN_RELEARN'?'SEEK_AGAIN':(stage==='FIRST_FIND_ASSIST'||stage==='FIRST_FIND_RELEARN')?'FIRST_FIND':(stage==='SOUND_FIND_RELEARN'||stage==='HIDDEN_WORDS'||stage==='HIDDEN_WORDS_ASSIST'||stage==='HIDDEN_WORDS_RELEARN')?'DOMAIN_EXTENSION':stage;
     const activeIndex=Math.max(0,steps.findIndex(([key])=>key===normalized));
     return `<ol class="journey-path" aria-label="단어 탐험 길">${steps.map(([key,label],i)=>`<li class="${i<activeIndex?'is-done':''} ${i===activeIndex?'is-current':''}"><span aria-hidden="true">${i<activeIndex?'✓':i+1}</span><small>${esc(label)}</small></li>`).join('')}</ol>`;
   };
@@ -386,13 +388,32 @@
         if(!answer){setFlash('떠올린 단어를 입력하거나, 아직 안 떠오르면 알려주세요.');return}
         const r=HideV2Learning.checkFirstFind(session,m,answer);
         HideV2Session.update(r.session);
-        setFlash(r.ok?'기억에서 찾았어요':'잠깐 다시 만나고 다음 단서로 이어가요.');
+        setFlash(r.ok?'기억에서 찾았어요':r.support?'작은 단서로 한 번 더 찾아볼게요.':'잠깐 다시 만나고 다음 단서로 이어가요.');
         render()
       };
       $('#v2Unsure').onclick=()=>{
         const r=HideV2Learning.markFirstFindUnsure(session,m);
         HideV2Session.update(r.session);
-        setFlash('괜찮아요. 잠깐 다시 만나고 이어가요.');
+        setFlash(r.support?'괜찮아요. 작은 단서로 한 번 더 찾아볼게요.':'괜찮아요. 잠깐 다시 만나고 이어가요.');
+        render()
+      };
+      return;
+    }
+
+    if(session.stage==='FIRST_FIND_ASSIST'){
+      const support=HideV2Learning.firstFindSupportPlan(w);
+      if(!support){
+        HideV2Session.update({...session,stage:'FIRST_FIND_RELEARN'});
+        render();
+        return;
+      }
+      view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}${journeyHtml(session.stage)}${crewHtml(w,session.stage)}<div class="learn-head"><span class="phase-chip">${childStageLabel('FIRST_FIND_ASSIST')}</span><b>${idx}/${total}</b></div><section class="card word-card first-find-assist"><p class="quest-overline">ONE SMALL CLUE</p><h2>${esc(support.label)}</h2><p>글자 골격을 보고 전체 단어를 다시 떠올려보세요.</p><div class="memory-trace"><b>${esc(support.label)}</b><span>${esc(support.cue)}</span></div><small>이 단서를 본 뒤 맞혀도 무힌트 회상 성공으로 세지 않아요.</small><input id="v2FirstFindAssistAnswer" class="input" aria-label="첫 찾기 도움 답 입력" autocomplete="off" spellcheck="false"><button id="v2FirstFindAssistCheck" class="btn primary full" type="button">단서로 다시 확인</button></section></section>`;
+      $('#v2FirstFindAssistCheck').onclick=()=>{
+        const answer=$('#v2FirstFindAssistAnswer').value.trim();
+        if(!answer){setFlash('단서를 보고 떠올린 단어를 입력해 주세요.');return}
+        const r=HideV2Learning.submitFirstFindAssist(session,m,answer);
+        HideV2Session.update(r.session);
+        setFlash(r.ok?'단서로 다시 찾았어요. 이제 뜻 단서로 이어가요.':'이번엔 단어를 잠깐 다시 보고 이어갈게요.');
         render()
       };
       return;
