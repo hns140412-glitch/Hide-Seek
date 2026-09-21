@@ -497,7 +497,7 @@ test('Hide V2 retries only failed OCR pages and preserves successful page rows',
     {name:'page-1.jpg',mimeType:'image/jpeg',buffer:Buffer.from('page-one')},
     {name:'page-2.jpg',mimeType:'image/jpeg',buffer:Buffer.from('page-two')}
   ]);
-  await expect(page.getByRole('heading',{name:'분석하지 못했어요'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'사진에서 단어를 다 찾지 못했어요'})).toBeVisible();
   await expect(page.getByText(/1개 결과는 보존/)).toBeVisible();
 
   let capture=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')).captureSession);
@@ -505,7 +505,7 @@ test('Hide V2 retries only failed OCR pages and preserves successful page rows',
   expect(capture.pages[0].analysisRows[0].eng).toBe('environment');
   expect(capture.pages[1].status).toBe('FAILED');
 
-  await page.getByRole('button',{name:'실패한 페이지만 다시 분석'}).click();
+  await page.getByRole('button',{name:'못 찾은 페이지만 다시 보기'}).click();
   await expect(page.getByRole('heading',{name:'찾은 단어 확인하기'})).toBeVisible();
   await expect(page.getByLabel('OCR 단어 1')).toHaveValue('environment');
   await expect(page.getByLabel('OCR 단어 2')).toHaveValue('island');
