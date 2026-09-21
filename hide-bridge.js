@@ -88,6 +88,9 @@
     }
     return {
       authority:'SPECIALIST_MEMORY_ADVISORY_ONLY',
+      reviewPolicyOwner:'READY_LEARNING_ENGINE',
+      scheduleOwner:'READY_SET_PLANNER',
+      prioritySemantics:'ADVISORY_SIGNAL_NOT_DATE',
       averageMemoryStrength: measured ? Math.round(strengthTotal / measured) : 0,
       reasonCounts,
       needsUnassistedRecallCount: reasonCounts.recovery,
