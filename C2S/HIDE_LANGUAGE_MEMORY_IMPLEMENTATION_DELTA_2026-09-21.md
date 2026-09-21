@@ -466,3 +466,34 @@ Latest-head CI note must still be checked live. No Netlify / deploy / merge / us
 - Context/Sound exposure remains non-objective exposure.
 - `languageMemoryEvidenceSummary()` now reports both `objectiveVerifiedCounts` and `objectiveRecallCounts`, plus `evidenceModes`.
 - This prevents recognition/association/evidence-selection success from inflating memory recall claims.
+
+
+## Learning App Family integration delta — 2026-09-21
+
+Integration branch:
+- `taky/learning-app-family-hide-context-v3-2026-09-21`
+- exact verified integration SHA: `5ff6a4a4e6b65588acf4c8da503411320365b900`
+- based on the then-latest active Hide head; active product development remains separate.
+
+Implemented:
+- consumes `READY_LEARNING_CONTEXT_V1` from Ready.
+- requires learning_unit_id / analysis_id / assignment_id and central contract version.
+- rejects role/permission/Planner authority/family identity/Hanja-grade authority fields.
+- projects only a resolved context marked `resolvedBy = READY_LEARNING_ENGINE`.
+- Language Memory consumes the resolved projection.
+- Hide remains owner of Memory Ladder and cumulative language-memory evidence only.
+- Hanja grade/level resolution, review policy and scheduling remain outside Hide.
+- validated Ready context is preserved through Hide -> Snap handoff.
+
+Verification:
+- Validate Hide & Seek run `35585463113`: SUCCESS.
+- consumer boundary: PASS.
+- JavaScript syntax: PASS.
+- shared runtime: PASS.
+- browser product flows: PASS.
+- central TAKY cross-app contract with exact SHA: PASS.
+- CODED=YES / CI_VERIFIED=YES / RUNTIME_VERIFIED=YES for Hide integration scope.
+- DEVICE_VERIFIED=NO / PRODUCTION_VERIFIED=NO.
+- Netlify/deploy/merge=NOT_RUN.
+
+Do not replace the active Hide product branch with this integration history. Re-check live HEAD and carry this capability forward by delta if active development advances.
