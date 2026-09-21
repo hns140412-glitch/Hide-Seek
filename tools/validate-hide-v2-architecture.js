@@ -66,6 +66,9 @@ if(migration.includes('removeItem(LEGACY_KEY)')||migration.includes("removeItem(
 if(!migration.includes('legacyPreserved:true'))fail.push('NON_DESTRUCTIVE_MIGRATION_EVIDENCE_MISSING');
 
 const app=fs.readFileSync(path.join(ROOT,'src/v2/app.js'),'utf8');
+for(const token of ['THINKING TRAIL','inference-submit','thinking-reveal','Evidence Trail','record-detail','v2RecordBack']){
+  if(!app.includes(token))fail.push('V2_THINKING_OR_MEMORY_DETAIL_MISSING:'+token);
+}
 for(const token of ['기억 기록','단어장','우선 복습순','v2Records']){
   if(!app.includes(token))fail.push('V2_MEMORY_SURFACE_MISSING:'+token);
 }
