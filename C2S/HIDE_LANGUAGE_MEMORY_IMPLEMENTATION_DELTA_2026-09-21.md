@@ -375,3 +375,19 @@ Latest-head CI note must still be checked live. No Netlify / deploy / merge / us
 - `languageMemoryEvidenceSummary` aggregates axis counts and objective-recall counts.
 - Hide memory advisories now include this language-memory evidence summary for Ready Learning Engine interpretation.
 - This does not add Hanja-grade inference, review policy, or scheduling ownership to Hide.
+
+
+## Korean memory evidence axis separation delta
+- Korean Language Memory now separates:
+  - CONTEXT
+  - MEANING
+  - EVIDENCE
+  - RECALL
+  - EXPRESSION
+- MEMORIZATION example/context is recorded as `CONTEXT_EXPOSURE_ONLY` with `objectiveRecall=false`.
+- FIRST FIND typed recall records MEANING + RECALL + EXPRESSION evidence.
+- MEANING CLUE records MEANING + RECALL evidence.
+- CONNECTION TRAIL records word-meaning association evidence, but does not claim source-text evidence.
+- EVIDENCE remains zero until a real evidence-selection/justification interaction exists.
+- This preserves the Ready Korean basis `READ_UNDERSTAND_EVIDENCE_RESPOND` without pretending that Hide has already implemented a full reading-comprehension engine.
+- Hide still consumes resolved Ready learningContext only and does not own subject progression/review policy/scheduling.
