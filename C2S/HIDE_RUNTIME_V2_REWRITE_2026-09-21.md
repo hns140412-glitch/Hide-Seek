@@ -39,3 +39,15 @@ Product completion and reusable-asset maturity are now separate measures.
 V2 is NOT production-ready.
 V2 product completion must be measured independently from the reusable V1/domain asset pool.
 No merge, deploy, Netlify, production or device verification has occurred.
+
+
+## Rewrite execution status — current
+- V2 now owns independent Store / Mission / Learning Session / Memory / Capture Asset Store / Capture Controller / Router / Ready Bridge / UI controller.
+- V2 does not load legacy `app.js`, `hide-runtime.js`, or `hide-bridge.js`.
+- NEW learning flow: MEMORIZE → FIRST FIND → MEANING → DOMAIN_EXTENSION → FINAL SEEK → COMPLETE.
+- REVIEW flow skips MEMORIZE and begins with retrieval.
+- Capture blobs persist in V2 IndexedDB; OCR review state persists across reload.
+- V1 migration is non-destructive and keeps legacy storage intact.
+- Product completion is tracked separately in `C2S/HIDE_RUNTIME_V2_PRODUCT_COMPLETION_MATRIX_2026-09-21.md`.
+- V2 product completion is ~35%; reusable asset maturity is separate (~65%) and must not be averaged into V2 completion.
+- No deploy/merge/device verification.
