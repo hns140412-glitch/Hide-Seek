@@ -8,6 +8,7 @@
     FIRST_FIND_RELEARN:'다시 만나기',
     MEANING:'뜻 단서',
     DOMAIN_EXTENSION:'연결 길',
+    SOUND_FIND_RELEARN:'소리 다시 만나기',
     HIDDEN_WORDS:'숨은 단어 보강',
     HIDDEN_WORDS_ASSIST:'단서로 다시 찾기',
     HIDDEN_WORDS_RELEARN:'다시 만나기',
@@ -25,6 +26,7 @@
     RESPONSE_TRAIL:'표현 길',
     EVIDENCE_TRAIL:'근거 찾기',
     SOUND_FIND:'소리 찾기',
+    SOUND_FIND_RELEARN:'소리 다시 보기',
     CONNECTION:'연결 길',
     HIDDEN_WORDS:'숨은 단어 보강',
     HIDDEN_WORDS_ASSIST:'보강 단서',
@@ -64,7 +66,7 @@
     const steps=[
       ['MEMORIZE','01 만나기'],['FIRST_FIND','02 첫 찾기'],['MEANING','03 뜻 단서'],['DOMAIN_EXTENSION','04 연결 길'],['FINAL_SEEK','05 마지막 찾기'],['SEEK_AGAIN','06 다시 찾기']
     ];
-    const normalized=stage==='FINAL_SEEK_RECONSTRUCT'?'FINAL_SEEK':stage==='SEEK_AGAIN_RELEARN'?'SEEK_AGAIN':stage==='FIRST_FIND_RELEARN'?'FIRST_FIND':(stage==='HIDDEN_WORDS'||stage==='HIDDEN_WORDS_ASSIST'||stage==='HIDDEN_WORDS_RELEARN')?'DOMAIN_EXTENSION':stage;
+    const normalized=stage==='FINAL_SEEK_RECONSTRUCT'?'FINAL_SEEK':stage==='SEEK_AGAIN_RELEARN'?'SEEK_AGAIN':stage==='FIRST_FIND_RELEARN'?'FIRST_FIND':(stage==='SOUND_FIND_RELEARN'||stage==='HIDDEN_WORDS'||stage==='HIDDEN_WORDS_ASSIST'||stage==='HIDDEN_WORDS_RELEARN')?'DOMAIN_EXTENSION':stage;
     const activeIndex=Math.max(0,steps.findIndex(([key])=>key===normalized));
     return `<ol class="journey-path" aria-label="단어 탐험 길">${steps.map(([key,label],i)=>`<li class="${i<activeIndex?'is-done':''} ${i===activeIndex?'is-current':''}"><span aria-hidden="true">${i<activeIndex?'✓':i+1}</span><small>${esc(label)}</small></li>`).join('')}</ol>`;
   };
@@ -387,11 +389,33 @@
         }
       }else if(w.languageDomain==='HANJA'&&w.soundEvidence){
         view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}${journeyHtml(session.stage)}${crewHtml(w,session.stage)}<div class="learn-head"><span class="phase-chip">소리 찾기</span><b>${idx}/${total}</b></div><section class="card"><div class="bigword">${esc(w.token)}</div><input id="v2Sound" class="input" aria-label="한자 음 입력" autocomplete="off"><button id="v2DomainDone" class="btn primary full">음 기억 확인</button></section></section>`;
-        $('#v2DomainDone').onclick=()=>{HideV2Session.update(HideV2Learning.submitDomainExtension(session,m,{sound:$('#v2Sound').value}).session);render()};
+        $('#v2DomainDone').onclick=()=>{
+          const sound=$('#v2Sound').value.trim();
+          if(!sound){setFlash('기억에서 떠올린 음을 입력해 주세요.');return}
+          const r=HideV2Learning.submitDomainExtension(session,m,{sound});
+          HideV2Session.update(r.session);
+          setFlash(r.ok===false?'음을 잠깐 다시 만나고 다시 찾아볼게요.':'음을 기억에서 찾았어요.');
+          render()
+        };
       }else{
         view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}${journeyHtml(session.stage)}${crewHtml(w,session.stage)}<div class="learn-head"><span class="phase-chip">연결 길</span><b>${idx}/${total}</b></div><section class="card">${globalThis.HideLanguageModel?.renderMeaningMapHtml?.({eng:w.token,word:w.token,languageDomain:w.languageDomain,meaningMap:w.meaningMap},esc)||`<p>${esc(w.example||w.meaning)}</p>`}<button id="v2DomainDone" class="btn primary full">다음</button></section></section>`;
         $('#v2DomainDone').onclick=()=>{HideV2Session.update(HideV2Learning.submitDomainExtension(session,m,{}).session);render()};
       }
+      return;
+    }
+
+    if(session.stage==='SOUND_FIND_RELEARN'){
+      const sound=w?.soundEvidence;
+      if(!sound?.verified||!sound.reading){
+        HideV2Session.update({...session,stage:'FINAL_SEEK'});
+        render();
+        return;
+      }
+      view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}${journeyHtml(session.stage)}${crewHtml(w,session.stage)}<div class="learn-head"><span class="phase-chip">${childStageLabel('SOUND_FIND_RELEARN')}</span><b>${idx}/${total}</b></div><section class="card word-card sound-relearn-card"><p>방금 놓친 음을 잠깐 다시 만나봐요.</p><div class="bigword">${esc(w.token)}</div><h2 style="text-align:center">${esc(sound.reading)}</h2><small>검증된 음만 보여줘요. 지금 보는 것은 회상 성공으로 세지 않아요.</small><button id="v2SoundRehide" class="btn primary full" type="button">다시 숨기고 소리 찾기</button></section></section>`;
+      $('#v2SoundRehide').onclick=()=>{
+        HideV2Session.update(HideV2Learning.submitSoundRelearn(session,m).session);
+        render()
+      };
       return;
     }
 
