@@ -55,6 +55,8 @@ test('Hide V2 presents one continuous child journey and a completion moment', as
   await expect(page.getByRole('heading', { name: '탐험 완료' })).toBeVisible();
   await expect(page.locator('.completion-mark')).toBeVisible();
   await expect(page.locator('.completion-crew')).toBeVisible();
+  await page.getByRole('button', { name: '기억 사다리 보기' }).click();
+  await expect(page.getByRole('heading', { name: '기억 사다리' })).toBeVisible();
 
   const metrics = await page.evaluate(() => ({
     width: window.innerWidth,
