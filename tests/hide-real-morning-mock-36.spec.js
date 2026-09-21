@@ -81,6 +81,11 @@ test('real NEW 12 + REVIEW 24 follows mission, recall and morning mock-test memo
     await page.locator('.inference-confidence').selectOption(i===0?'HIGH':'MEDIUM');
     await page.getByRole('button',{name:'내 추론 남기기'}).click();
     await page.getByRole('button',{name:'구조·장면 단서 보기'}).click();
+    if(expected.eng==='mountain'){
+      await expect(page.locator('[data-scene-id="GROUND"]')).toHaveText(/평평한 땅/);
+      await expect(page.locator('[data-scene-id="RISE"]')).toHaveText(/위로 솟기/);
+      await expect(page.locator('[data-scene-id="PEAK"]')).toHaveText(/높은 꼭대기/);
+    }
     if(i===0){
       await expect(page.getByText('검증 어원',{exact:true})).toBeVisible();
       await expect(page.locator('.root-core b',{hasText:'environ'})).toBeVisible();
