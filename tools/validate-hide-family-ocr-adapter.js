@@ -48,8 +48,8 @@ async function runCase(responseBody,status=200){
       analysis_domain:'HIDE_VOCABULARY',
       analysis_version:'HIDE_VOCABULARY_OCR_V1',
       rows:[
-        {eng:'benefit',kor:'혜택',confidence:'high',evidence_item_id:'page-1',source_column:'LEFT',source_row_index:0,source_column_index:0,warnings:[]},
-        {eng:'essential',kor:'필수적인',confidence:'low',evidence_item_id:'page-1',source_column:'RIGHT',source_row_index:0,source_column_index:0,warnings:['뜻 일부 흐림']}
+        {eng:'benefit',kor:'혜택',confidence:'high',evidence_item_id:'page-1',mission_role:'NEW',mission_role_source:'PRINT_LABEL',source_column:'LEFT',source_row_index:0,source_column_index:0,warnings:[]},
+        {eng:'essential',kor:'필수적인',confidence:'low',evidence_item_id:'page-1',mission_role:'REVIEW',mission_role_source:'TEACHER_MARK',source_column:'RIGHT',source_row_index:0,source_column_index:0,warnings:['뜻 일부 흐림']}
       ]
     }
   });
@@ -61,8 +61,16 @@ async function runCase(responseBody,status=200){
   assert(ok.rows[0].sourceColumn==='LEFT','physical source column must be preserved');
   assert(ok.rows[1].sourceColumn==='RIGHT','right source column must be preserved');
   assert(ok.rows[0].sourceColumnIndex===0,'column-local row index must be preserved');
+  assert(ok.rows[0].missionRole==='NEW'&&ok.rows[0].missionRoleSource==='PRINT_LABEL','explicit NEW role provenance must be preserved');
+  assert(ok.rows[1].missionRole==='REVIEW'&&ok.rows[1].missionRoleSource==='TEACHER_MARK','explicit REVIEW role provenance must be preserved');
   assert(ok.analysis_domain==='HIDE_VOCABULARY','analysis domain must remain explicit');
   assert(/^vision_/.test(ok.vision_ingest_request_id||''),'shared vision ingest request provenance must be preserved');
+
+  const invalidRole=await runCase({
+    analysis_domain:'HIDE_VOCABULARY',
+    result:{analysis_domain:'HIDE_VOCABULARY',analysis_version:'HIDE_VOCABULARY_OCR_V1',rows:[{eng:'fresh',kor:'새로운',confidence:'high',evidence_item_id:'page-1',mission_role:'LEFT'}]}
+  });
+  assert(invalidRole.ok===true&&invalidRole.rows[0].missionRole==='','noncanonical OCR role must be discarded');
 
   const mismatch=await runCase({
     analysis_domain:'READY_ASSIGNMENT_FACT',
