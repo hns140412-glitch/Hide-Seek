@@ -567,6 +567,7 @@ for needle in [
     "inferenceRecordSummary",
     "(S.sheets||[]).flatMap",
     "inference-outcome-btn",
+    "$('.inference-outcome-btn').forEach",
     "맞았어",
     "비슷했어",
     "달랐어",
@@ -614,6 +615,7 @@ for needle in [
     "EMERGING",
     "evidenceLevel",
     "parent-explain-card",
+    ".root-orbit-node[hidden]",
 ]:
     if needle not in language_model and needle not in css:
         fail.append("TRANSFERABLE_LANGUAGE_MODEL:"+needle)
