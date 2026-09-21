@@ -434,3 +434,11 @@ Important current frontier:
 - Duplicate OCR rows are merged only by explicit review action and all occurrences remain traceable under `source.occurrences`.
 - Current locked reporting: PRODUCT ~68%, CODED ~84%, CI ~81%, Browser Runtime ~77%, Device 0%, Release 0%.
 - Continue branch-only. Do not deploy/merge/Netlify.
+
+
+## 2026-09-22 local-first review continuity delta
+- Exact code HEAD `75dd5431625ac7b37b857df9aeb346487176c4ab` passed V2 #213 / full Hide #671.
+- OCR resume must restore the actual editable review draft: corrected values, exclusions and explicit duplicate merges.
+- Keep raw OCR `lastRows` separate from editable `reviewDraft`; do not overwrite source evidence with human edits.
+- Memory Ladder search/state filters and mission-map status filters are green and use existing engine/status semantics only.
+- Current locked reporting remains PRODUCT ~68%, CODED ~84%, CI ~81%, Browser Runtime ~77%, Device 0%, Release 0%.
