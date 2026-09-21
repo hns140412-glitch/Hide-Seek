@@ -460,6 +460,7 @@
         const text=el.dataset.memoryText||'';
         const visible=(activeMemoryFilter==='ALL'||state===activeMemoryFilter)&&(!q||text.includes(q));
         el.hidden=!visible;
+        el.style.display=visible?'':'none';
         if(visible&&el.matches('.word-row'))visibleWordRows++;
       });
       const count=$('#v2MemoryFilterCount');
