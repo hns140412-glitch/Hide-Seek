@@ -503,16 +503,57 @@ test('Hide V2 Korean response stays production evidence, not recall inflation',a
   await expect(page.getByText('표현 길',{exact:true})).toBeVisible();
   await page.locator('#v2Response').fill('비 때문에 일정 변경은 불가피했다.');
   await page.getByRole('button',{name:'표현 남기기'}).click();
+  await expect(page.getByText('목표 단어를 문장에 넣었어요. 문장의 의미 정확도는 여기서 자동 판정하지 않아요.',{exact:true})).toBeVisible();
+  await expect(page.locator('#v2Response')).toBeDisabled();
+  await expect(page.getByRole('button',{name:'표현 남기기'})).toBeDisabled();
   await expect(page.getByText('마지막 찾기',{exact:true})).toBeVisible();
   const ev=await page.evaluate(()=>{
     const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
     return s.missions[0].items[0].evidence.find(x=>x.stage==='RESPONSE_TRAIL');
   });
   expect(ev.evidenceMode).toBe('PRODUCTION');
+  expect(ev.result).toBe('TARGET_USED');
+  expect(ev.targetUsed).toBe(true);
   expect(ev.objectiveVerified).toBe(false);
   expect(ev.objectiveRecall).toBe(false);
 });
 
+
+test('Hide V2 Korean response reports missing target without semantic correctness claims',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'국어 피드백'},missions:[{
+        id:'m-ko-missing',title:'국어 피드백',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        items:[{id:'ko-missing',lexicalId:'불가피::피할 수 없음',token:'불가피',meaning:'피할 수 없음',languageDomain:'KOREAN',missionRole:'NEW',evidence:[],source:{}}],
+        sourceCount:0,provenance:{source:'TEST_FIXTURE'}
+      }],activeMissionId:'m-ko-missing',activeSession:null,captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'탐험 시작'}).click();
+  await page.getByRole('button',{name:'기억하고 찾아보기'}).click();
+  await page.getByLabel('회상 답 입력').fill('불가피');
+  await page.getByRole('button',{name:'기억 확인'}).click();
+  await page.getByLabel('뜻 회상 입력').fill('피할 수 없음');
+  await page.getByRole('button',{name:'뜻 확인'}).click();
+  await expect(page.getByText('표현 길',{exact:true})).toBeVisible();
+
+  await page.getByLabel('국어 문장 표현').fill('오늘 일정이 많이 바뀌었다.');
+  await page.getByRole('button',{name:'표현 남기기'}).click();
+  await expect(page.getByText('문장은 기록했어요. 목표 단어 “불가피”는 들어가지 않았어요. 의미 정확도는 자동 판정하지 않아요.',{exact:true})).toBeVisible();
+  await expect(page.getByText('마지막 찾기',{exact:true})).toBeVisible();
+
+  const ev=await page.evaluate(()=>{
+    const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
+    return s.missions[0].items[0].evidence.find(x=>x.stage==='RESPONSE_TRAIL');
+  });
+  expect(ev.result).toBe('TARGET_NOT_USED');
+  expect(ev.targetUsed).toBe(false);
+  expect(ev.evidenceMode).toBe('PRODUCTION');
+  expect(ev.objectiveVerified).toBe(false);
+  expect(ev.objectiveRecall).toBe(false);
+  expect(ev.recallScoreImpact).toBe(false);
+});
 
 test('Hide V2 Hanja SOUND FIND records only verified source-linked sound recall',async({page})=>{
   await page.addInitScript(()=>{
