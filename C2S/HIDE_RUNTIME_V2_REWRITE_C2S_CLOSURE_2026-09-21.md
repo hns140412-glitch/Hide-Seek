@@ -313,3 +313,13 @@ FALSE_CONVERGENCE = 0: live deploy/device/real-provider claims remain OPEN.
 - First implementation exposed an omitted public action export; exact-head browser CI caught it and the export was repaired.
 - Exact code HEAD `ad8872a9305a121b783142f00e4a8d2c22e6ad1c` passed V2 #284 / full Hide #742.
 - Locked reporting: PRODUCT ~75%, CODED ~91%, CI ~88%, Browser Runtime ~84%, Device 0%, Release 0%.
+
+
+## 25. 2026-09-22 active THINKING TRAIL inference loop
+- Runtime V2 MEMORIZE now preserves the canonical first-seen inference loop instead of only rendering the answer structure.
+- Flow: prediction → clue/confidence self-report → reveal → MATCH/NEAR/MISS self-comparison.
+- Comparison is `LEARNER_SELF_REPORT`, `objectiveVerified=false`, `objectiveRecall=false`, and has no recall-score impact.
+- Existing `summarizeInferenceSkill()` now consumes V2 events; only ESTABLISHED and plan-applicable clue tendencies surface as optional later guidance.
+- This does not create a new learning-policy owner or override the learner's current clue choice.
+- Exact code HEAD `42a524f6474db74896fc507e7a61724ba99f48ee` passed V2 #292 / full Hide #750.
+- Locked reporting: PRODUCT ~76%, CODED ~92%, CI ~89%, Browser Runtime ~85%, Device 0%, Release 0%.
