@@ -360,3 +360,12 @@ FALSE_CONVERGENCE = 0: live deploy/device/real-provider claims remain OPEN.
 - Existing support remains the authority; no new etymology or semantic claim is invented by personalization.
 - Exact HEAD `b307014e92b8e3448c48e697154b3a2e8cb60db9` passed V2 #319 / full Hide #777.
 - Locked reporting: PRODUCT ~78%, CODED ~94%, CI ~91%, Browser Runtime ~87%, Device 0%, Release 0%.
+
+
+## 28. 2026-09-22 Korean expression human-review handoff
+- Korean RESPONSE TRAIL sentences can now be projected as scoped human semantic-review candidates in the Ready result contract.
+- Target-use detection is factual; semantic correctness remains unclaimed and unverified.
+- Projection is restricted to active session.queue when Ready supplied a lexical scope.
+- Completion UI surfaces the pending expression-review count without turning it into a child score.
+- Exact HEAD `50d04cf2f891b4844ddf16f225b40f4bf1a947cf` passed V2 #326 / full Hide #784.
+- Locked reporting: PRODUCT ~79%, CODED ~94%, CI ~92%, Browser Runtime ~88%, Device 0%, Release 0%.
