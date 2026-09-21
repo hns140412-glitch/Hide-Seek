@@ -493,11 +493,6 @@
       const colDiff=(colOrder[a.sourceColumn]??3)-(colOrder[b.sourceColumn]??3);if(colDiff)return colDiff;
       return Number(a.sourceColumnIndex??a.sourceRowIndex??0)-Number(b.sourceColumnIndex??b.sourceRowIndex??0);
     });
-    const left=session.lastRows.filter(x=>x.sourceColumn==='LEFT');
-    const known=session.lastRows.filter(x=>x.sourceColumn!=='UNKNOWN');
-    session.sourceLayoutProfile=(session.lastRows.length===36&&left.length===12&&known.length===36)
-      ?'WEEKDAY_VOCAB_LEFT12_NEW_REST_REVIEW'
-      :(session.sourceLayoutProfile||'');
     session.analysisBatches.push({
       batchId: makeId('batch'),
       sourcePageIds: targets.map(p => p.pageId),
@@ -532,21 +527,23 @@
       sourceColumnIndex: Number(row.sourceColumnIndex ?? i)
     }));
 
-    const layoutRole = row => {
-      if(session.sourceLayoutProfile!=='WEEKDAY_VOCAB_LEFT12_NEW_REST_REVIEW') return '';
-      if(row.sourceColumn && row.sourceColumn!=='UNKNOWN') return row.sourceColumn==='LEFT'?'NEW':'REVIEW';
-      const idx=data.indexOf(row); return idx>=0&&idx<12?'NEW':'REVIEW';
-    };
-    const roleCounts={NEW:data.filter(x=>layoutRole(x)==='NEW').length,REVIEW:data.filter(x=>layoutRole(x)==='REVIEW').length};
+    data=data.map(x=>({
+      ...x,
+      missionRole:["NEW","REVIEW"].includes(x.missionRole)?x.missionRole:(typeof inferMissionRole==='function'?inferMissionRole(x,session.editingSheetId||''):'')
+    }));
+    const roleCounts=()=>({NEW:data.filter(x=>x.missionRole==='NEW').length,REVIEW:data.filter(x=>x.missionRole==='REVIEW').length});
     const view = document.querySelector('#view');
+    const counts=roleCounts();
     view.innerHTML = `
       <section class="card">
         <div class="hero-kicker"><span>REVIEW BEFORE COMMIT</span><span>${data.length}개</span></div>
         <h2>단어 결과 확인</h2>
-        <p>낮은 신뢰 항목은 직접 수정하거나 ‘이대로 확인’을 눌러야 저장할 수 있어요.</p>
-        ${session.sourceLayoutProfile==='WEEKDAY_VOCAB_LEFT12_NEW_REST_REVIEW'
-          ?`<div class="card tint-leaf" style="margin-top:10px"><b>이번 시험지 구조</b><p style="margin:4px 0 0">좌측 12개 = NEW · 나머지 24개 = REVIEW</p><small>인식 결과 NEW ${roleCounts.NEW} · REVIEW ${roleCounts.REVIEW}</small></div>`
-          :''}
+        <p>프린트 양식과 관계없이 오늘 미션에서 NEW / REVIEW를 확인해요.</p>
+        <div class="card tint-leaf" style="margin-top:10px">
+          <b>오늘 미션 구성</b>
+          <p style="margin:4px 0 0">기준 패턴 · NEW 12 + REVIEW 24</p>
+          <small id="hideRoleCount">현재 NEW ${counts.NEW} · REVIEW ${counts.REVIEW}</small>
+        </div>
         <div id="hideBatchRows" class="table" style="margin-top:12px"></div>
         <div class="hide-review-actions">
           <button id="hideReviewMore" class="btn secondary" type="button">촬영 더하기</button>
@@ -570,7 +567,7 @@
           <input class="eng" value="${esc(w.eng)}" aria-label="${i + 1}번 영어 단어">
           <input class="kor" value="${esc(w.kor)}" aria-label="${i + 1}번 뜻">
           <span class="badge ${w.reviewResolved ? 'good' : 'weak'}">${w.reviewResolved ? '확인' : '확인 필요'}</span>
-          ${layoutRole(w)?`<span class="badge ${layoutRole(w)==='NEW'?'good':''}">${layoutRole(w)}</span>`:''}
+          <button class="badge hide-role-toggle ${w.missionRole==='NEW'?'good':''}" data-role-toggle="${i}" type="button">${w.missionRole||'미분류'}</button>
           ${w.reviewResolved ? '' : `<button class="hide-confirm-row" data-confirm="${i}" type="button">이대로 확인</button>`}
           <button class="row-delete" data-del="${i}" type="button" aria-label="${i + 1}번 행 삭제">×</button>
         </div>`).join('');
@@ -603,6 +600,18 @@
       rowsEl.querySelectorAll('[data-del]').forEach(btn => {
         btn.onclick = () => {
           data.splice(Number(btn.dataset.del), 1);
+          syncToSession();
+          draw();
+        };
+      });
+      rowsEl.querySelectorAll('[data-role-toggle]').forEach(btn => {
+        btn.onclick = () => {
+          const i=Number(btn.dataset.roleToggle);
+          data[i].missionRole=data[i].missionRole==='NEW'?'REVIEW':'NEW';
+          data[i].missionRoleSource='MISSION_REVIEW_CONFIRMATION';
+          const counts=roleCounts();
+          const countEl=view.querySelector('#hideRoleCount');
+          if(countEl)countEl.textContent=`현재 NEW ${counts.NEW} · REVIEW ${counts.REVIEW}`;
           syncToSession();
           draw();
         };
@@ -647,16 +656,11 @@
         ocrEvidenceItemId: x.ocrEvidenceItemId || x.sourcePageId || null,
         ocrWarnings: Array.isArray(x.ocrWarnings) ? [...x.ocrWarnings] : []
       }));
-      if(session.sourceLayoutProfile==='WEEKDAY_VOCAB_LEFT12_NEW_REST_REVIEW'){
-        const hasPhysicalColumns=items.some(x=>x.sourceColumn&&x.sourceColumn!=='UNKNOWN');
-        items=items.map((x,i)=>({
-          ...x,
-          missionRole:hasPhysicalColumns?(x.sourceColumn==='LEFT'?'NEW':'REVIEW'):(i<12?'NEW':'REVIEW'),
-          missionRoleSource:hasPhysicalColumns?'SOURCE_LAYOUT_COLUMN':'SOURCE_LAYOUT_PROFILE_FALLBACK'
-        }));
-      }else{
-        items = typeof applyMissionRoles === 'function' ? applyMissionRoles(items, sheetId) : items;
-      }
+      items = items.map(x=>({
+        ...x,
+        missionRole:["NEW","REVIEW"].includes(x.missionRole)?x.missionRole:(typeof inferMissionRole==='function'?inferMissionRole(x,sheetId):''),
+        missionRoleSource:x.missionRoleSource||'LEARNER_HISTORY_INFERENCE'
+      }));
       const newSheet = {
         sheetId,
         title: `${new Date().toLocaleDateString('ko-KR')} 숨은 단어`,
@@ -678,10 +682,12 @@
           providers: [...new Set(items.map(x => x.ocrProvider).filter(Boolean))],
           models: [...new Set(items.map(x => x.ocrModel).filter(Boolean))],
           evidenceItemIds: [...new Set(items.map(x => x.ocrEvidenceItemId).filter(Boolean))],
-          sourceLayoutProfile:session.sourceLayoutProfile||null,
-          sourceRoleRule:session.sourceLayoutProfile==='WEEKDAY_VOCAB_LEFT12_NEW_REST_REVIEW'
-            ?{newRule:'LEFT_COLUMN',newCount:12,reviewRule:'NON_LEFT',reviewCount:24}
-            :null,
+          missionComposition:{
+            expectedNew:12,
+            expectedReview:24,
+            observedFrom:'MORNING_MOCK_TEST_ROUTINE',
+            layoutIndependent:true
+          },
           sourcePages: session.pages.map(p => ({
             pageId:p.pageId,
             displayOrder:p.displayOrder,
