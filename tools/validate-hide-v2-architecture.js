@@ -94,6 +94,16 @@ for(const token of ['visualViewport','keepFocusedControlVisible','scrollIntoView
   if(!mobile.includes(token))fail.push('V2_MOBILE_VIEWPORT_OWNER_MISSING:'+token);
 }
 if(!html.includes('./src/v2/mobile-shell.js'))fail.push('V2_MOBILE_SHELL_NOT_LOADED');
+for(const forbidden of ['Runtime V2','Hide & Seek V2']){
+  if(html.includes(forbidden))fail.push('CHILD_FACING_RUNTIME_JARGON:'+forbidden);
+}
+for(const forbidden of ['<span>HIDE V2</span>','<span>REWRITE</span>','<h2>V2 상태</h2>','monolith-free','구조 분리형 런타임']){
+  if(app.includes(forbidden))fail.push('CHILD_FACING_INTERNAL_JARGON:'+forbidden);
+}
+for(const required of ['숨은 단어 탐험','탐험 준비','단어 만나기','첫 찾기','뜻 단서','연결 길','마지막 찾기']){
+  if(!app.includes(required)&&!html.includes(required))fail.push('CHILD_FACING_EXPLORATION_COPY_MISSING:'+required);
+}
+
 for(const token of ['--v2-safe-bottom','max-width:390px','min-height:44px','overflow-wrap:anywhere']){
   if(!v2css.includes(token))fail.push('V2_MOBILE_CSS_GUARD_MISSING:'+token);
 }
