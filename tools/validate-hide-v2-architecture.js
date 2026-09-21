@@ -5,7 +5,7 @@ const ROOT=path.join(__dirname,'..');
 const modules=[
   'src/v2/app-store.js','src/v2/mission-service.js','src/v2/memory-engine.js',
   'src/v2/learning-session.js','src/v2/session-service.js','src/v2/capture-store.js','src/v2/capture-controller.js','src/v2/router.js',
-  'src/v2/legacy-migration.js','src/v2/ready-bridge.js','src/v2/pwa-v2.js','src/v2/app.js'
+  'src/v2/legacy-migration.js','src/v2/ready-bridge.js','src/v2/pwa-v2.js','src/v2/mobile-shell.js','src/v2/app.js'
 ];
 const fail=[];
 for(const file of modules){
@@ -39,6 +39,9 @@ if(!learning.includes('checkFinalSeek'))fail.push('V2_FINAL_SEEK_EVIDENCE_MISSIN
 const captureStore=fs.readFileSync(path.join(ROOT,'src/v2/capture-store.js'),'utf8');
 if(!captureStore.includes("const DB_NAME='hide-seek-v2-assets'"))fail.push('V2_CAPTURE_ASSET_STORE_MISSING');
 const capture=fs.readFileSync(path.join(ROOT,'src/v2/capture-controller.js'),'utf8');
+for(const token of ['analysisRows',"page.status==='ANALYZED'",'retryable:true']){
+  if(!capture.includes(token))fail.push('V2_OCR_PAGE_RECOVERY_MISSING:'+token);
+}
 for(const token of ['captureSession','analysisBatches','lastRows','markCommitted','hasResumableReview']){
   if(!capture.includes(token))fail.push('V2_CAPTURE_RESUME_CONTRACT_MISSING:'+token);
 }
@@ -79,8 +82,20 @@ for(const token of ['기억 기록','단어장','우선 복습순','v2Records'])
   if(!app.includes(token))fail.push('V2_MEMORY_SURFACE_MISSING:'+token);
 }
 
+for(const token of ['confidence','ocr-warning','v2RetryOcr','renderOcrFailure']){
+  if(!app.includes(token))fail.push('V2_OCR_REVIEW_RESILIENCE_UI_MISSING:'+token);
+}
 for(const token of ['OCR 단어','OCR 뜻','data-review-toggle','미션 관리','data-action="rename"','data-action="delete"']){
   if(!app.includes(token))fail.push('V2_PRODUCT_MANAGEMENT_UI_MISSING:'+token);
+}
+
+const mobile=fs.readFileSync(path.join(ROOT,'src/v2/mobile-shell.js'),'utf8');
+for(const token of ['visualViewport','keepFocusedControlVisible','scrollIntoView','--v2-visual-height']){
+  if(!mobile.includes(token))fail.push('V2_MOBILE_VIEWPORT_OWNER_MISSING:'+token);
+}
+if(!html.includes('./src/v2/mobile-shell.js'))fail.push('V2_MOBILE_SHELL_NOT_LOADED');
+for(const token of ['--v2-safe-bottom','max-width:390px','min-height:44px','overflow-wrap:anywhere']){
+  if(!v2css.includes(token))fail.push('V2_MOBILE_CSS_GUARD_MISSING:'+token);
 }
 
 const pwa=fs.readFileSync(path.join(ROOT,'src/v2/pwa-v2.js'),'utf8');
