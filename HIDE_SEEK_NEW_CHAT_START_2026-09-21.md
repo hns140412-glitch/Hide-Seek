@@ -132,3 +132,10 @@ Korean memory evidence:
 - Do not upgrade context exposure to objective recall.
 - Do not treat word-meaning matching as source-text evidence selection.
 - Keep EVIDENCE at zero until a real evidence interaction is implemented.
+
+
+Korean EVIDENCE TRAIL:
+- Activate only from verified, source-linked `contextEvidence`.
+- Fail closed when the evidence excerpt is not contained in the source context or candidate contract is invalid.
+- EVIDENCE is earned only through explicit selection.
+- Keep CONTEXT exposure separate from objective CONTEXT recall.
