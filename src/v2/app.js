@@ -191,19 +191,77 @@
 
   function review(rows){
     const normalized=rows.map((r,i)=>HideV2Mission.normalizeItem(r,i)).filter(Boolean);
-    const draft=normalized.map(x=>({...x,excluded:false}));
+    const clone=x=>JSON.parse(JSON.stringify(x));
+    const draft=normalized.map(x=>({...x,excluded:false,mergedInto:null,originalSource:clone(x.source||{})}));
+    const activeGroup=(i)=>draft
+      .map((x,j)=>({x,j}))
+      .filter(({x})=>!x.excluded&&x.lexicalId===draft[i].lexicalId)
+      .map(({j})=>j);
+    const sourceOccurrences=(source={})=>{
+      const nested=Array.isArray(source.occurrences)&&source.occurrences.length?source.occurrences:[source];
+      const seen=new Set();
+      return nested.filter(Boolean).map(x=>clone(x)).filter(x=>{
+        const key=[x.pageId,x.rowIndex,x.provider,x.model,x.analysisVersion].map(v=>String(v??'')).join('|');
+        if(seen.has(key))return false;seen.add(key);return true;
+      });
+    };
+    const resetGroup=(primaryId)=>{
+      draft.forEach(x=>{
+        if(x.id===primaryId||x.mergedInto===primaryId){
+          x.mergedInto=null;
+          x.source=clone(x.originalSource||x.source||{});
+        }
+      });
+    };
+    const resetRelated=(i)=>{
+      const w=draft[i];
+      if(w.mergedInto){resetGroup(w.mergedInto);return}
+      if(draft.some(x=>x.mergedInto===w.id))resetGroup(w.id);
+    };
+    const mergeGroup=(i)=>{
+      const group=activeGroup(i);
+      if(group.length<2)return;
+      resetRelated(i);
+      const refreshed=activeGroup(i);
+      const primaryIndex=refreshed[0],primary=draft[primaryIndex];
+      const allSources=refreshed.flatMap(j=>sourceOccurrences(draft[j].source));
+      const rank={high:3,medium:2,low:1};
+      const sorted=allSources.slice().sort((a,b)=>(rank[String(b.confidence||'').toLowerCase()]||0)-(rank[String(a.confidence||'').toLowerCase()]||0));
+      const best=clone(sorted[0]||primary.source||{});
+      best.warnings=[...new Set(allSources.flatMap(x=>Array.isArray(x.warnings)?x.warnings:[]).map(String))];
+      best.occurrences=allSources;
+      primary.source=best;
+      refreshed.slice(1).forEach(j=>{draft[j].mergedInto=primary.id});
+    };
     const renderRows=()=>{
-      view().innerHTML=`<section class="card ocr-review-card"><div class="hero-kicker"><span>프린트에서 찾았어요</span><span>단어 탐험 준비</span></div><h2>찾은 단어 확인하기</h2><p class="ocr-review-intro">사진에서 찾은 단어와 뜻이에요. 틀린 곳만 고치고, 이번 탐험에 필요 없는 단어는 빼면 돼요.</p><div class="ocr-review-list">${draft.map((w,i)=>`<article class="ocr-review-row ${w.excluded?'is-excluded':''}" data-review-row="${i}"><div class="ocr-review-row__head"><span>찾은 단어 ${i+1}</span>${w.source?.warnings?.length?'<b>확인 필요</b>':'<small>확인해 주세요</small>'}</div><div class="ocr-review-fields"><label><span>단어</span><input class="input" data-review-token="${i}" aria-label="OCR 단어 ${i+1}" value="${esc(w.token)}"></label><label><span>뜻</span><input class="input" data-review-meaning="${i}" aria-label="OCR 뜻 ${i+1}" value="${esc(w.meaning)}"></label></div>${w.source?.warnings?.length?`<p class="ocr-warning">사진 인식에서 확인이 필요한 흔적이 있어요. 직접 보고 맞는지 확인해 주세요.</p>`:''}<details class="ocr-source-details"><summary>인식 정보</summary><small>${esc(w.languageDomain)} · ${esc(w.source?.pageId||'source')} · confidence ${esc(w.source?.confidence||'medium')}${w.source?.warnings?.length?` · ${esc(w.source.warnings.join(', '))}`:''}</small></details><button class="btn secondary full" data-review-toggle="${i}" type="button">${w.excluded?'다시 넣기':'이번 미션에서 빼기'}</button></article>`).join('')}</div><section class="ocr-review-next"><b>확인이 끝났나요?</b><span>저장하면 이 단어들로 바로 탐험 미션을 만들어요.</span></section><button class="btn primary full" id="v2Commit" type="button">이 단어로 탐험 만들기</button></section>`;
+      view().innerHTML=`<section class="card ocr-review-card"><div class="hero-kicker"><span>프린트에서 찾았어요</span><span>단어 탐험 준비</span></div><h2>찾은 단어 확인하기</h2><p class="ocr-review-intro">사진에서 찾은 단어와 뜻이에요. 틀린 곳만 고치고, 같은 단어가 여러 곳에서 보이면 확인한 뒤 하나로 묶을 수 있어요.</p><div class="ocr-review-list">${draft.map((w,i)=>{
+        const group=activeGroup(i),dupCount=group.length,isMerged=!!w.mergedInto;
+        const ownsMerge=draft.some(x=>x.mergedInto===w.id);
+        const isPrimary=dupCount>1&&!isMerged&&(ownsMerge||group[0]===i);
+        const badge=isMerged?'<b class="ocr-duplicate-badge">묶음에 포함</b>':dupCount>1?`<b class="ocr-duplicate-badge">같은 단어 ${dupCount}곳</b>`:w.source?.warnings?.length?'<b>확인 필요</b>':'<small>확인해 주세요</small>';
+        const occurrenceCount=Array.isArray(w.source?.occurrences)?w.source.occurrences.length:1;
+        const mergeAction=isPrimary?`<button class="btn secondary full" data-review-merge="${i}" type="button">${ownsMerge?'중복 묶음 풀기':`같은 단어 ${dupCount}곳 하나로 묶기`}</button>`:'';
+        const rowAction=isMerged?'<small class="ocr-merged-note">위 대표 단어의 출처 묶음에 포함돼요.</small>':`<button class="btn secondary full" data-review-toggle="${i}" type="button">${w.excluded?'다시 넣기':'이번 미션에서 빼기'}</button>`;
+        return `<article class="ocr-review-row ${w.excluded?'is-excluded':''} ${isMerged?'is-merged':''}" data-review-row="${i}"><div class="ocr-review-row__head"><span>찾은 단어 ${i+1}</span>${badge}</div><div class="ocr-review-fields"><label><span>단어</span><input class="input" data-review-token="${i}" aria-label="OCR 단어 ${i+1}" value="${esc(w.token)}"></label><label><span>뜻</span><input class="input" data-review-meaning="${i}" aria-label="OCR 뜻 ${i+1}" value="${esc(w.meaning)}"></label></div>${w.source?.warnings?.length?`<p class="ocr-warning">사진 인식에서 확인이 필요한 흔적이 있어요. 직접 보고 맞는지 확인해 주세요.</p>`:''}<details class="ocr-source-details"><summary>인식 정보</summary><small>${esc(w.languageDomain)} · ${esc(w.source?.pageId||'source')} · confidence ${esc(w.source?.confidence||'medium')}${occurrenceCount>1?` · 출처 ${occurrenceCount}곳`:''}${w.source?.warnings?.length?` · ${esc(w.source.warnings.join(', '))}`:''}</small></details>${mergeAction}${rowAction}</article>`;
+      }).join('')}</div><section class="ocr-review-next"><b>확인이 끝났나요?</b><span>묶은 단어도 모든 사진 출처를 보존한 채 탐험 미션 1개로 저장돼요.</span></section><button class="btn primary full" id="v2Commit" type="button">이 단어로 탐험 만들기</button></section>`;
       draft.forEach((w,i)=>{
-        const token=$(`[data-review-token="${i}"]`),meaning=$(`[data-review-meaning="${i}"]`),toggle=$(`[data-review-toggle="${i}"]`);
-        token.disabled=w.excluded;meaning.disabled=w.excluded;
-
+        const token=$([`[data-review-token="${i}"]`]),meaning=$([`[data-review-meaning="${i}"]`]),toggle=$([`[data-review-toggle="${i}"]`]),merge=$([`[data-review-merge="${i}"]`]);
+        const locked=w.excluded||!!w.mergedInto;
+        token.disabled=locked;meaning.disabled=locked;
         token.oninput=()=>{draft[i].token=token.value.trim();draft[i].lexicalId=`${draft[i].token.toLowerCase()}::${draft[i].meaning.replace(/\s+/g,' ')}`};
         meaning.oninput=()=>{draft[i].meaning=meaning.value.trim();draft[i].lexicalId=`${draft[i].token.toLowerCase()}::${draft[i].meaning.replace(/\s+/g,' ')}`};
-        toggle.onclick=()=>{draft[i].excluded=!draft[i].excluded;renderRows()};
+        token.onchange=()=>{resetRelated(i);renderRows()};
+        meaning.onchange=()=>{resetRelated(i);renderRows()};
+        if(toggle)toggle.onclick=()=>{resetRelated(i);draft[i].excluded=!draft[i].excluded;renderRows()};
+        if(merge)merge.onclick=()=>{
+          if(draft.some(x=>x.mergedInto===w.id))resetGroup(w.id);else mergeGroup(i);
+          renderRows()
+        };
       });
       $('#v2Commit').onclick=()=>{
-        const kept=draft.filter(x=>!x.excluded&&x.token&&x.meaning);
+        const kept=draft.filter(x=>!x.excluded&&!x.mergedInto&&x.token&&x.meaning).map(x=>{
+          const copy=clone(x);delete copy.excluded;delete copy.mergedInto;delete copy.originalSource;return copy
+        });
         if(!kept.length){setFlash('저장할 단어가 없어요.');return}
         const mission=HideV2Mission.addMission({items:kept,sourceCount:Number(HideV2Capture.state()?.pages?.length||1),provenance:{source:'V2_OCR_REVIEW',captureSessionId:HideV2Capture.state()?.id||null}});
         HideV2Capture.markCommitted(mission.id);
