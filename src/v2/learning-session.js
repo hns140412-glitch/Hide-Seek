@@ -94,6 +94,25 @@
     return {ok,session:next};
   }
 
+  function markFirstFindUnsure(session,mission){
+    const w=current(session,mission);
+    const attempt=recordAttempt(session,w.id,'FIRST_FIND');
+    HideV2Memory.record(mission.id,w.id,{
+      stage:'FIRST_FIND',
+      evidenceMode:'RECALL',
+      axes:['FORM','RECALL'],
+      result:'PASS',
+      objectiveVerified:false,
+      objectiveRecall:true,
+      assisted:false,
+      reason:'UNSURE_SELF_REPORT',
+      attempt:attempt.count
+    });
+    const next=clone(attempt.session);
+    next.stage='FIRST_FIND_RELEARN';
+    return {ok:false,unsure:true,session:next};
+  }
+
   function submitFirstFindRelearn(session,mission){
     const w=current(session,mission);
     HideV2Memory.record(mission.id,w.id,{
@@ -281,6 +300,6 @@
   }
 
   window.HideV2Learning=Object.freeze({
-    STAGES,create,current,advance,submitMemorize,checkFirstFind,submitFirstFindRelearn,checkMeaning,submitDomainExtension,useFinalSupport,checkFinalSeek,submitSeekAgainRelearn,checkSeekAgain
+    STAGES,create,current,advance,submitMemorize,checkFirstFind,markFirstFindUnsure,submitFirstFindRelearn,checkMeaning,submitDomainExtension,useFinalSupport,checkFinalSeek,submitSeekAgainRelearn,checkSeekAgain
   });
 })();
