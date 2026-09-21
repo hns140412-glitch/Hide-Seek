@@ -148,6 +148,15 @@
     return {ok,session:advance(attempt.session,mission)};
   }
 
+  function englishShapeCue(token){
+    const w=String(token||'').toLowerCase();
+    if(!/^[a-z]+$/.test(w)||w.length<4)return '';
+    const suffixes=['tion','sion','ment','ness','able','ible','ful','less','ing','ed','ly'];
+    const suffix=suffixes.find(x=>w.length>x.length+2&&w.endsWith(x));
+    const chunks=suffix?[w.slice(0,-suffix.length),suffix]:[w.slice(0,Math.max(2,Math.ceil(w.length/2))),w.slice(Math.max(2,Math.ceil(w.length/2)))].filter(Boolean);
+    return chunks.map(x=>x.length<=2?x:x[0]+'·'.repeat(Math.max(1,x.length-2))+x.at(-1)).join('  ');
+  }
+
   function hiddenWordsPlan(word){
     const mem=HideV2Memory.summary(word);
     const primaryReason=HideV2Memory.reason(mem);
@@ -162,7 +171,15 @@
       decay:'기억 길 다시 깨우기',
       stable:'지금은 보강 없이 통과'
     };
-    return {key,label:labels[key]||labels.stable,primaryReason,memory:mem};
+    const mode=key==='confusion'?'MEANING':key==='sound'&&word?.soundEvidence?.reading?'SOUND':key==='orthographic'&&englishShapeCue(word?.token)?'SHAPE':'TOKEN';
+    return {
+      key,
+      label:labels[key]||labels.stable,
+      primaryReason,
+      memory:mem,
+      mode,
+      prompt:mode==='MEANING'?word?.token:mode==='SHAPE'?englishShapeCue(word?.token):mode==='SOUND'?word?.token:word?.meaning
+    };
   }
 
   function nextAfterDomain(session,mission){
@@ -177,21 +194,24 @@
     const w=current(session,mission);
     const plan=hiddenWordsPlan(w);
     const typed=String(payload.answer||'').trim().normalize('NFKC');
-    const mode=plan.key==='sound'&&w?.soundEvidence?.reading?'SOUND':'TOKEN';
+    const mode=plan.mode||'TOKEN';
     const target=mode==='SOUND'
-      ?String(w.soundEvidence.reading||'').trim().normalize('NFKC')
-      :String(w.token||'').trim().normalize('NFKC').toLowerCase();
-    const answer=mode==='SOUND'?typed:typed.toLowerCase();
+      ?String(w.soundEvidence?.reading||'').trim().normalize('NFKC')
+      :mode==='MEANING'
+        ?String(w.meaning||'').trim().normalize('NFKC')
+        :String(w.token||'').trim().normalize('NFKC').toLowerCase();
+    const answer=(mode==='SOUND'||mode==='MEANING')?typed:typed.toLowerCase();
     const ok=!!answer&&answer===target;
     HideV2Memory.record(mission.id,w.id,{
       stage:'HIDDEN_WORDS',
-      evidenceMode:mode==='SOUND'?'RECALL':'REINFORCEMENT_RECALL',
-      axes:mode==='SOUND'?['SOUND','RECALL']:['FORM','RECALL'],
+      evidenceMode:mode==='SOUND'?'RECALL':mode==='MEANING'?'REINFORCEMENT_RECOGNITION':'REINFORCEMENT_RECALL',
+      axes:mode==='SOUND'?['SOUND','RECALL']:mode==='MEANING'?['MEANING','RECALL']:['FORM','RECALL'],
       result:ok?'CORRECT':'WRONG',
       objectiveVerified:true,
       objectiveRecall:true,
       assisted:false,
       reinforcementReason:plan.key,
+      reinforcementMode:mode,
       source:mode==='SOUND'?(w.soundEvidence?.sourceRef||null):null
     });
     const next=clone(session);
