@@ -11,6 +11,12 @@ assert(api,'language model missing');
 assert(api.detectDomain({eng:'transport',kor:'운반하다'})==='ENGLISH','english detection');
 assert(api.detectDomain({word:'불가피'})==='KOREAN','korean detection');
 assert(api.detectDomain({word:'學'})==='HANJA','hanja detection');
+const englishClues=api.clueOptions('ENGLISH').map(x=>x.value);
+const koreanClues=api.clueOptions('KOREAN').map(x=>x.value);
+const hanjaClues=api.clueOptions('HANJA').map(x=>x.value);
+assert(englishClues.includes('ROOT_ETYMOLOGY')&&!englishClues.includes('HANJA_ORIGIN'),'english clue taxonomy');
+assert(koreanClues.includes('HANJA_ORIGIN')&&koreanClues.includes('AFFIX')&&!koreanClues.includes('ROOT_ETYMOLOGY'),'korean clue taxonomy');
+assert(hanjaClues.includes('COMPONENT')&&hanjaClues.includes('RADICAL')&&!hanjaClues.includes('ROOT_ETYMOLOGY'),'hanja clue taxonomy');
 
 const unverified=api.normalizeItem({eng:'transport',meaningMap:{verified:false,nodes:[{label:'port',meaning:'나르다'}]}});
 assert(!unverified.meaningMap,'unverified meaning map must fail closed');
@@ -111,6 +117,8 @@ assert(inferenceHtml.includes('root-step-next')&&inferenceHtml.includes('data-ro
 
 const adaptive=api.prioritizeExistingAssistance(['SOUND','THINKING_SCENE','SHAPE','FRAGMENT','MINIMUM_REVEAL'],{adaptiveClue:{clue:'WORD_PART'}});
 assert(adaptive[0]==='THINKING_SCENE'&&adaptive[1]==='SHAPE','word-part skill should reorder existing weak cues');
+const koreanAdaptive=api.prioritizeExistingAssistance(['SOUND','MEANING_MAP','THINKING_SCENE','FRAGMENT','MINIMUM_REVEAL'],{adaptiveClue:{clue:'HANJA_ORIGIN'}});
+assert(koreanAdaptive[0]==='MEANING_MAP','korean Hanja-origin clue should prioritize verified meaning map');
 assert(adaptive.at(-2)==='FRAGMENT'&&adaptive.at(-1)==='MINIMUM_REVEAL','strong reveal cues must remain terminal');
 const noInvent=api.prioritizeExistingAssistance(['SOUND','SHAPE','FRAGMENT','MINIMUM_REVEAL'],{adaptiveClue:{clue:'ROOT_ETYMOLOGY'}});
 assert(!noInvent.includes('MEANING_MAP')&&!noInvent.includes('THINKING_SCENE'),'adaptive ordering must not invent unavailable help');
