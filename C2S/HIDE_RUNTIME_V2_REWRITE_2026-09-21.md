@@ -59,3 +59,12 @@ No merge, deploy, Netlify, production or device verification has occurred.
 - OCR review is editable before commit: token/meaning correction and row exclusion.
 - The saved result routes into the V2 mission-management surface.
 - This moves V2 PRODUCT_COMPLETION from ~35% to ~39%; reusable asset maturity remains separate.
+
+
+## Surgery increment — Memory Ladder / wordbook
+- V2 now owns memory signatures rather than depending on V1 lexicon runtime.
+- Derived dimensions: semantic/phonological/orthographic weakness, confusion, slow recall, timeout risk, hint dependency, recovery status and long-term decay.
+- Memory strength and next-review priority are projections of evidence, not scheduling authority.
+- Same lexicalId across missions is merged into a cumulative wordbook record.
+- Records surface exposes aggregate memory and per-word review reasons.
+- V2 PRODUCT_COMPLETION moves from ~39% to ~44%; DEVICE_VERIFIED remains 0%.
