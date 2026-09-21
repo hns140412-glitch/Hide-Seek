@@ -19,7 +19,9 @@
         confidence:normalizeConfidence(row?.confidence),
         evidenceItemId:String(row?.evidence_item_id||'').trim()||null,
         warnings:Array.isArray(row?.warnings)?row.warnings.map(String):[],
-        sourceRowIndex:index
+        sourceColumn:['LEFT','RIGHT','CENTER','UNKNOWN'].includes(String(row?.source_column||'').toUpperCase())?String(row.source_column).toUpperCase():'UNKNOWN',
+        sourceRowIndex:Number.isFinite(Number(row?.source_row_index))?Number(row.source_row_index):index,
+        sourceColumnIndex:Number.isFinite(Number(row?.source_column_index))?Number(row.source_column_index):index
       }))
       .filter(row=>row.eng||row.kor);
   }
