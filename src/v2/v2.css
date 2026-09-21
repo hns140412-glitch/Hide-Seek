@@ -886,3 +886,49 @@ body.v2-runtime{
     grid-template-columns:1fr;
   }
 }
+
+
+/* Completion: achievement first, metrics second */
+.v2-runtime .completion-card--story{
+  display:grid;
+  gap:12px;
+  text-align:center;
+}
+.v2-runtime .completion-achievement{
+  margin:0;
+  font-size:16px;
+  font-weight:900;
+  line-height:1.55;
+}
+.v2-runtime .completion-next{
+  display:grid;
+  gap:5px;
+  padding:14px;
+  border:1px solid var(--v2-line);
+  border-radius:18px;
+  background:rgba(255,255,255,.76);
+  text-align:left;
+}
+.v2-runtime .completion-next span{
+  font-size:12px;
+  font-weight:900;
+  color:var(--v2-muted);
+}
+.v2-runtime .completion-next b{
+  font-size:14px;
+  line-height:1.5;
+}
+.v2-runtime .completion-details{
+  text-align:left;
+}
+.v2-runtime .completion-details summary{
+  min-height:44px;
+  display:flex;
+  align-items:center;
+  cursor:pointer;
+  font-weight:800;
+  color:var(--v2-muted);
+}
+.v2-runtime .completion-details .grid3{
+  margin-top:8px;
+}
