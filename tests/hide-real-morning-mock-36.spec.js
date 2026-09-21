@@ -193,6 +193,35 @@ test('real NEW 12 + REVIEW 24 follows mission, recall and morning mock-test memo
   });
   expect(ladder[0]).toBe('THINKING_SCENE');
   expect(ladder).toContain('SHAPE');
+  const applicability=await page.evaluate(()=>{
+    const s=JSON.parse(localStorage.getItem('hide_seek_state'));
+    const rootHistory=[
+      {event:'FIRST_SEEN_PREDICTION',clueUsed:'ROOT_ETYMOLOGY',outcome:'MATCH',confidence:'MEDIUM'},
+      {event:'FIRST_SEEN_PREDICTION',clueUsed:'ROOT_ETYMOLOGY',outcome:'MATCH',confidence:'MEDIUM'},
+      {event:'FIRST_SEEN_PREDICTION',clueUsed:'ROOT_ETYMOLOGY',outcome:'NEAR',confidence:'MEDIUM'},
+      {event:'FIRST_SEEN_PREDICTION',clueUsed:'SCENE',outcome:'MISS',confidence:'MEDIUM'},
+      {event:'FIRST_SEEN_PREDICTION',clueUsed:'WORD_PART',outcome:'MATCH',confidence:'LOW'},
+      {event:'FIRST_SEEN_PREDICTION',clueUsed:'SCENE',outcome:'NEAR',confidence:'LOW'}
+    ];
+    const env=s.sheets[0].items.find(x=>x.eng==='environment');
+    const ocean=s.sheets[0].items.find(x=>x.eng==='ocean');
+    env.learningStats.inferenceTrace=rootHistory;
+    ocean.learningStats.inferenceTrace=JSON.parse(JSON.stringify(rootHistory));
+    localStorage.setItem('hide_seek_state',JSON.stringify(s));
+    const envProfile=applicableInferenceProfile(env);
+    const oceanProfile=applicableInferenceProfile(ocean);
+    return {
+      env:{adaptive:envProfile.adaptiveClue?.clue||null,applicable:envProfile.currentWordApplicable},
+      ocean:{adaptive:oceanProfile.adaptiveClue?.clue||null,applicable:oceanProfile.currentWordApplicable},
+      envLadder:buildMemoryLadder(env),
+      oceanLadder:buildMemoryLadder(ocean)
+    };
+  });
+  expect(applicability.env).toMatchObject({adaptive:'ROOT_ETYMOLOGY',applicable:true});
+  expect(applicability.ocean).toMatchObject({adaptive:null,applicable:false});
+  expect(applicability.envLadder[0]).toBe('MEANING_MAP');
+  expect(applicability.oceanLadder[0]).not.toBe('MEANING_MAP');
+
 
   const counts=await page.evaluate(()=>{
     const s=JSON.parse(localStorage.getItem('hide_seek_state'));
