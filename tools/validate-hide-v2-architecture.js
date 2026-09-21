@@ -54,6 +54,10 @@ for(const token of ['listMissions','renameMission','archiveMission','deleteMissi
 
 if(!mission.includes('HideV2Store.transaction'))fail.push('MISSION_WRITE_MUST_USE_STORE');
 const memory=fs.readFileSync(path.join(ROOT,'src/v2/memory-engine.js'),'utf8');
+for(const token of ['signature','memoryStrength','nextReviewPriority','recoveryStatus','wordbook','dashboard']){
+  if(!memory.includes(token))fail.push('V2_MEMORY_LADDER_CONTRACT_MISSING:'+token);
+}
+
 if(!memory.includes("authority:'SPECIALIST_MEMORY_ADVISORY_ONLY'"))fail.push('MEMORY_ADVISORY_AUTHORITY_MISSING');
 if(!memory.includes("reviewPolicyOwner:'READY_LEARNING_ENGINE'"))fail.push('READY_POLICY_OWNER_MISSING');
 if(!memory.includes("scheduleOwner:'READY_SET_PLANNER'"))fail.push('PLANNER_OWNER_MISSING');
@@ -62,6 +66,10 @@ if(migration.includes('removeItem(LEGACY_KEY)')||migration.includes("removeItem(
 if(!migration.includes('legacyPreserved:true'))fail.push('NON_DESTRUCTIVE_MIGRATION_EVIDENCE_MISSING');
 
 const app=fs.readFileSync(path.join(ROOT,'src/v2/app.js'),'utf8');
+for(const token of ['기억 기록','단어장','우선 복습순','v2Records']){
+  if(!app.includes(token))fail.push('V2_MEMORY_SURFACE_MISSING:'+token);
+}
+
 for(const token of ['OCR 단어','OCR 뜻','data-review-toggle','미션 관리','data-action="rename"','data-action="delete"']){
   if(!app.includes(token))fail.push('V2_PRODUCT_MANAGEMENT_UI_MISSING:'+token);
 }
