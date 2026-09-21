@@ -1,0 +1,13 @@
+{
+  "source_repository": "hns140412-glitch/TAKY",
+  "source_main_sha": "ab085e2994fd69747be17bed89e7182cb759ee63",
+  "capabilities": [
+    "CAP-RELEASE-COMPAT-001",
+    "CAP-PWA-UPDATE-001"
+  ],
+  "vendored_files": {
+    "vendor/taky/release-contract.js": "SHARED/runtime/release-contract.js",
+    "vendor/taky/pwa-update-state.js": "SHARED/runtime/pwa-update-state.js"
+  },
+  "semantic_boundary": "Hide & Seek retains learning/session/capture safe-point semantics; shared runtime owns mechanism only."
+}
