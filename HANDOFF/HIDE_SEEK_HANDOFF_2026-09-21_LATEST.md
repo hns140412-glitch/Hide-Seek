@@ -508,3 +508,11 @@ Important current frontier:
 - The re-exposure is assisted/non-recall; no inferred reading is allowed.
 - The session may carry a temporary activity-only SOUND recovery handoff when generic recovery would otherwise mask the specific sound weakness. Do not interpret this as a new Memory Engine score or Ready review policy.
 - Current locked reporting: PRODUCT ~75%, CODED ~91%, CI ~88%, Browser Runtime ~84%, Device 0%, Release 0%.
+
+
+## 2026-09-22 active Thinking Trail inference delta
+- Exact code HEAD `42a524f6474db74896fc507e7a61724ba99f48ee` passed V2 #292 / full Hide #750.
+- MEMORIZE now records first-seen prediction, chosen clue and confidence before reveal, then MATCH/NEAR/MISS learner self-comparison after reveal.
+- Inference fit remains learner self-report, not objective correctness or recall.
+- Accumulated inference events feed the existing skill summarizer. Only ESTABLISHED, current-plan-applicable clue tendencies may appear as optional guidance on later words.
+- Current locked reporting: PRODUCT ~76%, CODED ~92%, CI ~89%, Browser Runtime ~85%, Device 0%, Release 0%.
