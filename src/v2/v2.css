@@ -1364,3 +1364,26 @@ body.v2-runtime{
     transform:none!important;
   }
 }
+
+
+/* Final Seek assistance is explicit and subordinate to unassisted recall */
+.v2-runtime .final-support{
+  display:grid;
+  gap:8px;
+  margin:12px 0;
+}
+.v2-runtime .final-support__scene{
+  display:grid;
+  gap:5px;
+  padding:12px 14px;
+  border:1px solid var(--v2-line);
+  border-radius:16px;
+  background:rgba(255,255,255,.68);
+}
+.v2-runtime .final-support__scene span{
+  line-height:1.45;
+}
+.v2-runtime .final-support__scene small{
+  color:var(--v2-muted);
+  line-height:1.4;
+}
