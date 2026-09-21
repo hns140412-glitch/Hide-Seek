@@ -359,3 +359,19 @@ Latest-head CI note must still be checked live. No Netlify / deploy / merge / us
   - Hanja level label + scheme reference when already resolved upstream.
 - Identity/role fields remain stripped by the adapter.
 - The context is correlation evidence only. Hide does not infer Hanja grade/range or make review-policy decisions from it.
+
+
+## Hanja memory evidence axis separation delta
+- Hanja Language Memory now records evidence by axis instead of collapsing all outcomes into generic retrieval:
+  - FORM
+  - SOUND
+  - MEANING
+  - RECALL
+  - WRITE_OR_RECONSTRUCT
+- FIRST FIND typed character recall records FORM + MEANING + RECALL + reconstruction evidence.
+- MEANING CLUE records meaning/retrieval evidence separately.
+- FINAL SEEK records character reconstruction evidence separately.
+- SOUND replay is explicitly `EXPOSURE_ONLY` with `objectiveRecall=false`; hearing the pronunciation is not treated as successful sound recall.
+- `languageMemoryEvidenceSummary` aggregates axis counts and objective-recall counts.
+- Hide memory advisories now include this language-memory evidence summary for Ready Learning Engine interpretation.
+- This does not add Hanja-grade inference, review policy, or scheduling ownership to Hide.
