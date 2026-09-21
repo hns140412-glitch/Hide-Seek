@@ -480,8 +480,20 @@
           render()
         };
       }else{
-        view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}${journeyHtml(session.stage)}${crewHtml(w,session.stage)}<div class="learn-head"><span class="phase-chip">연결 길</span><b>${idx}/${total}</b></div><section class="card">${globalThis.HideLanguageModel?.renderMeaningMapHtml?.({eng:w.token,word:w.token,languageDomain:w.languageDomain,meaningMap:w.meaningMap},esc)||`<p>${esc(w.example||w.meaning)}</p>`}<button id="v2DomainDone" class="btn primary full">다음</button></section></section>`;
-        $('#v2DomainDone').onclick=()=>{HideV2Session.update(HideV2Learning.submitDomainExtension(session,m,{}).session);render()};
+        const inferenceEvents=HideV2Store.snapshot().events||[];
+        const skillProfile=globalThis.HideLanguageModel?.summarizeInferenceSkill?.(inferenceEvents)||null;
+        const guide=globalThis.HideLanguageModel?.connectionGuidance?.({
+          eng:w.token,word:w.token,token:w.token,kor:w.meaning,meaning:w.meaning,
+          languageDomain:w.languageDomain,meaningMap:w.meaningMap
+        },skillProfile)||null;
+        const guideHtml=guide
+          ?`<aside class="prior-skill-cue connection-guidance" aria-label="연결 길 개인화 단서"><small>내 추론 기록에서 자주 맞았던 길</small><b>${esc(guide.title)}</b><span>${esc(guide.cue)}</span><em>${esc(guide.clueLabel)} · 참고용</em></aside>`
+          :'';
+        view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}${journeyHtml(session.stage)}${crewHtml(w,session.stage)}<div class="learn-head"><span class="phase-chip">연결 길</span><b>${idx}/${total}</b></div><section class="card">${guideHtml}${globalThis.HideLanguageModel?.renderMeaningMapHtml?.({eng:w.token,word:w.token,languageDomain:w.languageDomain,meaningMap:w.meaningMap},esc)||`<p>${esc(w.example||w.meaning)}</p>`}<button id="v2DomainDone" class="btn primary full">다음</button></section></section>`;
+        $('#v2DomainDone').onclick=()=>{
+          HideV2Session.update(HideV2Learning.submitDomainExtension(session,m,{connectionGuidance:guide}).session);
+          render()
+        };
       }
       return;
     }
