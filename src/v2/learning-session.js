@@ -204,12 +204,19 @@
     return chunks.map(x=>x.length<=2?x:x[0]+'·'.repeat(Math.max(1,x.length-2))+x.at(-1)).join('  ');
   }
 
-  function hiddenWordsPlan(word){
+  function hiddenWordsPlan(word,session=null){
     const mem=HideV2Memory.summary(word);
     const primaryReason=HideV2Memory.reason(mem);
     let key=primaryReason?.key||'stable';
     const soundWeakness=Number(mem?.memorySignature?.phonologicalWeakness||0);
+    const explicit=session?.reinforcementOverride;
     if(
+      explicit?.wordId===word?.id&&
+      explicit?.key==='sound'&&
+      word?.soundEvidence?.verified&&
+      word.soundEvidence.reading
+    ) key='sound';
+    else if(
       String(word?.languageDomain||'').toUpperCase()==='HANJA'&&
       soundWeakness>0&&
       word?.soundEvidence?.verified&&
@@ -231,7 +238,7 @@
       label:labels[key]||labels.stable,
       primaryReason,
       activityReason:key,
-      reasonSource:key!==primaryReason?.key?'MEMORY_SIGNATURE_AXIS_OVERRIDE':'PRIMARY_REASON',
+      reasonSource:explicit?.wordId===word?.id&&explicit?.key===key?'SESSION_RECOVERY_HANDOFF':key!==primaryReason?.key?'MEMORY_SIGNATURE_AXIS_OVERRIDE':'PRIMARY_REASON',
       memory:mem,
       mode,
       prompt:mode==='MEANING'?word?.token:mode==='SHAPE'?englishShapeCue(word?.token):mode==='SOUND'?word?.token:word?.meaning
@@ -252,14 +259,14 @@
   function nextAfterDomain(session,mission){
     const next=clone(session);
     const w=current(next,mission);
-    const plan=hiddenWordsPlan(w);
+    const plan=hiddenWordsPlan(w,session);
     next.stage=plan.key==='stable'?'FINAL_SEEK':'HIDDEN_WORDS';
     return {session:next,plan};
   }
 
   function submitHiddenWords(session,mission,payload={}){
     const w=current(session,mission);
-    const plan=hiddenWordsPlan(w);
+    const plan=hiddenWordsPlan(w,session);
     const typed=String(payload.answer||'').trim().normalize('NFKC');
     const mode=plan.mode||'TOKEN';
     const target=mode==='SOUND'
@@ -284,6 +291,7 @@
       source:mode==='SOUND'?(w.soundEvidence?.sourceRef||null):null
     });
     const next=clone(session);
+    delete next.reinforcementOverride;
     const support=hiddenWordsSupportPlan(w,plan);
     next.stage=ok?'FINAL_SEEK':support?'HIDDEN_WORDS_ASSIST':'HIDDEN_WORDS_RELEARN';
     return {ok,plan,support,session:next};
@@ -446,7 +454,14 @@
       assisted:true,
       source:w.soundEvidence.sourceRef
     });
-    return nextAfterDomain(session,mission);
+    const next=clone(session);
+    next.stage='HIDDEN_WORDS';
+    next.reinforcementOverride={
+      wordId:w.id,
+      key:'sound',
+      source:'VERIFIED_SOUND_MISS_RECOVERY'
+    };
+    return {session:next,plan:hiddenWordsPlan(w,next)};
   }
 
   function finalReconstructionPlan(word){
