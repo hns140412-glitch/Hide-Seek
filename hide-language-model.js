@@ -264,17 +264,17 @@
     const success=outcomeRows.filter(x=>['MATCH','NEAR'].includes(x.outcome)).length;
     const byClue={};
     for(const x of outcomeRows){const key=String(x.clueUsed||'OTHER');const r=byClue[key]||(byClue[key]={attempts:0,success:0,match:0,near:0,miss:0});r.attempts++;r[x.outcome.toLowerCase()]++;if(x.outcome!=='MISS')r.success++}
-    const ranked=Object.entries(byClue).map(([clue,v])=>({clue,...v,successRate:v.attempts?Math.round(v.success/v.attempts*100):0})).sort((a,b)=>b.successRate-a.successRate||b.attempts-a.attempts);
+    const ranked=Object.entries(byClue).map(([clue,v])=>{const selfReportedFitRate=v.attempts?Math.round(v.success/v.attempts*100):0;return {clue,...v,selfReportedFitRate,successRate:selfReportedFitRate,evidenceBasis:'LEARNER_SELF_REPORT'}}).sort((a,b)=>b.selfReportedFitRate-a.selfReportedFitRate||b.attempts-a.attempts);
     const high=outcomeRows.filter(x=>x.confidence==='HIGH');
     const highMiss=high.filter(x=>x.outcome==='MISS').length;
     const evidenceLevel=outcomeRows.length>=6?'ESTABLISHED':outcomeRows.length>=2?'EMERGING':'LOW';
     const adaptiveClue=evidenceLevel==='ESTABLISHED'
-      ?(ranked.find(x=>x.attempts>=3&&x.successRate>=60)||null)
+      ?(ranked.find(x=>x.attempts>=3&&x.selfReportedFitRate>=60)||null)
       :null;
     const emergingClue=evidenceLevel==='EMERGING'
-      ?(ranked.find(x=>x.attempts>=2&&x.successRate>=50)||null)
+      ?(ranked.find(x=>x.attempts>=2&&x.selfReportedFitRate>=50)||null)
       :null;
-    return {attempts:rows.length,assessed:outcomeRows.length,success,successRate:outcomeRows.length?Math.round(success/outcomeRows.length*100):0,bestClue:ranked[0]||null,emergingClue,adaptiveClue,evidenceLevel,byClue:ranked,highConfidenceMisses:highMiss,calibrationFlag:high.length&&highMiss/high.length>=.5?'RECALIBRATE':'OK'};
+    const selfReportedFitRate=outcomeRows.length?Math.round(success/outcomeRows.length*100):0;return {attempts:rows.length,assessed:outcomeRows.length,success,selfReportedFitRate,successRate:selfReportedFitRate,evidenceBasis:'LEARNER_SELF_REPORT',calibrationEvidenceBasis:'LEARNER_SELF_REPORT',bestClue:ranked[0]||null,emergingClue,adaptiveClue,evidenceLevel,byClue:ranked,highConfidenceMisses:highMiss,calibrationFlag:high.length&&highMiss/high.length>=.5?'RECALIBRATE':'OK'};
   }
 
   function renderStarterExplorationHtml(item,context={},esc=(x)=>String(x??'')){
