@@ -800,6 +800,13 @@ for needle in [
     "CHARACTER_RECONSTRUCTION",
     "WRITE_OR_RECONSTRUCT",
     "EXPOSURE_ONLY",
+    "objectiveVerified",
+    "objectiveVerifiedCounts",
+    "evidenceModes",
+    "EVIDENCE_SELECTION",
+    "RECOGNITION",
+    "ASSOCIATION",
+    "RECONSTRUCTION",
     "objectiveRecall:false",
 ]:
     if needle not in app:
