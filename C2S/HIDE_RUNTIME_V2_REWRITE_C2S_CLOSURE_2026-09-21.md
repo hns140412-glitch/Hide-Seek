@@ -351,3 +351,12 @@ FALSE_CONVERGENCE = 0: live deploy/device/real-provider claims remain OPEN.
 - Assisted success remains non-recall and cannot inflate memory strength.
 - Exact HEAD `950631cd774d85a1227c51235d3168f9bb013146` passed V2 #311 / full Hide #769.
 - Locked reporting: PRODUCT ~77%, CODED ~93%, CI ~90%, Browser Runtime ~86%, Device 0%, Release 0%.
+
+
+## 27. 2026-09-22 English CONNECTION personalization
+- CONNECTION can now surface an optional guidance card derived from ESTABLISHED inference self-report history when the clue is applicable to the current word.
+- EMERGING history remains non-adaptive.
+- Guidance is stored as non-recall adaptive exposure and never as memory success.
+- Existing support remains the authority; no new etymology or semantic claim is invented by personalization.
+- Exact HEAD `b307014e92b8e3448c48e697154b3a2e8cb60db9` passed V2 #319 / full Hide #777.
+- Locked reporting: PRODUCT ~78%, CODED ~94%, CI ~91%, Browser Runtime ~87%, Device 0%, Release 0%.
