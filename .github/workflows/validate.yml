@@ -40,6 +40,7 @@ jobs:
           node --check vendor/taky/pwa-update-state.js
           node --check vendor/taky/event-envelope.js
           node --check vendor/taky/vision-ingest.js
+          node --check vendor/taky/http-json.js
       - name: Validate shared runtime contract
         run: node tests/shared-runtime-contract.test.js
       - name: Install browser test harness
