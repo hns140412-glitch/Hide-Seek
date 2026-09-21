@@ -129,6 +129,52 @@
     return {session:advance(session,mission)};
   }
 
+  function meaningChallenge(session,mission){
+    const w=current(session,mission);
+    if(!w)return null;
+    const peers=(mission?.items||[]).filter(x=>x.id!==w.id&&x.languageDomain===w.languageDomain&&x.token&&x.meaning);
+    if(!peers.length)return null;
+    const direction=Number(session?.index||0)%2===1?'MEANING_TO_TOKEN':'TOKEN_TO_MEANING';
+    const selected=[w,...peers.slice(0,3)];
+    return {
+      direction,
+      prompt:direction==='MEANING_TO_TOKEN'?w.meaning:w.token,
+      answer:w.id,
+      options:selected.map(x=>({
+        id:x.id,
+        label:direction==='MEANING_TO_TOKEN'?x.token:x.meaning,
+        token:x.token,
+        meaning:x.meaning
+      }))
+    };
+  }
+
+  function checkMeaningChoice(session,mission,selectedId){
+    const w=current(session,mission);
+    const challenge=meaningChallenge(session,mission);
+    if(!challenge)return {ok:false,unsupported:true,session};
+    const attempt=recordAttempt(session,w.id,'MEANING');
+    const selected=challenge.options.find(x=>x.id===selectedId)||null;
+    const ok=selectedId===w.id;
+    HideV2Memory.record(mission.id,w.id,{
+      stage:'MEANING',
+      evidenceType:'MEANING_RECOGNITION',
+      evidenceMode:'RECOGNITION',
+      axes:['MEANING','RECOGNITION'],
+      result:ok?'CORRECT':'MISMATCH',
+      objectiveVerified:true,
+      objectiveRecall:false,
+      recallScoreImpact:false,
+      assisted:false,
+      direction:challenge.direction,
+      selectedId:selectedId||null,
+      confusedWithToken:ok?null:selected?.token||null,
+      confusedWithMeaning:ok?null:selected?.meaning||null,
+      attempt:attempt.count
+    });
+    return {ok,challenge,selected,session:advance(attempt.session,mission)};
+  }
+
   function checkMeaning(session,mission,answer){
     const w=current(session,mission);
     const attempt=recordAttempt(session,w.id,'MEANING');
@@ -391,6 +437,6 @@
   }
 
   window.HideV2Learning=Object.freeze({
-    STAGES,create,current,advance,submitMemorize,checkFirstFind,markFirstFindUnsure,submitFirstFindRelearn,checkMeaning,hiddenWordsPlan,submitDomainExtension,submitHiddenWords,submitHiddenWordsRelearn,useFinalSupport,checkFinalSeek,submitSeekAgainRelearn,checkSeekAgain
+    STAGES,create,current,advance,submitMemorize,checkFirstFind,markFirstFindUnsure,submitFirstFindRelearn,meaningChallenge,checkMeaningChoice,checkMeaning,hiddenWordsPlan,submitDomainExtension,submitHiddenWords,submitHiddenWordsRelearn,useFinalSupport,checkFinalSeek,submitSeekAgainRelearn,checkSeekAgain
   });
 })();
