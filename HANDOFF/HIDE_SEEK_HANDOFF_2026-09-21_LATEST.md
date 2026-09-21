@@ -126,3 +126,11 @@ Important truth boundary:
 - rainforest stays transparent compound support.
 
 Latest branch state must be checked live before work resumes. Do not reuse the old #229/#244 result as proof for a newer HEAD.
+
+
+## Language Memory ownership lock
+- Language Memory != homework / assignment / Hanja grade.
+- Ready Learning Engine owns homework interpretation, Learning Unit, and Hanja grade/level resolution.
+- Hide consumes resolved `learningContext` only.
+- Hide owns cumulative language-memory evidence and Memory Ladder adaptation.
+- Do not add independent Hanja-grade inference back into Hide.
