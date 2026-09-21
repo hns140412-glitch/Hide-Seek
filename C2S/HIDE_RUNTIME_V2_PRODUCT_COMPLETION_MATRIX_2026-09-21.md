@@ -35,7 +35,8 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 | Memory advisory to Ready | PARTIAL | no current hosted V2 target | candidate-contract shaped | Hide V2 producer + Ready V2 consumer contract CI | hosted current-candidate roundtrip unverified |
 | Ready Planner directive intake | RUNTIME_VERIFIED | yes | fixture contract | browser directed lexical-id test | live current Ready runtime integration unverified |
 | Session reload/resume | RUNTIME_VERIFIED | yes | fixture | browser reload test | background/PWA lifecycle not verified |
-| Exploration crew / child-facing polished UI | SKELETON | partial | no | minimal V2 shell | product UI redesign still required |
+| Child-facing core UI/UX | RUNTIME_VERIFIED | yes | browser/mobile viewport | redesigned home/mission/learning/memory hierarchy + 390×844 flow tests | final art direction, motion and device visual QA pending |
+| Exploration crew presentation layer | SKELETON | partial | no | canonical crew rules only | crew member presence/interaction UI not yet rebuilt in V2 |
 | Mission management surface | RUNTIME_VERIFIED | yes | N/A | selection/rename/archive/delete browser flow | richer history/filtering/bulk actions pending |
 | Records / wordbook surfaces | RUNTIME_VERIFIED | yes | fixture/history-shaped | cumulative wordbook + weakness dashboard + evidence detail browser flow | filtering/search/export pending |
 | PWA install/offline/update | RUNTIME_VERIFIED | yes | browser | isolated V2 manifest/SW/offline shell/update safe-point tests | physical install/device lifecycle still unverified |
@@ -45,10 +46,10 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 
 ## Claim levels
 
-- PRODUCT_COMPLETION: approximately 56%
-- CODED: approximately 73%
-- CI_VERIFIED: approximately 69%
-- BROWSER_RUNTIME_VERIFIED: approximately 63%
+- PRODUCT_COMPLETION: approximately 66%
+- CODED: approximately 82%
+- CI_VERIFIED: approximately 79%
+- BROWSER_RUNTIME_VERIFIED: approximately 75%
 - DEVICE_VERIFIED: 0%
 - RELEASE_VERIFIED: 0%
 
@@ -160,3 +161,28 @@ Head before matrix document: 63db5206a836050c3dfe5f2b9fd0238d6baeb464
 - Ready consumer pre-doc HEAD `84b68624612c745b5a30274cb0b5744199963a53`: roundtrip #13 PASS / Integration #278 PASS / Runtime E2E #445 PASS.
 - PRODUCT_COMPLETION remains approximately 56%. Contract hardening and removal of a stale route do not count as a completed user journey.
 - Live current-candidate cross-app browser roundtrip remains OPEN until a frozen Hide V2 target exists under the external-resource gate.
+
+
+### Seek Again / Trail Mastery / child-facing UI surgery increment
+- FINAL SEEK miss now enters `다시 만나기 → 다시 찾기` instead of closing the item.
+- Same-day recovery is credited to current Trail Mastery but remains `IMMEDIATE_ONLY` for long-term Memory Strength.
+- `HideV2Trail` is a separate owner for current session/mission readiness.
+- Ready-directed subset sessions compute Trail Mastery only over the directed queue and do not falsely complete the entire Hide mission.
+- Child-facing runtime/version jargon was removed from the learner UI.
+- Hide & Seek installed/product identity remains stable while V2 stays an internal implementation label.
+- Hide code HEAD `42f7627b405d1026a0339fb5ed11b563d65d8003`: V2 #102 PASS / full Hide #556 PASS.
+- Ready consumer HEAD `91e06f2e51fdfb4df265e600e940ae97df598768`: roundtrip #16 / Integration #281 / Runtime E2E #468 PASS.
+
+### Product UI/UX surgery increment
+- Home is reorganized around one primary user decision: today’s active exploration.
+- Camera/library intake, mission management and Memory Ladder are visually subordinate secondary actions.
+- Learning screens now expose a compact progress hierarchy while keeping one primary action per stage.
+- Mission management uses child-facing mission cards and explicit active state rather than raw status rows.
+- Memory surfaces use Memory Ladder summary, weakness signals and per-word meters instead of developer-style metric tables.
+- 390×844 browser flow remains inside viewport and primary CTA/touch targets remain usable.
+- UI-specific architecture/browser gates prevent fallback to raw developer/status-table presentation.
+- Exact pre-document UI code HEAD `e006dc0ca3fdadb704e9403f7af566668093a88f`:
+  - Validate Hide Runtime V2 #116 — SUCCESS
+  - Validate Hide & Seek #570 — SUCCESS
+- PRODUCT_COMPLETION increase reflects reachable child-facing product surfaces, not CSS volume or test count.
+- UI/UX is materially improved but not final: exploration crew presence, motion/celebration, final visual art direction and physical-device visual QA remain OPEN.
