@@ -783,6 +783,11 @@ for forbidden in [
 for needle in [
     "addLanguageMemoryEvidence",
     "languageMemoryEvidenceSummary",
+    "normalizeContextEvidence",
+    "koreanContextEvidenceFor",
+    "renderKoreanEvidenceCheck",
+    "VERIFIED_CONTEXT_EVIDENCE_SELECTION",
+    "EVIDENCE_TRAIL",
     "CONTEXT",
     "EVIDENCE",
     "EXPRESSION",
