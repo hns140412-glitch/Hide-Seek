@@ -624,3 +624,19 @@ test('Hide V2 returnToReady emits a V2 learning_event envelope with exact task c
   expect(payload.taskContext.lap_id).toBe('lap-1');
   expect(payload.taskState).toBe('COMPLETED');
 });
+
+
+test('Hide V2 child-facing shell uses exploration language and hides runtime jargon',async({page})=>{
+  await page.goto('/v2.html');
+  await expect(page.getByText('숨은 단어 탐험',{exact:true})).toBeVisible();
+  await expect(page.getByText('탐험 준비',{exact:true})).toBeVisible();
+  for(const forbidden of ['Runtime V2','HIDE V2','REWRITE','monolith-free','구조 분리형 런타임']){
+    await expect(page.getByText(forbidden,{exact:true})).toHaveCount(0);
+  }
+  const manifest=await page.evaluate(async()=>{
+    const href=document.querySelector('link[rel="manifest"]').getAttribute('href');
+    return await fetch(href).then(r=>r.json());
+  });
+  expect(manifest.name).toBe('Hide & Seek');
+  expect(manifest.description).not.toContain('V2');
+});
