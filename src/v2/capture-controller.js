@@ -17,6 +17,7 @@
       pages:[],
       analysisBatches:[],
       lastRows:[],
+      reviewDraft:[],
       committedMissionId:null
     };
     HideV2Store.transaction(s=>{s.captureSession=next});
@@ -51,6 +52,7 @@
     HideV2Store.transaction(s=>{
       const target=s.captureSession?.id===session.id?s.captureSession:session;
       target.pages=[...(target.pages||[]),...added];
+      target.reviewDraft=[];
       target.status='CAPTURING';
       target.updatedAt=now();
       s.captureSession=target;
@@ -112,6 +114,7 @@
       if(s.captureSession?.id!==session.id)return;
       s.captureSession.status='REVIEW';
       s.captureSession.lastRows=rows;
+      s.captureSession.reviewDraft=[];
       s.captureSession.analysisBatches.push({at:now(),pageCount:session.pages.length,rowCount:rows.length});
       s.captureSession.updatedAt=now();
     });
@@ -129,7 +132,22 @@
     return session?.status==='REVIEW'&&Array.isArray(session.lastRows)?session.lastRows:[];
   }
 
-  function hasResumableReview(){return reviewRows().length>0}
+  function reviewDraft(){
+    const session=state();
+    return session?.status==='REVIEW'&&Array.isArray(session.reviewDraft)?session.reviewDraft:[];
+  }
+
+  function saveReviewDraft(rows=[]){
+    const clean=JSON.parse(JSON.stringify(Array.isArray(rows)?rows:[]));
+    HideV2Store.transaction(s=>{
+      if(!s.captureSession||s.captureSession.status!=='REVIEW')return;
+      s.captureSession.reviewDraft=clean;
+      s.captureSession.updatedAt=now();
+    });
+    return reviewDraft();
+  }
+
+  function hasResumableReview(){return reviewDraft().length>0||reviewRows().length>0}
 
   function markCommitted(missionId){
     HideV2Store.transaction(s=>{
@@ -148,6 +166,6 @@
   }
 
   window.HideV2Capture=Object.freeze({
-    state,ensureSession,addFiles,analyzePending,analyzeFiles,reviewRows,hasResumableReview,markCommitted,cancel
+    state,ensureSession,addFiles,analyzePending,analyzeFiles,reviewRows,reviewDraft,saveReviewDraft,hasResumableReview,markCommitted,cancel
   });
 })();
