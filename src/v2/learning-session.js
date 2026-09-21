@@ -249,14 +249,16 @@
         :String(w.token||'').trim().normalize('NFKC').toLowerCase();
     const answer=(mode==='SOUND'||mode==='MEANING')?typed:typed.toLowerCase();
     const ok=!!answer&&answer===target;
+    const assisted=mode==='SHAPE';
     HideV2Memory.record(mission.id,w.id,{
       stage:'HIDDEN_WORDS',
-      evidenceMode:mode==='SOUND'?'RECALL':mode==='MEANING'?'REINFORCEMENT_RECOGNITION':'REINFORCEMENT_RECALL',
+      evidenceMode:assisted?'ASSISTED_RECONSTRUCTION':'REINFORCEMENT_RECALL',
       axes:mode==='SOUND'?['SOUND','RECALL']:mode==='MEANING'?['MEANING','RECALL']:['FORM','RECALL'],
       result:ok?'CORRECT':'WRONG',
       objectiveVerified:true,
-      objectiveRecall:true,
-      assisted:false,
+      objectiveRecall:!assisted,
+      recallScoreImpact:!assisted,
+      assisted,
       reinforcementReason:plan.key,
       reinforcementMode:mode,
       source:mode==='SOUND'?(w.soundEvidence?.sourceRef||null):null
