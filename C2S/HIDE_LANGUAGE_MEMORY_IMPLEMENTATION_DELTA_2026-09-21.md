@@ -286,3 +286,23 @@ Latest-head CI note must still be checked live. No Netlify / deploy / merge / us
 - English keeps the existing Hide word-structure / inference specialist path while referencing the Ready English learning profile for the higher-level learning loop.
 - Memory Ladder now reorders only existing assistance through the learning-basis profile; it does not invent assistance unavailable for the current word.
 - Ready and Hide remain sibling products. No user/family/org identity, role, or permission model is shared through this adapter.
+
+
+## Homework / Learning Context / Language Memory ownership correction
+- Language Memory is **not** homework, assignment range, or Hanja grade itself.
+- Ready Learning Engine owns:
+  - assignment / homework interpretation,
+  - learning-unit construction,
+  - Hanja grade/level resolution when a verified scheme/source is available,
+  - unit/range/progression context,
+  - subject-level review flow.
+- Hide & Seek consumes only the resolved `learningContext` and does not infer or own Hanja grade classification.
+- Hide Language Memory owns cumulative learner memory evidence:
+  - form / sound / meaning memory,
+  - confusion relationships,
+  - assisted vs unassisted recall,
+  - writing/reconstruction evidence when available,
+  - retrieval latency / hint dependence / recovery,
+  - spaced retention and Memory Ladder state.
+- Homework and Hanja grade are contextual inputs that may shape a session; they are not themselves Language Memory.
+- Ready and Hide remain sibling products; this handoff shares semantic-light learning context only, not identity/role/permission ownership.
