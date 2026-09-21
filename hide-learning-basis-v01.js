@@ -68,12 +68,32 @@
 
   function projectLearningContext(domain,raw){
     if(!raw||typeof raw!=='object'||Array.isArray(raw))return null;
+    const key=cleanDomain(domain);
+    const text=(...vals)=>{for(const v of vals){const s=String(v??'').trim();if(s)return s}return ''};
+    if(raw.contract_version==='READY_LEARNING_CONTEXT_V1'){
+      return Object.freeze({
+        resolutionState:'RESOLVED',resolved:true,resolvedBy:'READY_LEARNING_ENGINE',languageDomain:key,
+        contractVersion:'READY_LEARNING_CONTEXT_V1',
+        contextId:text(raw.learning_unit_id),
+        learningUnitId:text(raw.learning_unit_id),
+        analysisId:text(raw.analysis_id),
+        assignmentRef:text(raw.assignment_id),
+        sourceRef:text(raw.analysis_id),
+        subject:text(raw.subject),
+        unitLabel:text(raw.concept_skill_target),
+        conceptSkillTarget:text(raw.concept_skill_target),
+        activityTypes:Array.isArray(raw.activity_types)?raw.activity_types.filter(x=>typeof x==='string').slice(0,12):[],
+        cognitiveLoadProfile:Array.isArray(raw.cognitive_load_profile)?raw.cognitive_load_profile.filter(x=>typeof x==='string').slice(0,12):[],
+        confidence:Number.isFinite(raw.confidence)?Math.max(0,Math.min(1,raw.confidence)):null,
+        unresolvedFlags:Array.isArray(raw.unresolved_flags)?raw.unresolved_flags.filter(x=>typeof x==='string').slice(0,12):[],
+        hanjaLevelLabel:'',
+        hanjaLevelSchemeRef:''
+      });
+    }
     const state=String(raw.resolutionState||raw.resolution_state||'').trim().toUpperCase();
     if(raw.resolved!==true&&state!=='RESOLVED')return null;
     const resolvedBy=String(raw.resolvedBy||raw.resolved_by||'READY_LEARNING_ENGINE').trim();
     if(!/READY/i.test(resolvedBy))return null;
-    const key=cleanDomain(domain);
-    const text=(...vals)=>{for(const v of vals){const s=String(v??'').trim();if(s)return s}return ''};
     return Object.freeze({
       resolutionState:'RESOLVED',resolved:true,resolvedBy,languageDomain:key,
       contextId:text(raw.contextId,raw.context_id),

@@ -29,6 +29,26 @@ assert(readyContext.learningContext?.hanjaLevelLabel==='7급','resolved Ready Ha
 assert(readyContext.learningContext?.hanjaLevelSchemeRef==='fixture://hanja-grade-scheme','resolved Hanja scheme provenance must survive');
 assert(!('actor_role' in readyContext.learningContext)&&!('child_id' in readyContext.learningContext),'identity role fields must not cross semantic-light adapter');
 assert(api.learningContextFor(readyContext)?.resolvedBy==='READY_LEARNING_ENGINE','learningContextFor must preserve resolved Ready ownership');
+const familyContext=basis.projectLearningContext('HANJA',{
+  contract_version:'READY_LEARNING_CONTEXT_V1',
+  learning_unit_id:'unit-family-1',
+  analysis_id:'analysis-family-1',
+  assignment_id:'assignment-family-1',
+  subject:'한자',
+  concept_skill_target:'형태·음·뜻 회상',
+  activity_types:['MEMORY','RECALL'],
+  cognitive_load_profile:['RETRIEVAL_LOAD'],
+  confidence:0.82,
+  unresolved_flags:['HANJA_LEVEL_NOT_IN_SHARED_CONTEXT'],
+  actor_role:'PARENT',
+  permission:'ADMIN',
+  hanjaLevelLabel:'7급'
+});
+assert(familyContext?.resolvedBy==='READY_LEARNING_ENGINE','family context must resolve to Ready ownership');
+assert(familyContext?.learningUnitId==='unit-family-1'&&familyContext?.analysisId==='analysis-family-1','family lineage must survive');
+assert(familyContext?.conceptSkillTarget==='형태·음·뜻 회상','family concept target must survive');
+assert(familyContext?.hanjaLevelLabel===''&&familyContext?.hanjaLevelSchemeRef==='','Hide must not infer or import Hanja grade through shared context');
+assert(!('actor_role' in familyContext)&&!('permission' in familyContext),'authority fields must not cross family context');
 
 const evidence=sandbox.window.HideLanguageEvidence;
 assert(evidence?.SCHEMA_VERSION===2,'language evidence schema');
