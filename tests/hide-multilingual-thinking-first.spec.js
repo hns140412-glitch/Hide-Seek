@@ -50,6 +50,7 @@ function seededState(){
         },
         {
           id:'hanja-1',eng:'學',kor:'배우다',languageDomain:'HANJA',missionRole:'NEW',
+          soundEvidence:{verified:true,sourceType:'TEST_FIXTURE',sourceRef:'fixture://hanja-sound',reading:'학'},
           learningContext:{resolved:true,resolutionState:'RESOLVED',resolvedBy:'READY_LEARNING_ENGINE',contextId:'ctx-hanja',learningUnitId:'unit-hanja-7',subject:'한자',rangeLabel:'7급 범위',hanjaLevelLabel:'7급',hanjaLevelSchemeRef:'fixture://hanja-grade-scheme',actor_role:'PARENT',child_id:'child-hidden'},
           meaningMap:map('HANJA',[
             {role:'COMPONENT',label:'學',meaning:'배우다'}
@@ -149,6 +150,9 @@ test('verified Korean and Hanja meaning maps use thinking-first without fake ety
   await expect(page.getByText('배우다',{exact:true})).toBeVisible();
   await page.getByLabel('떠올린 단어 입력').fill('學');
   await page.getByRole('button',{name:'기억 확인'}).click();
+  await expect(page.getByText('SOUND FIND',{exact:true})).toBeVisible();
+  await page.getByLabel('한자 음 입력').fill('학');
+  await page.getByRole('button',{name:'음 기억 확인'}).click();
   await page.waitForTimeout(320);
 
   await expect(page.getByText('MEANING CLUE',{exact:true})).toBeVisible();
@@ -165,7 +169,10 @@ test('verified Korean and Hanja meaning maps use thinking-first without fake ety
   await expect(page.getByText('EVIDENCE TRAIL',{exact:true})).toBeVisible();
   await expect(page.getByRole('heading',{name:'문맥 근거 찾기'})).toBeVisible();
   await page.getByRole('button',{name:'일정 변경이 불가피했다'}).click();
-  await page.waitForTimeout(340);
+  await expect(page.getByText('RESPONSE TRAIL',{exact:true})).toBeVisible();
+  await page.getByLabel('국어 문장 표현').fill('비 때문에 일정 변경은 불가피했다.');
+  await page.getByRole('button',{name:'표현 남기기'}).click();
+  await page.waitForTimeout(380);
 
   const evidence=await page.evaluate(()=>{
     const s=JSON.parse(localStorage.getItem('hide_seek_state'));
@@ -200,6 +207,8 @@ test('verified Korean and Hanja meaning maps use thinking-first without fake ety
   expect(koreanEvidence.axes.MEANING).toBeGreaterThanOrEqual(1);
   expect(koreanEvidence.axes.RECALL).toBeGreaterThanOrEqual(1);
   expect(koreanEvidence.axes.EXPRESSION).toBeGreaterThanOrEqual(1);
+  expect(koreanEvidence.evidenceModes.PRODUCTION).toBeGreaterThanOrEqual(1);
+  expect(koreanEvidence.objectiveRecallCounts.EXPRESSION).toBe(0);
   expect(koreanEvidence.objectiveRecallCounts.CONTEXT).toBe(0);
   expect(koreanEvidence.axes.EVIDENCE).toBeGreaterThanOrEqual(1);
   expect(koreanEvidence.objectiveVerifiedCounts.EVIDENCE).toBeGreaterThanOrEqual(1);
@@ -220,6 +229,8 @@ test('verified Korean and Hanja meaning maps use thinking-first without fake ety
   expect(hanjaEvidence.axes.MEANING).toBeGreaterThanOrEqual(1);
   expect(hanjaEvidence.axes.RECALL).toBeGreaterThanOrEqual(1);
   expect(hanjaEvidence.axes.WRITE_OR_RECONSTRUCT).toBeGreaterThanOrEqual(1);
-  expect(hanjaEvidence.objectiveRecallCounts.SOUND).toBe(0);
+  expect(hanjaEvidence.axes.SOUND).toBeGreaterThanOrEqual(1);
+  expect(hanjaEvidence.objectiveRecallCounts.SOUND).toBeGreaterThanOrEqual(1);
+  expect(hanjaEvidence.evidenceModes.RECALL).toBeGreaterThanOrEqual(1);
   expect(hanjaEvidence.objectiveVerifiedCounts.MEANING).toBeGreaterThanOrEqual(1);
 });
