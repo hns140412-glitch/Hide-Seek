@@ -36,23 +36,46 @@
     const {session,mission:m}=pair;
     if(session.stage==='COMPLETE'){complete();return}
     const w=HideV2Learning.current(session,m);const idx=session.index+1,total=session.queue?.length||m.items.length;
+
+    if(session.stage==='MEMORIZE'){
+      const thinking=globalThis.HideLanguageModel?.starterExploration?.(
+        {eng:w.token,word:w.token,kor:w.meaning,languageDomain:w.languageDomain,meaningMap:w.meaningMap},
+        {encounteredWords:[]}
+      );
+      view().innerHTML=`<section class="learning-shell"><div class="learn-head"><span class="phase-chip">MEMORIZE</span><b>${idx}/${total}</b></div><section class="card word-card"><div class="bigword">${esc(w.token)}</div><h2 style="text-align:center">${esc(w.meaning)}</h2>${w.example?`<p class="example">${esc(w.example)}</p>`:''}${thinking?.prompt?`<div class="card tint-sky"><b>생각 단서</b><p>${esc(thinking.prompt)}</p></div>`:''}<button id="v2Memorized" class="btn primary full">기억하고 찾아보기</button></section></section>`;
+      $('#v2Memorized').onclick=()=>{HideV2Session.update(HideV2Learning.submitMemorize(session,m).session);render()};
+      return;
+    }
+
     if(session.stage==='FIRST_FIND'){
-      view().innerHTML=`<section class="learning-shell"><div class="learn-head"><span class="phase-chip">FIRST FIND</span><b>${idx}/${total}</b></div><section class="card word-card"><p>뜻을 보고 단어를 기억에서 꺼내보세요.</p><div class="bigword">${esc(w.meaning)}</div><input id="v2Answer" class="input" aria-label="회상 답 입력"><button id="v2Check" class="btn primary full">기억 확인</button></section></section>`;
-      $('#v2Check').onclick=()=>{const r=HideV2Learning.checkFirstFind(session,m,$('#v2Answer').value);HideV2Session.update(r.session);setFlash(r.ok?'기억에서 찾았어요':'다시 연결해볼게요');render()};
-    }else if(session.stage==='MEANING'){
-      view().innerHTML=`<section class="learning-shell"><div class="learn-head"><span class="phase-chip">MEANING</span><b>${idx}/${total}</b></div><section class="card word-card"><div class="bigword">${esc(w.token)}</div><input id="v2Meaning" class="input" aria-label="뜻 회상 입력"><button id="v2MeaningCheck" class="btn primary full">뜻 확인</button></section></section>`;
-      $('#v2MeaningCheck').onclick=()=>{const r=HideV2Learning.checkMeaning(session,m,$('#v2Meaning').value);HideV2Session.update(r.session);render()};
-    }else{
+      view().innerHTML=`<section class="learning-shell"><div class="learn-head"><span class="phase-chip">FIRST FIND</span><b>${idx}/${total}</b></div><section class="card word-card"><p>뜻을 보고 단어를 기억에서 꺼내보세요.</p><div class="bigword">${esc(w.meaning)}</div><input id="v2Answer" class="input" aria-label="회상 답 입력" autocomplete="off" spellcheck="false"><button id="v2Check" class="btn primary full">기억 확인</button></section></section>`;
+      $('#v2Check').onclick=()=>{const r=HideV2Learning.checkFirstFind(session,m,$('#v2Answer').value);HideV2Session.update(r.session);setFlash(r.ok?'기억에서 찾았어요':'이번 회상은 틀렸어요. 뒤 단계에서 다시 확인할게요.');render()};
+      return;
+    }
+
+    if(session.stage==='MEANING'){
+      view().innerHTML=`<section class="learning-shell"><div class="learn-head"><span class="phase-chip">MEANING</span><b>${idx}/${total}</b></div><section class="card word-card"><div class="bigword">${esc(w.token)}</div><input id="v2Meaning" class="input" aria-label="뜻 회상 입력" autocomplete="off"><button id="v2MeaningCheck" class="btn primary full">뜻 확인</button></section></section>`;
+      $('#v2MeaningCheck').onclick=()=>{const r=HideV2Learning.checkMeaning(session,m,$('#v2Meaning').value);HideV2Session.update(r.session);setFlash(r.ok?'뜻도 기억했어요':'뜻 회상은 틀렸어요.');render()};
+      return;
+    }
+
+    if(session.stage==='DOMAIN_EXTENSION'){
       if(w.languageDomain==='KOREAN'){
-        view().innerHTML=`<section class="learning-shell"><div class="learn-head"><span class="phase-chip">RESPONSE TRAIL</span></div><section class="card"><h2>내 문장으로 표현하기</h2><p>“${esc(w.token)}”을 넣어 짧은 문장을 만들어보세요.</p><textarea id="v2Response" class="input" rows="3"></textarea><button id="v2DomainDone" class="btn primary full">표현 남기기</button></section></section>`;
-        $('#v2DomainDone').onclick=()=>{HideV2Session.update(HideV2Learning.submitDomainExtension(session,m,{responseText:$('#v2Response').value}).session);render()};
+        view().innerHTML=`<section class="learning-shell"><div class="learn-head"><span class="phase-chip">RESPONSE TRAIL</span><b>${idx}/${total}</b></div><section class="card"><h2>내 문장으로 표현하기</h2><p>“${esc(w.token)}”을 넣어 짧은 문장을 만들어보세요.</p><textarea id="v2Response" class="input" rows="3" aria-label="국어 문장 표현"></textarea><button id="v2DomainDone" class="btn primary full">표현 남기기</button></section></section>`;
+        $('#v2DomainDone').onclick=()=>{const text=$('#v2Response').value.trim();if(text.length<4){setFlash('짧은 문장으로 표현해 주세요.');return}HideV2Session.update(HideV2Learning.submitDomainExtension(session,m,{responseText:text}).session);render()};
       }else if(w.languageDomain==='HANJA'&&w.soundEvidence){
-        view().innerHTML=`<section class="learning-shell"><div class="learn-head"><span class="phase-chip">SOUND FIND</span></div><section class="card"><div class="bigword">${esc(w.token)}</div><input id="v2Sound" class="input" aria-label="한자 음 입력"><button id="v2DomainDone" class="btn primary full">음 기억 확인</button></section></section>`;
+        view().innerHTML=`<section class="learning-shell"><div class="learn-head"><span class="phase-chip">SOUND FIND</span><b>${idx}/${total}</b></div><section class="card"><div class="bigword">${esc(w.token)}</div><input id="v2Sound" class="input" aria-label="한자 음 입력" autocomplete="off"><button id="v2DomainDone" class="btn primary full">음 기억 확인</button></section></section>`;
         $('#v2DomainDone').onclick=()=>{HideV2Session.update(HideV2Learning.submitDomainExtension(session,m,{sound:$('#v2Sound').value}).session);render()};
       }else{
-        view().innerHTML=`<section class="learning-shell"><div class="learn-head"><span class="phase-chip">CONNECTION</span></div><section class="card">${globalThis.HideLanguageModel?.renderMeaningMapHtml?.({eng:w.token,word:w.token,languageDomain:w.languageDomain,meaningMap:w.meaningMap},esc)||`<p>${esc(w.example||w.meaning)}</p>`}<button id="v2DomainDone" class="btn primary full">다음</button></section></section>`;
+        view().innerHTML=`<section class="learning-shell"><div class="learn-head"><span class="phase-chip">CONNECTION</span><b>${idx}/${total}</b></div><section class="card">${globalThis.HideLanguageModel?.renderMeaningMapHtml?.({eng:w.token,word:w.token,languageDomain:w.languageDomain,meaningMap:w.meaningMap},esc)||`<p>${esc(w.example||w.meaning)}</p>`}<button id="v2DomainDone" class="btn primary full">다음</button></section></section>`;
         $('#v2DomainDone').onclick=()=>{HideV2Session.update(HideV2Learning.submitDomainExtension(session,m,{}).session);render()};
       }
+      return;
+    }
+
+    if(session.stage==='FINAL_SEEK'){
+      view().innerHTML=`<section class="learning-shell"><div class="learn-head"><span class="phase-chip">FINAL SEEK</span><b>${idx}/${total}</b></div><section class="card word-card"><p>마지막으로 힌트 없이 단어를 다시 꺼내보세요.</p><div class="bigword">${esc(w.meaning)}</div><input id="v2Final" class="input" aria-label="최종 회상 답 입력" autocomplete="off" spellcheck="false"><button id="v2FinalCheck" class="btn primary full">마지막 기억 확인</button></section></section>`;
+      $('#v2FinalCheck').onclick=()=>{const r=HideV2Learning.checkFinalSeek(session,m,$('#v2Final').value);HideV2Session.update(r.session);setFlash(r.ok?'FINAL SEEK 성공':'복습 필요 신호에 반영했어요.');render()};
     }
   }
 
