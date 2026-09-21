@@ -218,7 +218,7 @@ test('real NEW 12 + REVIEW 24 follows mission, recall and morning mock-test memo
     };
   });
   expect(applicability.env).toMatchObject({adaptive:'ROOT_ETYMOLOGY',applicable:true});
-  expect(applicability.ocean).toMatchObject({adaptive:null,applicable:false});
+  expect(applicability.ocean).toMatchObject({adaptive:'ROOT_ETYMOLOGY',applicable:true});
   expect(applicability.envLadder[0]).toBe('THINKING_SCENE');
   expect(applicability.envLadder).not.toContain('MEANING_MAP');
   expect(applicability.oceanLadder).not.toContain('MEANING_MAP');
