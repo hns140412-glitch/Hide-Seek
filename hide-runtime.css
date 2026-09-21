@@ -377,3 +377,7 @@
     transition: none !important;
   }
 }
+
+.hide-retake{min-height:40px;white-space:nowrap}
+
+.hide-role-review{display:flex;flex-direction:column;gap:3px;align-items:flex-start}.hide-role-source{font-size:11px;line-height:1.2;opacity:.72;white-space:nowrap}

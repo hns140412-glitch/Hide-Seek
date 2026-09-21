@@ -13,27 +13,38 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
       - name: Guard product identity
         run: python tools/validate-hide-seek-name-purge.py
+      - name: Guard runtime contracts
+        run: python tools/validate-hide-seek-runtime-contract.py
+      - name: Verify Memory Trail behavior
+        run: node tools/validate-hide-seek-memory-behavior.js
+      - name: Verify Family OCR adapter
+        run: node tools/validate-hide-family-ocr-adapter.js
+      - name: Verify language memory model
+        run: node tools/validate-hide-language-model.js
       - name: Check JavaScript syntax
         run: |
           node --check app.js
+          node --check hide-learning-basis-v01.js
+          node --check hide-language-evidence.js
           node --check hide-brand-current.js
           node --check hide-bridge.js
           node --check hide-runtime.js
+          node --check hide-family-ocr-adapter.js
           node --check hide-release-v01.js
           node --check hide-pwa-update-v01.js
           node --check vendor/taky/release-contract.js
           node --check vendor/taky/pwa-update-state.js
+          node --check vendor/taky/event-envelope.js
+          node --check vendor/taky/vision-ingest.js
+          node --check vendor/taky/http-json.js
       - name: Validate shared runtime contract
         run: node tests/shared-runtime-contract.test.js
-      - name: Install Playwright
-        run: |
-          npm install --no-save @playwright/test@1.55.0
-          npx playwright install --with-deps chromium
-      - name: Start static app
-        run: |
-          python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/hide-http.log 2>&1 &
-          echo $! > /tmp/hide-http.pid
-      - name: Run shared runtime browser regression
-        run: npx playwright test tests/shared-runtime.spec.js --reporter=line
+      - name: Install browser test harness
+        run: npm install
+      - name: Verify Hide browser product flows
+        run: npx playwright test

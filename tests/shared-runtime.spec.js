@@ -1,7 +1,7 @@
 const {test,expect}=require('@playwright/test');
 
 test('Hide loads shared release and PWA contracts without taking over Hide semantics',async({page})=>{
-  await page.goto('http://127.0.0.1:4173/');
+  await page.goto('/');
   await expect.poll(()=>page.evaluate(()=>!!globalThis.HideSeekReleaseDescriptor)).toBe(true);
   await expect.poll(()=>page.evaluate(()=>!!globalThis.TakyReleaseContract)).toBe(true);
   await expect.poll(()=>page.evaluate(()=>!!globalThis.TakyPwaUpdateState)).toBe(true);
@@ -12,11 +12,11 @@ test('Hide loads shared release and PWA contracts without taking over Hide seman
     safeType:typeof globalThis.HideSeekPwaSafePoint,
     pwaCapability:globalThis.HideSeekPwaUpdate.capability
   }));
-  expect(snapshot).toEqual({app:'hide-seek',schema:7,safeType:'function',pwaCapability:'CAP-PWA-UPDATE-001'});
+  expect(snapshot).toEqual({app:'hide-seek',schema:9,safeType:'function',pwaCapability:'CAP-PWA-UPDATE-001'});
 });
 
 test('Hide service worker controls app and update adapter stays safe-point driven',async({page})=>{
-  await page.goto('http://127.0.0.1:4173/');
+  await page.goto('/');
   await page.evaluate(()=>navigator.serviceWorker.ready);
   await page.reload();
   await expect.poll(()=>page.evaluate(()=>!!navigator.serviceWorker.controller)).toBe(true);
@@ -26,7 +26,7 @@ test('Hide service worker controls app and update adapter stays safe-point drive
 
 
 test('Hide bridge emits shared immutable event envelope while preserving legacy bridge projection',async({page})=>{
-  await page.goto('http://127.0.0.1:4173/');
+  await page.goto('/');
   await expect.poll(()=>page.evaluate(()=>!!globalThis.HideSeekBridge)).toBe(true);
   const out=await page.evaluate(()=>{
     const a=globalThis.HideSeekBridge.emit('TASK_PROGRESS',{same:'payload'});
@@ -48,7 +48,7 @@ test('Hide bridge emits shared immutable event envelope while preserving legacy 
 
 
 test('Hide loads shared vision ingest without replacing vocabulary semantics',async({page})=>{
-  await page.goto('http://127.0.0.1:4173/');
+  await page.goto('/');
   const out=await page.evaluate(()=>({
     vision:!!globalThis.TakyVisionIngest,
     request:globalThis.TakyVisionIngest?.buildRequest?.({
@@ -62,8 +62,8 @@ test('Hide loads shared vision ingest without replacing vocabulary semantics',as
 });
 
 
-test('Hide loads shared HTTP transport without moving API key ownership',async({page})=>{
-  await page.goto('http://127.0.0.1:4173/');
+test('Hide loads shared HTTP transport without taking domain ownership',async({page})=>{
+  await page.goto('/');
   const out=await page.evaluate(()=>({
     http:!!globalThis.TakyHttpJson,
     auth:globalThis.TakyHttpJson?.normalizeStatus?.(403),
