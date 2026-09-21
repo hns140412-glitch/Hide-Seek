@@ -33,7 +33,9 @@
   function normalizeMap(raw,domain){
     if(!raw||typeof raw!=='object')return null;
     const verified=raw.verified===true||raw.verificationState==='VERIFIED';
-    if(!verified)return null;
+    const sourceType=String(raw.sourceType||raw.source_type||'').trim().toUpperCase();
+    const sourceRef=String(raw.sourceRef||raw.source_ref||'').trim();
+    if(!verified||!sourceType||!sourceRef)return null;
     const nodes=(Array.isArray(raw.nodes)?raw.nodes:[]).slice(0,12).map((x,i)=>({
       id:String(x?.id||`node-${i+1}`),
       role:String(x?.role||'CONCEPT').toUpperCase(),
@@ -51,8 +53,8 @@
       domain,
       verified:true,
       verificationState:'VERIFIED',
-      sourceType:String(raw.sourceType||raw.source_type||'CURATED').toUpperCase(),
-      sourceRef:String(raw.sourceRef||raw.source_ref||'').trim()||null,
+      sourceType,
+      sourceRef,
       title:String(raw.title||'').trim(),
       coreMeaning:String(raw.coreMeaning||raw.core_meaning||'').trim(),
       imageryCue:String(raw.imageryCue||raw.imagery_cue||'').trim(),
