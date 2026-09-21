@@ -99,3 +99,22 @@ GitHub Actions note: no new run has been emitted for post-#245 synchronize commi
 
 Latest observed branch HEAD for this delta: `31290116a6bedc4f8b38e7469bb77cbb58870d40`.
 GitHub Actions still has not emitted a run for post-#245 synchronize commits. Latest-head CI remains NOT CLAIMED.
+
+
+## Language-domain isolation + clue applicability delta
+- Transferable inference is cumulative, but adaptive preference is now scoped by `languageDomain`.
+  - ENGLISH history cannot personalize KOREAN or HANJA assistance.
+  - KOREAN and HANJA remain separate even when both use verified character/meaning maps.
+- New inference traces persist `languageDomain`; older traces are attributed from their owning lexical item during aggregation.
+- Clue UI is language-specific:
+  - ENGLISH: WORD_PART / ROOT_ETYMOLOGY / SCENE / PRIOR_WORD / OTHER
+  - KOREAN: AFFIX / HANJA_ORIGIN / ETYMOLOGY / SCENE / PRIOR_WORD / OTHER
+  - HANJA: COMPONENT / RADICAL / SOUND / SCENE / PRIOR_WORD / OTHER
+- Adaptive clue display is also word-specific. A historically useful clue is only surfaced when the current plan actually supports it.
+  - Example: prior ENGLISH ROOT_ETYMOLOGY preference does not appear for `ocean`, because current truth-gate support is semantic-scene only.
+- Verified structure is distinguished from verified etymology.
+  - `earthquake` remains a source-verified transparent compound and renders as `검증 구조`, not `검증 어원`.
+- Records keep overall descriptive inference counts, but adaptive-clue projection is displayed separately for English / Korean / Hanja.
+
+Latest observed code HEAD before this delta refresh: `0d86f3486843e1aafd0b6e6774cd90e92bce083b`.
+Latest-head GitHub Actions run: still not emitted; CI_VERIFIED remains NOT CLAIMED for the current HEAD.
