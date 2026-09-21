@@ -25,7 +25,7 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 | OCR shared adapter integration | RUNTIME_VERIFIED | yes | provider-shaped fixture only | multi-page partial-failure/retry browser flow | real varied prints/provider behavior unverified |
 | OCR review persistence/resume | RUNTIME_VERIFIED | yes | provider-shaped fixture only | reload + editable review-draft persistence + warning/provenance + explicit duplicate-merge browser tests | real-provider calibration incomplete |
 | MEMORIZE / THINKING TRAIL | RUNTIME_VERIFIED | yes | fixture | prediction→reveal→self-comparison + established-clue reuse browser flow | representative multilingual inference histories still open |
-| FIRST FIND | RUNTIME_VERIFIED | yes | fixture | correct/wrong/unsure + relearn-exposure browser flows | richer adaptive assistance still open |
+| FIRST FIND | RUNTIME_VERIFIED | yes | fixture | correct/wrong/unsure + bounded shape-assist + relearn truth-boundary browser flows | representative multilingual recovery still open |
 | MEANING CLUE | RUNTIME_VERIFIED | yes | fixture | direct recall fallback + session-scoped bidirectional recognition + confusion handoff browser flow | broader representative confusion sets still open |
 | English CONNECTION | RUNTIME_VERIFIED | yes | fixture | Thinking Trail browser flow | adaptive clue personalization and broader representative vocabulary still pending |
 | Korean RESPONSE TRAIL | RUNTIME_VERIFIED | yes | fixture | production-evidence + target-use truth-boundary browser flow | semantic correctness is intentionally not auto-scored; richer teacher/parent feedback remains open |
@@ -48,10 +48,10 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 
 ## Claim levels
 
-- PRODUCT_COMPLETION: approximately 76%
-- CODED: approximately 92%
-- CI_VERIFIED: approximately 89%
-- BROWSER_RUNTIME_VERIFIED: approximately 85%
+- PRODUCT_COMPLETION: approximately 77%
+- CODED: approximately 93%
+- CI_VERIFIED: approximately 90%
+- BROWSER_RUNTIME_VERIFIED: approximately 86%
 - DEVICE_VERIFIED: 0%
 - RELEASE_VERIFIED: 0%
 
@@ -387,3 +387,17 @@ Head before matrix document: 63db5206a836050c3dfe5f2b9fd0238d6baeb464
 - No recall score or Memory Strength inflation is introduced by inference comparison.
 - Exact code HEAD `42a524f6474db74896fc507e7a61724ba99f48ee` passed V2 #292 / full Hide #750.
 - Conservative reporting rises one point for this newly runtime-proven active inference/reuse path: PRODUCT ~76%, CODED ~92%, CI ~89%, Browser Runtime ~85%, Device 0%, Release 0%.
+
+
+### 2026-09-22 bounded First Find assistance increment
+- FIRST FIND failure no longer jumps directly to full answer exposure when a safe English form cue is available.
+- Bounded path:
+  1. unassisted FIRST FIND wrong or UNSURE is recorded first;
+  2. one English shape cue may be shown;
+  3. assisted reconstruction retry is objectively checkable but never objective recall;
+  4. assisted success proceeds to MEANING;
+  5. assisted failure proceeds to the existing full relearn exposure before MEANING.
+- Korean/Hanja or unsupported English items fail closed to the existing full relearn path rather than inventing a cue.
+- The canonical six-stage child journey remains unchanged; FIRST_FIND_ASSIST is an internal recovery state mapped to FIRST FIND.
+- Exact code HEAD `56452289a112d338e2e9abd818a8acb9590794ee` passed V2 #300 / full Hide #758.
+- Conservative reporting rises one point for this newly runtime-proven child recovery path: PRODUCT ~77%, CODED ~93%, CI ~90%, Browser Runtime ~86%, Device 0%, Release 0%.
