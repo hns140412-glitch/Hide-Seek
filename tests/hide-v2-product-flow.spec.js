@@ -87,7 +87,8 @@ test('Hide V2 OCR path uses the shared family adapter and commits reviewed rows'
   await expect(page.getByRole('heading',{name:'분석 결과 확인'})).toBeVisible();
   await expect(page.getByLabel('OCR 단어 1')).toHaveValue('environment');
   await page.getByRole('button',{name:'미션으로 저장'}).click();
-  await expect(page.getByText(/1개 단어/)).toBeVisible();
+  await expect(page.getByRole('heading',{name:'탐험 미션'})).toBeVisible();
+  await expect(page.getByText(/1개 · READY/)).toBeVisible();
   const state=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')));
   expect(state.missions).toHaveLength(1);
   expect(state.missions[0].items[0].token).toBe('environment');
@@ -110,7 +111,7 @@ test('Hide V2 persists OCR review state across reload',async({page})=>{
   await expect(page.getByRole('heading',{name:'분석 결과가 남아 있어요'})).toBeVisible();
   await page.getByRole('button',{name:'분석 결과 이어보기'}).click();
   await expect(page.getByRole('heading',{name:'분석 결과 확인'})).toBeVisible();
-  await expect(page.getByText('island',{exact:true})).toBeVisible();
+  await expect(page.getByLabel('OCR 단어 1')).toHaveValue('island');
 
   const capture=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')).captureSession);
   expect(capture.status).toBe('REVIEW');
