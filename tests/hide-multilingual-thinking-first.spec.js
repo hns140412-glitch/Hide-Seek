@@ -202,7 +202,12 @@ test('verified Korean and Hanja meaning maps use thinking-first without fake ety
   expect(koreanEvidence.axes.EXPRESSION).toBeGreaterThanOrEqual(1);
   expect(koreanEvidence.objectiveRecallCounts.CONTEXT).toBe(0);
   expect(koreanEvidence.axes.EVIDENCE).toBeGreaterThanOrEqual(1);
-  expect(koreanEvidence.objectiveRecallCounts.EVIDENCE).toBeGreaterThanOrEqual(1);
+  expect(koreanEvidence.objectiveVerifiedCounts.EVIDENCE).toBeGreaterThanOrEqual(1);
+  expect(koreanEvidence.objectiveRecallCounts.EVIDENCE).toBe(0);
+  expect(koreanEvidence.evidenceModes.EVIDENCE_SELECTION).toBeGreaterThanOrEqual(1);
+  expect(koreanEvidence.evidenceModes.RECOGNITION).toBeGreaterThanOrEqual(1);
+  expect(koreanEvidence.evidenceModes.ASSOCIATION).toBeGreaterThanOrEqual(1);
+  expect(koreanEvidence.objectiveVerifiedCounts.MEANING).toBeGreaterThanOrEqual(1);
 
   expect(domainSkill.hanja.attempts).toBe(1);
   expect(domainSkill.hanja.adaptiveClue).toBeNull();
@@ -217,4 +222,6 @@ test('verified Korean and Hanja meaning maps use thinking-first without fake ety
   expect(hanjaEvidence.axes.RECALL).toBeGreaterThanOrEqual(1);
   expect(hanjaEvidence.axes.WRITE_OR_RECONSTRUCT).toBeGreaterThanOrEqual(1);
   expect(hanjaEvidence.objectiveRecallCounts.SOUND).toBe(0);
+  expect(hanjaEvidence.evidenceModes.RECOGNITION).toBeGreaterThanOrEqual(1);
+  expect(hanjaEvidence.objectiveVerifiedCounts.MEANING).toBeGreaterThanOrEqual(1);
 });
