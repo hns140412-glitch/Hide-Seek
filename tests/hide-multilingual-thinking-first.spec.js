@@ -106,4 +106,14 @@ test('verified Korean and Hanja meaning maps use thinking-first without fake ety
     objectiveVerified:false,
     recallScoreImpact:false
   });
+  const domainSkill=await page.evaluate(()=>({
+    english:inferenceRecordSummary('ENGLISH'),
+    korean:inferenceRecordSummary('KOREAN'),
+    hanja:inferenceRecordSummary('HANJA')
+  }));
+  expect(domainSkill.english.adaptiveClue?.clue).toBe('ROOT_ETYMOLOGY');
+  expect(domainSkill.korean.attempts).toBe(1);
+  expect(domainSkill.korean.adaptiveClue).toBeNull();
+  expect(domainSkill.hanja.attempts).toBe(1);
+  expect(domainSkill.hanja.adaptiveClue).toBeNull();
 });
