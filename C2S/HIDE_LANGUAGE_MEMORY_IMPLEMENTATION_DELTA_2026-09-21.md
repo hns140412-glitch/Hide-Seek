@@ -192,3 +192,14 @@ Latest-head CI note must still be checked live. No Netlify / deploy / merge / us
   - progressive hidden-node gate present,
   - thinking-path assertion aligned to rendered DOM.
 - Latest head still requires a matching Actions run before CI_VERIFIED can be claimed.
+
+
+## Progressive scene trail delta
+- Child-facing semantic scene trails now preserve stable machine IDs while rendering Korean mental-image labels.
+- Scene trails are progressive rather than fully exposed at once:
+  - first beat visible,
+  - later beats hidden,
+  - learner reveals each next beat with `다음 장면 이어보기`,
+  - completion state becomes `장면 연결 완료`.
+- Each reveal logs `SCENE_PROGRESSIVE_REVEAL` with beat index, beat ID, language domain, support type, source/sourceRef, and `recallScoreImpact=false`.
+- Real NEW12 browser coverage verifies mountain as GROUND -> RISE -> PEAK while the child sees `평평한 땅 -> 위로 솟기 -> 높은 꼭대기`.
