@@ -96,7 +96,35 @@
       const key = view?.reason?.key || 'stable';
       if (key in reasonCounts) reasonCounts[key] += 1;
       if (Number.isFinite(view?.strength)) { measured += 1; strengthTotal += Number(view.strength); }
-      if (Number.isFinite(view?.priority)) priorities.push({ lexicalId: w.lexicalId || senseKey(w), priority: Math.round(Number(view.priority)), reason: key });
+      if (Number.isFinite(view?.priority)) {
+        let sig = null;
+        let lastRecovery = null;
+        try { sig = deriveMemorySignature(w); } catch {}
+        try {
+          const recovery = traceList(w,'recovery');
+          lastRecovery = [...recovery].reverse().find(x=>x?.result==='UNASSISTED_RECALL') || null;
+        } catch {}
+        priorities.push({
+          lexicalId: w.lexicalId || senseKey(w),
+          priority: Math.round(Number(view.priority)),
+          reason: key,
+          advisoryOnly:true,
+          evidenceBasis:'HIDE_MEMORY_EVIDENCE',
+          memoryStrength:Number.isFinite(view?.strength)?Math.round(Number(view.strength)):null,
+          semanticWeakness:Number(sig?.semanticWeakness||0),
+          recognitionWeakness:Number(sig?.recognitionWeakness||0),
+          phonologicalWeakness:Number(sig?.phonologicalWeakness||0),
+          orthographicWeakness:Number(sig?.orthographicWeakness||0),
+          confusionCount:Number(sig?.confusionPattern?.count||0),
+          slowRecall:Number(sig?.slowRecall||0),
+          timeoutRisk:Number(sig?.timeoutRisk||0),
+          hintDependency:Number(sig?.hintDependency||0),
+          recoveryStatus:String(sig?.recoveryStatus||'UNPROVEN'),
+          longTermDecay:Number(sig?.longTermDecay||0),
+          spacedEvidenceObserved:lastRecovery?.spacedEvidence===true,
+          needsUnassistedRecall:sig?.recoveryStatus==='NEEDS_UNASSISTED_RECALL'||sig?.recoveryStatus==='IMMEDIATE_ONLY'
+        });
+      }
     }
     priorities.sort((a, b) => b.priority - a.priority);
     const roleCounts = words.reduce((a,w)=>{const role=String(w.missionRole||'').toUpperCase();if(role==='NEW'||role==='REVIEW')a[role]+=1;return a},{NEW:0,REVIEW:0});
@@ -119,6 +147,7 @@
       reasonCounts,
       needsUnassistedRecallCount: reasonCounts.recovery,
       topReviewPriorities: priorities.slice(0, 5),
+      reviewAdvisories: priorities.slice(0, 12),
       missionComposition:{newCount:roleCounts.NEW,reviewCount:roleCounts.REVIEW},
       morningMockTest:{
         recordedCount:Object.values(mockCounts).reduce((a,n)=>a+n,0),
