@@ -17,6 +17,7 @@
     FIRST_FIND:'첫 찾기',
     MEANING:'뜻 단서',
     RESPONSE_TRAIL:'표현 길',
+    EVIDENCE_TRAIL:'근거 찾기',
     SOUND_FIND:'소리 찾기',
     CONNECTION:'연결 길',
     FINAL_SEEK:'마지막 찾기',
@@ -246,8 +247,15 @@
 
     if(session.stage==='DOMAIN_EXTENSION'){
       if(w.languageDomain==='KOREAN'){
-        view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}${journeyHtml(session.stage)}${crewHtml(w,session.stage)}<div class="learn-head"><span class="phase-chip">표현 길</span><b>${idx}/${total}</b></div><section class="card"><h2>내 문장으로 표현하기</h2><p>“${esc(w.token)}”을 넣어 짧은 문장을 만들어보세요.</p><textarea id="v2Response" class="input" rows="3" aria-label="국어 문장 표현"></textarea><button id="v2DomainDone" class="btn primary full">표현 남기기</button></section></section>`;
-        $('#v2DomainDone').onclick=()=>{const text=$('#v2Response').value.trim();if(text.length<4){setFlash('짧은 문장으로 표현해 주세요.');return}HideV2Session.update(HideV2Learning.submitDomainExtension(session,m,{responseText:text}).session);render()};
+        const contextEvidence=globalThis.HideLanguageModel?.normalizeContextEvidence?.(w.contextEvidence,'KOREAN')||null;
+        const evidenceDone=Number(session.attempts?.[`${w.id}:EVIDENCE_TRAIL`]||0)>0;
+        if(contextEvidence&&!evidenceDone){
+          view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}${journeyHtml(session.stage)}${crewHtml(w,'EVIDENCE_TRAIL')}<div class="learn-head"><span class="phase-chip">근거 찾기</span><b>${idx}/${total}</b></div><section class="card word-card korean-evidence-card"><h2>문맥에서 뜻의 근거 찾기</h2><p class="example">${esc(contextEvidence.contextText)}</p><p>“${esc(w.token)}”의 뜻을 이해하는 데 가장 직접적인 근거를 골라보세요.</p><div class="choice-grid">${contextEvidence.candidates.map(x=>`<button class="choice korean-evidence-choice" type="button" data-value="${esc(x)}">${esc(x)}</button>`).join('')}</div><small class="truth-source">출처 확인됨 · ${esc(contextEvidence.sourceType)}</small></section></section>`;
+          view().querySelectorAll('.korean-evidence-choice').forEach(btn=>{btn.onclick=()=>{const r=HideV2Learning.submitDomainExtension(session,m,{selectedEvidence:btn.dataset.value||''});HideV2Session.update(r.session);setFlash(r.ok?'뜻의 근거를 찾았어요':'이 근거는 아니에요. 표현 길에서 뜻을 다시 써보며 이어가요.');render()}});
+        }else{
+          view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}${journeyHtml(session.stage)}${crewHtml(w,session.stage)}<div class="learn-head"><span class="phase-chip">표현 길</span><b>${idx}/${total}</b></div><section class="card"><h2>내 문장으로 표현하기</h2><p>“${esc(w.token)}”을 넣어 짧은 문장을 만들어보세요.</p><textarea id="v2Response" class="input" rows="3" aria-label="국어 문장 표현"></textarea><button id="v2DomainDone" class="btn primary full">표현 남기기</button></section></section>`;
+          $('#v2DomainDone').onclick=()=>{const text=$('#v2Response').value.trim();if(text.length<4){setFlash('짧은 문장으로 표현해 주세요.');return}HideV2Session.update(HideV2Learning.submitDomainExtension(session,m,{responseText:text}).session);render()};
+        }
       }else if(w.languageDomain==='HANJA'&&w.soundEvidence){
         view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}${journeyHtml(session.stage)}${crewHtml(w,session.stage)}<div class="learn-head"><span class="phase-chip">소리 찾기</span><b>${idx}/${total}</b></div><section class="card"><div class="bigword">${esc(w.token)}</div><input id="v2Sound" class="input" aria-label="한자 음 입력" autocomplete="off"><button id="v2DomainDone" class="btn primary full">음 기억 확인</button></section></section>`;
         $('#v2DomainDone').onclick=()=>{HideV2Session.update(HideV2Learning.submitDomainExtension(session,m,{sound:$('#v2Sound').value}).session);render()};
