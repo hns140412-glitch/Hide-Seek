@@ -270,3 +270,11 @@ Hide exports `reviewAdvisories` as evidence, not a schedule. The packet may incl
 - Memory Detail exposes the evidence behind memory strength/review priority.
 - Pre-doc code HEAD `ce0ad263af71a14d2c4939934f2c81cf5f7a3cad`: V2 #40 PASS, full Hide #494 PASS.
 - Truthful V2 PRODUCT_COMPLETION: ~48%; DEVICE_VERIFIED 0%; RELEASE_VERIFIED 0%.
+
+
+## Latest V2 surgery — PWA / offline ownership
+- V2 now owns manifest/SW/release/update state; no V1 SW dependency for the V2 shell.
+- Offline shell reload and update safe-point behavior are browser-verified.
+- Playwright product-flow service-worker blocking was corrected; PWA validation now permits actual registration.
+- Pre-doc code HEAD `eaafb969ff4b40c3bb547bbc81dea8f6240d030b`: V2 #54 PASS, full Hide #508 PASS.
+- Truthful V2 PRODUCT_COMPLETION: ~52%; DEVICE_VERIFIED 0%; RELEASE_VERIFIED 0%.
