@@ -1,5 +1,5 @@
 const $=(s,r=document)=>r.querySelector(s);
-const $=(s,r=document)=>[...r.querySelectorAll(s)];
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const RELEASE=globalThis.HideSeekReleaseDescriptor;
 if(!globalThis.TakyReleaseContract?.validateDescriptor?.(RELEASE)?.ok)throw new Error('INVALID_HIDE_RELEASE_DESCRIPTOR');
 const APP_REV=RELEASE.app_version;
