@@ -66,6 +66,26 @@
     };
   }
 
+  function normalizeContextEvidence(raw,domain){
+    if(domain!=='KOREAN'||!raw||typeof raw!=='object'||Array.isArray(raw))return null;
+    if(raw.verified!==true)return null;
+    const sourceRef=String(raw.sourceRef||raw.source_ref||'').trim();
+    const contextText=String(raw.contextText||raw.context_text||'').trim();
+    const evidenceText=String(raw.evidenceText||raw.evidence_text||'').trim();
+    const candidates=Array.isArray(raw.candidates)?[...new Set(raw.candidates.map(x=>String(x||'').trim()).filter(Boolean))]:[];
+    if(!sourceRef||!contextText||!evidenceText)return null;
+    if(!contextText.includes(evidenceText))return null;
+    if(candidates.length<2||!candidates.includes(evidenceText))return null;
+    return Object.freeze({
+      verified:true,
+      sourceType:String(raw.sourceType||raw.source_type||'VERIFIED_CONTEXT_EVIDENCE').trim()||'VERIFIED_CONTEXT_EVIDENCE',
+      sourceRef,
+      contextText,
+      evidenceText,
+      candidates:candidates.slice(0,6)
+    });
+  }
+
   function normalizeItem(item={}){
     const domain=detectDomain(item);
     const learningProfile=globalThis.HideLearningBasis?.resolve?.(domain)||null;
@@ -74,7 +94,8 @@
       languageDomain:domain,
       learningProfile,
       learningContext:globalThis.HideLearningBasis?.projectLearningContext?.(domain,item.learningContext||item.learning_context)||null,
-      meaningMap:normalizeMap(item.meaningMap||item.meaning_map,domain)
+      meaningMap:normalizeMap(item.meaningMap||item.meaning_map,domain),
+      contextEvidence:normalizeContextEvidence(item.contextEvidence||item.context_evidence,domain)
     };
   }
 
@@ -340,6 +361,7 @@
     renderStarterExplorationHtml,
     learningProfileFor,
     learningContextFor,
+    normalizeContextEvidence,
     sceneBeat
   };
 })();
