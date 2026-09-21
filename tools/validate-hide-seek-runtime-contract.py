@@ -659,8 +659,30 @@ for forbidden in [
     if forbidden in app:
         fail.append("FINAL_SEEK_ENGLISH_ONLY_PATH:"+forbidden)
 
+for forbidden in [
+    "뜻 → 영어",
+]:
+    if forbidden in app:
+        fail.append("LANGUAGE_NEUTRAL_LEARNING_UI:"+forbidden)
+
+for forbidden in [
+    "영어 → 뜻",
+]:
+    if forbidden in app:
+        fail.append("LANGUAGE_NEUTRAL_LEARNING_UI:"+forbidden)
+
+for forbidden in [
+    "영어와 뜻의 연결",
+]:
+    if forbidden in app:
+        fail.append("LANGUAGE_NEUTRAL_LEARNING_UI:"+forbidden)
+
 for needle in [
     "FIRST_SEEN_PREDICTION",
+    "단어 → 뜻",
+    "뜻 → 단어",
+    "normalize('NFKC')",
+    "normalizeRecallToken",
     "recallScoreImpact:false",
     "transferSkillEvidence=true",
     "assessmentSource='LEARNER_SELF_REPORT'",
