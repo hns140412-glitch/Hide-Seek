@@ -251,3 +251,13 @@ Head before matrix document: 63db5206a836050c3dfe5f2b9fd0238d6baeb464
 - Memory Ladder search/state filters and mission map status filters are browser-verified but do not change memory/mission semantics.
 - Exact code HEAD `75dd5431625ac7b37b857df9aeb346487176c4ab` passed V2 #213 / full Hide #671.
 - Conservative completion percentages remain unchanged at PRODUCT ~68%, CODED ~84%, CI ~81%, Browser Runtime ~77%, Device 0%, Release 0%.
+
+
+### 2026-09-22 First Find recovery increment
+- A wrong FIRST FIND no longer disappears into the next stage with no child-facing correction.
+- Wrong recall is recorded first as objective retrieval evidence, then the runtime enters `FIRST_FIND_RELEARN`.
+- The relearn scene briefly re-exposes token + meaning (+ example when present) and records `RELEARN_EXPOSURE`, `objectiveRecall=false`, `assisted=true`.
+- After the child explicitly hides the word again, the journey proceeds to MEANING.
+- The internal recovery stage remains visually anchored to the FIRST FIND step; it does not create a seventh canonical journey stage.
+- Exact code HEAD `506029061ac9e2873595545758f1b737e9f1aa4e` passed V2 #220 / full Hide #678.
+- Conservative completion percentages remain PRODUCT ~68%, CODED ~84%, CI ~81%, Browser Runtime ~77%, Device 0%, Release 0% pending broader learning-assistance closure.
