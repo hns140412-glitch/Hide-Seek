@@ -398,3 +398,58 @@ test('Hide V2 memory detail exposes evidence trail behind strength and priority'
   await page.getByRole('button',{name:'기록으로'}).click();
   await expect(page.getByRole('heading',{name:'기억 기록'})).toBeVisible();
 });
+
+
+test('Hide V2 registers its isolated service worker and can reopen cached shell offline',async({page,context})=>{
+  await page.goto('/v2.html');
+  await page.waitForFunction(()=>navigator.serviceWorker?.ready);
+  const reg=await page.evaluate(async()=>{
+    const r=await navigator.serviceWorker.ready;
+    return {scriptURL:r.active?.scriptURL||'',scope:r.scope};
+  });
+  expect(reg.scriptURL).toContain('/sw-v2.js');
+
+  const manifest=await page.locator('link[rel="manifest"]').getAttribute('href');
+  expect(manifest).toBe('./manifest-v2.json');
+
+  await context.setOffline(true);
+  await page.reload();
+  await expect(page.getByText('Runtime V2')).toBeVisible();
+  await expect(page.getByRole('button',{name:'미션 관리'})).toBeVisible();
+  await context.setOffline(false);
+});
+
+test('Hide V2 PWA safe point blocks update activation during active learning or OCR review',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'PWA'},missions:[{
+        id:'m-pwa',title:'PWA 미션',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        items:[{id:'w1',lexicalId:'island::섬',token:'island',meaning:'섬',languageDomain:'ENGLISH',missionRole:'NEW',evidence:[],source:{}}],
+        sourceCount:0,provenance:{}
+      }],activeMissionId:'m-pwa',
+      activeSession:{id:'s1',missionId:'m-pwa',index:0,queue:['w1'],stage:'FIRST_FIND',startedAt:new Date().toISOString(),completedAt:null,attempts:{}},
+      captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  expect(await page.evaluate(()=>window.HideV2Pwa.safePoint())).toBe(false);
+
+  await page.evaluate(()=>{
+    const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
+    s.activeSession=null;
+    s.captureSession={id:'c1',status:'REVIEW',pages:[],lastRows:[{eng:'island',kor:'섬'}],analysisBatches:[]};
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify(s));
+    window.location.reload();
+  });
+  await page.waitForLoadState('domcontentloaded');
+  expect(await page.evaluate(()=>window.HideV2Pwa.safePoint())).toBe(false);
+
+  await page.evaluate(()=>{
+    const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
+    s.captureSession={...s.captureSession,status:'COMMITTED'};
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify(s));
+    window.location.reload();
+  });
+  await page.waitForLoadState('domcontentloaded');
+  expect(await page.evaluate(()=>window.HideV2Pwa.safePoint())).toBe(true);
+});
