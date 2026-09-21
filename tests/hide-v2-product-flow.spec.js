@@ -1322,6 +1322,11 @@ test('Hide V2 wrong final seek enters relearn and seek-again before completing',
   await page.getByLabel('최종 회상 답 입력').fill('wrong');
   await page.getByRole('button',{name:'마지막 기억 확인'}).click();
 
+  await expect(page.getByText('글자 조립',{exact:true})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'글자 골격으로 다시 조립하기'})).toBeVisible();
+  await page.getByLabel('재구성 답 입력').fill('wrong');
+  await page.getByRole('button',{name:'조립 기억 확인'}).click();
+
   await expect(page.getByText('다시 만나기',{exact:true})).toBeVisible();
   await expect(page.getByText('island',{exact:true})).toBeVisible();
   await page.getByRole('button',{name:'다시 숨기기'}).click();
@@ -1334,6 +1339,7 @@ test('Hide V2 wrong final seek enters relearn and seek-again before completing',
   const state=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')));
   const word=state.missions[0].items[0];
   expect(word.evidence.some(x=>x.stage==='FINAL_SEEK'&&x.result==='WRONG')).toBeTruthy();
+  expect(word.evidence.some(x=>x.stage==='FINAL_SEEK_RECONSTRUCT'&&x.result==='WRONG'&&x.objectiveRecall===false&&x.assisted===true)).toBeTruthy();
   expect(word.evidence.some(x=>x.stage==='SEEK_AGAIN_RELEARN'&&x.evidenceMode==='RELEARN_EXPOSURE'&&x.objectiveRecall===false)).toBeTruthy();
   expect(word.evidence.some(x=>x.stage==='SEEK_AGAIN'&&x.result==='CORRECT'&&x.objectiveRecall===true)).toBeTruthy();
 
@@ -1352,6 +1358,49 @@ test('Hide V2 wrong final seek enters relearn and seek-again before completing',
   expect(trail.semantics).toBe('CURRENT_SESSION_OR_MISSION_READINESS_NOT_LONG_TERM_MEMORY');
 });
 
+
+test('Hide V2 Final Seek reconstruction success is assisted and still requires Seek Again',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'재구성'},missions:[{
+        id:'m-reconstruct',title:'재구성 미션',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        items:[{id:'w1',lexicalId:'island::섬',token:'island',meaning:'섬',languageDomain:'ENGLISH',missionRole:'NEW',example:'The island is small.',evidence:[],source:{}}],
+        sourceCount:0,provenance:{source:'TEST_FIXTURE'}
+      }],activeMissionId:'m-reconstruct',activeSession:null,captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'탐험 시작'}).click();
+  await page.getByRole('button',{name:'기억하고 찾아보기'}).click();
+  await page.getByLabel('회상 답 입력').fill('island');
+  await page.getByRole('button',{name:'기억 확인'}).click();
+  await page.getByLabel('뜻 회상 입력').fill('섬');
+  await page.getByRole('button',{name:'뜻 확인'}).click();
+  await page.getByRole('button',{name:'다음'}).click();
+
+  await page.getByLabel('최종 회상 답 입력').fill('wrong');
+  await page.getByRole('button',{name:'마지막 기억 확인'}).click();
+  await expect(page.getByText('글자 조립',{exact:true})).toBeVisible();
+
+  await page.getByLabel('재구성 답 입력').fill('island');
+  await page.getByRole('button',{name:'조립 기억 확인'}).click();
+  await expect(page.locator('.phase-chip')).toHaveText('다시 찾기');
+
+  const reconstruct=await page.evaluate(()=>{
+    const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
+    return s.missions[0].items[0].evidence.find(x=>x.stage==='FINAL_SEEK_RECONSTRUCT');
+  });
+  expect(reconstruct.result).toBe('CORRECT');
+  expect(reconstruct.evidenceMode).toBe('ASSISTED_RECONSTRUCTION');
+  expect(reconstruct.objectiveVerified).toBe(true);
+  expect(reconstruct.objectiveRecall).toBe(false);
+  expect(reconstruct.recallScoreImpact).toBe(false);
+  expect(reconstruct.assisted).toBe(true);
+
+  await page.getByLabel('다시 찾기 답 입력').fill('island');
+  await page.getByRole('button',{name:'다시 찾기'}).click();
+  await expect(page.getByRole('heading',{name:'탐험 완료'})).toBeVisible();
+});
 
 test('Hide V2 product home prioritizes active mission and keeps secondary tools subordinate',async({page})=>{
   await page.setViewportSize({width:390,height:844});
