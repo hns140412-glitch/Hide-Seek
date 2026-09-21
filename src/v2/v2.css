@@ -1018,3 +1018,82 @@ body.v2-runtime{
 .v2-runtime .memory-tech-details .grid3{
   margin-top:8px;
 }
+
+
+/* OCR review: exploration setup, not an admin table */
+.v2-runtime .ocr-review-card{
+  display:grid;
+  gap:14px;
+}
+.v2-runtime .ocr-review-intro{
+  margin:0;
+  line-height:1.5;
+  color:var(--v2-muted);
+  font-weight:700;
+}
+.v2-runtime .ocr-review-list{
+  display:grid;
+  gap:12px;
+}
+.v2-runtime .ocr-review-row{
+  display:grid;
+  gap:10px;
+  padding:14px;
+  border:1px solid var(--v2-line);
+  border-radius:18px;
+  background:rgba(255,255,255,.76);
+}
+.v2-runtime .ocr-review-row.is-excluded{
+  opacity:.5;
+}
+.v2-runtime .ocr-review-row__head{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:center;
+}
+.v2-runtime .ocr-review-row__head>span,
+.v2-runtime .ocr-review-row__head>b{
+  font-weight:900;
+}
+.v2-runtime .ocr-review-row__head>small{
+  color:var(--v2-muted);
+}
+.v2-runtime .ocr-review-fields{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.v2-runtime .ocr-review-fields label{
+  display:grid;
+  gap:5px;
+}
+.v2-runtime .ocr-review-fields label>span{
+  font-size:12px;
+  font-weight:900;
+  color:var(--v2-muted);
+}
+.v2-runtime .ocr-source-details summary{
+  min-height:40px;
+  display:flex;
+  align-items:center;
+  cursor:pointer;
+  font-weight:800;
+  color:var(--v2-muted);
+}
+.v2-runtime .ocr-review-next{
+  display:grid;
+  gap:4px;
+  padding:12px 14px;
+  border-radius:16px;
+  background:rgba(255,255,255,.62);
+}
+.v2-runtime .ocr-review-next span{
+  color:var(--v2-muted);
+  line-height:1.4;
+}
+@media(max-width:390px){
+  .v2-runtime .ocr-review-fields{
+    grid-template-columns:1fr;
+  }
+}
