@@ -216,3 +216,16 @@ Latest-head CI note must still be checked live. No Netlify / deploy / merge / us
 - Missing provenance or incomplete structure fails closed to no verified map rather than rendering `검증 의미 구조`.
 - Browser fixtures use explicit test provenance; production semantics remain responsible for real source references.
 - This closes the path where Korean/Hanja structure could be presented as verified without traceable evidence.
+
+
+## Dynamic mission composition correction
+- Removed the runtime assumption that every mission is NEW 12 + REVIEW 24.
+- The observed 12/24 routine remains evidence/test context only; it is not a product quota.
+- Capture review UI now states that print composition may vary and that role is determined from confirmed role/history rather than page position.
+- Committed mission metadata now stores:
+  - `observedNew`,
+  - `observedReview`,
+  - `classificationSource='ROLE_CONFIRMATION_OR_HISTORY'`,
+  - `layoutIndependent=true`.
+- `expectedNew:12` / `expectedReview:24` are forbidden in runtime contract.
+- Browser capture-to-mission regression verifies observed counts sum to the actual valid-word count and no expected 12/24 quota is persisted.
