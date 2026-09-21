@@ -484,6 +484,23 @@
         return {ok:false,session:next,soundEvidence:w.soundEvidence};
       }
     }else{
+      const guidance=payload.connectionGuidance&&typeof payload.connectionGuidance==='object'?payload.connectionGuidance:null;
+      if(guidance){
+        HideV2Memory.record(mission.id,w.id,{
+          stage:'CONNECTION_GUIDANCE',
+          evidenceMode:'ADAPTIVE_CONNECTION_GUIDANCE',
+          axes:['MEANING','CONTEXT'],
+          result:'SEEN',
+          objectiveVerified:false,
+          objectiveRecall:false,
+          recallScoreImpact:false,
+          assisted:true,
+          clue:String(guidance.clue||''),
+          evidenceBasis:String(guidance.evidenceBasis||'LEARNER_SELF_REPORT'),
+          sourceType:guidance.sourceType||null,
+          source:guidance.sourceRef||null
+        });
+      }
       HideV2Memory.record(mission.id,w.id,{
         stage:'CONNECTION',
         evidenceMode:'EXPOSURE',
