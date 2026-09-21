@@ -730,3 +730,56 @@ body.v2-runtime{
   .v2-runtime .ladder-rung--climbing{margin-left:10px}
   .v2-runtime .ladder-rung--stable{margin-left:20px}
 }
+
+
+/* Memory reason + answer-safe crew support */
+.v2-runtime .memory-why-card{
+  display:grid;
+  gap:10px;
+  margin:14px 0;
+  padding:14px;
+  border:1px solid var(--v2-line);
+  border-radius:20px;
+  background:rgba(255,255,255,.78);
+}
+.v2-runtime .memory-why-card h2{
+  margin:0;
+  font-size:18px;
+}
+.v2-runtime .memory-why-card__word{
+  display:grid;
+  gap:4px;
+}
+.v2-runtime .memory-why-card__word b{
+  font-size:17px;
+}
+.v2-runtime .memory-why-card__word span{
+  color:var(--v2-muted);
+  line-height:1.45;
+}
+.v2-runtime .memory-crew-mini{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  gap:10px;
+  align-items:center;
+  padding-top:10px;
+  border-top:1px dashed var(--v2-line);
+}
+.v2-runtime .memory-crew-mini>div{
+  min-width:0;
+  display:grid;
+  gap:2px;
+}
+.v2-runtime .memory-crew-mini small{
+  color:var(--v2-muted);
+  line-height:1.3;
+}
+@media(max-width:390px){
+  .v2-runtime .memory-crew-mini{
+    grid-template-columns:auto minmax(0,1fr);
+  }
+  .v2-runtime .memory-crew-mini .btn{
+    grid-column:1/-1;
+    width:100%;
+  }
+}
