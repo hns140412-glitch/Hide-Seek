@@ -250,7 +250,10 @@
   function parentExplanation(item={}){
     const plan=starterExploration(item,{});
     if(!plan)return null;
-    if(plan.verified&&plan.center)return {mode:'VERIFIED',text:`${plan.word}는 “${plan.center.label}”(${plan.center.meaning})에서 뜻의 흐름을 잡고, ${plan.why}`,sourceType:plan.sourceType,sourceRef:plan.sourceRef};
+    const domain=String(plan.domain||detectDomain(item)).toUpperCase();
+    if(domain==='KOREAN'&&plan.verified&&plan.center)return {mode:'VERIFIED_MEANING_STRUCTURE',text:`${plan.word}는 “${plan.center.label}”의 뜻(${plan.center.meaning})을 중심으로 구성 요소를 연결해 설명하면 돼. ${plan.why}`,sourceType:plan.sourceType,sourceRef:plan.sourceRef};
+    if(domain==='HANJA'&&plan.verified&&plan.center)return {mode:'VERIFIED_CHARACTER_STRUCTURE',text:`${plan.word}는 글자의 핵심 구성 “${plan.center.label}”(${plan.center.meaning})부터 보고, 부수·구성·소리를 뜻과 연결해 설명하면 돼. ${plan.why}`,sourceType:plan.sourceType,sourceRef:plan.sourceRef};
+    if(plan.verified&&plan.center)return {mode:'VERIFIED_ETYMOLOGY_OR_ROOT',text:`${plan.word}는 “${plan.center.label}”(${plan.center.meaning})에서 뜻의 흐름을 잡고, ${plan.why}`,sourceType:plan.sourceType,sourceRef:plan.sourceRef};
     if(plan.type==='TRANSPARENT_COMPOUND'&&plan.parts?.length)return {mode:'MORPHOLOGY',text:`${plan.word}는 ${plan.parts.map(x=>x.label+'('+x.meaning+')').join(' + ')}처럼 조각을 합치면 뜻을 이해하기 쉬워.`,sourceType:plan.sourceType,sourceRef:plan.sourceRef};
     return {mode:'SEMANTIC_SCENE',text:`${plan.word}는 억지로 어원을 나누지 않고 “${plan.scene}” 장면으로 핵심 뜻을 잡아주면 돼.`,sourceType:plan.sourceType,sourceRef:null};
   }
