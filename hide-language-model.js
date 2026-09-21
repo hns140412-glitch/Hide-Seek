@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION='2026.09.21-language-core-v7';
+  const VERSION='2026.09.21-language-core-v8';
 
   const MODELS={
     ENGLISH:{
@@ -169,6 +169,14 @@
   const CLUE_LABELS={WORD_PART:'단어 조각',ROOT_ETYMOLOGY:'어근·어원',SCENE:'장면',PRIOR_WORD:'전에 본 단어',OTHER:'기타'};
   function clueLabel(key){return CLUE_LABELS[String(key||'OTHER')]||CLUE_LABELS.OTHER}
 
+  function parentExplanation(item={}){
+    const plan=starterExploration(item,{});
+    if(!plan)return null;
+    if(plan.verified&&plan.center)return {mode:'VERIFIED',text:`${plan.word}는 “${plan.center.label}”(${plan.center.meaning})에서 뜻의 흐름을 잡고, ${plan.why}`,sourceType:plan.sourceType,sourceRef:plan.sourceRef};
+    if(plan.type==='TRANSPARENT_COMPOUND'&&plan.parts?.length)return {mode:'MORPHOLOGY',text:`${plan.word}는 ${plan.parts.map(x=>x.label+'('+x.meaning+')').join(' + ')}처럼 조각을 합치면 뜻을 이해하기 쉬워.`,sourceType:plan.sourceType,sourceRef:plan.sourceRef};
+    return {mode:'SEMANTIC_SCENE',text:`${plan.word}는 억지로 어원을 나누지 않고 “${plan.scene}” 장면으로 핵심 뜻을 잡아주면 돼.`,sourceType:plan.sourceType,sourceRef:null};
+  }
+
   function summarizeInferenceSkill(events=[]){
     const rows=(Array.isArray(events)?events:[]).filter(x=>x?.event==='FIRST_SEEN_PREDICTION');
     const outcomeRows=rows.filter(x=>['MATCH','NEAR','MISS'].includes(String(x.outcome||'')));
@@ -192,11 +200,13 @@
     const links=plan.links.length?'<div class="thinking-links"><b>전에 만난 연결</b>'+plan.links.map(x=>'<span>'+esc(x)+'</span>').join('')+'</div>':'';
     const truthBadge=plan.verified?'검증 어원':'현대 구조/의미 단서';
     const priorSkill=context.skillProfile?.bestClue?'<div class="prior-skill-cue"><small>지난 탐험에서 잘 통했던 단서</small><b>'+esc(clueLabel(context.skillProfile.bestClue.clue))+'</b><span>참고만 하고, 이번 단어에서는 다른 단서를 골라도 돼.</span></div>':'';
+    const parent= context.showParentExplanation?parentExplanation(item):null;
+    const parentHtml=parent?'<div class="parent-explain-card"><small>부모 설명 한 줄 · '+esc(parent.mode)+'</small><b>'+esc(parent.text)+'</b></div>':'';
     return '<section class="thinking-map-card" data-thinking-word="'+esc(plan.word)+'" data-support-type="'+esc(plan.type)+'">'+
       '<div class="hero-kicker"><span>THINKING TRAIL</span><span>'+esc(truthBadge)+'</span></div>'+
       '<h3>처음 본 단어처럼 추론해보기</h3>'+priorSkill+'<p class="thinking-question">'+esc(plan.question)+'</p>'+parts+
       '<div class="inference-box"><label>내가 예상한 뜻/개념<input class="input inference-prediction" maxlength="80" placeholder="정답 보기 전에 한 번 추측해봐"></label><div class="inference-row"><label>쓴 단서<select class="input inference-clue"><option value="WORD_PART">단어 조각</option><option value="ROOT_ETYMOLOGY">어근·어원</option><option value="SCENE">장면</option><option value="PRIOR_WORD">전에 본 단어</option><option value="OTHER">기타</option></select></label><label>확신<select class="input inference-confidence"><option value="LOW">낮음</option><option value="MEDIUM" selected>보통</option><option value="HIGH">높음</option></select></label></div><button class="btn primary full inference-submit" type="button">내 추론 남기기</button></div>'+
-      '<button class="btn secondary full thinking-reveal" type="button" disabled>구조·장면 단서 보기</button><div class="thinking-reveal-body" hidden>'+rootCore+verifiedNodes+sceneTrail+'<div class="thinking-scene"><b>머릿속 장면</b><span>'+esc(plan.scene)+'</span></div><div class="thinking-why"><b>뜻이 이어지는 길</b><span>'+esc(plan.why)+'</span></div>'+links+(plan.sourceRef?'<small class="truth-source">출처 확인됨 · '+esc(plan.sourceType)+'</small>':'')+'</div></section>';
+      '<button class="btn secondary full thinking-reveal" type="button" disabled>구조·장면 단서 보기</button><div class="thinking-reveal-body" hidden>'+rootCore+verifiedNodes+sceneTrail+'<div class="thinking-scene"><b>머릿속 장면</b><span>'+esc(plan.scene)+'</span></div><div class="thinking-why"><b>뜻이 이어지는 길</b><span>'+esc(plan.why)+'</span></div>'+links+parentHtml+(plan.sourceRef?'<small class="truth-source">출처 확인됨 · '+esc(plan.sourceType)+'</small>':'')+'</div></section>';
   }
   window.HideLanguageModel={
     VERSION,
@@ -209,6 +219,7 @@
     verifiedEvidence,
     supportContract,
     clueLabel,
+    parentExplanation,
     summarizeInferenceSkill,
     starterExploration,
     renderStarterExplorationHtml
