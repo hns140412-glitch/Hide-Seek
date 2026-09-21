@@ -97,9 +97,35 @@
   }
 
   function firstFindSupportPlan(word){
-    if(String(word?.languageDomain||'').toUpperCase()!=='ENGLISH')return null;
-    const cue=englishShapeCue(word?.token);
-    return cue?{type:'SHAPE',label:'글자 골격 단서',cue}:null;
+    const domain=String(word?.languageDomain||'').toUpperCase();
+    const token=String(word?.token||'').trim().normalize('NFKC');
+    if(domain==='ENGLISH'){
+      const cue=englishShapeCue(token);
+      return cue?{type:'SHAPE',label:'글자 골격 단서',cue,sourceRef:null}:null;
+    }
+    if(domain==='KOREAN'){
+      const plan=globalThis.HideLanguageModel?.cuePlan?.({
+        token,
+        word:token,
+        kor:word?.meaning,
+        languageDomain:'KOREAN',
+        meaningMap:word?.meaningMap
+      })||null;
+      if(!plan?.sourceRef||!Array.isArray(plan.nodes))return null;
+      const node=plan.nodes.find(x=>{
+        const label=String(x?.label||'').trim();
+        return label&&label.normalize('NFKC')!==token;
+      })||null;
+      if(!node)return null;
+      const cue=[node.label,node.meaning].filter(Boolean).join(' · ');
+      return cue?{type:'MEANING_MAP',label:'뜻의 구조 단서',cue,sourceRef:plan.sourceRef}:null;
+    }
+    if(domain==='HANJA'&&word?.soundEvidence?.verified&&word.soundEvidence.reading){
+      const cue=String(word.soundEvidence.reading).trim().normalize('NFKC');
+      if(!cue||cue===token)return null;
+      return {type:'SOUND',label:'검증된 음 단서',cue,sourceRef:word.soundEvidence.sourceRef||null};
+    }
+    return null;
   }
 
   function submitFirstFindAssist(session,mission,answer){
@@ -116,13 +142,14 @@
     HideV2Memory.record(mission.id,w.id,{
       stage:'FIRST_FIND_ASSIST',
       evidenceMode:'ASSISTED_RECONSTRUCTION',
-      axes:['FORM','RECALL'],
+      axes:support.type==='SOUND'?['SOUND','FORM','RECALL']:support.type==='MEANING_MAP'?['MEANING','FORM','RECALL']:['FORM','RECALL'],
       result:ok?'CORRECT':'WRONG',
       objectiveVerified:true,
       objectiveRecall:false,
       recallScoreImpact:false,
       assisted:true,
-      supportType:support.type
+      supportType:support.type,
+      source:support.sourceRef||null
     });
     const next=clone(session);
     next.stage=ok?'MEANING':'FIRST_FIND_RELEARN';
