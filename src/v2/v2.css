@@ -1151,3 +1151,216 @@ body.v2-runtime{
     transform:none !important;
   }
 }
+
+
+/* 2026-09-22 art-direction pass: one exploration world across child-facing surfaces */
+body.v2-runtime{
+  background:
+    radial-gradient(circle at 18% 8%,rgba(232,244,214,.72),transparent 28%),
+    radial-gradient(circle at 88% 20%,rgba(213,234,225,.62),transparent 30%),
+    linear-gradient(180deg,#f8fbf2 0%,#f3f7ee 58%,#eef4eb 100%);
+}
+.v2-runtime .app-shell{
+  position:relative;
+}
+.v2-runtime .app-shell::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  opacity:.42;
+  background:
+    linear-gradient(115deg,transparent 0 28%,rgba(76,110,83,.035) 28.5% 29%,transparent 29.5% 100%),
+    linear-gradient(65deg,transparent 0 64%,rgba(76,110,83,.028) 64.5% 65%,transparent 65.5% 100%);
+}
+.v2-runtime .view{
+  position:relative;
+  z-index:1;
+}
+.v2-runtime .quest-hero,
+.v2-runtime .screen-head,
+.v2-runtime .learning-shell>.card,
+.v2-runtime .thinking-map-card,
+.v2-runtime .completion-card,
+.v2-runtime .memory-detail-story,
+.v2-runtime .ocr-review-card,
+.v2-runtime .ocr-recovery-card{
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+}
+.v2-runtime .quest-hero{
+  border-color:rgba(255,255,255,.88);
+  box-shadow:
+    0 18px 48px rgba(53,78,61,.12),
+    inset 0 1px 0 rgba(255,255,255,.9);
+}
+.v2-runtime .quest-hero::before{
+  content:"";
+  position:absolute;
+  inset:14px;
+  border:1px dashed rgba(67,105,78,.10);
+  border-radius:21px;
+  pointer-events:none;
+}
+.v2-runtime .screen-head{
+  position:relative;
+  overflow:hidden;
+}
+.v2-runtime .screen-head::after{
+  content:"";
+  position:absolute;
+  width:120px;
+  height:120px;
+  border:14px solid rgba(73,108,81,.045);
+  border-radius:50%;
+  right:-54px;
+  top:-58px;
+  pointer-events:none;
+}
+.v2-runtime .mission-path{
+  padding-left:20px;
+}
+.v2-runtime .mission-path::before{
+  left:7px;
+  width:2px;
+  border-radius:999px;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(75,114,85,.24) 0 8px,
+      transparent 8px 15px
+    );
+}
+.v2-runtime .mission-map-card{
+  position:relative;
+  overflow:visible;
+  transition:transform .18s ease, box-shadow .18s ease;
+}
+.v2-runtime .mission-map-card::before{
+  content:"";
+  position:absolute;
+  left:-20px;
+  top:28px;
+  width:12px;
+  height:12px;
+  border-radius:50%;
+  background:#d7e9c8;
+  box-shadow:0 0 0 5px #f3f7ee,0 0 0 6px rgba(75,114,85,.14);
+}
+.v2-runtime .mission-map-card.is-active{
+  transform:translateY(-1px);
+  box-shadow:0 14px 34px rgba(51,77,61,.10);
+}
+.v2-runtime .learning-shell{
+  position:relative;
+}
+.v2-runtime .learning-shell::before{
+  content:"";
+  position:absolute;
+  inset:-8px -8px auto;
+  height:86px;
+  border-radius:28px;
+  background:linear-gradient(180deg,rgba(224,239,210,.50),rgba(224,239,210,0));
+  pointer-events:none;
+  z-index:-1;
+}
+.v2-runtime .journey-path{
+  position:relative;
+  padding-top:3px;
+}
+.v2-runtime .journey-path::before{
+  content:"";
+  position:absolute;
+  left:4%;
+  right:4%;
+  top:15px;
+  height:2px;
+  border-radius:999px;
+  background:rgba(72,105,80,.08);
+  z-index:0;
+}
+.v2-runtime .journey-path li{
+  position:relative;
+  z-index:1;
+}
+.v2-runtime .journey-path li.is-current span{
+  box-shadow:
+    0 0 0 4px rgba(184,215,168,.22),
+    0 5px 14px rgba(56,90,63,.12);
+}
+.v2-runtime .completion-card--story{
+  text-align:center;
+  background:
+    radial-gradient(circle at 50% -10%,rgba(255,255,255,.92),transparent 38%),
+    linear-gradient(160deg,rgba(233,246,213,.96),rgba(219,238,229,.96));
+}
+.v2-runtime .completion-next{
+  margin:14px 0;
+  padding:15px;
+  border:1px solid rgba(73,108,81,.10);
+  border-radius:18px;
+  background:rgba(255,255,255,.58);
+}
+.v2-runtime .completion-next span,
+.v2-runtime .completion-next b{
+  display:block;
+}
+.v2-runtime .completion-next span{
+  margin-bottom:5px;
+  color:var(--v2-muted);
+  font-size:12px;
+  font-weight:900;
+}
+.v2-runtime .ladder-board{
+  position:relative;
+  padding-left:8px;
+}
+.v2-runtime .ladder-board::before{
+  content:"";
+  position:absolute;
+  left:22px;
+  top:22px;
+  bottom:22px;
+  width:2px;
+  background:linear-gradient(to bottom,rgba(98,132,102,.10),rgba(98,132,102,.24));
+  border-radius:999px;
+}
+.v2-runtime .ladder-rung{
+  position:relative;
+  box-shadow:0 8px 24px rgba(51,77,61,.05);
+}
+.v2-runtime .ladder-rung__head>span{
+  position:relative;
+  z-index:1;
+  box-shadow:0 0 0 4px rgba(247,250,244,.96);
+}
+.v2-runtime .memory-route-intro,
+.v2-runtime .memory-why-card,
+.v2-runtime .memory-detail-path,
+.v2-runtime .memory-detail-next{
+  box-shadow:0 8px 24px rgba(51,77,61,.045);
+}
+.v2-runtime .ocr-review-row{
+  box-shadow:0 6px 18px rgba(51,77,61,.04);
+}
+.v2-runtime .ocr-review-row__head>b{
+  display:inline-flex;
+  align-items:center;
+  min-height:28px;
+  padding:4px 9px;
+  border-radius:999px;
+  background:rgba(246,223,169,.62);
+  font-size:11px;
+}
+@media(max-width:390px){
+  .v2-runtime .mission-path{padding-left:15px}
+  .v2-runtime .mission-path::before{left:5px}
+  .v2-runtime .mission-map-card::before{left:-15px}
+  .v2-runtime .quest-hero::before{inset:10px}
+}
+@media(prefers-reduced-motion:reduce){
+  .v2-runtime .mission-map-card{
+    transition:none!important;
+    transform:none!important;
+  }
+}
