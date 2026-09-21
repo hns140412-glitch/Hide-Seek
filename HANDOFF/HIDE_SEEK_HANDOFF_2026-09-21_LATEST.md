@@ -24,10 +24,10 @@ Latest pre-document code checkpoint:
 - Validate Hide & Seek #627: SUCCESS
 
 Locked conservative reporting:
-- PRODUCT_COMPLETION ~67%
-- CODED ~83%
-- CI_VERIFIED ~80%
-- BROWSER_RUNTIME_VERIFIED ~76%
+- PRODUCT_COMPLETION ~68%
+- CODED ~84%
+- CI_VERIFIED ~81%
+- BROWSER_RUNTIME_VERIFIED ~77%
 - DEVICE_VERIFIED 0%
 - RELEASE_VERIFIED 0%
 
@@ -425,3 +425,12 @@ Important current frontier:
 - Browser art-direction continuity is now verified at mobile width; do not relabel this as physical-device visual QA.
 - Current locked reporting: PRODUCT ~67%, CODED ~83%, CI ~80%, Browser Runtime ~76%, Device 0%, Release 0%.
 - Next code-first frontier should be chosen from remaining user-reachable gaps only; do not spend cycles on deployment/device claims until their gates are actually available.
+
+
+## 2026-09-22 assisted recall / OCR provenance handoff delta
+- Exact code HEAD `771e4888af4ff3121347d93ca4184f63768e94f1` passed V2 #196 / full Hide #654.
+- FINAL SEEK support cannot be counted as unassisted recall; support-assisted success routes into Seek Again and same-day recovery remains IMMEDIATE_ONLY.
+- OCR review → mission commit preserves provider/page/row/confidence/model/version provenance.
+- Duplicate OCR rows are merged only by explicit review action and all occurrences remain traceable under `source.occurrences`.
+- Current locked reporting: PRODUCT ~68%, CODED ~84%, CI ~81%, Browser Runtime ~77%, Device 0%, Release 0%.
+- Continue branch-only. Do not deploy/merge/Netlify.
