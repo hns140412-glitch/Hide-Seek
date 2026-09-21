@@ -6,6 +6,8 @@ const httpSrc=fs.readFileSync('vendor/taky/http-json.js','utf8');
 const src=fs.readFileSync('hide-family-ocr-adapter.js','utf8');
 
 function assert(cond,msg){if(!cond)throw new Error(msg)}
+assert(src.includes("form.set('vision_ingest_request_id',ingest.request.request_id)"),'shared vision ingest request id must be sent');
+assert(src.includes("form.set('vision_ingest_manifest',JSON.stringify(ingest.request.manifest))"),'shared vision ingest manifest must be sent');
 
 async function runCase(responseBody,status=200){
   const sandbox={
