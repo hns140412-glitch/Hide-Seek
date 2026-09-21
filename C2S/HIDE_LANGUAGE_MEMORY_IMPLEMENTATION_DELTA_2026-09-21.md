@@ -69,3 +69,20 @@ CI note:
 3. Use inference evidence to choose optional assistance order, while never contaminating recall score.
 4. Full CI when GitHub emits a run for the latest HEAD.
 5. No device/Netlify/merge until frozen candidate + TAKY gate.
+
+
+## Additional implementation continuation
+- Parent explanation is now derived from the same canonical truth-gated language evidence.
+  - PARENT / PARENT_CHILD context only.
+  - No second explanation database.
+  - Verified paths explain the verified center/history; semantic-only paths explicitly say not to force etymology.
+- Thinking-first exploration is no longer English-starter-only at the language-engine layer.
+  - A verified Korean or Hanja `meaningMap` can enter `VERIFIED_MEANING_MAP` exploration.
+  - Generic verified meaning maps are labeled `검증 의미 구조`, not `검증 어원` unless historical etymology is actually established.
+- Externally checked NEW-12 truth gate was expanded:
+  - verified/history-supported: environment, mountain, planet, desert, island, jungle, glacier, earthquake, climate, harvest
+  - transparent morphology: rainforest
+  - semantic scene / no fabricated deeper root: ocean
+
+Latest code HEAD before this delta refresh: `80b002b18a81ec324a990fbec9dd6cef7e61201e`.
+GitHub Actions note: no new run has been emitted for post-#245 synchronize commits yet. Therefore the latest HEAD remains CODED but not CI_VERIFIED until a matching run exists.
