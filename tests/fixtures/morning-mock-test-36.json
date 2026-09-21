@@ -1,0 +1,52 @@
+{
+  "evidence": {
+    "source": "PARENT_CHILD_MORNING_MOCK_TEST",
+    "source_file": "IMG_8902.jpeg",
+    "note": "This is a morning mock-test artifact, not the source learning print. NEW/REVIEW roles come from the observed test composition, not page layout."
+  },
+  "missionComposition": {
+    "new": 12,
+    "review": 24,
+    "layoutIndependent": true
+  },
+  "items": [
+    {"eng":"environment","kor":"환경","missionRole":"NEW"},
+    {"eng":"rainforest","kor":"열대우림","missionRole":"NEW"},
+    {"eng":"mountain","kor":"산","missionRole":"NEW"},
+    {"eng":"planet","kor":"행성","missionRole":"NEW"},
+    {"eng":"desert","kor":"사막","missionRole":"NEW"},
+    {"eng":"ocean","kor":"바다, 대양","missionRole":"NEW"},
+    {"eng":"island","kor":"섬","missionRole":"NEW"},
+    {"eng":"jungle","kor":"정글","missionRole":"NEW"},
+    {"eng":"glacier","kor":"빙하","missionRole":"NEW"},
+    {"eng":"earthquake","kor":"지진","missionRole":"NEW"},
+    {"eng":"climate","kor":"기후","missionRole":"NEW"},
+    {"eng":"harvest","kor":"수확, 수확하다","missionRole":"NEW"},
+
+    {"eng":"gather","kor":"모으다","missionRole":"REVIEW"},
+    {"eng":"borrow","kor":"빌리다","missionRole":"REVIEW"},
+    {"eng":"deliver","kor":"배달하다","missionRole":"REVIEW"},
+    {"eng":"escape","kor":"탈출하다","missionRole":"REVIEW"},
+    {"eng":"examine","kor":"조사하다","missionRole":"REVIEW","evidenceNote":"handwritten mock sheet contains a correction toward examine"},
+    {"eng":"imagine","kor":"상상하다","missionRole":"REVIEW"},
+    {"eng":"invent","kor":"발명하다","missionRole":"REVIEW"},
+    {"eng":"notice","kor":"알아차리다","missionRole":"REVIEW"},
+    {"eng":"avoid","kor":"피하다","missionRole":"REVIEW"},
+    {"eng":"allow","kor":"허락하다","missionRole":"REVIEW"},
+    {"eng":"admire","kor":"존경하다","missionRole":"REVIEW"},
+    {"eng":"appreciate","kor":"감사하다","missionRole":"REVIEW"},
+
+    {"eng":"agree","kor":"동의하다","missionRole":"REVIEW"},
+    {"eng":"announce","kor":"발표하다","missionRole":"REVIEW"},
+    {"eng":"compare","kor":"비교하다","missionRole":"REVIEW"},
+    {"eng":"describe","kor":"묘사하다","missionRole":"REVIEW"},
+    {"eng":"explain","kor":"설명하다","missionRole":"REVIEW"},
+    {"eng":"discover","kor":"발견하다","missionRole":"REVIEW"},
+    {"eng":"improve","kor":"향상시키다","missionRole":"REVIEW"},
+    {"eng":"introduce","kor":"소개하다","missionRole":"REVIEW"},
+    {"eng":"protect","kor":"보호하다","missionRole":"REVIEW"},
+    {"eng":"respect","kor":"존경하다","missionRole":"REVIEW"},
+    {"eng":"survive","kor":"생존하다","missionRole":"REVIEW"},
+    {"eng":"pretend","kor":"~인 척하다","missionRole":"REVIEW"}
+  ]
+}
