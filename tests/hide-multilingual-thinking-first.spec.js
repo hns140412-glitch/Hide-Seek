@@ -69,7 +69,8 @@ test('verified Korean and Hanja meaning maps use thinking-first without fake ety
   await expect(page.getByText('검증 의미 구조',{exact:true})).toBeVisible();
   await expect(page.locator('.root-core b')).toHaveText('不');
   await expect(page.getByText(/부모 설명 한 줄/)).toBeVisible();
-  await expect(page.getByText('여러 번 도움이 됐던 단서',{exact:true})).toHaveCount(0);
+  await expect(page.getByText('최근 몇 번 도움이 된 단서',{exact:true})).toHaveCount(0);
+  await expect(page.getByText('반복해서 확인된 단서',{exact:true})).toHaveCount(0);
   await expect(page.locator('.inference-clue option[value="HANJA_ORIGIN"]')).toHaveText('한자어 구성');
   await expect(page.locator('.inference-clue option[value="ROOT_ETYMOLOGY"]')).toHaveCount(0);
   await page.locator('.inference-prediction').fill('피할 수 없는 것');
