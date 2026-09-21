@@ -62,6 +62,11 @@ test('Hide V2 presents one continuous child journey and a completion moment', as
   await expect(page.getByText('다시 찾을 단어', { exact: true })).toBeVisible();
   await expect(page.getByText('올라가는 단어', { exact: true })).toBeVisible();
   await expect(page.getByText('안정된 단어', { exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '왜 다시 찾아볼까?' })).toBeVisible();
+  await expect(page.locator('.memory-why-card')).toBeVisible();
+  await page.getByRole('button', { name: '짧은 응원' }).click();
+  await expect(page.locator('.memory-crew-copy')).not.toContainText('island');
+  await expect(page.locator('.memory-crew-copy')).not.toContainText('섬');
 
   const metrics = await page.evaluate(() => ({
     width: window.innerWidth,
