@@ -1,7 +1,7 @@
 const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>[...r.querySelectorAll(s)];
-const APP_REV="REV_08";
-const SCHEMA_VERSION=8;
+const APP_REV="REV_09";
+const SCHEMA_VERSION=9;
 const STORAGE_KEY="hide_seek_state";
 const ASSET_DB_NAME="hide-seek-assets";
 const DEFAULT_WORDS=[
@@ -33,7 +33,7 @@ const DEFAULT_STATE={
  onboardingStep:0,onboardingDone:false
 };
 function senseKey(w){return `${String(w?.eng||"").trim().toLowerCase()}::${String(w?.kor||"").trim().replace(/\s+/g," ")}`}
-function normalizeWord(w,i=0){const eng=String(w.eng||"").trim(),kor=String(w.kor||"").trim();return {id:w.id||`w-${Date.now()}-${i}`,lexicalId:w.lexicalId||senseKey({eng,kor}),eng,kor,example:w.example||"",wrong:Number(w.wrong||0),pass:Number(w.pass||0),hint:Number(w.hint||0),confidence:w.confidence||"high",needsReview:!!w.needsReview,manuallyEdited:!!w.manuallyEdited,reviewConfirmed:!!w.reviewConfirmed,sourcePageId:w.sourcePageId||"",learningStats:w.learningStats||{}}}
+function normalizeWord(w,i=0){const eng=String(w.eng||"").trim(),kor=String(w.kor||"").trim(),language=window.HideLanguageModel?.normalizeItem?.(w)||w;return {id:w.id||`w-${Date.now()}-${i}`,lexicalId:w.lexicalId||senseKey({eng,kor}),eng,kor,example:w.example||"",languageDomain:language.languageDomain||w.languageDomain||"ENGLISH",meaningMap:language.meaningMap||w.meaningMap||null,wrong:Number(w.wrong||0),pass:Number(w.pass||0),hint:Number(w.hint||0),confidence:w.confidence||"high",needsReview:!!w.needsReview,manuallyEdited:!!w.manuallyEdited,reviewConfirmed:!!w.reviewConfirmed,sourcePageId:w.sourcePageId||"",learningStats:w.learningStats||{}}}
 function migrate(raw){
  const s=Object.assign(clone(DEFAULT_STATE),raw||{});
  s.schemaVersion=SCHEMA_VERSION;s.appRevision=APP_REV;
@@ -375,7 +375,7 @@ function memoryFragmentCue(word){return memoryChunks(word).join(' · ')}
 function lastConfusionTrace(w){return [...traceList(w,'association')].reverse().find(x=>x.result==='MISMATCH')||null}
 function lastPersonalErrorTrace(w){const current=codeSession?.word?.id===w.id?codeSession.errorTrace.at(-1):null;if(current)return current;const prior=[...traceList(w,'retrieval')].reverse().find(x=>Array.isArray(x.errorTrace)&&x.errorTrace.length);return prior?.errorTrace?.at(-1)||null}
 function hintCueCost(step){return ({SCENE:1,MEANING:1,SOUND:1,SHAPE:2,CONFUSION_TRACE:2,ERROR_TRACE:2,FRAGMENT:3,MINIMUM_REVEAL:5})[step]||1}
-function buildMemoryLadder(w){const p=memoryWeaknessProfile(w),sig=deriveMemorySignature(w),steps=[],scene=memorySceneCue(w);if((sig.semanticWeakness>0||p.learnerUnsure)&&scene)steps.push('SCENE');if(sig.semanticWeakness>0)steps.push('MEANING');if(sig.confusionPattern.count>0)steps.push('CONFUSION_TRACE');if(sig.phonologicalWeakness>0||sig.slowRecall>0||sig.timeoutRisk>0)steps.push('SOUND');if(sig.orthographicWeakness>0||sig.hintDependency>0)steps.push('SHAPE');if(lastPersonalErrorTrace(w)||sig.orthographicWeakness>0)steps.push('ERROR_TRACE');if(!steps.length)steps.push('SOUND','SHAPE');steps.push('FRAGMENT','MINIMUM_REVEAL');return [...new Set(steps)]}
+function buildMemoryLadder(w){const p=memoryWeaknessProfile(w),sig=deriveMemorySignature(w),steps=[],scene=memorySceneCue(w),hasMeaningMap=!!window.HideLanguageModel?.hasVerifiedMeaningMap?.(w);if((sig.semanticWeakness>0||p.learnerUnsure)&&scene)steps.push('SCENE');if(hasMeaningMap&&(sig.semanticWeakness>0||p.learnerUnsure||sig.confusionPattern.count>0))steps.push('MEANING_MAP');if(sig.semanticWeakness>0)steps.push('MEANING');if(sig.confusionPattern.count>0)steps.push('CONFUSION_TRACE');if(sig.phonologicalWeakness>0||sig.slowRecall>0||sig.timeoutRisk>0)steps.push('SOUND');if(sig.orthographicWeakness>0||sig.hintDependency>0)steps.push('SHAPE');if(lastPersonalErrorTrace(w)||sig.orthographicWeakness>0)steps.push('ERROR_TRACE');if(!steps.length)steps.push(hasMeaningMap?'MEANING_MAP':'SOUND','SHAPE');steps.push('FRAGMENT','MINIMUM_REVEAL');return [...new Set(steps)]}
 function showMemoryTrace(text,label){const el=$('#memoryTrace');if(el){el.innerHTML='<b>'+esc(label)+'</b><span>'+esc(text)+'</span>';el.hidden=false}}
 function makeCodeSession(w){const n=blankCount(w.eng),idx=shuffle([...w.eng].map((_,i)=>i)).slice(0,n).sort((a,b)=>a-b),real=idx.map((i,k)=>({id:`r${k}-${Math.random()}`,ch:w.eng[i].toLowerCase(),real:true})),required=new Set(real.map(x=>x.ch)),alphabet='abcdefghijklmnopqrstuvwxyz',fakes=[];while(fakes.length<Math.max(3,n)){const ch=alphabet[Math.floor(Math.random()*alphabet.length)];if(!required.has(ch))fakes.push({id:`f${fakes.length}-${Math.random()}`,ch,real:false})}return {word:w,blankIdx:idx,keys:shuffle([...real,...fakes]),answers:{},hintLevel:0,hintPlan:buildMemoryLadder(w),hintTrace:[],errorTrace:[],wrongAttempts:0,seconds:S.settings.pressureReduced?24:(w.eng.length<=5?15:w.eng.length<=8?18:21),start:Date.now()}}
 function codeTargets(){const ws=validWords();if(S.codeRed.retryOnly){const set=new Set(S.codeRed.targetIds.length?S.codeRed.targetIds:S.codeRed.retrace);return ws.filter(w=>set.has(w.id))}return ws}
@@ -392,6 +392,7 @@ function useCodeHint(){
  const step=codeSession.hintPlan[Math.min(codeSession.hintLevel,codeSession.hintPlan.length-1)]||'MINIMUM_REVEAL',w=codeSession.word,cost=hintCueCost(step),at=nowISO();
  codeSession.hintLevel++;codeSession.hintTrace.push({step,cost,at});addWordTrace(w,'assistance',{step,cost,source:'MEMORY_TRAIL'});
  if(step==='SCENE'){const scene=memorySceneCue(w);if(scene){codeSession.hintTrace.at(-1).source=scene.source;codeSession.hintTrace.at(-1).sourceSheetId=scene.sheetId;showMemoryTrace(scene.text,'내가 봤던 장면');setPartner('처음 실제로 봤던 문맥을 다시 꺼내볼게. 정답 철자는 아직 숨겨둘게.','hint');return}}
+ if(step==='MEANING_MAP'){const html=window.HideLanguageModel?.renderMeaningMapHtml?.(w,esc);if(html){const el=$('#memoryTrace');if(el){el.innerHTML=html;el.hidden=false}addWordTrace(w,'assistance',{step:'MEANING_MAP',source:'VERIFIED_LANGUAGE_MODEL',languageDomain:w.languageDomain||'ENGLISH'});setPartner('정답을 보여주는 대신, 뜻이 만들어지는 길을 다시 따라가보자.','hint');return}}
  if(step==='MEANING'){showMemoryTrace(w.kor,'의미 흔적');setPartner('뜻은 기억났어. 이제 소리와 철자 모양을 이어보자.','hint');return}
  if(step==='CONFUSION_TRACE'){const x=lastConfusionTrace(w);const text=x&&x.confusedWithEng?'전에 ‘'+x.confusedWithEng+' / '+x.confusedWithKor+'’ 쪽으로 연결이 엇갈렸어. 지금 단어의 뜻 ‘'+w.kor+'’와 차이를 먼저 잡아봐.':'전에 뜻 연결이 엇갈렸던 흔적이 있어. 지금 단어의 뜻부터 다시 잡아봐.';showMemoryTrace(text,'혼동 흔적');setPartner('네가 실제로 헷갈렸던 짝을 비교 단서로 써보자.','hint');return}
  if(step==='SOUND'){showMemoryTrace('발음을 다시 듣고, 들리는 덩어리를 떠올려봐.','소리 흔적');speakWord(w.eng);setPartner('눈으로 답을 보기 전에 소리부터 다시 잡아보자.','hint');return}
