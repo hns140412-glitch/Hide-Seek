@@ -374,7 +374,6 @@ for needle in [
     "$$('[data-choice]').forEach",
     "if(ok){$$(",
     "if($$('.tile:not(.matched)').length===0)",
-    "learningStats.unsure",
     "addWordTrace(w,'acquisition'",
     "addWordTrace(w,'recognition'",
     "addWordTrace(w,'association'",
@@ -385,14 +384,15 @@ for needle in [
     "learningStats.connectionMismatch",
     "sourceEvidence",
     "legacyBaseline",
-    "event:'EXPOSURE'",
-    "sceneText:w.example||''",
     "source:'PAST_EXPOSURE'",
-    "event:'LEARNER_UNSURE'",
     "result:'MISMATCH'",
     "sourceSide:selectedTile.dataset.side",
     "source:'MEMORY_TRAIL'",
     "result:'UNASSISTED_RECALL'",
+    "event:'MEMORIZATION_EXPOSURE'",
+    "sceneText:w.example||''",
+    "FIRST_RECALL_CORRECT",
+    "FIRST_RECALL_WRONG",
 ]:
     if needle not in app:
         fail.append("TRACE_SEPARATION_CONTRACT:"+needle)
