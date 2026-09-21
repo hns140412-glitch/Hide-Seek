@@ -3,7 +3,7 @@ name: Validate Hide & Seek
 on:
   pull_request:
   push:
-    branches: ["main"]
+    branches: ["main", "taky/learning-app-family-hide-context-2026-09-21"]
 
 permissions:
   contents: read
@@ -26,6 +26,8 @@ jobs:
         run: node tools/validate-hide-family-ocr-adapter.js
       - name: Verify language memory model
         run: node tools/validate-hide-language-model.js
+      - name: Verify Ready learning-context consumer boundary
+        run: node tools/validate-hide-learning-context.js
       - name: Check JavaScript syntax
         run: |
           node --check app.js
