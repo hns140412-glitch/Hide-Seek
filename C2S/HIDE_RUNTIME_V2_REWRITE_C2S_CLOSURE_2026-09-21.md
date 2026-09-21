@@ -283,3 +283,14 @@ FALSE_CONVERGENCE = 0: live deploy/device/real-provider claims remain OPEN.
 - Initial implementation incorrectly considered unrelated mission items outside a Ready-directed queue; exact-head CI caught the regression and the queue-scoped correction is now green.
 - Exact code HEAD `e15e86fdd7053903c1093251d13bdc31398a8bea` passed V2 #251 / full Hide #709.
 - Locked reporting: PRODUCT ~72%, CODED ~88%, CI ~85%, Browser Runtime ~81%, Device 0%, Release 0%.
+
+
+## 22. 2026-09-22 staged HIDDEN WORDS assistance
+- HIDDEN WORDS now uses a bounded escalation rather than jumping from first miss directly to full answer exposure.
+- Safe path: reinforcement → one minimal clue when available → assisted retry → full relearn only if still needed → FINAL SEEK.
+- TOKEN mode may use the existing English shape scaffold; MEANING mode may use existing example/context. No unsupported clue is invented for SOUND or already-assisted SHAPE paths.
+- Assisted retry success remains objectively checkable but not objective recall; FINAL SEEK remains the unassisted proof.
+- SHAPE reinforcement truth boundary corrected: visible shape cue means assisted/non-recall even when the typed answer is correct.
+- Direct typed MEANING reinforcement remains recall.
+- Exact code HEAD `28a70fc7ff3e1f89d1bfaba6b59acf47af5f1557` passed V2 #261 / full Hide #719.
+- Locked reporting: PRODUCT ~73%, CODED ~89%, CI ~86%, Browser Runtime ~82%, Device 0%, Release 0%.
