@@ -49,6 +49,7 @@ jobs:
           node --check src/v2/capture-controller.js
           node --check src/v2/router.js
           node --check src/v2/legacy-migration.js
+          node --check src/v2/ready-bridge.js
           node --check src/v2/app.js
       - name: Validate Hide Runtime V2 architecture
         run: node tools/validate-hide-v2-architecture.js
