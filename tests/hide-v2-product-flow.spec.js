@@ -216,3 +216,57 @@ test('Hide V2 resumes a persisted learning session after reload',async({page})=>
   const stage=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')).activeSession.stage);
   expect(stage).toBe('MEANING');
 });
+
+test('Hide V2 mission lifecycle supports selection rename archive and blocks active-session delete',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'미션관리'},missions:[
+        {id:'m-a',title:'첫 미션',status:'READY',createdAt:'2026-09-21T00:00:00.000Z',updatedAt:'2026-09-21T01:00:00.000Z',items:[{id:'a1',lexicalId:'a::에이',token:'a',meaning:'에이',languageDomain:'ENGLISH',missionRole:'NEW',evidence:[],source:{}}],sourceCount:0,provenance:{}},
+        {id:'m-b',title:'둘 미션',status:'READY',createdAt:'2026-09-21T00:00:00.000Z',updatedAt:'2026-09-21T02:00:00.000Z',items:[{id:'b1',lexicalId:'b::비',token:'b',meaning:'비',languageDomain:'ENGLISH',missionRole:'NEW',evidence:[],source:{}}],sourceCount:0,provenance:{}}
+      ],activeMissionId:'m-a',activeSession:{id:'s1',missionId:'m-a',index:0,queue:['a1'],stage:'FIRST_FIND',startedAt:new Date().toISOString(),completedAt:null,attempts:{}},events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'미션 관리'}).click();
+  await expect(page.getByRole('heading',{name:'탐험 미션'})).toBeVisible();
+
+  page.once('dialog',async d=>{expect(d.type()).toBe('prompt');await d.accept('둘 미션 수정')});
+  await page.locator('[data-action="rename"][data-id="m-b"]').click();
+  await expect(page.getByText('둘 미션 수정',{exact:true})).toBeVisible();
+
+  await page.locator('[data-action="open"][data-id="m-b"]').click();
+  await expect(page.getByRole('heading',{name:'둘 미션 수정'})).toBeVisible();
+
+  await page.getByRole('button',{name:'미션 관리'}).click();
+  page.once('dialog',async d=>{expect(d.type()).toBe('confirm');await d.accept()});
+  await page.locator('[data-action="delete"][data-id="m-a"]').click();
+  const state=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')));
+  expect(state.missions.some(x=>x.id==='m-a')).toBeTruthy();
+  expect(state.activeSession.missionId).toBe('m-a');
+});
+
+test('Hide V2 OCR review allows row correction and exclusion before commit',async({page})=>{
+  await page.route('**/api/capture/analyze',async route=>{
+    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
+      ok:true,provider:'FIXTURE_VISION',model:'v2-fixture',analysis_domain:'HIDE_VOCABULARY',
+      result:{analysis_domain:'HIDE_VOCABULARY',analysis_version:'HIDE_VOCABULARY_OCR_V1',
+        rows:[
+          {eng:'enviroment',kor:'환경',confidence:'medium',warnings:['SPELLING'],mission_role:'NEW'},
+          {eng:'noise',kor:'소음',confidence:'high',warnings:[],mission_role:'NEW'}
+        ]}
+    })});
+  });
+  await page.goto('/v2.html');
+  await page.locator('#sheetLibraryInput').setInputFiles({name:'review.jpg',mimeType:'image/jpeg',buffer:Buffer.from('review-edit-image')});
+  await expect(page.getByRole('heading',{name:'분석 결과 확인'})).toBeVisible();
+
+  await page.getByLabel('OCR 단어 1').fill('environment');
+  await page.locator('[data-review-toggle="1"]').click();
+  await page.getByRole('button',{name:'미션으로 저장'}).click();
+
+  const state=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')));
+  expect(state.missions).toHaveLength(1);
+  expect(state.missions[0].items).toHaveLength(1);
+  expect(state.missions[0].items[0].token).toBe('environment');
+  expect(state.missions[0].items[0].lexicalId.startsWith('environment::')).toBeTruthy();
+});
