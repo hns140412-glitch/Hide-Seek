@@ -62,7 +62,7 @@ test('real NEW 12 + REVIEW 24 follows mission, recall and morning mock-test memo
     await page.getByRole('button',{name:'구조·장면 단서 보기'}).click();
     if(i===0){
       await expect(page.getByText('검증 어원',{exact:true})).toBeVisible();
-      await expect(page.getByText('environ',{exact:true})).toBeVisible();
+      await expect(page.locator('.root-core b',{hasText:'environ'})).toBeVisible();
       await expect(page.getByText(/둘러싸인 상태/)).toBeVisible();
     }
     await page.getByRole('button',{name:'뜻 확인하기'}).click();
