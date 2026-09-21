@@ -3,7 +3,7 @@ const RELEASE=globalThis.HideSeekReleaseDescriptor;
 const CACHE='hide-seek:'+RELEASE.release_id;
 const CORE=[
   './','./index.html','./styles.css','./hide-runtime.css','./hide-bridge.css',
-  './vendor/taky/release-contract.js','./vendor/taky/pwa-update-state.js','./vendor/taky/event-envelope.js','./vendor/taky/vision-ingest.js',
+  './vendor/taky/release-contract.js','./vendor/taky/pwa-update-state.js','./vendor/taky/event-envelope.js','./vendor/taky/vision-ingest.js','./vendor/taky/http-json.js',
   './hide-release-v01.js','./hide-pwa-update-v01.js',
   './hide-language-evidence.js','./hide-language-model.js',
   './app.js','./hide-family-ocr-adapter.js','./hide-runtime.js','./hide-bridge.js','./hide-brand-current.js','./manifest.json','./assets/asset-map.json',
