@@ -783,3 +783,42 @@ body.v2-runtime{
     width:100%;
   }
 }
+
+
+/* Home narrative hierarchy: story first, metrics second */
+.v2-runtime .quest-status--story{
+  display:grid;
+  gap:12px;
+}
+.v2-runtime .quest-status__story{
+  margin:0;
+  font-size:15px;
+  font-weight:800;
+  line-height:1.5;
+}
+.v2-runtime .home-crew{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr);
+  gap:10px;
+  align-items:center;
+  padding:12px;
+  border:1px solid var(--v2-line);
+  border-radius:18px;
+  background:rgba(255,255,255,.72);
+}
+.v2-runtime .home-crew>span:last-child{
+  min-width:0;
+  display:grid;
+  gap:3px;
+}
+.v2-runtime .home-crew small{
+  color:var(--v2-muted);
+  line-height:1.35;
+}
+.v2-runtime .quest-stat-row--quiet{
+  opacity:.74;
+}
+.v2-runtime .quest-stat-row--quiet .quest-stat{
+  box-shadow:none;
+  background:rgba(255,255,255,.52);
+}
