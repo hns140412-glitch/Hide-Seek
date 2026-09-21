@@ -174,6 +174,8 @@
     return !['LEARNING', 'CODE_RED_READY', 'RETRACE_REQUIRED'].includes(status);
   }
 
+  globalThis.HideSeekPwaSafePoint=isSafeUpdatePoint;
+
   function ensureCaptureResumeChip() {
     const active = S.hideSeekCaptureSession && S.hideSeekCaptureSession.status === 'CAPTURING' && S.hideSeekCaptureSession.pages?.length;
     let chip = document.getElementById('hideCaptureResumeChip');

@@ -1,0 +1,25 @@
+const {test,expect}=require('@playwright/test');
+
+test('Hide loads shared release and PWA contracts without taking over Hide semantics',async({page})=>{
+  await page.goto('http://127.0.0.1:4173/');
+  await expect.poll(()=>page.evaluate(()=>!!globalThis.HideSeekReleaseDescriptor)).toBe(true);
+  await expect.poll(()=>page.evaluate(()=>!!globalThis.TakyReleaseContract)).toBe(true);
+  await expect.poll(()=>page.evaluate(()=>!!globalThis.TakyPwaUpdateState)).toBe(true);
+  await expect.poll(()=>page.evaluate(()=>!!globalThis.HideSeekPwaUpdate)).toBe(true);
+  const snapshot=await page.evaluate(()=>({
+    app:globalThis.HideSeekReleaseDescriptor.app_id,
+    schema:globalThis.HideSeekReleaseDescriptor.data_schema_version,
+    safeType:typeof globalThis.HideSeekPwaSafePoint,
+    pwaCapability:globalThis.HideSeekPwaUpdate.capability
+  }));
+  expect(snapshot).toEqual({app:'hide-seek',schema:7,safeType:'function',pwaCapability:'CAP-PWA-UPDATE-001'});
+});
+
+test('Hide service worker controls app and update adapter stays safe-point driven',async({page})=>{
+  await page.goto('http://127.0.0.1:4173/');
+  await page.evaluate(()=>navigator.serviceWorker.ready);
+  await page.reload();
+  await expect.poll(()=>page.evaluate(()=>!!navigator.serviceWorker.controller)).toBe(true);
+  const state=await page.evaluate(()=>globalThis.HideSeekPwaUpdate.state());
+  expect(['IDLE','UPDATE_DETECTED','DOWNLOADED_WAITING','SAFE_TO_ACTIVATE','ACTIVATING','RESTORING','READY']).toContain(state);
+});
