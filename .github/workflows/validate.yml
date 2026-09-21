@@ -34,7 +34,15 @@ jobs:
           node --check hide-bridge.js
           node --check hide-runtime.js
           node --check hide-family-ocr-adapter.js
+          node --check hide-release-v01.js
+          node --check hide-pwa-update-v01.js
+          node --check vendor/taky/release-contract.js
+          node --check vendor/taky/pwa-update-state.js
+          node --check vendor/taky/event-envelope.js
+          node --check vendor/taky/vision-ingest.js
+      - name: Validate shared runtime contract
+        run: node tests/shared-runtime-contract.test.js
       - name: Install browser test harness
         run: npm install
       - name: Verify Hide browser product flows
-        run: npx playwright test --project=chromium
+        run: npx playwright test
