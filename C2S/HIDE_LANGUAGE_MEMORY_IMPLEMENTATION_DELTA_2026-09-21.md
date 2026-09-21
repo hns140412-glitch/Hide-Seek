@@ -229,3 +229,22 @@ Latest-head CI note must still be checked live. No Netlify / deploy / merge / us
   - `layoutIndependent=true`.
 - `expectedNew:12` / `expectedReview:24` are forbidden in runtime contract.
 - Browser capture-to-mission regression verifies observed counts sum to the actual valid-word count and no expected 12/24 quota is persisted.
+
+
+## Mission-role provenance + truth-gate hardening delta
+- Mission role inference is explicitly layout-independent.
+  - sourceColumn / sourceRowIndex / sourceColumnIndex may preserve reading order only.
+  - They are forbidden inputs to `inferMissionRole`.
+- Mission-role provenance is now separated:
+  - `EXPLICIT_OCR_ROLE` / `EXPLICIT_SOURCE_ROLE`
+  - `LEARNER_HISTORY_INFERENCE`
+  - `FIRST_ENCOUNTER_INFERENCE`
+  - `MISSION_REVIEW_CONFIRMATION`
+- OCR adapter now preserves canonical explicit NEW/REVIEW role evidence and discards noncanonical role labels.
+- Review UI shows the current role provenance and a review-screen correction becomes `MISSION_REVIEW_CONFIRMATION`, which persists through commit.
+- Dynamic mission composition persists observed NEW/REVIEW counts only; no global 12/24 quota is stored.
+- Fail-closed meaning-map normalization was strengthened:
+  - if the language model rejects a raw meaningMap, `normalizeWord` may not resurrect the original raw map.
+  - generic verified meaning maps require sourceType, sourceRef, coreMeaning and valid nodes.
+  - generic meaning maps cannot escalate themselves into historical etymology even if the input claims it.
+- Adaptive Memory Ladder personalization now re-checks clue applicability against the current word before reordering help.
