@@ -313,6 +313,19 @@
     if (!navigator.onLine) throw new Error('OCR 분석은 온라인 연결이 필요해요.');
     if (!runtimeApiKey) throw new Error('Gemini API Key가 필요해요.');
 
+    const VisionIngest = globalThis.TakyVisionIngest;
+    if (!VisionIngest?.buildRequest) throw new Error('공통 이미지 분석 계층을 불러오지 못했어요.');
+    const ingest = VisionIngest.buildRequest({
+      source: 'hide-seek:capture-page-ocr',
+      manifest: [{
+        source_id: page.pageId,
+        mime_type: blob.type || 'image/jpeg',
+        file_name: page.fileName || (`${page.pageId}.jpg`),
+        size: blob.size || 0
+      }],
+      metadata: { capture_session_id: ensureCaptureSession().captureSessionId, display_order: page.displayOrder }
+    });
+    if (!ingest.ok) throw new Error(ingest.reason || '이미지 분석 준비 실패');
     const img = await normalizedImageBase64(blob);
     const seePrompt = `사진에 실제로 보이는 영어 단어와 한글 뜻만 행 순서대로 전사하세요. 원본에 없는 단어를 만들지 말고, 예문/힌트/정답 추측을 하지 마세요. 불확실하면 confidence를 low로 표시하세요. JSON만 출력: {"rows":[{"eng":"...","kor":"...","confidence":"high|medium|low"}]}`;
     const see = await gemini(seePrompt, img.b64, img.mime);
@@ -320,7 +333,20 @@
 SEE:
 ${JSON.stringify(see)}`;
     const paired = await gemini(pairPrompt);
-    return (paired.rows || see.rows || []).filter(x => x.eng || x.kor).map((x, i) => {
+    const rawRows = (paired.rows || see.rows || []).filter(x => x.eng || x.kor);
+    const normalized = VisionIngest.normalizeResult({
+      request_id: ingest.request.request_id,
+      provider: 'gemini',
+      items: rawRows.map((x, i) => ({
+        result_id: `${page.pageId}-row-${i}`,
+        evidence_source_ids: [page.pageId],
+        provider_payload: x
+      }))
+    });
+    if (!normalized.ok || !VisionIngest.validateEvidence(normalized.result, [page.pageId]).ok) {
+      throw new Error('OCR 근거 연결 검증 실패');
+    }
+    return rawRows.map((x, i) => {
       const confidence = x.confidence || 'medium';
       return {
         ...normalizeWord({
