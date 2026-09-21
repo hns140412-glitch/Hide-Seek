@@ -24,7 +24,7 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 | Capture blob persistence | RUNTIME_VERIFIED | yes | fixture blob | IndexedDB + reload test | storage quota/recovery not verified |
 | OCR shared adapter integration | RUNTIME_VERIFIED | yes | provider-shaped fixture only | multi-page partial-failure/retry browser flow | real varied prints/provider behavior unverified |
 | OCR review persistence/resume | RUNTIME_VERIFIED | yes | provider-shaped fixture only | reload + editable review-draft persistence + warning/provenance + explicit duplicate-merge browser tests | real-provider calibration incomplete |
-| MEMORIZE | FUNCTIONAL | yes | fixture | V2 browser flow | richer exploration assistance not yet ported |
+| MEMORIZE / THINKING TRAIL | RUNTIME_VERIFIED | yes | fixture | prediction→reveal→self-comparison + established-clue reuse browser flow | representative multilingual inference histories still open |
 | FIRST FIND | RUNTIME_VERIFIED | yes | fixture | correct/wrong/unsure + relearn-exposure browser flows | richer adaptive assistance still open |
 | MEANING CLUE | RUNTIME_VERIFIED | yes | fixture | direct recall fallback + session-scoped bidirectional recognition + confusion handoff browser flow | broader representative confusion sets still open |
 | English CONNECTION | RUNTIME_VERIFIED | yes | fixture | Thinking Trail browser flow | adaptive clue personalization and broader representative vocabulary still pending |
@@ -48,10 +48,10 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 
 ## Claim levels
 
-- PRODUCT_COMPLETION: approximately 75%
-- CODED: approximately 91%
-- CI_VERIFIED: approximately 88%
-- BROWSER_RUNTIME_VERIFIED: approximately 84%
+- PRODUCT_COMPLETION: approximately 76%
+- CODED: approximately 92%
+- CI_VERIFIED: approximately 89%
+- BROWSER_RUNTIME_VERIFIED: approximately 85%
 - DEVICE_VERIFIED: 0%
 - RELEASE_VERIFIED: 0%
 
@@ -372,3 +372,18 @@ Head before matrix document: 63db5206a836050c3dfe5f2b9fd0238d6baeb464
 - A runtime API export omission in the first implementation was caught by exact-head browser CI and corrected.
 - Exact code HEAD `ad8872a9305a121b783142f00e4a8d2c22e6ad1c` passed V2 #284 / full Hide #742.
 - Conservative reporting moves one point for this newly runtime-proven language-domain recovery path: PRODUCT ~75%, CODED ~91%, CI ~88%, Browser Runtime ~84%, Device 0%, Release 0%.
+
+
+### 2026-09-22 active Thinking Trail inference increment
+- MEMORIZE now closes the active inference loop in Runtime V2:
+  1. learner predicts meaning/concept before reveal;
+  2. learner records which clue was used and confidence;
+  3. verified/semantic structure is revealed;
+  4. learner self-compares the prediction as MATCH / NEAR / MISS;
+  5. the event remains learner self-report, never objective recall/correctness;
+  6. accumulated self-report events feed the existing inference-skill summarizer.
+- Only ESTABLISHED clue tendencies can surface as optional guidance on a later applicable word. EMERGING/LOW evidence is not promoted as stable personalization.
+- Guidance remains optional: the learner can choose another clue.
+- No recall score or Memory Strength inflation is introduced by inference comparison.
+- Exact code HEAD `42a524f6474db74896fc507e7a61724ba99f48ee` passed V2 #292 / full Hide #750.
+- Conservative reporting rises one point for this newly runtime-proven active inference/reuse path: PRODUCT ~76%, CODED ~92%, CI ~89%, Browser Runtime ~85%, Device 0%, Release 0%.
