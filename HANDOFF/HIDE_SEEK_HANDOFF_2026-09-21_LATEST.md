@@ -548,3 +548,11 @@ Important current frontier:
 - EMERGING history must not be promoted to adaptive guidance.
 - CONNECTION_GUIDANCE is non-recall evidence; normal CONNECTION exposure remains separate.
 - Current locked reporting: PRODUCT ~78%, CODED ~94%, CI ~91%, Browser Runtime ~87%, Device 0%, Release 0%.
+
+
+## 2026-09-22 Korean expression review handoff delta
+- Exact HEAD `50d04cf2f891b4844ddf16f225b40f4bf1a947cf` passed V2 #326 / full Hide #784.
+- Ready result now includes session-scoped Korean expression review candidates.
+- Candidate fields preserve responseText/targetUsed while semanticCorrectnessClaimed=false and objectiveVerified=false.
+- Hide must not convert this into automatic Korean semantic scoring; human review remains external.
+- Current locked reporting: PRODUCT ~79%, CODED ~94%, CI ~92%, Browser Runtime ~88%, Device 0%, Release 0%.
