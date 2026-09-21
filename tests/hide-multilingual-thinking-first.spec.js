@@ -26,7 +26,11 @@ function seededState(){
         wrong:0,pass:0,hint:0,confidence:'high',needsReview:false,
         learningStats:{inferenceTrace:[
           {event:'FIRST_SEEN_PREDICTION',languageDomain:'ENGLISH',clueUsed:'ROOT_ETYMOLOGY',confidence:'MEDIUM',outcome:'MATCH',assessmentSource:'LEARNER_SELF_REPORT',objectiveVerified:false,transferSkillEvidence:true,recallScoreImpact:false},
-          {event:'FIRST_SEEN_PREDICTION',languageDomain:'ENGLISH',clueUsed:'ROOT_ETYMOLOGY',confidence:'MEDIUM',outcome:'NEAR',assessmentSource:'LEARNER_SELF_REPORT',objectiveVerified:false,transferSkillEvidence:true,recallScoreImpact:false}
+          {event:'FIRST_SEEN_PREDICTION',languageDomain:'ENGLISH',clueUsed:'ROOT_ETYMOLOGY',confidence:'MEDIUM',outcome:'NEAR',assessmentSource:'LEARNER_SELF_REPORT',objectiveVerified:false,transferSkillEvidence:true,recallScoreImpact:false},
+          {event:'FIRST_SEEN_PREDICTION',languageDomain:'ENGLISH',clueUsed:'ROOT_ETYMOLOGY',confidence:'MEDIUM',outcome:'MATCH',assessmentSource:'LEARNER_SELF_REPORT',objectiveVerified:false,transferSkillEvidence:true,recallScoreImpact:false},
+          {event:'FIRST_SEEN_PREDICTION',languageDomain:'ENGLISH',clueUsed:'SCENE',confidence:'MEDIUM',outcome:'MISS',assessmentSource:'LEARNER_SELF_REPORT',objectiveVerified:false,transferSkillEvidence:true,recallScoreImpact:false},
+          {event:'FIRST_SEEN_PREDICTION',languageDomain:'ENGLISH',clueUsed:'WORD_PART',confidence:'LOW',outcome:'MATCH',assessmentSource:'LEARNER_SELF_REPORT',objectiveVerified:false,transferSkillEvidence:true,recallScoreImpact:false},
+          {event:'FIRST_SEEN_PREDICTION',languageDomain:'ENGLISH',clueUsed:'SCENE',confidence:'LOW',outcome:'NEAR',assessmentSource:'LEARNER_SELF_REPORT',objectiveVerified:false,transferSkillEvidence:true,recallScoreImpact:false}
         ]}
       }]
     },{
