@@ -24,7 +24,7 @@ function extractFunction(name){
 }
 
 const names=[
-  'senseKey','lexiconEntry','inferMissionRole','traceList','addWordTrace','weakScore',
+  'senseKey','lexiconEntry','inferMissionRole','applyMissionRoles','traceList','addWordTrace','weakScore',
   'memoryWeaknessProfile','memorySceneCue','memoryChunks','memoryShapeCue',
   'lastConfusionTrace','lastPersonalErrorTrace','hintCueCost',
   'deriveMemorySignature','applicableInferenceProfile','buildMemoryLadder','hiddenWordStrategy','hiddenWordPriority','hiddenWordActivityModel','memoryQualityModel','memoryReasonLabel','memoryStatusView','memoryRecordSummary','syncSheetToLexicon','recallSpacingEvidence','seekAgainResolved'
@@ -55,6 +55,14 @@ assert(sandbox.inferMissionRole(leftKnown,'current-sheet')==='REVIEW','known wor
 assert(sandbox.inferMissionRole(rightKnown,'current-sheet')==='REVIEW','known word on RIGHT must stay REVIEW');
 assert(sandbox.inferMissionRole(leftFresh,'current-sheet')==='NEW','fresh word on LEFT must stay NEW');
 assert(sandbox.inferMissionRole(rightFresh,'current-sheet')==='NEW','fresh word on RIGHT must stay NEW');
+const projected=sandbox.applyMissionRoles([
+  {eng:'known',kor:'알다',missionRole:'',missionRoleSource:''},
+  {eng:'fresh',kor:'새로운',missionRole:'',missionRoleSource:''},
+  {eng:'forced',kor:'강제',missionRole:'REVIEW',missionRoleSource:''},
+],'current-sheet');
+assert(projected[0].missionRoleSource==='LEARNER_HISTORY_INFERENCE','known review role must record learner-history provenance');
+assert(projected[1].missionRoleSource==='FIRST_ENCOUNTER_INFERENCE','fresh new role must record first-encounter provenance');
+assert(projected[2].missionRoleSource==='EXPLICIT_SOURCE_ROLE','explicit source role must not be mislabeled as history inference');
 
 const sceneWord={id:'scene',eng:'challenge',kor:'도전',example:'This word is a challenge.',wrong:0,pass:0,hint:0,learningStats:{
   acquisitionTrace:[
