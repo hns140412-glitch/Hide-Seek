@@ -239,3 +239,11 @@ FALSE_CONVERGENCE = 0: live deploy/device/real-provider claims remain OPEN.
 - Exact code HEAD `75dd5431625ac7b37b857df9aeb346487176c4ab` passed V2 #213 / full Hide #671.
 - Memory Ladder search/state filters and mission map status filters are also browser-verified; they reuse existing Memory Engine/mission status semantics and do not create new policy.
 - Locked reporting remains PRODUCT ~68%, CODED ~84%, CI ~81%, Browser Runtime ~77%, Device 0%, Release 0%.
+
+
+## 18. 2026-09-22 FIRST FIND miss recovery
+- FIRST FIND miss now routes through an explicit, child-facing relearn exposure rather than silently advancing.
+- Wrong retrieval evidence remains wrong retrieval evidence; seeing the answer afterward is stored separately as assisted exposure and cannot inflate recall.
+- `FIRST_FIND_RELEARN` is an internal recovery state mapped to the canonical FIRST FIND journey position.
+- Exact code HEAD `506029061ac9e2873595545758f1b737e9f1aa4e` passed V2 #220 / full Hide #678.
+- Locked reporting remains PRODUCT ~68%, CODED ~84%, CI ~81%, Browser Runtime ~77%, Device 0%, Release 0%.
