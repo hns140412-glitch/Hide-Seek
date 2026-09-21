@@ -108,10 +108,10 @@ assert(inferenceHtml.includes('inference-prediction')&&inferenceHtml.includes('i
 assert(inferenceHtml.includes('검증 어원')&&inferenceHtml.includes('environ'),'verified visual grammar');
 
 
-const adaptive=api.prioritizeExistingAssistance(['SOUND','THINKING_SCENE','SHAPE','FRAGMENT','MINIMUM_REVEAL'],{bestClue:{clue:'WORD_PART'}});
+const adaptive=api.prioritizeExistingAssistance(['SOUND','THINKING_SCENE','SHAPE','FRAGMENT','MINIMUM_REVEAL'],{adaptiveClue:{clue:'WORD_PART'}});
 assert(adaptive[0]==='THINKING_SCENE'&&adaptive[1]==='SHAPE','word-part skill should reorder existing weak cues');
 assert(adaptive.at(-2)==='FRAGMENT'&&adaptive.at(-1)==='MINIMUM_REVEAL','strong reveal cues must remain terminal');
-const noInvent=api.prioritizeExistingAssistance(['SOUND','SHAPE','FRAGMENT','MINIMUM_REVEAL'],{bestClue:{clue:'ROOT_ETYMOLOGY'}});
+const noInvent=api.prioritizeExistingAssistance(['SOUND','SHAPE','FRAGMENT','MINIMUM_REVEAL'],{adaptiveClue:{clue:'ROOT_ETYMOLOGY'}});
 assert(!noInvent.includes('MEANING_MAP')&&!noInvent.includes('THINKING_SCENE'),'adaptive ordering must not invent unavailable help');
 const parentVerified=api.parentExplanation({eng:'mountain'});
 assert(parentVerified?.mode==='VERIFIED'&&parentVerified?.text.includes('mons / montis'),'parent verified explanation');
@@ -127,5 +127,8 @@ assert(skill.attempts===4&&skill.assessed===3,'inference skill counts');
 assert(skill.successRate===67,'inference success rate');
 assert(skill.bestClue?.clue==='SCENE','best clue should derive from assessed outcomes');
 assert(skill.highConfidenceMisses===1,'confidence calibration evidence');
+assert(skill.adaptiveClue?.clue==='ROOT_ETYMOLOGY','repeated clue evidence should become adaptive');
+const oneShot=api.summarizeInferenceSkill([{event:'FIRST_SEEN_PREDICTION',clueUsed:'SCENE',confidence:'HIGH',outcome:'MATCH'}]);
+assert(oneShot.bestClue?.clue==='SCENE'&&!oneShot.adaptiveClue&&oneShot.evidenceLevel==='LOW','one self-report must not become adaptive preference');
 
 console.log('PASS: language memory model supports truth-gated etymology, inference and multilingual exploration');
