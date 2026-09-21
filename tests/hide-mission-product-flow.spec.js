@@ -28,8 +28,8 @@ test('committed mission reanalysis updates the same mission instead of duplicati
     const requestText=route.request().postDataBuffer()?.toString('utf8')||'';
     expect(requestText).toContain('HIDE_VOCABULARY');
     const rows=analyzeCount===1
-      ?[{eng:'benefit',kor:'혜택',confidence:'high',evidence_item_id:'page-evidence',warnings:[]}]
-      :[{eng:'advantage',kor:'이점',confidence:'high',evidence_item_id:'page-evidence',warnings:[]}];
+      ?[{eng:'benefit',kor:'혜택',confidence:'high',warnings:[]}]
+      :[{eng:'advantage',kor:'이점',confidence:'high',warnings:[]}];
     await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
       ok:true,provider:'FIXTURE_VISION',model:'fixture-reanalysis',
       actor_role:'CHILD',analysis_domain:'HIDE_VOCABULARY',
