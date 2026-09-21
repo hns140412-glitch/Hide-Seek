@@ -86,6 +86,20 @@
     });
   }
 
+  function normalizeSoundEvidence(raw,domain){
+    if(domain!=='HANJA'||!raw||typeof raw!=='object'||Array.isArray(raw))return null;
+    if(raw.verified!==true)return null;
+    const sourceRef=String(raw.sourceRef||raw.source_ref||'').trim();
+    const reading=String(raw.reading||raw.sound||raw.pronunciation||'').trim().normalize('NFKC');
+    if(!sourceRef||!reading)return null;
+    return Object.freeze({
+      verified:true,
+      sourceType:String(raw.sourceType||raw.source_type||'VERIFIED_HANJA_SOUND').trim()||'VERIFIED_HANJA_SOUND',
+      sourceRef,
+      reading
+    });
+  }
+
   function normalizeItem(item={}){
     const domain=detectDomain(item);
     const learningProfile=globalThis.HideLearningBasis?.resolve?.(domain)||null;
@@ -95,7 +109,8 @@
       learningProfile,
       learningContext:globalThis.HideLearningBasis?.projectLearningContext?.(domain,item.learningContext||item.learning_context)||null,
       meaningMap:normalizeMap(item.meaningMap||item.meaning_map,domain),
-      contextEvidence:normalizeContextEvidence(item.contextEvidence||item.context_evidence,domain)
+      contextEvidence:normalizeContextEvidence(item.contextEvidence||item.context_evidence,domain),
+      soundEvidence:normalizeSoundEvidence(item.soundEvidence||item.sound_evidence,domain)
     };
   }
 
@@ -362,6 +377,7 @@
     learningProfileFor,
     learningContextFor,
     normalizeContextEvidence,
+    normalizeSoundEvidence,
     sceneBeat
   };
 })();
