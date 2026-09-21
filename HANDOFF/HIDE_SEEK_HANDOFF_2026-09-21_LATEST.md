@@ -215,3 +215,10 @@ Hide exports `reviewAdvisories` as evidence, not a schedule. The packet may incl
 - Planner fails closed without confirmed availability.
 - Hide must continue to activate old-memory retrieval only from `EXPLICIT_READY_PLANNER_REVIEW_DIRECTIVE`.
 - Initial Ready integration/Runtime/Planner/TAKY CI all passed. No merge or deployment.
+
+
+## Session-level review roundtrip
+- Ready PR #100 now launches Hide with the exact Planner-created review directive.
+- Hide return memorySummary is validated and preserved in the Ready session task result.
+- Session wrap-up carries Hide specialistResult together with Planner outcome.
+- Keep Hide scheduling authority at zero; Ready Learning Engine owns policy and Planner owns dates/TODOs.
