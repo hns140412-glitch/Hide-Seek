@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION='2026.09.21-language-core-v9';
+  const VERSION='2026.09.21-language-core-v10';
 
   const MODELS={
     ENGLISH:{
@@ -192,6 +192,24 @@
   const CLUE_LABELS={WORD_PART:'단어 조각',ROOT_ETYMOLOGY:'어근·어원',SCENE:'장면',PRIOR_WORD:'전에 본 단어',OTHER:'기타'};
   function clueLabel(key){return CLUE_LABELS[String(key||'OTHER')]||CLUE_LABELS.OTHER}
 
+  function preferredAssistanceSteps(skillProfile={}){
+    const clue=String(skillProfile?.bestClue?.clue||'');
+    if(clue==='ROOT_ETYMOLOGY')return ['MEANING_MAP','THINKING_SCENE'];
+    if(clue==='WORD_PART')return ['THINKING_SCENE','SHAPE'];
+    if(clue==='SCENE')return ['SCENE','THINKING_SCENE'];
+    if(clue==='PRIOR_WORD')return ['THINKING_SCENE','CONFUSION_TRACE'];
+    return [];
+  }
+
+  function prioritizeExistingAssistance(steps=[],skillProfile={}){
+    const unique=[...new Set(Array.isArray(steps)?steps:[])];
+    const terminal=unique.filter(x=>['FRAGMENT','MINIMUM_REVEAL'].includes(x));
+    const body=unique.filter(x=>!terminal.includes(x));
+    const preferred=preferredAssistanceSteps(skillProfile).filter(x=>body.includes(x));
+    const rest=body.filter(x=>!preferred.includes(x));
+    return [...preferred,...rest,...terminal];
+  }
+
   function parentExplanation(item={}){
     const plan=starterExploration(item,{});
     if(!plan)return null;
@@ -242,6 +260,8 @@
     verifiedEvidence,
     supportContract,
     clueLabel,
+    preferredAssistanceSteps,
+    prioritizeExistingAssistance,
     parentExplanation,
     summarizeInferenceSkill,
     starterExploration,
