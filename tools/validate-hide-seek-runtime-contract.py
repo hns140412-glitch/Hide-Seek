@@ -195,6 +195,15 @@ for needle in [
         fail.append("MORNING_MOCK_TEST_MEMORY_CONTRACT:"+needle)
 
 for needle in [
+    "SPECIALIST_MEMORY_ADVISORY_ONLY",
+    "missionComposition",
+    "morningMockTest",
+    "thinkingSceneAssistanceCount",
+]:
+    if needle not in bridge:
+        fail.append("READY_ADVISORY_HANDOFF_CONTRACT:"+needle)
+
+for needle in [
     "taskStateForStatus",
     "status === 'COMPLETED' || status === 'TEST_READY'",
     "trailMastery:",
