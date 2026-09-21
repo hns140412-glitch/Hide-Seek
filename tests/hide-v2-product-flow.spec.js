@@ -455,6 +455,46 @@ test('Hide V2 mission lifecycle supports selection rename archive and blocks act
   expect(state.activeSession.missionId).toBe('m-a');
 });
 
+test('Hide V2 mission map filters open completed and archived journeys without changing status semantics',async({page})=>{
+  await page.addInitScript(()=>{
+    const item=(id,token,meaning)=>({id,lexicalId:`${token}::${meaning}`,token,meaning,languageDomain:'ENGLISH',missionRole:'REVIEW',evidence:[],source:{}});
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'미션필터'},missions:[
+        {id:'m-ready',title:'이어갈 준비',status:'READY',createdAt:'2026-09-19T00:00:00.000Z',updatedAt:'2026-09-22T01:00:00.000Z',items:[item('r1','ready','준비')],sourceCount:0,provenance:{}},
+        {id:'m-partial',title:'이어가던 길',status:'PARTIAL',createdAt:'2026-09-19T00:00:00.000Z',updatedAt:'2026-09-22T00:00:00.000Z',items:[item('p1','partial','일부')],sourceCount:0,provenance:{}},
+        {id:'m-done',title:'끝낸 탐험',status:'COMPLETED',createdAt:'2026-09-18T00:00:00.000Z',updatedAt:'2026-09-21T00:00:00.000Z',items:[item('d1','done','완료')],sourceCount:0,provenance:{}},
+        {id:'m-archive',title:'보관한 탐험',status:'ARCHIVED',createdAt:'2026-09-17T00:00:00.000Z',updatedAt:'2026-09-20T00:00:00.000Z',items:[item('a1','archive','보관')],sourceCount:0,provenance:{}}
+      ],activeMissionId:'m-ready',activeSession:null,captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'탐험 미션'}).click();
+  await expect(page.getByRole('heading',{name:'오늘의 탐험 지도'})).toBeVisible();
+  await expect(page.getByText('4개 탐험 보기',{exact:true})).toBeVisible();
+
+  await page.getByRole('button',{name:'이어가기',exact:true}).click();
+  await expect(page.getByText('2개 탐험 보기',{exact:true})).toBeVisible();
+  await expect(page.locator('[data-mission-id="m-ready"]')).toBeVisible();
+  await expect(page.locator('[data-mission-id="m-partial"]')).toBeVisible();
+  await expect(page.locator('[data-mission-id="m-done"]')).toBeHidden();
+  await expect(page.locator('[data-mission-id="m-archive"]')).toBeHidden();
+
+  await page.getByRole('button',{name:'완료',exact:true}).click();
+  await expect(page.getByText('1개 탐험 보기',{exact:true})).toBeVisible();
+  await expect(page.locator('[data-mission-id="m-done"]')).toBeVisible();
+  await expect(page.locator('[data-mission-id="m-ready"]')).toBeHidden();
+
+  await page.getByRole('button',{name:'보관',exact:true}).click();
+  await expect(page.getByText('1개 탐험 보기',{exact:true})).toBeVisible();
+  await expect(page.locator('[data-mission-id="m-archive"]')).toBeVisible();
+  await expect(page.locator('[data-mission-id="m-done"]')).toBeHidden();
+
+  const statuses=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')).missions.map(x=>[x.id,x.status]));
+  expect(Object.fromEntries(statuses)).toEqual({
+    'm-ready':'READY','m-partial':'PARTIAL','m-done':'COMPLETED','m-archive':'ARCHIVED'
+  });
+});
+
 test('Hide V2 OCR review allows row correction and exclusion before commit',async({page})=>{
   await page.route('**/api/capture/analyze',async route=>{
     await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
