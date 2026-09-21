@@ -31,7 +31,7 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 | Korean RESPONSE TRAIL | RUNTIME_VERIFIED | yes | fixture | V2 browser production-evidence flow | qualitative feedback not implemented |
 | Korean EVIDENCE TRAIL | RUNTIME_VERIFIED | yes when verified contextEvidence exists | verified-context fixture | browser evidence-selection truth-boundary flow | representative Korean source evidence still open |
 | Hanja SOUND FIND | RUNTIME_VERIFIED | yes when verified soundEvidence exists | verified-sound fixture | dedicated V2 browser sound-recall flow | representative Hanja source/device pronunciation workflow still open |
-| HIDDEN WORDS reinforcement | RUNTIME_VERIFIED | conditional | fixture | Memory Engine-gated browser flow + relearn truth-boundary | richer reason-specific activity variants still partial |
+| HIDDEN WORDS reinforcement | RUNTIME_VERIFIED | conditional | fixture | Memory Engine-gated browser flow + relearn truth-boundary | reason-specific confusion/orthographic/sound/recovery modes browser-verified; deeper multi-step ladder still partial |
 | FINAL SEEK | RUNTIME_VERIFIED | yes | fixture | browser flow + assisted→unassisted truth-boundary regression | richer reconstruction ladder remains partial |
 | Memory evidence recording | RUNTIME_VERIFIED | yes | fixture | V2 Memory Ladder browser flow | long-term calibration still needs representative history |
 | Memory advisory to Ready | PARTIAL | no current hosted V2 target | candidate-contract shaped | Hide V2 producer + Ready V2 consumer contract CI | hosted current-candidate roundtrip unverified |
@@ -48,10 +48,10 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 
 ## Claim levels
 
-- PRODUCT_COMPLETION: approximately 70%
-- CODED: approximately 86%
-- CI_VERIFIED: approximately 83%
-- BROWSER_RUNTIME_VERIFIED: approximately 79%
+- PRODUCT_COMPLETION: approximately 71%
+- CODED: approximately 87%
+- CI_VERIFIED: approximately 84%
+- BROWSER_RUNTIME_VERIFIED: approximately 80%
 - DEVICE_VERIFIED: 0%
 - RELEASE_VERIFIED: 0%
 
@@ -284,3 +284,15 @@ Head before matrix document: 63db5206a836050c3dfe5f2b9fd0238d6baeb464
 - A latent Memory Engine bug was found and corrected: ordinary MEMORIZE/relearn exposure with `assisted=true` no longer automatically counts as `hintDependency`. Hint dependency now derives from actual ASSISTANCE/hint-level evidence.
 - Exact code HEAD `b2577641cbbc3703eb84e7ab583d6d741ff22eee` passed V2 #236 / full Hide #694.
 - Conservative reporting rises one point for the newly reachable reinforcement journey plus corrected engine semantics: PRODUCT ~70%, CODED ~86%, CI ~83%, Browser Runtime ~79%, Device 0%, Release 0%.
+
+
+### 2026-09-22 reason-specific Hidden Words increment
+- HIDDEN WORDS no longer treats every weakness as the same spelling retry.
+- Memory Engine `primaryReason` maps to a bounded activity mode:
+  - confusion → meaning re-identification;
+  - orthographic → English shape scaffold reconstructed from the token;
+  - sound → verified source-linked sound recall when soundEvidence exists;
+  - recovery/hint/latency/decay → unassisted token recall.
+- No second weakness score is introduced; the Memory Engine remains the single selector.
+- Exact code HEAD `f19dcd84f650ca4e80d970f36a911b4694d9ecd5` passed V2 #243 / full Hide #701.
+- Conservative report moves one point for this newly runtime-proven adaptive child journey: PRODUCT ~71%, CODED ~87%, CI ~84%, Browser Runtime ~80%, Device 0%, Release 0%.
