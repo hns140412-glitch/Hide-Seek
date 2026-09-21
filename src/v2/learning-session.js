@@ -2,16 +2,19 @@
   'use strict';
   const STAGES=['FIRST_FIND','MEANING','DOMAIN_EXTENSION','COMPLETE'];
   const clone=x=>JSON.parse(JSON.stringify(x));
-  function create(mission){
+  function create(mission,options={}){
     if(!mission?.items?.length)throw new Error('MISSION_REQUIRED');
-    return {id:'session-'+Date.now().toString(36),missionId:mission.id,index:0,stage:'FIRST_FIND',startedAt:new Date().toISOString(),completedAt:null};
+    const requested=Array.isArray(options.targetItemIds)?options.targetItemIds:[];
+    const queue=(requested.length?requested:mission.items.map(x=>x.id)).filter(id=>mission.items.some(x=>x.id===id));
+    if(!queue.length)throw new Error('SESSION_QUEUE_EMPTY');
+    return {id:'session-'+Date.now().toString(36),missionId:mission.id,index:0,queue,stage:'FIRST_FIND',startedAt:new Date().toISOString(),completedAt:null};
   }
-  function current(session,mission){return mission.items[session.index]||null}
+  function current(session,mission){const id=session.queue?.[session.index];return mission.items.find(x=>x.id===id)||null}
   function advance(session,mission){
     const next=clone(session);
     const stageIndex=STAGES.indexOf(next.stage);
     if(stageIndex<STAGES.length-2){next.stage=STAGES[stageIndex+1];return next}
-    if(next.index<mission.items.length-1){next.index++;next.stage='FIRST_FIND';return next}
+    if(next.index<(next.queue?.length||mission.items.length)-1){next.index++;next.stage='FIRST_FIND';return next}
     next.stage='COMPLETE';next.completedAt=new Date().toISOString();return next;
   }
   function checkFirstFind(session,mission,answer){
