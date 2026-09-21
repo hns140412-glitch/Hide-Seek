@@ -98,3 +98,12 @@ button:focus-visible,input:focus-visible{outline:3px solid rgba(62,126,87,.35);o
 .meaning-map-bridges{display:grid;gap:6px;margin-top:10px}.meaning-map-bridge{display:grid;grid-template-columns:auto auto auto;gap:6px;align-items:center;padding:8px 10px;border-radius:13px;background:#f7f2eb}.meaning-map-bridge small{grid-column:1/-1;opacity:.72}
 .meaning-map-memory{margin-top:10px;padding:10px 12px;border-radius:14px;background:#f4e6f5;display:grid;gap:3px}
 @media(max-width:480px){.meaning-map-nodes{grid-template-columns:1fr}}
+
+.thinking-map-card{margin-top:14px;padding:13px;border-radius:20px;background:linear-gradient(160deg,#eef8e7,#f7f2df);border:1px solid rgba(80,112,70,.16);text-align:left}
+.thinking-map-card h3{margin:7px 0 6px;font-size:17px}.thinking-question{margin:0 0 10px;font-size:14px;line-height:1.55;font-weight:850}
+.thinking-parts{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.thinking-parts span{display:grid;gap:2px;min-width:84px;padding:9px 11px;border-radius:14px;background:#fff;border:1px solid rgba(75,108,75,.12)}
+.thinking-parts b{font-size:15px}.thinking-parts small{font-size:10px;color:var(--muted)}
+.thinking-reveal-body{display:grid;gap:8px;margin-top:10px}.thinking-reveal-body[hidden]{display:none}
+.thinking-scene,.thinking-why{padding:10px 12px;border-radius:14px;display:grid;gap:4px}.thinking-scene{background:#fff2c8}.thinking-why{background:#e9f2fb}
+.thinking-scene b,.thinking-why b,.thinking-links b{font-size:10px;letter-spacing:.04em}.thinking-scene span,.thinking-why span{font-size:12px;line-height:1.5}
+.thinking-links{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:10px 12px;border-radius:14px;background:#f3eaf6}.thinking-links span{padding:5px 8px;border-radius:999px;background:#fff;font-size:10px;font-weight:850}
