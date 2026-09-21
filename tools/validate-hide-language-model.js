@@ -100,6 +100,10 @@ assert(inferenceHtml.includes('inference-prediction')&&inferenceHtml.includes('i
 assert(inferenceHtml.includes('검증 어원')&&inferenceHtml.includes('environ'),'verified visual grammar');
 
 
+const parentVerified=api.parentExplanation({eng:'mountain'});
+assert(parentVerified?.mode==='VERIFIED'&&parentVerified?.text.includes('mons / montis'),'parent verified explanation');
+const parentSemantic=api.parentExplanation({eng:'ocean'});
+assert(parentSemantic?.mode==='SEMANTIC_SCENE'&&parentSemantic?.text.includes('억지로 어원을 나누지 않고'),'parent semantic truth boundary');
 const skill=api.summarizeInferenceSkill([
   {event:'FIRST_SEEN_PREDICTION',clueUsed:'ROOT_ETYMOLOGY',confidence:'HIGH',outcome:'MATCH'},
   {event:'FIRST_SEEN_PREDICTION',clueUsed:'SCENE',confidence:'MEDIUM',outcome:'NEAR'},
