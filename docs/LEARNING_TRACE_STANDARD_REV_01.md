@@ -255,3 +255,11 @@ It does not prove:
 - production readiness.
 
 Those remain separate validation gates.
+
+
+## Memorization / First Recall separation
+- `MEMORIZATION_EXPOSURE ≠ FIRST_RECALL_CORRECT`.
+- Seeing a word, meaning, pronunciation, example, imagery, root/etymology map, or Hanja decomposition is acquisition evidence only.
+- FIRST FIND begins after memorization and records retrieval evidence with the target hidden.
+- `FIRST_RECALL_WRONG` is a retrieval weakness signal, not a semantic-error claim by itself.
+- NEW / REVIEW is mission provenance; REVIEW resumes cumulative lexical memory instead of resetting it.
