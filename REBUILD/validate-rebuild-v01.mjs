@@ -56,6 +56,13 @@ assert('word-role-new',wordMod.inferMissionRole({},{sheetId:'s1',lexiconEntry:()
 assert('word-parity-normalizer',legacyApp.includes('function normalizeWord(w,i=0)'));
 assert('word-parity-role',legacyApp.includes('function inferMissionRole(w,sheetId="")'));
 
+
+const flowMod=await importSource('src/retrieval/retrieval-flow.js');
+assert('retrieval-sequence',flowMod.RETRIEVAL_PHASES.join('>')==='prepare>first>meaning>connection>weak>code>done');
+assert('retrieval-valid-transition',flowMod.canTransitionRetrieval('meaning','connection')===true);
+assert('retrieval-invalid-transition',flowMod.canTransitionRetrieval('first','code')===false);
+for(const phase of ['prepare','first','meaning','connection','weak','code','done'])assert('retrieval-parity-'+phase,legacyApp.includes("S.learning.phase='"+phase+"'"));
+
 console.log('REBUILD_DOMAIN_PARITY_PASS');
 
 console.log('REBUILD_V01_FOUNDATION_PASS hide-seek');
