@@ -87,6 +87,7 @@ test('verified Korean and Hanja meaning maps use thinking-first without fake ety
   expect(koProgressive).toMatchObject({step:'ROOT_PROGRESSIVE_REVEAL',languageDomain:'KOREAN',supportType:'VERIFIED_MEANING_MAP',historicalEtymologyClaim:false,recallScoreImpact:false});
   await page.getByRole('button',{name:'뜻 확인하기'}).click();
   await page.getByRole('button',{name:'비슷했어'}).click();
+  await expect(page.getByRole('button',{name:'외웠어요 · 다음'})).toBeEnabled();
   await page.getByRole('button',{name:'외웠어요 · 다음'}).click();
 
   await expect(page.locator('.word-card > .eng')).toHaveText('學');
