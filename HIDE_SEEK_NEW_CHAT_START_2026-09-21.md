@@ -213,3 +213,13 @@ Hard locks:
 - candidate 02 is the current frozen candidate;
 - no Netlify siteId-only deploy for frozen validation because exact source ref cannot be specified;
 - DEVICE_VERIFIED remains 0 until physical-device evidence exists.
+
+
+## Current implementation snapshot
+- Active rewrite branch: `rewrite/hide-runtime-v2-2026-09-21`
+- Current frozen deployment candidate: `frozen/hide-v2-candidate-2026-09-21-03`
+- Candidate SHA: `e006dc0ca3fdadb704e9403f7af566668093a88f`
+- V2 #116 PASS / full Hide #570 PASS.
+- Current product completion: ~66%.
+- Continue V2 only; V1 remains reference/rollback.
+- Next major frontiers: exploration crew UI, final motion/celebration/art polish, real-provider OCR, physical-device verification, hosted Ready↔Hide roundtrip.
