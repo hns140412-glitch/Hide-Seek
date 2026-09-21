@@ -320,7 +320,7 @@ test('Hide V2 Hidden Words appears only for engine-detected weakness and keeps r
   await page.getByLabel('숨은 단어 보강 답 입력').fill('wrong');
   await page.getByRole('button',{name:'보강 기억 확인'}).click();
   await expect(page.getByText('단서로 다시 찾기',{exact:true})).toBeVisible();
-  await expect(page.getByText('글자 골격 단서',{exact:true})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'글자 골격 단서'})).toBeVisible();
 
   await page.getByLabel('숨은 단어 도움 답 입력').fill('wrong');
   await page.getByRole('button',{name:'단서로 다시 확인'}).click();
