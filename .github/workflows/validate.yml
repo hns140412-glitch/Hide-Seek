@@ -24,6 +24,8 @@ jobs:
         run: node tools/validate-hide-seek-memory-behavior.js
       - name: Verify Family OCR adapter
         run: node tools/validate-hide-family-ocr-adapter.js
+      - name: Verify language memory model
+        run: node tools/validate-hide-language-model.js
       - name: Check JavaScript syntax
         run: |
           node --check app.js
