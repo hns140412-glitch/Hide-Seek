@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION='2026.09.21-language-core-v2';
+  const VERSION='2026.09.21-language-core-v3';
 
   const MODELS={
     ENGLISH:{
@@ -111,6 +111,30 @@
       </section>`;
   }
 
+  const SUPPORT_TYPES=new Set(['VERIFIED_ETYMOLOGY','VERIFIED_ROOT','TRANSPARENT_COMPOUND','SEMANTIC_SCENE','MNEMONIC_BRIDGE']);
+
+  const VERIFIED_LEXICAL_EVIDENCE={
+    environment:{supportType:'VERIFIED_ETYMOLOGY',sourceType:'ETYMONLINE',sourceRef:'https://www.etymonline.com/word/environment',center:{label:'environ',meaning:'둘러싸다'},nodes:[{role:'HISTORICAL_BASE',label:'environ',meaning:'둘러싸다 / 에워싸다'},{role:'SUFFIX',label:'-ment',meaning:'동작의 결과·상태를 나타내는 명사형'}],bridge:'둘러싸인 상태 → 우리를 둘러싼 조건과 주변 환경',scene:'사람을 가운데 두고 공기·물·집·학교·나무가 둥글게 둘러싼 장면'},
+    glacier:{supportType:'VERIFIED_ETYMOLOGY',sourceType:'ETYMONLINE',sourceRef:'https://www.etymonline.com/word/glacier',center:{label:'glace',meaning:'얼음'},nodes:[{role:'FRENCH_BASE',label:'glace',meaning:'얼음'},{role:'HISTORICAL_FORM',label:'glacier',meaning:'움직이는 큰 얼음 덩어리'}],bridge:'ice → moving mass of ice → glacier',scene:'산골짜기를 천천히 흐르는 거대한 얼음 강'},
+    climate:{supportType:'VERIFIED_ETYMOLOGY',sourceType:'ETYMONLINE',sourceRef:'https://www.etymonline.com/word/climate',center:{label:'klima',meaning:'기울기·경사'},nodes:[{role:'GREEK_BASE',label:'klima',meaning:'기울기, 경사'},{role:'SEMANTIC_SHIFT',label:'earth zone',meaning:'태양 각도와 위도에 따른 지구의 구역'},{role:'MODERN_MEANING',label:'climate',meaning:'한 지역의 장기적인 날씨 특징'}],bridge:'경사/기울기 → 지구의 구역 → 지역의 장기 날씨 특징',scene:'지구를 위도 띠로 나누고 각 띠의 계절·비·더위를 겹쳐 보는 장면'},
+    harvest:{supportType:'VERIFIED_ETYMOLOGY',sourceType:'ETYMONLINE',sourceRef:'https://www.etymonline.com/word/harvest',center:{label:'gather / pluck',meaning:'거두다·따다'},nodes:[{role:'OLD_ENGLISH',label:'hærfest',meaning:'가을, 수확철'},{role:'ROOT',label:'*kerp-',meaning:'모으다·따다·수확하다'}],bridge:'거두는 계절 → 작물을 거두는 일 → harvest',scene:'가을 들판에서 익은 곡식과 과일을 한곳에 거두는 장면'}
+  };
+
+  function verifiedEvidence(item={}){
+    const word=String(item.eng||item.word||item.token||'').trim().toLowerCase();
+    const raw=VERIFIED_LEXICAL_EVIDENCE[word];
+    if(!raw)return null;
+    return {...raw,word,verified:true,claimsHistoricalEtymology:true};
+  }
+
+  function supportContract(item={},fallback=null){
+    const verified=verifiedEvidence(item);
+    if(verified)return verified;
+    if(!fallback)return null;
+    const supportType=SUPPORT_TYPES.has(fallback.type)?fallback.type:'SEMANTIC_SCENE';
+    return {word:String(item.eng||item.word||item.token||'').trim().toLowerCase(),supportType,verified:false,sourceType:supportType==='TRANSPARENT_COMPOUND'?'CURATED_MORPHOLOGY':'CURATED_SEMANTIC_SUPPORT',sourceRef:null,claimsHistoricalEtymology:false,center:null,nodes:[],bridge:fallback.why||'',scene:fallback.scene||''};
+  }
+
   const STARTER_EXPLORATION={
     environment:{type:'SEMANTIC_SCENE',question:'네 주변에서 environment라고 부를 수 있는 것들은 무엇이 있을까?',scene:'집, 학교, 공기, 물, 나무처럼 우리를 둘러싼 모든 것을 한 장면에 모아봐.',why:'environment는 우리가 살아가는 주변 환경 전체를 가리켜.',connect:['climate','ocean','rainforest']},
     rainforest:{type:'TRANSPARENT_COMPOUND',parts:[{label:'rain',meaning:'비'},{label:'forest',meaning:'숲'}],question:'비가 아주 많이 오는 숲을 머릿속에 그리면 어떤 모습일까?',scene:'굵은 비, 높은 나무, 축축한 초록빛 숲을 떠올려봐.',why:'rain + forest → 비가 많이 내리는 숲 → 열대우림',connect:['jungle','climate']},
@@ -132,21 +156,23 @@
     if(!base)return null;
     const encountered=new Set((context.encounteredWords||[]).map(x=>String(x).toLowerCase()));
     const links=(base.connect||[]).filter(x=>encountered.has(x));
-    return {word,type:base.type,question:base.question,scene:base.scene,why:base.why,parts:Array.isArray(base.parts)?base.parts:[],links,sourceType:'CURATED_SEMANTIC_SUPPORT',claimsHistoricalEtymology:false};
+    const evidence=supportContract(item,base);
+    return {word,type:evidence?.supportType||base.type,question:base.question,scene:evidence?.scene||base.scene,why:evidence?.bridge||base.why,parts:Array.isArray(base.parts)?base.parts:[],links,sourceType:evidence?.sourceType||'CURATED_SEMANTIC_SUPPORT',sourceRef:evidence?.sourceRef||null,verified:!!evidence?.verified,claimsHistoricalEtymology:!!evidence?.claimsHistoricalEtymology,center:evidence?.center||null,nodes:evidence?.nodes||[]};
   }
 
   function renderStarterExplorationHtml(item,context={},esc=(x)=>String(x??'')){
     const plan=starterExploration(item,context);
     if(!plan)return '';
     const parts=plan.parts.length?'<div class="thinking-parts">'+plan.parts.map(p=>'<span><b>'+esc(p.label)+'</b><small>'+esc(p.meaning)+'</small></span>').join('')+'</div>':'';
+    const verifiedNodes=plan.nodes?.length?'<div class="root-orbit">'+plan.nodes.map(n=>'<span class="root-orbit-node"><b>'+esc(n.label)+'</b><small>'+esc(n.meaning)+'</small></span>').join('')+'</div>':'';
+    const rootCore=plan.center?'<div class="root-core"><small>핵심 흔적</small><b>'+esc(plan.center.label)+'</b><span>'+esc(plan.center.meaning)+'</span></div>':'';
     const links=plan.links.length?'<div class="thinking-links"><b>전에 만난 연결</b>'+plan.links.map(x=>'<span>'+esc(x)+'</span>').join('')+'</div>':'';
-    return '<section class="thinking-map-card" data-thinking-word="'+esc(plan.word)+'">'+
-      '<div class="hero-kicker"><span>THINKING TRAIL</span><span>'+esc(plan.type)+'</span></div>'+
-      '<h3>먼저 생각해보기</h3>'+
-      '<p class="thinking-question">'+esc(plan.question)+'</p>'+parts+
-      '<button class="btn secondary full thinking-reveal" type="button">장면 단서 보기</button>'+
-      '<div class="thinking-reveal-body" hidden><div class="thinking-scene"><b>머릿속 장면</b><span>'+esc(plan.scene)+'</span></div>'+
-      '<div class="thinking-why"><b>뜻 연결</b><span>'+esc(plan.why)+'</span></div>'+links+'</div></section>';
+    const truthBadge=plan.verified?'검증 어원':'현대 구조/의미 단서';
+    return '<section class="thinking-map-card" data-thinking-word="'+esc(plan.word)+'" data-support-type="'+esc(plan.type)+'">'+
+      '<div class="hero-kicker"><span>THINKING TRAIL</span><span>'+esc(truthBadge)+'</span></div>'+
+      '<h3>처음 본 단어처럼 추론해보기</h3><p class="thinking-question">'+esc(plan.question)+'</p>'+parts+
+      '<div class="inference-box"><label>내가 예상한 뜻/개념<input class="input inference-prediction" maxlength="80" placeholder="정답 보기 전에 한 번 추측해봐"></label><div class="inference-row"><label>쓴 단서<select class="input inference-clue"><option value="WORD_PART">단어 조각</option><option value="ROOT_ETYMOLOGY">어근·어원</option><option value="SCENE">장면</option><option value="PRIOR_WORD">전에 본 단어</option><option value="OTHER">기타</option></select></label><label>확신<select class="input inference-confidence"><option value="LOW">낮음</option><option value="MEDIUM" selected>보통</option><option value="HIGH">높음</option></select></label></div><button class="btn primary full inference-submit" type="button">내 추론 남기기</button></div>'+
+      '<button class="btn secondary full thinking-reveal" type="button" disabled>구조·장면 단서 보기</button><div class="thinking-reveal-body" hidden>'+rootCore+verifiedNodes+'<div class="thinking-scene"><b>머릿속 장면</b><span>'+esc(plan.scene)+'</span></div><div class="thinking-why"><b>뜻이 이어지는 길</b><span>'+esc(plan.why)+'</span></div>'+links+(plan.sourceRef?'<small class="truth-source">출처 확인됨 · '+esc(plan.sourceType)+'</small>':'')+'</div></section>';
   }
   window.HideLanguageModel={
     VERSION,
@@ -156,6 +182,8 @@
     hasVerifiedMeaningMap,
     cuePlan,
     renderMeaningMapHtml,
+    verifiedEvidence,
+    supportContract,
     starterExploration,
     renderStarterExplorationHtml
   };
