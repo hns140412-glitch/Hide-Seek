@@ -72,7 +72,7 @@
     {
       "id": "HIDE-V2-C2S-012",
       "type": "EVIDENCE",
-      "statement": "Locked last closed product estimate: Product 68, Coded 84, CI 81, Browser Runtime 77, Device 0, Release 0.",
+      "statement": "Locked last closed product estimate: Product 69, Coded 85, CI 82, Browser Runtime 78, Device 0, Release 0.",
       "destination": "status"
     },
     {
@@ -127,6 +127,12 @@
       "id": "HIDE-V2-C2S-021",
       "type": "EVIDENCE",
       "statement": "FIRST FIND wrong recall enters an explicit relearn exposure before MEANING; answer re-exposure is assisted RELEARN_EXPOSURE and never objective recall.",
+      "destination": "learning/first-find"
+    },
+    {
+      "id": "HIDE-V2-C2S-022",
+      "type": "EVIDENCE",
+      "statement": "FIRST FIND supports explicit UNSURE as PASS retrieval evidence with objectiveRecall=true and objectiveVerified=false; wrong/unsure both enter assisted non-recall relearn exposure before MEANING.",
       "destination": "learning/first-find"
     }
   ],
