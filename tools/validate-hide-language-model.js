@@ -1,14 +1,25 @@
 const fs=require('fs');
 const vm=require('vm');
 const assert=(x,m)=>{if(!x)throw new Error(m)};
+const basisCode=fs.readFileSync('hide-learning-basis-v01.js','utf8');
 const evidenceCode=fs.readFileSync('hide-language-evidence.js','utf8');
 const code=fs.readFileSync('hide-language-model.js','utf8');
 const sandbox={window:{}};
 vm.createContext(sandbox);
+vm.runInContext(basisCode,sandbox);
 vm.runInContext(evidenceCode,sandbox);
 vm.runInContext(code,sandbox);
 const api=sandbox.window.HideLanguageModel;
 assert(api,'language model missing');
+const basis=sandbox.window.HideLearningBasis;
+assert(basis?.VERSION==='2026.09.21-learning-basis-v1','learning basis version');
+const koBasis=basis.resolve('KOREAN');
+const hanjaBasis=basis.resolve('HANJA');
+assert(koBasis.basis_subject==='국어'&&koBasis.ready_method==='READ_UNDERSTAND_EVIDENCE_RESPOND','Korean basis must follow Ready Korean profile');
+assert(hanjaBasis.basis_subject==='한자'&&hanjaBasis.ready_method==='FORM_SOUND_MEANING_RECALL','Hanja basis must follow Ready Hanja profile');
+assert(hanjaBasis.ready_loop.join('>')==='ENCODE>RECALL>CHECK>RETRY','Hanja learning loop');
+assert(api.normalizeItem({word:'學',languageDomain:'HANJA'}).learningProfile?.basis_subject==='한자','normalized Hanja item must carry learning basis');
+
 const evidence=sandbox.window.HideLanguageEvidence;
 assert(evidence?.SCHEMA_VERSION===2,'language evidence schema');
 assert(Array.isArray(evidence.invalidRecords)&&evidence.invalidRecords.length===0,'language evidence records must validate');
