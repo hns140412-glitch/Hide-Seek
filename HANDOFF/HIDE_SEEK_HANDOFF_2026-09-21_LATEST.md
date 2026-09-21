@@ -229,3 +229,11 @@ Hide exports `reviewAdvisories` as evidence, not a schedule. The packet may incl
 - Use `objectiveVerified` for checkable recognition/association/evidence-selection.
 - Use `objectiveRecall` only for actual retrieval/reconstruction.
 - Memory summaries expose both counters and evidence modes.
+
+
+## Hanja SOUND / Korean RESPONSE lock
+- Hanja SOUND recall activates only from verified source-linked `soundEvidence`; no inferred reading.
+- SOUND replay is exposure; typed SOUND FIND is recall.
+- Korean lexical FIRST FIND is not expression.
+- Korean RESPONSE TRAIL is sentence-level learner production.
+- Sentence production is stored as production/context evidence without automatic semantic correctness claims.
