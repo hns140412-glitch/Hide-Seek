@@ -260,6 +260,29 @@ for needle in [
         fail.append("READY_ADVISORY_HANDOFF_CONTRACT:"+needle)
 
 for needle in [
+    "review_directive",
+    "function reviewDirective",
+    "EXPLICIT_READY_PLANNER_REVIEW_DIRECTIVE",
+    "reviewPolicyOwner:'READY_LEARNING_ENGINE'",
+    "scheduleOwner:'READY_SET_PLANNER'",
+]:
+    if needle not in bridge:
+        fail.append("READY_PLANNER_REVIEW_DIRECTIVE_CONTRACT:"+needle)
+
+for forbidden in [
+    "sort((a,b)=>(b.nextReviewPriority||0)-(a.nextReviewPriority||0))",
+]:
+    if forbidden in app:
+        fail.append("HIDE_AUTONOMOUS_REVIEW_SELECTION:"+forbidden)
+
+for needle in [
+    "window.HideSeekBridge?.reviewDirective?.()",
+    "directive?.lexicalIds?.length",
+]:
+    if needle not in app:
+        fail.append("HIDE_EXPLICIT_REVIEW_SELECTION:"+needle)
+
+for needle in [
     "taskStateForStatus",
     "status === 'COMPLETED' || status === 'TEST_READY'",
     "trailMastery:",
@@ -468,7 +491,7 @@ for needle in [
         fail.append("RUNTIME_VERSION_CONTRACT:"+needle)
 
 for needle in [
-    "const BRIDGE_VERSION = '2026.09.21-b'",
+    "const BRIDGE_VERSION = '2026.09.21-c'",
 ]:
     if needle not in bridge:
         fail.append("BRIDGE_VERSION_CONTRACT:"+needle)
