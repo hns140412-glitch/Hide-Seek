@@ -142,7 +142,8 @@
           recoveryStatus:String(sig?.recoveryStatus||'UNPROVEN'),
           longTermDecay:Number(sig?.longTermDecay||0),
           spacedEvidenceObserved:lastRecovery?.spacedEvidence===true,
-          needsUnassistedRecall:sig?.recoveryStatus==='NEEDS_UNASSISTED_RECALL'||sig?.recoveryStatus==='IMMEDIATE_ONLY'
+          needsUnassistedRecall:sig?.recoveryStatus==='NEEDS_UNASSISTED_RECALL'||sig?.recoveryStatus==='IMMEDIATE_ONLY',
+          languageMemoryEvidence:(()=>{try{return languageMemoryEvidenceSummary(w)}catch{return null}})()
         });
       }
     }
