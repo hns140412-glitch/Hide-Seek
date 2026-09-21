@@ -13,8 +13,9 @@
     const resumable=globalThis.HideV2Session?.isResumable?.()===true;
     const capture=globalThis.HideV2Capture?.state?.();
     const reviewReady=globalThis.HideV2Capture?.hasResumableReview?.()===true;
-    view().innerHTML=`<section class="world-hero"><div class="hero-case"><div class="hero-kicker"><span>HIDE V2</span><span>REWRITE</span></div><h1>${m?esc(m.title):'새 단어 탐험을 시작해요'}</h1><p>${m?`${m.items.length}개 단어 · 구조 분리형 런타임`:'프린트 사진을 분석하고 확인한 뒤 학습을 시작해요.'}</p><div class="hero-actions"><button class="btn primary" id="v2Camera">카메라 촬영</button><button class="btn secondary" id="v2Library">사진 추가</button>${m?`<button class="btn secondary" id="v2Start">${resumable?'학습 이어하기':'학습 시작'}</button>`:''}</div></div></section>${reviewReady?`<section class="card tint-sky"><div class="section-title"><h2>분석 결과가 남아 있어요</h2><span>${capture?.lastRows?.length||0}개</span></div><p>앱을 다시 열어도 검토 중인 OCR 결과를 이어갈 수 있어요.</p><button class="btn primary full" id="v2ResumeReview">분석 결과 이어보기</button></section>`:''}<section class="card"><div class="section-title"><h2>V2 상태</h2><span>monolith-free</span></div><div class="metric"><span>미션</span><b>${s.missions.length}</b></div><div class="metric"><span>촬영 세션</span><b>${capture?.status||'없음'}</b></div><div class="metric"><span>저장</span><b>Local-first</b></div><div class="metric"><span>Domain</span><b>EN/KR/HANJA</b></div></section>`;
+    view().innerHTML=`<section class="world-hero"><div class="hero-case"><div class="hero-kicker"><span>HIDE V2</span><span>REWRITE</span></div><h1>${m?esc(m.title):'새 단어 탐험을 시작해요'}</h1><p>${m?`${m.items.length}개 단어 · 구조 분리형 런타임`:'프린트 사진을 분석하고 확인한 뒤 학습을 시작해요.'}</p><div class="hero-actions"><button class="btn primary" id="v2Camera">카메라 촬영</button><button class="btn secondary" id="v2Library">사진 추가</button>${m?`<button class="btn secondary" id="v2Start">${resumable?'학습 이어하기':'학습 시작'}</button>`:''}</div></div></section><section class="card"><button class="btn secondary full" id="v2MissionList">미션 관리</button></section>${reviewReady?`<section class="card tint-sky"><div class="section-title"><h2>분석 결과가 남아 있어요</h2><span>${capture?.lastRows?.length||0}개</span></div><p>앱을 다시 열어도 검토 중인 OCR 결과를 이어갈 수 있어요.</p><button class="btn primary full" id="v2ResumeReview">분석 결과 이어보기</button></section>`:''}<section class="card"><div class="section-title"><h2>V2 상태</h2><span>monolith-free</span></div><div class="metric"><span>미션</span><b>${s.missions.length}</b></div><div class="metric"><span>촬영 세션</span><b>${capture?.status||'없음'}</b></div><div class="metric"><span>저장</span><b>Local-first</b></div><div class="metric"><span>Domain</span><b>EN/KR/HANJA</b></div></section>`;
     $('#v2Camera').onclick=()=>$('#sheetCameraInput').click();
+    $('#v2MissionList').onclick=()=>HideV2Router.go('missions');
     $('#v2Library').onclick=()=>$('#sheetLibraryInput').click();
     if($('#v2ResumeReview'))$('#v2ResumeReview').onclick=()=>review(HideV2Capture.reviewRows());
     if($('#v2Start'))$('#v2Start').onclick=()=>{
@@ -26,8 +27,26 @@
 
   function review(rows){
     const normalized=rows.map((r,i)=>HideV2Mission.normalizeItem(r,i)).filter(Boolean);
-    view().innerHTML=`<section class="card"><div class="hero-kicker"><span>OCR REVIEW</span><span>V2</span></div><h2>분석 결과 확인</h2><div class="weak-list">${normalized.map((w,i)=>`<div class="weak-item"><div><b>${esc(w.token)}</b><small> · ${esc(w.meaning)}</small></div><span class="badge">${esc(w.languageDomain)}</span></div>`).join('')}</div><button class="btn primary full" id="v2Commit" type="button">미션으로 저장</button></section>`;
-    $('#v2Commit').onclick=()=>{const mission=HideV2Mission.addMission({items:normalized,sourceCount:Number(HideV2Capture.state()?.pages?.length||1),provenance:{source:'V2_OCR_REVIEW',captureSessionId:HideV2Capture.state()?.id||null}});HideV2Capture.markCommitted(mission.id);HideV2Router.go('home')};
+    const draft=normalized.map(x=>({...x,excluded:false}));
+    const renderRows=()=>{
+      view().innerHTML=`<section class="card"><div class="hero-kicker"><span>OCR REVIEW</span><span>V2</span></div><h2>분석 결과 확인</h2><p>틀린 단어/뜻은 고치고, 필요 없는 행은 제외한 뒤 저장하세요.</p><div class="weak-list">${draft.map((w,i)=>`<div class="weak-item" data-review-row="${i}"><div style="display:grid;gap:6px;flex:1"><input class="input" data-review-token="${i}" aria-label="OCR 단어 ${i+1}" value="${esc(w.token)}"><input class="input" data-review-meaning="${i}" aria-label="OCR 뜻 ${i+1}" value="${esc(w.meaning)}"><small>${esc(w.languageDomain)} · ${esc(w.source?.pageId||'source')}</small></div><button class="btn secondary" data-review-toggle="${i}" type="button">${w.excluded?'복원':'제외'}</button></div>`).join('')}</div><button class="btn primary full" id="v2Commit" type="button">미션으로 저장</button></section>`;
+      draft.forEach((w,i)=>{
+        const token=$(`[data-review-token="${i}"]`),meaning=$(`[data-review-meaning="${i}"]`),toggle=$(`[data-review-toggle="${i}"]`);
+        token.disabled=w.excluded;meaning.disabled=w.excluded;
+        if(w.excluded)token.closest('.weak-item').style.opacity='.45';
+        token.oninput=()=>{draft[i].token=token.value.trim();draft[i].lexicalId=`${draft[i].token.toLowerCase()}::${draft[i].meaning.replace(/\s+/g,' ')}`};
+        meaning.oninput=()=>{draft[i].meaning=meaning.value.trim();draft[i].lexicalId=`${draft[i].token.toLowerCase()}::${draft[i].meaning.replace(/\s+/g,' ')}`};
+        toggle.onclick=()=>{draft[i].excluded=!draft[i].excluded;renderRows()};
+      });
+      $('#v2Commit').onclick=()=>{
+        const kept=draft.filter(x=>!x.excluded&&x.token&&x.meaning);
+        if(!kept.length){setFlash('저장할 단어가 없어요.');return}
+        const mission=HideV2Mission.addMission({items:kept,sourceCount:Number(HideV2Capture.state()?.pages?.length||1),provenance:{source:'V2_OCR_REVIEW',captureSessionId:HideV2Capture.state()?.id||null}});
+        HideV2Capture.markCommitted(mission.id);
+        HideV2Router.go('missions');
+      };
+    };
+    renderRows();
   }
 
   function learn(){
@@ -101,10 +120,28 @@
     review(r.rows);
   }
 
+  function missions(){
+    const list=HideV2Mission.listMissions();
+    view().innerHTML=`<section class="card"><div class="section-title"><h2>탐험 미션</h2><span>${list.length}개</span></div>${list.length?list.map(m=>`<div class="weak-item" data-mission-id="${esc(m.id)}"><div style="flex:1"><b>${esc(m.title)}</b><small style="display:block">${m.items.length}개 · ${esc(m.status)}</small></div><div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><button class="btn secondary" data-action="open" data-id="${esc(m.id)}">선택</button><button class="btn secondary" data-action="rename" data-id="${esc(m.id)}">이름</button><button class="btn secondary" data-action="archive" data-id="${esc(m.id)}">보관</button><button class="btn secondary" data-action="delete" data-id="${esc(m.id)}">삭제</button></div></div>`).join(''):'<p>아직 저장된 미션이 없어요.</p>'}<button class="btn secondary full" id="v2MissionHome">홈으로</button></section>`;
+    $('#v2MissionHome').onclick=()=>HideV2Router.go('home');
+    view().querySelectorAll('[data-action]').forEach(btn=>{
+      btn.onclick=()=>{
+        const id=btn.dataset.id,action=btn.dataset.action;
+        try{
+          if(action==='open'){HideV2Mission.setActive(id);HideV2Router.go('home');return}
+          if(action==='rename'){const current=HideV2Mission.listMissions().find(x=>x.id===id);const next=prompt('미션 이름',current?.title||'');if(next!==null)HideV2Mission.renameMission(id,next)}
+          if(action==='archive')HideV2Mission.archiveMission(id);
+          if(action==='delete'){if(confirm('이 미션을 삭제할까요?'))HideV2Mission.deleteMission(id)}
+          missions();
+        }catch(e){setFlash(e?.message||'미션을 변경하지 못했어요.')}
+      };
+    });
+  }
+
   function render(){
     if(flash){const t=$('#toast');if(t){t.textContent=flash;t.classList.add('show')}}
     const r=HideV2Router.current();
-    if(r.name==='learn')learn();else home();
+    if(r.name==='learn')learn();else if(r.name==='missions')missions();else home();
   }
   function boot(){
     globalThis.HideV2LegacyMigration?.migrateIfNeeded?.();
