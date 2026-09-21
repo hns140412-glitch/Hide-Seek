@@ -116,6 +116,12 @@
       "type": "DECISION",
       "statement": "Duplicate OCR lexical rows are merged only by explicit review action; the resulting mission item preserves every source occurrence under source.occurrences.",
       "destination": "capture/review"
+    },
+    {
+      "id": "HIDE-V2-C2S-020",
+      "type": "EVIDENCE",
+      "statement": "OCR local-first review continuity persists human corrections, exclusions and explicit duplicate-merge decisions separately from raw OCR lastRows; reload/resume restores reviewDraft.",
+      "destination": "capture/review"
     }
   ],
   "coverage": {
