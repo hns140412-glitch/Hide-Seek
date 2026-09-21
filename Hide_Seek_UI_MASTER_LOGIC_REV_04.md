@@ -136,7 +136,8 @@ Preferred child-facing progression:
 `FIRST FIND → MEANING CLUE → CONNECTION TRAIL → HIDDEN WORDS → FINAL SEEK → SEEK AGAIN`
 
 Semantics:
-- FIRST FIND = initial word exposure/acquisition
+- MEMORIZATION = reviewed print words are first seen/understood before Hide retrieval.
+- FIRST FIND = first unassisted recall after memorization; the target is hidden.
 - MEANING CLUE = bidirectional meaning check
 - CONNECTION TRAIL = word↔meaning association
 - HIDDEN WORDS = weak/missed-word priority practice
@@ -380,3 +381,18 @@ Otherwise the system falls back to word/meaning/context without fabricated decom
 `MEANING_MAP` is an adaptive cue in the Memory Ladder.
 It sits before stronger answer-revealing cues when a verified map exists.
 The trace must record that a verified language-model cue was used, without converting assisted recall into independent recall.
+
+
+## REAL PRINT MISSION ROLE MODEL
+NEW / REVIEW are mission roles, not fixed global quotas.
+The current learner pattern may be 12 NEW + 24 REVIEW, but the engine must infer/use the actual mission composition.
+
+- NEW = first encounter in learner lexical history.
+- REVIEW = prior lexical/sense history exists.
+- NEW gets richer understanding support when verified.
+- REVIEW reuses prior Memory Ladder state.
+- A new mission never resets cumulative memory history.
+
+Memorization exposure and retrieval evidence are separate:
+`SEEN != RECALLED`
+`MEMORIZATION_EXPOSURE != FIRST_RECALL_CORRECT`.
