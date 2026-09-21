@@ -72,7 +72,7 @@
     {
       "id": "HIDE-V2-C2S-012",
       "type": "EVIDENCE",
-      "statement": "Locked last closed product estimate: Product 78, Coded 94, CI 91, Browser Runtime 87, Device 0, Release 0.",
+      "statement": "Locked last closed product estimate: Product 79, Coded 94, CI 92, Browser Runtime 88, Device 0, Release 0.",
       "destination": "status"
     },
     {
@@ -260,6 +260,18 @@
       "type": "DECISION",
       "statement": "FIRST FIND assistance fails closed outside supported English shape cues; Korean/Hanja cues must not be fabricated.",
       "destination": "learning/assistance"
+    },
+    {
+      "id": "HIDE-V2-C2S-044",
+      "type": "EVIDENCE",
+      "statement": "Korean RESPONSE TRAIL now projects session-scoped expression review candidates to HIDE_SPECIALIST_RESULT_V2 with response text and target-use facts while semantic correctness remains explicitly unclaimed.",
+      "destination": "ready-bridge/korean-expression-review"
+    },
+    {
+      "id": "HIDE-V2-C2S-045",
+      "type": "DECISION",
+      "statement": "Hide may expose HUMAN_SEMANTIC_REVIEW_AVAILABLE for Korean production evidence but must not auto-score semantic correctness; candidate scope must respect active session.queue.",
+      "destination": "language-memory/korean-human-review"
     }
   ],
   "coverage": {
