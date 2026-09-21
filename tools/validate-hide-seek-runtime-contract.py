@@ -283,14 +283,16 @@ for needle in [
         fail.append("FAMILY_OCR_LAYOUT_CONTRACT:"+needle)
 
 for needle in [
-    "WEEKDAY_VOCAB_LEFT12_NEW_REST_REVIEW",
-    "LEFT_COLUMN",
-    "newCount:12",
-    "reviewCount:24",
-    "SOURCE_LAYOUT_COLUMN",
+    "missionComposition",
+    "expectedNew:12",
+    "expectedReview:24",
+    "layoutIndependent:true",
+    "MISSION_REVIEW_CONFIRMATION",
+    "LEARNER_HISTORY_INFERENCE",
+    "hide-role-toggle",
 ]:
     if needle not in runtime:
-        fail.append("VOCAB_12_24_LAYOUT_CONTRACT:"+needle)
+        fail.append("MISSION_COMPOSITION_CONTRACT:"+needle)
 
 for needle in [
     "window.FamilyCaptureOcrAdapter",
