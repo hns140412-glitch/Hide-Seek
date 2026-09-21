@@ -88,3 +88,14 @@ No merge, deploy, Netlify, production or device verification has occurred.
 - Validation defect found and corrected: the main Playwright product-flow project had `serviceWorkers:'block'`, so prior PWA verification could not prove actual SW behavior.
 - Pre-doc code HEAD `eaafb969ff4b40c3bb547bbc81dea8f6240d030b`: V2 #54 PASS, full Hide #508 PASS.
 - V2 PRODUCT_COMPLETION: ~52%; DEVICE_VERIFIED remains 0%.
+
+
+## Surgery increment — OCR resilience / mobile browser
+- Multi-page OCR now stores successful page rows before later pages finish.
+- Partial provider failure keeps successful pages and retries failed pages only.
+- Confidence/warning/provider provenance is preserved into review/mission source metadata.
+- Added V2 mobile shell for visualViewport tracking and focus visibility.
+- 390×844 no-overflow/touch-target and reduced-height focused-control browser checks are active.
+- Pre-doc code HEAD `a5b4734bc06c49d37eb80c05752b7f75ca7538d8`: V2 #68 PASS, full Hide #522 PASS.
+- Real provider OCR accuracy and physical-device camera/keyboard remain OPEN.
+- V2 PRODUCT_COMPLETION: ~56%; DEVICE_VERIFIED remains 0%.
