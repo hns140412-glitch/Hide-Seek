@@ -524,3 +524,11 @@ Important current frontier:
 - Assisted retry success is not objective recall; failure falls through to the existing assisted relearn exposure.
 - Unsupported domains do not invent shape clues.
 - Current locked reporting: PRODUCT ~77%, CODED ~93%, CI ~90%, Browser Runtime ~86%, Device 0%, Release 0%.
+
+
+## 2026-09-22 active inference Thinking Trail delta
+- Exact HEAD `2714be8bd84985c7e3dde763aee270723486c1be` passed V2 #304 / full Hide #762.
+- MEMORIZE Thinking Trail now records prediction, clue used, confidence and learner MATCH/NEAR/MISS comparison after reveal.
+- All of this remains self-report/transfer-skill evidence, not recall success.
+- Established clue tendencies may be shown later as optional guidance only; never force a clue or inflate memory evidence.
+- Current locked reporting: PRODUCT ~76%, CODED ~92%, CI ~89%, Browser Runtime ~85%, Device 0%, Release 0%.
