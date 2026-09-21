@@ -67,6 +67,22 @@ function seededState(){
 test('verified Korean and Hanja meaning maps use thinking-first without fake etymology',async({page})=>{
   await page.addInitScript(state=>localStorage.setItem('hide_seek_state',JSON.stringify(state)),seededState());
   await page.goto('/');
+
+  const seekKeys=await page.evaluate(()=>{
+    const ko=validWords().find(x=>x.id==='ko-1');
+    const hanja=validWords().find(x=>x.id==='hanja-1');
+    const en=(S.sheets||[]).flatMap(x=>x.items||[]).find(x=>x.id==='en-prior');
+    const pack=w=>{const s=makeCodeSession(w);return {domain:s.languageDomain,units:s.units,keys:s.keys.map(k=>({ch:k.ch,real:k.real}))}};
+    return {ko:pack(ko),hanja:pack(hanja),en:pack(en)};
+  });
+  expect(seekKeys.ko.domain).toBe('KOREAN');
+  expect(seekKeys.hanja.domain).toBe('HANJA');
+  expect(seekKeys.en.domain).toBe('ENGLISH');
+  expect(seekKeys.ko.keys.every(k=>!/^[A-Za-z]$/.test(k.ch))).toBe(true);
+  expect(seekKeys.hanja.keys.every(k=>!/^[A-Za-z]$/.test(k.ch))).toBe(true);
+  expect(seekKeys.en.keys.filter(k=>!k.real).length).toBeGreaterThanOrEqual(3);
+  expect(seekKeys.en.keys.filter(k=>!k.real).every(k=>/^[a-z]$/.test(k.ch))).toBe(true);
+
   await page.getByRole('button',{name:'학습'}).click();
   await page.getByRole('button',{name:'외우기 시작'}).click();
 
