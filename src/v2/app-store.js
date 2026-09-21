@@ -4,13 +4,14 @@
   const VERSION=1;
   const clone=x=>JSON.parse(JSON.stringify(x));
   const now=()=>new Date().toISOString();
-  const initial=()=>({version:VERSION,profile:{displayName:'탐험가'},missions:[],activeMissionId:null,activeSession:null,events:[],updatedAt:now()});
+  const initial=()=>({version:VERSION,profile:{displayName:'탐험가'},missions:[],activeMissionId:null,activeSession:null,captureSession:null,events:[],updatedAt:now()});
   function migrate(raw){
     const s={...initial(),...(raw||{})};
     s.version=VERSION;
     s.profile={...initial().profile,...(raw?.profile||{})};
     s.missions=Array.isArray(raw?.missions)?raw.missions:[];
     s.events=Array.isArray(raw?.events)?raw.events:[];
+    s.captureSession=raw?.captureSession&&typeof raw.captureSession==='object'?raw.captureSession:null;
     return s;
   }
   function load(){try{return migrate(JSON.parse(localStorage.getItem(KEY)||'null'))}catch{return initial()}}
