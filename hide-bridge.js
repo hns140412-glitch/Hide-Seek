@@ -107,6 +107,7 @@
         priorities.push({
           lexicalId: w.lexicalId || senseKey(w),
           priority: Math.round(Number(view.priority)),
+          nextReviewPriority: Math.round(Number(view.priority)),
           reason: key,
           advisoryOnly:true,
           evidenceBasis:'HIDE_MEMORY_EVIDENCE',
