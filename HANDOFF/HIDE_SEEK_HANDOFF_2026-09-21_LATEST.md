@@ -532,3 +532,11 @@ Important current frontier:
 - All of this remains self-report/transfer-skill evidence, not recall success.
 - Established clue tendencies may be shown later as optional guidance only; never force a clue or inflate memory evidence.
 - Current locked reporting: PRODUCT ~76%, CODED ~92%, CI ~89%, Browser Runtime ~85%, Device 0%, Release 0%.
+
+
+## 2026-09-22 multilingual First Find recovery delta
+- Exact HEAD `950631cd774d85a1227c51235d3168f9bb013146` passed V2 #311 / full Hide #769.
+- FIRST FIND safe assistance: English shape cue, verified Korean meaning-map cue, verified Hanja sound cue.
+- Missing/unverified multilingual evidence must fail closed to relearn; never infer an etymology/component/pronunciation.
+- FIRST_FIND_ASSIST remains assisted/non-recall.
+- Current locked reporting: PRODUCT ~77%, CODED ~93%, CI ~90%, Browser Runtime ~86%, Device 0%, Release 0%.
