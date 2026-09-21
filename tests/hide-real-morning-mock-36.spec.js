@@ -126,6 +126,15 @@ test('real NEW 12 + REVIEW 24 follows mission, recall and morning mock-test memo
   expect(evidence.planet.assessment.at(-1).result).toBe('RECOVERED_CORRECT');
   expect(evidence.planet.recovery.at(-1)).toMatchObject({source:'MORNING_MOCK_TEST',result:'UNASSISTED_RECALL',spacedEvidence:false});
 
+  const ladder=await page.evaluate(()=>{
+    const s=JSON.parse(localStorage.getItem('hide_seek_state'));
+    window.__testState=s;
+    const desert=s.sheets[0].items.find(x=>x.eng==='desert');
+    return buildMemoryLadder(desert);
+  });
+  expect(ladder[0]).toBe('THINKING_SCENE');
+  expect(ladder).toContain('SHAPE');
+
   const counts=await page.evaluate(()=>{
     const s=JSON.parse(localStorage.getItem('hide_seek_state'));
     return s.sheets[0].items.reduce((a,w)=>(a[w.missionRole]=(a[w.missionRole]||0)+1,a),{});
