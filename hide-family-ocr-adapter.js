@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION='2026.09.21-c';
+  const VERSION='2026.09.21-d';
   const ENDPOINT='/api/capture/analyze';
   const ANALYSIS_DOMAIN='HIDE_VOCABULARY';
   const OWNER='FAMILY_CAPTURE_OCR_TRANSPORT';
@@ -60,6 +60,8 @@
     form.set('capture_session_id',captureSessionId);
     form.set('analysis_domain',ANALYSIS_DOMAIN);
     form.set('manifest',JSON.stringify(manifest));
+    form.set('vision_ingest_request_id',ingest.request.request_id);
+    form.set('vision_ingest_manifest',JSON.stringify(ingest.request.manifest));
     form.append('image__'+page.pageId,blob,manifest[0].file_name);
 
     const HttpJson=globalThis.TakyHttpJson;
