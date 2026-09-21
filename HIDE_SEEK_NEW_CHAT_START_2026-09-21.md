@@ -139,3 +139,9 @@ Korean EVIDENCE TRAIL:
 - Fail closed when the evidence excerpt is not contained in the source context or candidate contract is invalid.
 - EVIDENCE is earned only through explicit selection.
 - Keep CONTEXT exposure separate from objective CONTEXT recall.
+
+
+OCR ownership:
+- Treat Ready's family capture/OCR transport as the existing shared foundation.
+- Hide must reuse it and only own HIDE_VOCABULARY interpretation/review semantics.
+- Do not report OCR as unimplemented when only live-provider/device verification is missing.
