@@ -162,3 +162,10 @@ Language Memory evidence semantics:
 - objectiveVerified != objectiveRecall.
 - Recognition, association, and context-evidence selection must not inflate recall.
 - Use evidenceMode to preserve interaction semantics.
+
+
+Language Memory next-state:
+- Hanja verified soundEvidence -> SOUND FIND typed recall.
+- Korean RESPONSE TRAIL -> learner-created sentence production.
+- Keep sound replay as exposure only.
+- Keep Korean lexical recall separate from sentence expression.
