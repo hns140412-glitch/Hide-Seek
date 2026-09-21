@@ -327,6 +327,8 @@ test('Hide V2 Hidden Words appears only for engine-detected weakness and keeps r
 
   await page.getByLabel('회상 답 입력').fill('wrong');
   await page.getByRole('button',{name:'기억 확인'}).click();
+  await page.getByLabel('첫 찾기 도움 답 입력').fill('wrong');
+  await page.getByRole('button',{name:'단서로 다시 확인'}).click();
   await page.getByRole('button',{name:'다시 숨기고 뜻 단서로'}).click();
 
   await page.getByLabel('뜻 회상 입력').fill('혜택');
@@ -386,6 +388,8 @@ test('Hide V2 Hidden Words assisted retry success still requires unassisted Fina
   await page.getByRole('button',{name:'기억하고 찾아보기'}).click();
   await page.getByLabel('회상 답 입력').fill('wrong');
   await page.getByRole('button',{name:'기억 확인'}).click();
+  await page.getByLabel('첫 찾기 도움 답 입력').fill('wrong');
+  await page.getByRole('button',{name:'단서로 다시 확인'}).click();
   await page.getByRole('button',{name:'다시 숨기고 뜻 단서로'}).click();
   await page.getByLabel('뜻 회상 입력').fill('혜택');
   await page.getByRole('button',{name:'뜻 확인'}).click();
