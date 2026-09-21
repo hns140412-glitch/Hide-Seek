@@ -24,7 +24,7 @@ function extractFunction(name){
 }
 
 const names=[
-  'senseKey','lexiconEntry','traceList','addWordTrace','weakScore',
+  'senseKey','lexiconEntry','inferMissionRole','traceList','addWordTrace','weakScore',
   'memoryWeaknessProfile','memorySceneCue','memoryChunks','memoryShapeCue',
   'lastConfusionTrace','lastPersonalErrorTrace','hintCueCost',
   'deriveMemorySignature','applicableInferenceProfile','buildMemoryLadder','hiddenWordStrategy','hiddenWordPriority','hiddenWordActivityModel','memoryQualityModel','memoryReasonLabel','memoryStatusView','memoryRecordSummary','syncSheetToLexicon','recallSpacingEvidence','seekAgainResolved'
@@ -43,6 +43,18 @@ for(const n of names) vm.runInContext(extractFunction(n),sandbox);
 
 function assert(cond,msg){if(!cond)throw new Error(msg)}
 function same(a,b){return JSON.stringify(a)===JSON.stringify(b)}
+
+sandbox.S.lexicon={
+  'known::알다':{sourceRefs:['older-sheet']}
+};
+const leftKnown={eng:'known',kor:'알다',sourceColumn:'LEFT'};
+const rightKnown={eng:'known',kor:'알다',sourceColumn:'RIGHT'};
+const leftFresh={eng:'fresh',kor:'새로운',sourceColumn:'LEFT'};
+const rightFresh={eng:'fresh',kor:'새로운',sourceColumn:'RIGHT'};
+assert(sandbox.inferMissionRole(leftKnown,'current-sheet')==='REVIEW','known word on LEFT must stay REVIEW');
+assert(sandbox.inferMissionRole(rightKnown,'current-sheet')==='REVIEW','known word on RIGHT must stay REVIEW');
+assert(sandbox.inferMissionRole(leftFresh,'current-sheet')==='NEW','fresh word on LEFT must stay NEW');
+assert(sandbox.inferMissionRole(rightFresh,'current-sheet')==='NEW','fresh word on RIGHT must stay NEW');
 
 const sceneWord={id:'scene',eng:'challenge',kor:'도전',example:'This word is a challenge.',wrong:0,pass:0,hint:0,learningStats:{
   acquisitionTrace:[
