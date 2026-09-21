@@ -294,3 +294,13 @@ FALSE_CONVERGENCE = 0: live deploy/device/real-provider claims remain OPEN.
 - Direct typed MEANING reinforcement remains recall.
 - Exact code HEAD `28a70fc7ff3e1f89d1bfaba6b59acf47af5f1557` passed V2 #261 / full Hide #719.
 - Locked reporting: PRODUCT ~73%, CODED ~89%, CI ~86%, Browser Runtime ~82%, Device 0%, Release 0%.
+
+
+## 23. 2026-09-22 FINAL SEEK reconstruction recovery
+- FINAL SEEK first attempt remains unassisted.
+- An unassisted English miss may use one shape-based reconstruction before any full answer reveal.
+- Reconstruction is assisted, objectively verifiable, non-recall evidence.
+- Reconstruction success goes directly to SEEK AGAIN for unassisted proof; reconstruction failure goes through relearn exposure before SEEK AGAIN.
+- If semantic FINAL SEEK support was already used, do not stack reconstruction support; fail closed to relearn.
+- Exact code HEAD `47cf0c0391c13311cb3faa3c33cf305a2c8e5c63` passed V2 #268 / full Hide #726.
+- Locked reporting: PRODUCT ~74%, CODED ~90%, CI ~87%, Browser Runtime ~83%, Device 0%, Release 0%.
