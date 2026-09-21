@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION='2026.09.21-a';
+  const VERSION='2026.09.21-b';
   const ENDPOINT='/api/capture/analyze';
   const ANALYSIS_DOMAIN='HIDE_VOCABULARY';
   const OWNER='FAMILY_CAPTURE_OCR_TRANSPORT';
@@ -44,6 +44,15 @@
       file_name:`hide-${page.displayOrder||1}.jpg`,
       size:Number(blob.size)||0
     }];
+
+    const VisionIngest=globalThis.TakyVisionIngest;
+    if(!VisionIngest?.buildRequest)return {ok:false,reason:'VISION_INGEST_UNAVAILABLE'};
+    const ingest=VisionIngest.buildRequest({
+      source:'hide-seek:family-capture-ocr',
+      manifest,
+      metadata:{capture_session_id:captureSessionId,analysis_domain:ANALYSIS_DOMAIN}
+    });
+    if(!ingest.ok)return {ok:false,reason:ingest.reason||'VISION_INGEST_INVALID',errors:ingest.errors||[]};
 
     const form=new FormData();
     form.set('capture_session_id',captureSessionId);
@@ -89,6 +98,21 @@
       };
     }
 
+    const normalizedEvidence=VisionIngest.normalizeResult({
+      request_id:ingest.request.request_id,
+      provider:body.provider||'UNKNOWN',
+      model:body.model||null,
+      items:rows.map((row,index)=>({
+        result_id:`${page.pageId}-row-${index}`,
+        evidence_source_ids:[row.evidenceItemId||page.pageId],
+        provider_payload:row
+      }))
+    });
+    const evidenceCheck=normalizedEvidence.ok?VisionIngest.validateEvidence(normalizedEvidence.result,[page.pageId]):{ok:false};
+    if(!normalizedEvidence.ok||!evidenceCheck.ok){
+      return {ok:false,reason:'OCR_EVIDENCE_MISMATCH',unknown:evidenceCheck.unknown||[]};
+    }
+
     return {
       ok:true,
       owner:OWNER,
@@ -96,6 +120,7 @@
       provider:body.provider||'UNKNOWN',
       model:body.model||null,
       analysis_version:result.analysis_version||'HIDE_VOCABULARY_OCR_V1',
+      vision_ingest_request_id:ingest.request.request_id,
       rows,
       received_at:new Date().toISOString()
     };
