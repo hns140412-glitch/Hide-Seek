@@ -60,3 +60,17 @@ test('Hide loads shared vision ingest without replacing vocabulary semantics',as
   expect(out.request.ok).toBe(true);
   expect(out.request.request.analyzable_source_ids).toEqual(['page-1']);
 });
+
+
+test('Hide loads shared HTTP transport without moving API key ownership',async({page})=>{
+  await page.goto('http://127.0.0.1:4173/');
+  const out=await page.evaluate(()=>({
+    http:!!globalThis.TakyHttpJson,
+    auth:globalThis.TakyHttpJson?.normalizeStatus?.(403),
+    rate:globalThis.TakyHttpJson?.normalizeStatus?.(429,{retry_after:'2',now_ms:0})
+  }));
+  expect(out.http).toBe(true);
+  expect(out.auth.category).toBe('AUTH_REJECTED');
+  expect(out.rate.category).toBe('RATE_LIMITED');
+  expect(out.rate.retry_after_ms).toBe(2000);
+});
