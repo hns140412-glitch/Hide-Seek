@@ -438,17 +438,39 @@
     view().innerHTML=`
       <section class="screen-head"><p class="quest-overline">MEMORY LADDER</p><h1>기억 사다리</h1><p>단어가 다시 찾기에서 안정된 기억까지 올라가는 길을 보여줘요.</p></section>
       <section class="memory-route-intro" aria-label="다시 찾기 길 안내"><b>다시 찾기 길</b><span>다시 찾기 → 올라가기 → 안정</span><small>Hide는 기억 흔적만 보여주고, 언제 다시 할지는 Ready & Set이 정해요.</small></section>
+      ${book.length?`<section class="memory-find-tools" aria-label="기억 단어 찾기"><label><span>단어 찾기</span><input id="v2MemorySearch" class="input" type="search" placeholder="단어 또는 뜻 검색" aria-label="기억 단어 검색"></label><div class="memory-filter-row" role="group" aria-label="기억 단계 필터"><button class="btn ghost is-active" type="button" data-memory-filter="ALL">전체</button><button class="btn ghost" type="button" data-memory-filter="SEEK_AGAIN">다시 찾기</button><button class="btn ghost" type="button" data-memory-filter="CLIMBING">올라가기</button><button class="btn ghost" type="button" data-memory-filter="STABLE">안정</button></div><small id="v2MemoryFilterCount" aria-live="polite">${book.length}개 단어 보기</small></section>`:'' }
       <section class="ladder-board" aria-label="기억 사다리 단계">
-        ${bands.map((band,index)=>`<article class="ladder-rung ladder-rung--${band.key.toLowerCase()}"><div class="ladder-rung__head"><span>${index+1}</span><div><b>${bandLabel[band.key]}</b><small>${band.items.length}개 단어</small></div></div><div class="ladder-rung__words">${band.items.length?band.items.slice(0,8).map(x=>`<button type="button" data-ladder-word="${esc(x.lexicalId)}"><b>${esc(x.token)} · 사다리</b><small>${band.key==='SEEK_AGAIN'?'다시 만나기':band.key==='CLIMBING'?'기억 길 잇기':'지금 안정'}</small></button>`).join(''):'<span class="ladder-empty">아직 이 단계의 단어가 없어요</span>'}</div></article>`).join('')}
+        ${bands.map((band,index)=>`<article class="ladder-rung ladder-rung--${band.key.toLowerCase()}"><div class="ladder-rung__head"><span>${index+1}</span><div><b>${bandLabel[band.key]}</b><small>${band.items.length}개 단어</small></div></div><div class="ladder-rung__words">${band.items.length?band.items.slice(0,8).map(x=>`<button type="button" data-ladder-word="${esc(x.lexicalId)}" data-memory-state="${band.key}" data-memory-text="${esc((x.token+' '+x.meaning).toLowerCase())}"><b>${esc(x.token)} · 사다리</b><small>${band.key==='SEEK_AGAIN'?'다시 만나기':band.key==='CLIMBING'?'기억 길 잇기':'지금 안정'}</small></button>`).join(''):'<span class="ladder-empty">아직 이 단계의 단어가 없어요</span>'}</div></article>`).join('')}
       </section>
       ${book.length?`<section class="memory-why-card"><p class="quest-overline">WORD PATH</p><h2>이 단어는 지금 어떤 길일까?</h2><div class="memory-why-card__word"><b>${esc(book[0].token)} · 기억 길</b><span>${esc(childMemoryReason(book[0]))}</span></div><div class="memory-crew-mini"><span class="crew-strip__avatar">${esc((globalThis.HideV2Crew?.presentation?.({word:book[0],stage:'MEMORY_LADDER'})||{avatarText:'탐'}).avatarText)}</span><div><b>${esc((globalThis.HideV2Crew?.presentation?.({word:book[0],stage:'MEMORY_LADDER'})||{displayName:'탐험대원'}).displayName)}</b><small class="memory-crew-copy">정답 대신, 다시 떠올릴 수 있게 옆에서 도와줄게요.</small></div><button class="btn ghost" type="button" data-memory-support="${esc(book[0].lexicalId)}">짧은 응원</button></div></section>`:''}
       <details class="memory-record-details"><summary>기억 기록 자세히 보기</summary>
         <section class="memory-summary"><div class="quest-stat"><b>${dash.averageStrength}%</b><span>전체 기억 힘</span></div><div class="quest-stat"><b>${dash.needsRecall}</b><span>다시 찾기</span></div><div class="quest-stat"><b>${dash.stable}</b><span>안정 단어</span></div></section>
         <section class="memory-signals"><span>뜻 혼동 <b>${dash.confusion}</b></span><span>글자 형태 <b>${dash.orthographic}</b></span><span>소리 <b>${dash.sound}</b></span><span>느린 회상 <b>${dash.slowRecall}</b></span><span>힌트 의존 <b>${dash.hintDependent}</b></span></section>
-        <section class="wordbook"><div class="section-title"><div><p class="quest-overline">WORD TRAIL</p><h2>단어 기록</h2></div><span>다시 볼 순서</span></div>${book.length?book.map((x,i)=>`<article class="word-row" data-wordbook-index="${i}"><div class="word-row__body"><b>${esc(x.token)}</b><span>${esc(x.meaning)} · ${languageLabel(x.languageDomain)}</span><small>${esc(x.primaryReason.label)} · ${x.encounters}번 만남</small></div><div class="word-row__meter"><b>${x.memoryStrength}%</b><div class="mini-meter"><span style="width:${x.memoryStrength}%"></span></div><button class="btn ghost" data-word-detail="${i}" type="button">기억 보기</button></div></article>`).join(''):'<div class="empty-state"><b>아직 기억 기록이 없어요</b><p>단어 탐험을 마치면 이곳에 기억 사다리가 생겨요.</p></div>'}</section>
+        <section class="wordbook"><div class="section-title"><div><p class="quest-overline">WORD TRAIL</p><h2>단어 기록</h2></div><span>다시 볼 순서</span></div>${book.length?book.map((x,i)=>`<article class="word-row" data-wordbook-index="${i}" data-memory-state="${ladderBand(x)}" data-memory-text="${esc((x.token+' '+x.meaning).toLowerCase())}"><div class="word-row__body"><b>${esc(x.token)}</b><span>${esc(x.meaning)} · ${languageLabel(x.languageDomain)}</span><small>${esc(x.primaryReason.label)} · ${x.encounters}번 만남</small></div><div class="word-row__meter"><b>${x.memoryStrength}%</b><div class="mini-meter"><span style="width:${x.memoryStrength}%"></span></div><button class="btn ghost" data-word-detail="${i}" type="button">기억 보기</button></div></article>`).join(''):'<div class="empty-state"><b>아직 기억 기록이 없어요</b><p>단어 탐험을 마치면 이곳에 기억 사다리가 생겨요.</p></div>'}</section>
       </details>
       <button class="btn secondary full" id="v2RecordsHome">홈으로</button>`;
     $('#v2RecordsHome').onclick=()=>HideV2Router.go('home');
+    let activeMemoryFilter='ALL';
+    const applyMemoryFilter=()=>{
+      const q=String($('#v2MemorySearch')?.value||'').trim().toLowerCase();
+      const rows=[...view().querySelectorAll('[data-memory-state][data-memory-text]')];
+      let visibleWordRows=0;
+      rows.forEach(el=>{
+        const state=el.dataset.memoryState||'';
+        const text=el.dataset.memoryText||'';
+        const visible=(activeMemoryFilter==='ALL'||state===activeMemoryFilter)&&(!q||text.includes(q));
+        el.hidden=!visible;
+        if(visible&&el.matches('.word-row'))visibleWordRows++;
+      });
+      const count=$('#v2MemoryFilterCount');
+      if(count)count.textContent=`${visibleWordRows}개 단어 보기`;
+    };
+    if($('#v2MemorySearch'))$('#v2MemorySearch').oninput=applyMemoryFilter;
+    view().querySelectorAll('[data-memory-filter]').forEach(btn=>{btn.onclick=()=>{
+      activeMemoryFilter=btn.dataset.memoryFilter||'ALL';
+      view().querySelectorAll('[data-memory-filter]').forEach(x=>x.classList.toggle('is-active',x===btn));
+      applyMemoryFilter();
+    }});
     view().querySelectorAll('[data-ladder-word]').forEach(btn=>{btn.onclick=()=>HideV2Router.go('record-detail',{lexicalId:btn.dataset.ladderWord})});
     view().querySelectorAll('[data-memory-support]').forEach(btn=>{btn.onclick=()=>{const entry=book.find(x=>x.lexicalId===btn.dataset.memorySupport);if(!entry)return;const support=globalThis.HideV2Crew?.supportFor?.({word:entry,stage:'MEMORY_LADDER'})||{text:'천천히 떠올려 봐요. 지금은 정답을 보여주지 않을게요.',revealsAnswer:false};if(support.revealsAnswer===true)return;const copy=btn.closest('.memory-crew-mini')?.querySelector('.memory-crew-copy');if(copy)copy.textContent=support.text}});
     view().querySelectorAll('[data-word-detail]').forEach(btn=>{
