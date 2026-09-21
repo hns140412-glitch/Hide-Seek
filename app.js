@@ -302,7 +302,9 @@ function renderLearningHub(){
 }
 function renderMemorizeStage(){
  const sh=sheet();ensureMissionRoles(sh);const ws=validWords(),i=Math.min(Number(S.learning.prepIndex||0),Math.max(0,ws.length-1)),w=ws[i],role=inferMissionRole(w,sh.sheetId),mapHtml=globalThis.HideLanguageModel?.renderMeaningMapHtml?.(w,esc)||'';
- const encounteredWords=ws.slice(0,i).filter(x=>x.missionRole==='NEW').map(x=>x.eng);
+ const priorMissionWords=Object.values(S.lexicon||{}).map(x=>x?.canonicalSpelling).filter(Boolean);
+ const currentEncountered=ws.slice(0,i).map(x=>x.eng).filter(Boolean);
+ const encounteredWords=[...new Set([...priorMissionWords,...currentEncountered])];
  const thinkingHtml=role==='NEW'?(globalThis.HideLanguageModel?.renderStarterExplorationHtml?.(w,{encounteredWords},esc)||''):'';
  sh.status='LEARNING';S.learning.phase='prepare';save();
  const meaningBlock=role==='NEW'&&thinkingHtml
@@ -437,7 +439,7 @@ function useCodeHint(){
  const step=codeSession.hintPlan[Math.min(codeSession.hintLevel,codeSession.hintPlan.length-1)]||'MINIMUM_REVEAL',w=codeSession.word,cost=hintCueCost(step),at=nowISO();
  codeSession.hintLevel++;codeSession.hintTrace.push({step,cost,at});addWordTrace(w,'assistance',{step,cost,source:'MEMORY_TRAIL'});
  if(step==='SCENE'){const scene=memorySceneCue(w);if(scene){codeSession.hintTrace.at(-1).source=scene.source;codeSession.hintTrace.at(-1).sourceSheetId=scene.sheetId;showMemoryTrace(scene.text,'내가 봤던 장면');setPartner('처음 실제로 봤던 문맥을 다시 꺼내볼게. 정답 철자는 아직 숨겨둘게.','hint');return}}
- if(step==='THINKING_SCENE'){const plan=globalThis.HideLanguageModel?.starterExploration?.(w,{encounteredWords:validWords().filter(x=>x.id!==w.id).map(x=>x.eng)});if(plan){const parts=(plan.parts||[]).map(x=>x.label+' = '+x.meaning).join(' · '),text=[plan.scene,parts,plan.links?.length?'전에 만난 연결: '+plan.links.join(', '):''].filter(Boolean).join(' / ');showMemoryTrace(text,'탐험 장면');codeSession.hintTrace.at(-1).source='CURATED_SEMANTIC_SUPPORT';addWordTrace(w,'assistance',{step:'THINKING_SCENE',source:'CURATED_SEMANTIC_SUPPORT',stage:'MEMORY_LADDER',historicalEtymologyClaim:false});setPartner('외울 때 만든 장면부터 다시 꺼내보자. 철자는 아직 보여주지 않을게.','hint');return}}
+ if(step==='THINKING_SCENE'){const historical=Object.values(S.lexicon||{}).map(x=>x?.canonicalSpelling).filter(Boolean),current=validWords().filter(x=>x.id!==w.id).map(x=>x.eng),plan=globalThis.HideLanguageModel?.starterExploration?.(w,{encounteredWords:[...new Set([...historical,...current])]});if(plan){const parts=(plan.parts||[]).map(x=>x.label+' = '+x.meaning).join(' · '),text=[plan.scene,parts,plan.links?.length?'전에 만난 연결: '+plan.links.join(', '):''].filter(Boolean).join(' / ');showMemoryTrace(text,'탐험 장면');codeSession.hintTrace.at(-1).source='CURATED_SEMANTIC_SUPPORT';addWordTrace(w,'assistance',{step:'THINKING_SCENE',source:'CURATED_SEMANTIC_SUPPORT',stage:'MEMORY_LADDER',historicalEtymologyClaim:false});setPartner('외울 때 만든 장면부터 다시 꺼내보자. 철자는 아직 보여주지 않을게.','hint');return}}
  if(step==='MEANING_MAP'){const html=globalThis.HideLanguageModel?.renderMeaningMapHtml?.(w,esc);if(html){const el=$('#memoryTrace');if(el){el.innerHTML=html;el.hidden=false}addWordTrace(w,'assistance',{step:'MEANING_MAP',source:'VERIFIED_LANGUAGE_MODEL',languageDomain:w.languageDomain||'ENGLISH'});setPartner('정답을 보여주는 대신, 뜻이 만들어지는 길을 다시 따라가보자.','hint');return}}
  if(step==='MEANING'){showMemoryTrace(w.kor,'의미 흔적');setPartner('뜻은 기억났어. 이제 소리와 철자 모양을 이어보자.','hint');return}
  if(step==='CONFUSION_TRACE'){const x=lastConfusionTrace(w);const text=x&&x.confusedWithEng?'전에 ‘'+x.confusedWithEng+' / '+x.confusedWithKor+'’ 쪽으로 연결이 엇갈렸어. 지금 단어의 뜻 ‘'+w.kor+'’와 차이를 먼저 잡아봐.':'전에 뜻 연결이 엇갈렸던 흔적이 있어. 지금 단어의 뜻부터 다시 잡아봐.';showMemoryTrace(text,'혼동 흔적');setPartner('네가 실제로 헷갈렸던 짝을 비교 단서로 써보자.','hint');return}
