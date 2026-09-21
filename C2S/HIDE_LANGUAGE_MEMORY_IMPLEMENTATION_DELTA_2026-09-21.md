@@ -118,3 +118,38 @@ GitHub Actions still has not emitted a run for post-#245 synchronize commits. La
 
 Latest observed code HEAD before this delta refresh: `0d86f3486843e1aafd0b6e6774cd90e92bce083b`.
 Latest-head GitHub Actions run: still not emitted; CI_VERIFIED remains NOT CLAIMED for the current HEAD.
+
+
+## Evidence-contract extraction + inference hardening delta
+- Verified lexical evidence is no longer embedded inside `hide-language-model.js`.
+- New canonical runtime asset: `hide-language-evidence.js`.
+  - `VERSION = 2026.09.21-evidence-v1`
+  - `SCHEMA_VERSION = 1`
+  - source policy = `VERIFIED_SOURCE_REQUIRED_FOR_HISTORICAL_CLAIM`
+  - invalid records fail closed through `invalidRecords`.
+- `hide-language-model.js` now consumes `window.HideLanguageEvidence`; if schema is missing/mismatched or any record is invalid, verified evidence returns empty rather than guessing.
+- Index script order is locked: evidence asset before language model.
+- Service worker cache advanced to `hide-seek-capture-v12` and includes the evidence asset.
+- CI syntax check and runtime contract now include the evidence asset.
+
+### Inference hardening
+- Inference aggregation/personalization remains cumulative but is isolated by language domain.
+- Language-specific clue taxonomies are enforced for English / Korean / Hanja.
+- Current-word applicability gates adaptive clue reuse; a prior root preference cannot appear on a word whose current plan has no reliable root path.
+- Evidence levels are separated:
+  - LOW: descriptive only
+  - EMERGING: visible as an observation; does not reorder Memory Ladder
+  - ESTABLISHED: may reorder existing assistance only
+- ESTABLISHED adaptation requires at least 6 assessed outcomes overall and the candidate clue to have at least 3 attempts with >=60% learner self-reported MATCH/NEAR.
+- Strong assistance (`FRAGMENT`, `MINIMUM_REVEAL`) remains terminal.
+
+### Truth/provenance corrections
+- Verified support logs are no longer collapsed into `VERIFIED_ETYMOLOGY_MAP`.
+  - historical etymology -> `VERIFIED_ETYMOLOGY_MAP`
+  - verified transparent structure -> `VERIFIED_STRUCTURE_MAP`
+  - verified Korean/Hanja meaning structure -> `VERIFIED_MEANING_MAP`
+- Progressive root reveals now persist language domain, support type, source, sourceRef, historical-claim flag, and `recallScoreImpact=false`.
+- `earthquake` is explicitly `검증 구조`, not `검증 어원`.
+- NEW words with verified meaning maps no longer expose a duplicate `뜻 연결 더 보기` route before inference; thinking-first is the single answer-reveal path.
+
+Latest-head CI note must still be checked live. No Netlify / deploy / merge / user testing is authorized.
