@@ -36,8 +36,11 @@
     const timeoutCount=rows.filter(x=>x.result==='TIMEOUT').length;
     const slowCount=rows.filter(x=>Number(x.elapsedMs||0)>=8000).length;
 
+    const recoveryAssist=rows.filter(x=>x.assisted===true&&['FINAL_SEEK_SUPPORT','FINAL_SEEK','SEEK_AGAIN','FIRST_FIND'].includes(x.stage));
     let recoveryStatus='UNPROVEN';
     if(spaced.length) recoveryStatus='SPACED_RECOVERED';
+    else if(recoveryAssist.length&&correctRecall.length) recoveryStatus='IMMEDIATE_ONLY';
+    else if(recoveryAssist.length&&!correctRecall.length) recoveryStatus='NEEDS_UNASSISTED_RECALL';
     else if(correctRecall.length&&wrongRecall.length) recoveryStatus='IMMEDIATE_ONLY';
     else if(wrongRecall.length&&!correctRecall.length) recoveryStatus='NEEDS_UNASSISTED_RECALL';
 
