@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION='2026.09.21-b';
+  const VERSION='2026.09.21-c';
   const ENDPOINT='/api/capture/analyze';
   const ANALYSIS_DOMAIN='HIDE_VOCABULARY';
   const OWNER='FAMILY_CAPTURE_OCR_TRANSPORT';
@@ -60,24 +60,21 @@
     form.set('manifest',JSON.stringify(manifest));
     form.append('image__'+page.pageId,blob,manifest[0].file_name);
 
-    let res;
-    try{
-      res=await fetch(ENDPOINT,{
-        method:'POST',
-        body:form,
-        credentials:'same-origin',
-        headers:{'Accept':'application/json'}
-      });
-    }catch(error){
-      return {ok:false,reason:'ANALYSIS_NETWORK_ERROR',message:String(error?.message||error)};
-    }
-
-    const body=await res.json().catch(()=>({}));
-    if(!res.ok){
+    const HttpJson=globalThis.TakyHttpJson;
+    if(!HttpJson?.request)return {ok:false,reason:'HTTP_TRANSPORT_UNAVAILABLE'};
+    const res=await HttpJson.request(ENDPOINT,{
+      method:'POST',
+      body:form,
+      credentials:'same-origin',
+      headers:{'Accept':'application/json'},
+      timeout_ms:20000
+    });
+    const body=res?.data||{};
+    if(!res?.ok){
       return {
         ok:false,
-        reason:body?.reason||('ANALYSIS_HTTP_'+res.status),
-        status:res.status,
+        reason:body?.reason||res?.category||('ANALYSIS_HTTP_'+(res?.status??'UNKNOWN')),
+        status:res?.status??null,
         provider_status:body?.provider_status||null,
         provider_type:body?.provider_type||null
       };
