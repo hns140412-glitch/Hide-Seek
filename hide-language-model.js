@@ -69,10 +69,12 @@
   function normalizeItem(item={}){
     const domain=detectDomain(item);
     const learningProfile=globalThis.HideLearningBasis?.resolve?.(domain)||null;
+    const hanjaLevel=domain==='HANJA'?globalThis.HideLearningBasis?.normalizeHanjaLevel?.(item)||null:null;
     return {
       ...item,
       languageDomain:domain,
       learningProfile,
+      hanjaLevel,
       meaningMap:normalizeMap(item.meaningMap||item.meaning_map,domain)
     };
   }
