@@ -42,6 +42,8 @@
         size:Number(file.size||0),
         displayOrder:session.pages.length+i+1,
         status:'PENDING',
+        reason:null,
+        analysisRows:[],
         capturedAt:now()
       };
       added.push(page);
@@ -61,27 +63,33 @@
     if(!adapter?.analyzeVocabularyPage)return {ok:false,reason:'OCR_ADAPTER_UNAVAILABLE'};
     const session=state();
     if(!session?.pages?.length)return {ok:false,reason:'CAPTURE_EMPTY'};
-    const rows=[];
     const pageResults=[];
+
     for(const page of session.pages){
+      if(page.status==='ANALYZED'&&Array.isArray(page.analysisRows)&&page.analysisRows.length){
+        pageResults.push({pageId:page.pageId,ok:true,reused:true});
+        continue;
+      }
       const blob=await HideV2CaptureStore.get(page.assetKey);
-      if(!blob)return {ok:false,reason:'CAPTURE_ASSET_MISSING',pageId:page.pageId};
+      if(!blob)return {ok:false,reason:'CAPTURE_ASSET_MISSING',pageId:page.pageId,pages:pageResults};
       const result=await adapter.analyzeVocabularyPage({
         captureSessionId:session.id,
         page:{pageId:page.pageId,displayOrder:page.displayOrder},
         blob
       });
-      pageResults.push({pageId:page.pageId,ok:result.ok,reason:result.reason||null});
+      pageResults.push({pageId:page.pageId,ok:result.ok,reason:result.reason||null,reused:false});
       if(!result.ok){
         HideV2Store.transaction(s=>{
           if(s.captureSession?.id!==session.id)return;
           const p=s.captureSession.pages.find(x=>x.pageId===page.pageId);
-          if(p){p.status='FAILED';p.reason=result.reason||'OCR_ANALYSIS_FAILED'}
+          if(p){p.status='FAILED';p.reason=result.reason||'OCR_ANALYSIS_FAILED';p.analysisRows=[]}
           s.captureSession.status='CAPTURING';
           s.captureSession.updatedAt=now();
         });
-        return {ok:false,reason:result.reason||'OCR_ANALYSIS_FAILED',pages:pageResults,rows};
+        const retained=state()?.pages?.flatMap(p=>Array.isArray(p.analysisRows)?p.analysisRows:[])||[];
+        return {ok:false,reason:result.reason||'OCR_ANALYSIS_FAILED',pages:pageResults,rows:retained,retryable:true};
       }
+
       const normalizedRows=(result.rows||[]).map((row,i)=>({
         ...row,
         sourcePageId:page.pageId,
@@ -90,13 +98,16 @@
         ocrModel:result.model||null,
         ocrAnalysisVersion:result.analysis_version||null
       }));
-      rows.push(...normalizedRows);
       HideV2Store.transaction(s=>{
         if(s.captureSession?.id!==session.id)return;
         const p=s.captureSession.pages.find(x=>x.pageId===page.pageId);
-        if(p){p.status='ANALYZED';p.reason=null}
+        if(p){p.status='ANALYZED';p.reason=null;p.analysisRows=normalizedRows}
+        s.captureSession.updatedAt=now();
       });
     }
+
+    const finalSession=state();
+    const rows=(finalSession?.pages||[]).flatMap(p=>Array.isArray(p.analysisRows)?p.analysisRows:[]);
     HideV2Store.transaction(s=>{
       if(s.captureSession?.id!==session.id)return;
       s.captureSession.status='REVIEW';
