@@ -124,9 +124,9 @@ const sceneHtml=api.renderStarterExplorationHtml({eng:'island'},{encounteredWord
 assert(sceneHtml.includes('scene-trail')&&sceneHtml.includes('SURROUNDED'),'scene visual grammar rendering');
 const rootProfile={adaptiveClue:{clue:'ROOT_ETYMOLOGY'}};
 const environmentAdaptiveHtml=api.renderStarterExplorationHtml({eng:'environment'},{encounteredWords:[],skillProfile:rootProfile},x=>String(x));
-assert(environmentAdaptiveHtml.includes('여러 번 도움이 됐던 단서'),'verified root may reuse root preference');
+assert(environmentAdaptiveHtml.includes('반복해서 확인된 단서'),'verified root may reuse root preference');
 const oceanAdaptiveHtml=api.renderStarterExplorationHtml({eng:'ocean'},{encounteredWords:[],skillProfile:rootProfile},x=>String(x));
-assert(!oceanAdaptiveHtml.includes('여러 번 도움이 됐던 단서'),'unsupported root preference must not leak into ocean');
+assert(!oceanAdaptiveHtml.includes('반복해서 확인된 단서'),'unsupported root preference must not leak into ocean');
 assert(api.clueApplicableToPlan(api.starterExploration({eng:'rainforest'},{}),'WORD_PART'),'compound should allow word-part clue');
 assert(!api.clueApplicableToPlan(api.starterExploration({eng:'ocean'},{}),'ROOT_ETYMOLOGY'),'semantic ocean should reject root clue');
 const inferenceHtml=api.renderStarterExplorationHtml({eng:'environment'},{encounteredWords:[]},x=>String(x));
