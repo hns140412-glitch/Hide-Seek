@@ -138,10 +138,10 @@ The available Netlify deploy action accepts siteId only and cannot specify exact
 
 ## 11. Product completion — locked reporting
 Current last closed product-level estimate:
-- PRODUCT_COMPLETION: ~66%
-- CODED: ~82%
-- CI_VERIFIED: ~79%
-- Browser RUNTIME_VERIFIED: ~75%
+- PRODUCT_COMPLETION: ~67%
+- CODED: ~83%
+- CI_VERIFIED: ~80%
+- Browser RUNTIME_VERIFIED: ~76%
 - DEVICE_VERIFIED: 0%
 - RELEASE_VERIFIED: 0%
 
@@ -195,3 +195,26 @@ FALSE_CONVERGENCE = 0: live deploy/device/real-provider claims remain OPEN.
   - Validate Hide & Seek #627: SUCCESS.
 - Locked reporting remains PRODUCT_COMPLETION ~66%, CODED ~82%, CI_VERIFIED ~79%, Browser RUNTIME_VERIFIED ~75%, DEVICE_VERIFIED 0%, RELEASE_VERIFIED 0%.
 - Remaining OPEN claims: representative live OCR prints/provider, physical camera/device/keyboard/PWA lifecycle, current frozen Ready↔Hide hosted roundtrip, final art direction, exact-ref release/deploy.
+
+
+## 15. 2026-09-22 language-domain runtime closure
+- Hanja SOUND FIND now has dedicated Runtime V2 browser proof using canonical verified `soundEvidence`.
+- A typed sound answer records `SOUND + RECALL`, objective verification/recall, and the source-linked evidence reference.
+- Korean verified EVIDENCE TRAIL is now present in Runtime V2 rather than existing only as a V1/reference rule:
+  - activation is fail-closed through `HideLanguageModel.normalizeContextEvidence(..., 'KOREAN')`;
+  - the learner explicitly chooses among verified evidence candidates;
+  - the event records `EVIDENCE + MEANING` and objective verification;
+  - evidence selection does not earn objective CONTEXT recall and does not inflate recall score;
+  - RESPONSE TRAIL remains a separate production event before FINAL SEEK.
+- The child-facing exploration art-direction pass has browser checks at 390px width. This is browser evidence only, not physical-device visual QA.
+- Exact pre-document code HEAD `3e63d5250d7f636046b50d2e164e028d925ffde9`:
+  - Validate Hide Runtime V2 #182 — SUCCESS.
+  - Validate Hide & Seek #636 — SUCCESS.
+- Conservative reporting after this material user-reachable increment:
+  - PRODUCT_COMPLETION ~67%
+  - CODED ~83%
+  - CI_VERIFIED ~80%
+  - Browser RUNTIME_VERIFIED ~76%
+  - DEVICE_VERIFIED 0%
+  - RELEASE_VERIFIED 0%.
+- Still OPEN: representative live-provider OCR, physical camera/device/OS keyboard/PWA lifecycle, current frozen Ready↔Hide hosted roundtrip, physical-device visual QA, exact-ref release/deploy.
