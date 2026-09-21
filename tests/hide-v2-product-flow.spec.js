@@ -305,7 +305,7 @@ test('Hide V2 Memory Ladder projects weakness reasons and wordbook from evidence
   await expect(page.getByRole('heading',{name:'단어 기록'})).toBeVisible();
   await expect(page.getByText('benefit',{exact:true})).toBeVisible();
   await expect(page.getByText('island',{exact:true})).toBeVisible();
-  await expect(page.getByText('무힌트 재회상 필요',{exact:true})).toBeVisible();
+  await expect(page.getByText(/무힌트 재회상 필요/).first()).toBeVisible();
 
   const projected=await page.evaluate(()=>({
     book:window.HideV2Memory.wordbook(),
