@@ -498,7 +498,7 @@ test('Hide V2 retries only failed OCR pages and preserves successful page rows',
     {name:'page-2.jpg',mimeType:'image/jpeg',buffer:Buffer.from('page-two')}
   ]);
   await expect(page.getByRole('heading',{name:'사진에서 단어를 다 찾지 못했어요'})).toBeVisible();
-  await expect(page.getByText(/1개 결과는 보존/)).toBeVisible();
+  await expect(page.getByText(/이미 찾은 1개 결과는 그대로 보관/)).toBeVisible();
 
   let capture=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')).captureSession);
   expect(capture.pages[0].status).toBe('ANALYZED');
