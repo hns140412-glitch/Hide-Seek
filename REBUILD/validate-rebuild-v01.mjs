@@ -40,4 +40,22 @@ assert('contract-allow',gate.validateContract({contract_version:'READY_LEARNING_
 assert('contract-fail-closed',gate.validateContract({contract_version:'UNKNOWN'}).ok===false);
 assert('contract-no-object',gate.validateContract(null).ok===false);
 
+
+const legacyApp=loadSource('app.js');
+const wordMod=await importSource('src/vocabulary/word-domain.js');
+const normalized=wordMod.normalizeWord({id:'x',eng:'  Test ',kor:' 시험 ',missionRole:'new',sourceColumn:'left',wrong:2},0,{
+  senseKey:({eng,kor})=>eng+'|'+kor,
+  normalizeLanguageItem:x=>({...x,languageDomain:'ENGLISH',learningContext:{resolved:true}})
+});
+assert('word-normalize-text',normalized.eng==='Test'&&normalized.kor==='시험');
+assert('word-normalize-role',normalized.missionRole==='NEW'&&normalized.sourceColumn==='LEFT');
+assert('word-normalize-context',normalized.learningContext?.resolved===true);
+assert('word-role-explicit',wordMod.inferMissionRole({missionRole:'REVIEW'},{sheetId:'s'})==='REVIEW');
+assert('word-role-history',wordMod.inferMissionRole({},{sheetId:'s2',lexiconEntry:()=>({sourceRefs:['s1']})})==='REVIEW');
+assert('word-role-new',wordMod.inferMissionRole({},{sheetId:'s1',lexiconEntry:()=>({sourceRefs:['s1']})})==='NEW');
+assert('word-parity-normalizer',legacyApp.includes('function normalizeWord(w,i=0)'));
+assert('word-parity-role',legacyApp.includes('function inferMissionRole(w,sheetId="")'));
+
+console.log('REBUILD_DOMAIN_PARITY_PASS');
+
 console.log('REBUILD_V01_FOUNDATION_PASS hide-seek');
