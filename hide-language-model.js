@@ -301,6 +301,36 @@
     return [...preferred,...rest,...terminal];
   }
 
+  function connectionGuidance(item={},skillProfile={}){
+    const plan=starterExploration(item,{});
+    const clue=String(skillProfile?.adaptiveClue?.clue||'');
+    if(skillProfile?.evidenceLevel!=='ESTABLISHED'||!clue||!clueApplicableToPlan(plan,clue))return null;
+    let title='',cue='';
+    if(clue==='WORD_PART'&&plan.parts?.length){
+      title='단어 조각부터 연결';
+      cue=plan.parts.map(x=>x.label).join(' + ');
+    }else if(clue==='ROOT_ETYMOLOGY'&&plan.verified&&plan.center){
+      title='검증된 어근부터 연결';
+      cue=[plan.center.label,plan.center.meaning].filter(Boolean).join(' · ');
+    }else if(clue==='SCENE'&&plan.scene){
+      title='장면부터 연결';
+      cue=plan.scene;
+    }else if(clue==='PRIOR_WORD'&&plan.links?.length){
+      title='전에 본 단어부터 연결';
+      cue=plan.links.join(' · ');
+    }else return null;
+    return {
+      clue,
+      clueLabel:clueLabel(clue),
+      title,
+      cue,
+      evidenceBasis:'LEARNER_SELF_REPORT',
+      sourceType:plan.sourceType||null,
+      sourceRef:plan.sourceRef||null,
+      verified:!!plan.verified
+    };
+  }
+
   function parentExplanation(item={}){
     const plan=starterExploration(item,{});
     if(!plan)return null;
@@ -372,6 +402,7 @@
     clueApplicableToPlan,
     preferredAssistanceSteps,
     prioritizeExistingAssistance,
+    connectionGuidance,
     parentExplanation,
     summarizeInferenceSkill,
     starterExploration,
