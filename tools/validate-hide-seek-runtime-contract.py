@@ -591,6 +591,8 @@ for needle in [
     "ROOT_PROGRESSIVE_REVEAL",
     ".scene-trail [data-scene-step][hidden]",
     "scene-step-next",
+    ".scene-link[hidden]",
+    "data-scene-link-step",
     "data-next-scene",
     "SCENE_PROGRESSIVE_REVEAL",
     "supportType:plan?.type||null",
