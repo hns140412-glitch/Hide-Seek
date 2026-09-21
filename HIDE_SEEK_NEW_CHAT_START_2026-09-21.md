@@ -125,3 +125,10 @@ Hanja memory evidence:
 - Keep FORM / SOUND / MEANING / RECALL / WRITE_OR_RECONSTRUCT evidence separate.
 - Do not count SOUND_REPLAY as successful sound recall; it is EXPOSURE_ONLY.
 - Continue using Ready-resolved learningContext only.
+
+
+Korean memory evidence:
+- Separate CONTEXT / MEANING / EVIDENCE / RECALL / EXPRESSION.
+- Do not upgrade context exposure to objective recall.
+- Do not treat word-meaning matching as source-text evidence selection.
+- Keep EVIDENCE at zero until a real evidence interaction is implemented.
