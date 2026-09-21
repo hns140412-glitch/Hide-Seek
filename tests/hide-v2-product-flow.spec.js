@@ -452,3 +452,121 @@ test('Hide V2 PWA safe point blocks update activation during active learning or 
   await page.reload();
   expect(await page.evaluate(()=>window.HideV2Pwa.safePoint())).toBe(true);
 });
+
+
+test('Hide V2 retries only failed OCR pages and preserves successful page rows',async({page})=>{
+  let calls=0;
+  await page.route('**/api/capture/analyze',async route=>{
+    calls++;
+    if(calls===1){
+      await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
+        ok:true,provider:'FIXTURE_VISION',model:'v2-fixture',analysis_domain:'HIDE_VOCABULARY',
+        result:{analysis_domain:'HIDE_VOCABULARY',analysis_version:'HIDE_VOCABULARY_OCR_V1',
+          rows:[{eng:'environment',kor:'환경',confidence:'high',warnings:[],mission_role:'NEW'}]}
+      })});
+      return;
+    }
+    if(calls===2){
+      await route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({ok:false,reason:'TEMPORARY_PROVIDER_FAILURE'})});
+      return;
+    }
+    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
+      ok:true,provider:'FIXTURE_VISION',model:'v2-fixture',analysis_domain:'HIDE_VOCABULARY',
+      result:{analysis_domain:'HIDE_VOCABULARY',analysis_version:'HIDE_VOCABULARY_OCR_V1',
+        rows:[{eng:'island',kor:'섬',confidence:'medium',warnings:['CHECK_PRINT'],mission_role:'NEW'}]}
+    })});
+  });
+  await page.goto('/v2.html');
+  await page.locator('#sheetLibraryInput').setInputFiles([
+    {name:'page-1.jpg',mimeType:'image/jpeg',buffer:Buffer.from('page-one')},
+    {name:'page-2.jpg',mimeType:'image/jpeg',buffer:Buffer.from('page-two')}
+  ]);
+  await expect(page.getByRole('heading',{name:'분석하지 못했어요'})).toBeVisible();
+  await expect(page.getByText(/1개 결과는 보존/)).toBeVisible();
+
+  let capture=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')).captureSession);
+  expect(capture.pages[0].status).toBe('ANALYZED');
+  expect(capture.pages[0].analysisRows[0].eng).toBe('environment');
+  expect(capture.pages[1].status).toBe('FAILED');
+
+  await page.getByRole('button',{name:'실패한 페이지만 다시 분석'}).click();
+  await expect(page.getByRole('heading',{name:'분석 결과 확인'})).toBeVisible();
+  await expect(page.getByLabel('OCR 단어 1')).toHaveValue('environment');
+  await expect(page.getByLabel('OCR 단어 2')).toHaveValue('island');
+  await expect(page.getByText(/CHECK_PRINT/)).toBeVisible();
+  expect(calls).toBe(3);
+
+  capture=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')).captureSession);
+  expect(capture.status).toBe('REVIEW');
+  expect(capture.pages.every(x=>x.status==='ANALYZED')).toBeTruthy();
+  expect(capture.lastRows).toHaveLength(2);
+});
+
+test('Hide V2 390x844 primary surfaces have no horizontal overflow and touch targets are usable',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'모바일'},missions:[{
+        id:'m-mobile',title:'모바일 미션',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        items:[{id:'w-mobile',lexicalId:'environment::환경',token:'environment',meaning:'환경',languageDomain:'ENGLISH',missionRole:'NEW',example:'Protect the environment.',evidence:[],source:{}}],
+        sourceCount:0,provenance:{}
+      }],activeMissionId:'m-mobile',activeSession:null,captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  const homeMetrics=await page.evaluate(()=>({
+    innerWidth:window.innerWidth,
+    scrollWidth:document.documentElement.scrollWidth,
+    buttons:[...document.querySelectorAll('button:not([hidden])')].map(x=>({w:x.getBoundingClientRect().width,h:x.getBoundingClientRect().height,right:x.getBoundingClientRect().right,left:x.getBoundingClientRect().left}))
+  }));
+  expect(homeMetrics.scrollWidth).toBeLessThanOrEqual(homeMetrics.innerWidth+1);
+  expect(homeMetrics.buttons.every(x=>x.h>=44&&x.left>=-1&&x.right<=391)).toBeTruthy();
+
+  await page.getByRole('button',{name:'학습 시작'}).click();
+  await expect(page.getByText('MEMORIZE',{exact:true})).toBeVisible();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1)).toBe(true);
+
+  await page.getByRole('button',{name:'기억하고 찾아보기'}).click();
+  const input=page.getByLabel('회상 답 입력');
+  await input.focus();
+  await page.setViewportSize({width:390,height:520});
+  await page.waitForTimeout(150);
+  const focused=await input.boundingBox();
+  expect(focused).not.toBeNull();
+  expect(focused.x).toBeGreaterThanOrEqual(0);
+  expect(focused.x+focused.width).toBeLessThanOrEqual(390);
+  expect(focused.y+focused.height).toBeLessThanOrEqual(520);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1)).toBe(true);
+});
+
+test('Hide V2 mobile Korean response keeps textarea and action visible in reduced visual height',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'모바일국어'},missions:[{
+        id:'m-mobile-ko',title:'모바일 국어',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        items:[{id:'ko-mobile',lexicalId:'불가피::피할 수 없음',token:'불가피',meaning:'피할 수 없음',languageDomain:'KOREAN',missionRole:'NEW',example:'일정 변경이 불가피했다.',evidence:[],source:{}}],
+        sourceCount:0,provenance:{}
+      }],activeMissionId:'m-mobile-ko',activeSession:null,captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'학습 시작'}).click();
+  await page.getByRole('button',{name:'기억하고 찾아보기'}).click();
+  await page.getByLabel('회상 답 입력').fill('불가피');
+  await page.getByRole('button',{name:'기억 확인'}).click();
+  await page.getByLabel('뜻 회상 입력').fill('피할 수 없음');
+  await page.getByRole('button',{name:'뜻 확인'}).click();
+  await expect(page.getByText('RESPONSE TRAIL',{exact:true})).toBeVisible();
+
+  const textarea=page.getByLabel('국어 문장 표현');
+  await textarea.focus();
+  await page.setViewportSize({width:390,height:520});
+  await page.waitForTimeout(150);
+  const box=await textarea.boundingBox();
+  expect(box).not.toBeNull();
+  expect(box.x).toBeGreaterThanOrEqual(0);
+  expect(box.x+box.width).toBeLessThanOrEqual(390);
+  expect(box.y+box.height).toBeLessThanOrEqual(520);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1)).toBe(true);
+});
