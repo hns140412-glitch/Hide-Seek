@@ -13,7 +13,7 @@ module.exports=defineConfig({
     reuseExistingServer:true
   },
   projects:[
-    {name:'chromium',testIgnore:/shared-runtime\.spec\.js/,use:{browserName:'chromium',channel:'chrome',serviceWorkers:'block'}},
+    {name:'chromium',testIgnore:/shared-runtime\.spec\.js/,use:{browserName:'chromium',channel:'chrome',serviceWorkers:'allow'}},
     {name:'shared-runtime',testMatch:/shared-runtime\.spec\.js/,use:{browserName:'chromium',channel:'chrome',serviceWorkers:'allow'}}
   ]
 });
