@@ -81,6 +81,9 @@ test('verified Korean and Hanja meaning maps use thinking-first without fake ety
   await page.getByRole('button',{name:'구조·장면 단서 보기'}).click();
   const koAssist=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_state')).sheets[1].items[0].learningStats?.assistanceTrace?.at(-1));
   expect(koAssist).toMatchObject({step:'VERIFIED_MEANING_MAP',languageDomain:'KOREAN',historicalEtymologyClaim:false});
+  await page.getByRole('button',{name:'다음 뜻의 흔적 보기'}).click();
+  const koProgressive=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_state')).sheets[1].items[0].learningStats?.assistanceTrace?.at(-1));
+  expect(koProgressive).toMatchObject({step:'ROOT_PROGRESSIVE_REVEAL',languageDomain:'KOREAN',supportType:'VERIFIED_MEANING_MAP',historicalEtymologyClaim:false,recallScoreImpact:false});
   await page.getByRole('button',{name:'뜻 확인하기'}).click();
   await page.getByRole('button',{name:'비슷했어'}).click();
   await page.getByRole('button',{name:'외웠어요 · 다음'}).click();
