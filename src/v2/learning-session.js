@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const STAGES=['MEMORIZE','FIRST_FIND','MEANING','DOMAIN_EXTENSION','FINAL_SEEK','COMPLETE'];
+  const STAGES=['MEMORIZE','FIRST_FIND','MEANING','DOMAIN_EXTENSION','FINAL_SEEK','SEEK_AGAIN_RELEARN','SEEK_AGAIN','COMPLETE'];
   const clone=x=>JSON.parse(JSON.stringify(x));
   const current=(session,mission)=>mission.items.find(x=>x.id===session.queue?.[session.index])||null;
   const initialStageFor=w=>String(w?.missionRole||'NEW').toUpperCase()==='REVIEW'?'FIRST_FIND':'MEMORIZE';
@@ -42,6 +42,8 @@
     if(next.stage==='FIRST_FIND'){next.stage='MEANING';return next}
     if(next.stage==='MEANING'){next.stage='DOMAIN_EXTENSION';return next}
     if(next.stage==='DOMAIN_EXTENSION'){next.stage='FINAL_SEEK';return next}
+    if(next.stage==='SEEK_AGAIN_RELEARN'){next.stage='SEEK_AGAIN';return next}
+    if(next.stage==='SEEK_AGAIN')return nextItemOrComplete(next,mission);
     if(next.stage==='FINAL_SEEK')return nextItemOrComplete(next,mission);
     return next;
   }
@@ -167,10 +169,51 @@
       assisted:false,
       attempt:attempt.count
     });
-    return {ok,session:advance(attempt.session,mission)};
+    if(ok)return {ok,session:nextItemOrComplete(attempt.session,mission)};
+    const next=clone(attempt.session);
+    next.stage='SEEK_AGAIN_RELEARN';
+    return {ok,session:next};
+  }
+
+  function submitSeekAgainRelearn(session,mission){
+    const w=current(session,mission);
+    HideV2Memory.record(mission.id,w.id,{
+      stage:'SEEK_AGAIN_RELEARN',
+      evidenceMode:'RELEARN_EXPOSURE',
+      axes:['FORM','MEANING'],
+      result:'SEEN',
+      objectiveVerified:false,
+      objectiveRecall:false,
+      recallScoreImpact:false,
+      assisted:true
+    });
+    return {session:advance(session,mission)};
+  }
+
+  function checkSeekAgain(session,mission,answer){
+    const w=current(session,mission);
+    const attempt=recordAttempt(session,w.id,'SEEK_AGAIN');
+    const a=String(answer||'').trim().normalize('NFKC').toLowerCase();
+    const target=String(w?.token||'').trim().normalize('NFKC').toLowerCase();
+    const ok=!!a&&a===target;
+    HideV2Memory.record(mission.id,w.id,{
+      stage:'SEEK_AGAIN',
+      evidenceMode:'RECALL',
+      axes:['FORM','RECALL'],
+      result:ok?'CORRECT':'WRONG',
+      objectiveVerified:true,
+      objectiveRecall:true,
+      assisted:false,
+      attempt:attempt.count,
+      spacedEvidence:false
+    });
+    if(ok)return {ok,session:nextItemOrComplete(attempt.session,mission)};
+    const next=clone(attempt.session);
+    next.stage='SEEK_AGAIN_RELEARN';
+    return {ok,session:next};
   }
 
   window.HideV2Learning=Object.freeze({
-    STAGES,create,current,advance,submitMemorize,checkFirstFind,checkMeaning,submitDomainExtension,checkFinalSeek
+    STAGES,create,current,advance,submitMemorize,checkFirstFind,checkMeaning,submitDomainExtension,checkFinalSeek,submitSeekAgainRelearn,checkSeekAgain
   });
 })();
