@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION='2026.09.21-language-core-v4';
+  const VERSION='2026.09.21-language-core-v5';
 
   const MODELS={
     ENGLISH:{
@@ -138,12 +138,12 @@
   const STARTER_EXPLORATION={
     environment:{type:'SEMANTIC_SCENE',question:'네 주변에서 environment라고 부를 수 있는 것들은 무엇이 있을까?',scene:'집, 학교, 공기, 물, 나무처럼 우리를 둘러싼 모든 것을 한 장면에 모아봐.',why:'environment는 우리가 살아가는 주변 환경 전체를 가리켜.',connect:['climate','ocean','rainforest']},
     rainforest:{type:'TRANSPARENT_COMPOUND',parts:[{label:'rain',meaning:'비'},{label:'forest',meaning:'숲'}],question:'비가 아주 많이 오는 숲을 머릿속에 그리면 어떤 모습일까?',scene:'굵은 비, 높은 나무, 축축한 초록빛 숲을 떠올려봐.',why:'rain + forest → 비가 많이 내리는 숲 → 열대우림',connect:['jungle','climate']},
-    mountain:{type:'SEMANTIC_SCENE',question:'멀리서 mountain을 봤을 때 가장 먼저 보이는 모양은 무엇일까?',scene:'땅에서 크게 솟아오른 높은 능선과 꼭대기를 떠올려봐.',why:'높게 솟은 큰 지형이라는 장면으로 뜻을 잡아.',connect:['glacier','climate']},
-    planet:{type:'SEMANTIC_SCENE',question:'지구처럼 우주에서 둥글게 떠 있는 큰 천체를 떠올려볼까?',scene:'검은 우주 속에서 별 주위를 도는 둥근 행성을 그려봐.',why:'Earth도 하나의 planet이라는 연결로 기억해.',connect:['environment','climate']},
-    desert:{type:'SEMANTIC_SCENE',question:'비가 거의 오지 않는 넓은 땅은 어떤 색과 느낌일까?',scene:'끝없이 이어지는 모래, 뜨거운 햇빛, 드문 식물을 떠올려봐.',why:'건조하고 비가 적은 넓은 지역이라는 장면으로 연결해.',connect:['climate']},
-    ocean:{type:'SEMANTIC_SCENE',question:'바다가 아주 넓어져서 끝이 잘 보이지 않는 장면을 떠올려볼까?',scene:'지평선까지 이어지는 거대한 푸른 바다를 상상해.',why:'매우 넓은 바다 = ocean.',connect:['island','climate','environment']},
-    island:{type:'SEMANTIC_SCENE',question:'사방이 물인데 가운데 땅 하나만 남아 있다면?',scene:'넓은 바다 한가운데 홀로 떠 있는 땅을 떠올려봐.',why:'물로 둘러싸인 땅이라는 장면으로 기억해.',connect:['ocean']},
-    jungle:{type:'SEMANTIC_SCENE',question:'나무와 덩굴이 아주 빽빽해서 길이 잘 안 보이는 곳은?',scene:'초록 덩굴과 나무가 겹쳐진 빽빽한 숲을 떠올려봐.',why:'빽빽하고 야생적인 숲의 장면으로 연결해.',connect:['rainforest']},
+    mountain:{type:'SEMANTIC_SCENE',visual:['GROUND','RISE','PEAK'],question:'멀리서 mountain을 봤을 때 가장 먼저 보이는 모양은 무엇일까?',scene:'땅에서 크게 솟아오른 높은 능선과 꼭대기를 떠올려봐.',why:'평평한 땅 → 위로 솟음 → 높은 꼭대기라는 모양 흐름으로 뜻을 잡아.',connect:['glacier','climate']},
+    planet:{type:'SEMANTIC_SCENE',visual:['STAR','ORBIT','WORLD'],question:'지구처럼 우주에서 둥글게 떠 있는 큰 천체를 떠올려볼까?',scene:'검은 우주 속에서 별 주위를 도는 둥근 행성을 그려봐.',why:'별 → 그 주위를 도는 궤도 → 둥근 천체라는 관계로 기억해.',connect:['environment','climate']},
+    desert:{type:'SEMANTIC_SCENE',visual:['DRY','WIDE','SPARSE'],question:'비가 거의 오지 않는 넓은 땅은 어떤 색과 느낌일까?',scene:'끝없이 이어지는 모래, 뜨거운 햇빛, 드문 식물을 떠올려봐.',why:'메마름 → 넓게 펼쳐짐 → 식물이 드묾이라는 장면으로 연결해.',connect:['climate']},
+    ocean:{type:'SEMANTIC_SCENE',visual:['WATER','HORIZON','VAST'],question:'바다가 아주 넓어져서 끝이 잘 보이지 않는 장면을 떠올려볼까?',scene:'지평선까지 이어지는 거대한 푸른 바다를 상상해.',why:'물 → 지평선 → 끝없이 넓음이라는 크기 감각으로 ocean을 잡아.',connect:['island','climate','environment']},
+    island:{type:'SEMANTIC_SCENE',visual:['WATER','LAND','SURROUNDED'],question:'사방이 물인데 가운데 땅 하나만 남아 있다면?',scene:'넓은 바다 한가운데 홀로 떠 있는 땅을 떠올려봐.',why:'물 → 가운데 땅 → 사방이 물이라는 관계가 island의 핵심 장면이야.',connect:['ocean']},
+    jungle:{type:'SEMANTIC_SCENE',visual:['TREES','VINES','DENSE'],question:'나무와 덩굴이 아주 빽빽해서 길이 잘 안 보이는 곳은?',scene:'초록 덩굴과 나무가 겹쳐진 빽빽한 숲을 떠올려봐.',why:'나무 → 덩굴 → 빽빽함이 겹치는 장면으로 연결해.',connect:['rainforest']},
     glacier:{type:'SEMANTIC_SCENE',question:'산이나 극지방에서 아주 큰 얼음 덩어리가 천천히 움직인다면?',scene:'산골짜기를 가득 채운 거대한 푸른 얼음 강을 떠올려봐.',why:'오랜 시간 쌓인 얼음이 거대한 덩어리가 된 모습 = glacier.',connect:['mountain','climate']},
     earthquake:{type:'TRANSPARENT_COMPOUND',parts:[{label:'earth',meaning:'땅'},{label:'quake',meaning:'흔들림'}],question:'땅 자체가 갑자기 흔들리는 순간을 상상해볼까?',scene:'책상과 건물이 흔들리고 땅이 울리는 순간을 떠올려봐.',why:'earth + quake → 땅의 흔들림 → 지진',connect:['environment']},
     climate:{type:'SEMANTIC_SCENE',question:'오늘 날씨 하나가 아니라, 어떤 지역의 오랜 날씨 특징을 생각해보면?',scene:'한 지역의 여러 계절과 비·눈·더위·추위가 한 장면에 이어지는 모습을 떠올려봐.',why:'오랜 기간 나타나는 지역의 날씨 특징 = climate.',connect:['desert','rainforest','glacier','ocean']},
@@ -157,7 +157,7 @@
     const encountered=new Set((context.encounteredWords||[]).map(x=>String(x).toLowerCase()));
     const links=(base.connect||[]).filter(x=>encountered.has(x));
     const evidence=supportContract(item,base);
-    return {word,type:evidence?.supportType||base.type,question:base.question,scene:evidence?.scene||base.scene,why:evidence?.bridge||base.why,parts:Array.isArray(base.parts)?base.parts:[],links,sourceType:evidence?.sourceType||'CURATED_SEMANTIC_SUPPORT',sourceRef:evidence?.sourceRef||null,verified:!!evidence?.verified,claimsHistoricalEtymology:!!evidence?.claimsHistoricalEtymology,center:evidence?.center||null,nodes:evidence?.nodes||[]};
+    return {word,type:evidence?.supportType||base.type,question:base.question,scene:evidence?.scene||base.scene,why:evidence?.bridge||base.why,parts:Array.isArray(base.parts)?base.parts:[],visual:Array.isArray(base.visual)?base.visual:[],links,sourceType:evidence?.sourceType||'CURATED_SEMANTIC_SUPPORT',sourceRef:evidence?.sourceRef||null,verified:!!evidence?.verified,claimsHistoricalEtymology:!!evidence?.claimsHistoricalEtymology,center:evidence?.center||null,nodes:evidence?.nodes||[]};
   }
 
   function summarizeInferenceSkill(events=[]){
@@ -179,13 +179,14 @@
     const verifiedNodes=plan.nodes?.length?'<div class="root-orbit">'+plan.nodes.map(n=>'<span class="root-orbit-node"><b>'+esc(n.label)+'</b><small>'+esc(n.meaning)+'</small></span>').join('')+'</div>':'';
     const visualCenter=plan.center||{label:plan.word,meaning:plan.type==='TRANSPARENT_COMPOUND'?'조각을 합쳐 뜻 만들기':'장면에서 핵심 개념 잡기'};
     const rootCore='<div class="root-core"><small>'+(plan.verified?'핵심 흔적':'핵심 개념')+'</small><b>'+esc(visualCenter.label)+'</b><span>'+esc(visualCenter.meaning)+'</span></div>';
+    const sceneTrail=plan.visual?.length?'<div class="scene-trail">'+plan.visual.map((x,i)=>'<span><small>'+esc(String(i+1))+'</small><b>'+esc(x)+'</b></span>').join('<i>→</i>')+'</div>':'';
     const links=plan.links.length?'<div class="thinking-links"><b>전에 만난 연결</b>'+plan.links.map(x=>'<span>'+esc(x)+'</span>').join('')+'</div>':'';
     const truthBadge=plan.verified?'검증 어원':'현대 구조/의미 단서';
     return '<section class="thinking-map-card" data-thinking-word="'+esc(plan.word)+'" data-support-type="'+esc(plan.type)+'">'+
       '<div class="hero-kicker"><span>THINKING TRAIL</span><span>'+esc(truthBadge)+'</span></div>'+
       '<h3>처음 본 단어처럼 추론해보기</h3><p class="thinking-question">'+esc(plan.question)+'</p>'+parts+
       '<div class="inference-box"><label>내가 예상한 뜻/개념<input class="input inference-prediction" maxlength="80" placeholder="정답 보기 전에 한 번 추측해봐"></label><div class="inference-row"><label>쓴 단서<select class="input inference-clue"><option value="WORD_PART">단어 조각</option><option value="ROOT_ETYMOLOGY">어근·어원</option><option value="SCENE">장면</option><option value="PRIOR_WORD">전에 본 단어</option><option value="OTHER">기타</option></select></label><label>확신<select class="input inference-confidence"><option value="LOW">낮음</option><option value="MEDIUM" selected>보통</option><option value="HIGH">높음</option></select></label></div><button class="btn primary full inference-submit" type="button">내 추론 남기기</button></div>'+
-      '<button class="btn secondary full thinking-reveal" type="button" disabled>구조·장면 단서 보기</button><div class="thinking-reveal-body" hidden>'+rootCore+verifiedNodes+'<div class="thinking-scene"><b>머릿속 장면</b><span>'+esc(plan.scene)+'</span></div><div class="thinking-why"><b>뜻이 이어지는 길</b><span>'+esc(plan.why)+'</span></div>'+links+(plan.sourceRef?'<small class="truth-source">출처 확인됨 · '+esc(plan.sourceType)+'</small>':'')+'</div></section>';
+      '<button class="btn secondary full thinking-reveal" type="button" disabled>구조·장면 단서 보기</button><div class="thinking-reveal-body" hidden>'+rootCore+verifiedNodes+sceneTrail+'<div class="thinking-scene"><b>머릿속 장면</b><span>'+esc(plan.scene)+'</span></div><div class="thinking-why"><b>뜻이 이어지는 길</b><span>'+esc(plan.why)+'</span></div>'+links+(plan.sourceRef?'<small class="truth-source">출처 확인됨 · '+esc(plan.sourceType)+'</small>':'')+'</div></section>';
   }
   window.HideLanguageModel={
     VERSION,
