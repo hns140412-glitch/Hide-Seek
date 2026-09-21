@@ -30,6 +30,13 @@ assert(index.includes('./hide-pwa-update-v01.js'));
 assert(app.includes('globalThis.HideSeekReleaseDescriptor'));
 assert(!app.includes("navigator.serviceWorker.register('./sw.js')"));
 assert(bridge.includes('globalThis.HideSeekPwaSafePoint=isSafeUpdatePoint'));
+assert(bridge.includes("'review_directive'"));
+assert(bridge.includes("function reviewDirective()"));
+assert(bridge.includes("EXPLICIT_READY_PLANNER_REVIEW_DIRECTIVE"));
+assert(bridge.includes("reviewPolicyOwner:'READY_LEARNING_ENGINE'"));
+assert(bridge.includes("scheduleOwner:'READY_SET_PLANNER'"));
+assert(app.includes("window.HideSeekBridge?.reviewDirective?.()"));
+assert(!app.includes("sort((a,b)=>(b.nextReviewPriority||0)-(a.nextReviewPriority||0))"));
 let s='IDLE';
 for(const [ev,ctx,next] of [['DETECT',{},'UPDATE_DETECTED'],['DOWNLOAD_COMPLETE',{},'DOWNLOADED_WAITING'],['EVALUATE_SAFE_POINT',{safe_point:false},'DOWNLOADED_WAITING'],['EVALUATE_SAFE_POINT',{safe_point:true},'SAFE_TO_ACTIVATE'],['ACTIVATE',{safe_point:true},'ACTIVATING']]){const r=pwa.transition(s,ev,ctx);assert.equal(r.ok,true);assert.equal(r.state,next);s=r.state}
 console.log('PASS: Hide consumes TAKY shared release/PWA mechanisms while retaining Hide safe-point semantics');
