@@ -74,6 +74,51 @@ test('Hide V2 Korean response stays production evidence, not recall inflation',a
   expect(ev.objectiveRecall).toBe(false);
 });
 
+
+test('Hide V2 Hanja SOUND FIND records only verified source-linked sound recall',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'한자 V2'},missions:[{
+        id:'m-hanja',title:'한자 소리 탐험',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        items:[{
+          id:'hanja1',lexicalId:'山::산',token:'山',meaning:'산',languageDomain:'HANJA',learningContext:null,
+          meaningMap:null,contextEvidence:null,
+          soundEvidence:{verified:true,sourceType:'VERIFIED_HANJA_SOUND',sourceRef:'fixture:hanja:山',reading:'산'},
+          missionRole:'NEW',evidence:[],source:{pageId:'fixture',rowIndex:0}
+        }],
+        sourceCount:0,provenance:{source:'TEST_FIXTURE'}
+      }],activeMissionId:'m-hanja',events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'탐험 시작'}).click();
+  await page.getByRole('button',{name:'기억하고 찾아보기'}).click();
+  await page.getByLabel('회상 답 입력').fill('山');
+  await page.getByRole('button',{name:'기억 확인'}).click();
+  await page.getByLabel('뜻 회상 입력').fill('산');
+  await page.getByRole('button',{name:'뜻 확인'}).click();
+
+  await expect(page.getByText('소리 찾기',{exact:true})).toBeVisible();
+  await page.getByLabel('한자 음 입력').fill('산');
+  await page.getByRole('button',{name:'음 기억 확인'}).click();
+  await expect(page.getByText('마지막 찾기',{exact:true})).toBeVisible();
+
+  const soundEvidence=await page.evaluate(()=>{
+    const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
+    return s.missions[0].items[0].evidence.find(x=>x.stage==='SOUND_FIND');
+  });
+  expect(soundEvidence.evidenceMode).toBe('RECALL');
+  expect(soundEvidence.axes).toEqual(['SOUND','RECALL']);
+  expect(soundEvidence.result).toBe('CORRECT');
+  expect(soundEvidence.objectiveVerified).toBe(true);
+  expect(soundEvidence.objectiveRecall).toBe(true);
+  expect(soundEvidence.source).toBe('fixture:hanja:山');
+
+  await page.getByLabel('최종 회상 답 입력').fill('山');
+  await page.getByRole('button',{name:'마지막 기억 확인'}).click();
+  await expect(page.getByRole('heading',{name:'탐험 완료'})).toBeVisible();
+});
+
 test('Hide V2 OCR path uses the shared family adapter and commits reviewed rows',async({page})=>{
   await page.route('**/api/capture/analyze',async route=>{
     await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
