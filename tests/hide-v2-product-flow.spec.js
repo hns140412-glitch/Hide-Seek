@@ -1637,6 +1637,45 @@ test('Hide V2 mobile Korean response keeps textarea and action visible in reduce
 });
 
 
+test('Hide V2 returns scoped Korean expression review candidates without semantic auto-scoring',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'표현 검토'},missions:[{
+        id:'m-expression-review',title:'표현 검토 미션',status:'COMPLETED',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        items:[
+          {id:'ko-in',lexicalId:'불가피::피할 수 없음',token:'불가피',meaning:'피할 수 없음',languageDomain:'KOREAN',missionRole:'REVIEW',source:{},evidence:[
+            {at:'2026-09-22T00:00:00.000Z',stage:'RESPONSE_TRAIL',evidenceMode:'PRODUCTION',axes:['EXPRESSION','CONTEXT'],result:'TARGET_USED',responseText:'일정 변경은 불가피했다.',targetUsed:true,objectiveVerified:false,objectiveRecall:false,recallScoreImpact:false,assisted:false}
+          ]},
+          {id:'ko-out',lexicalId:'필연::반드시 그렇게 됨',token:'필연',meaning:'반드시 그렇게 됨',languageDomain:'KOREAN',missionRole:'REVIEW',source:{},evidence:[
+            {at:'2026-09-22T00:01:00.000Z',stage:'RESPONSE_TRAIL',evidenceMode:'PRODUCTION',axes:['EXPRESSION','CONTEXT'],result:'TARGET_USED',responseText:'결과는 필연이었다.',targetUsed:true,objectiveVerified:false,objectiveRecall:false,recallScoreImpact:false,assisted:false}
+          ]}
+        ],
+        sourceCount:0,provenance:{source:'TEST_FIXTURE'}
+      }],activeMissionId:'m-expression-review',
+      activeSession:{id:'s-expression-review',missionId:'m-expression-review',index:0,queue:['ko-in'],stage:'COMPLETE',startedAt:new Date().toISOString(),completedAt:new Date().toISOString(),attempts:{}},
+      captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+
+  const result=await page.evaluate(()=>window.HideV2ReadyBridge.buildResult());
+  expect(result.expressionReviewCandidates).toHaveLength(1);
+  expect(result.humanSemanticReviewAvailable).toBe(true);
+  expect(result.expressionReviewCandidates[0].itemId).toBe('ko-in');
+  expect(result.expressionReviewCandidates[0].responseText).toBe('일정 변경은 불가피했다.');
+  expect(result.expressionReviewCandidates[0].targetUsed).toBe(true);
+  expect(result.expressionReviewCandidates[0].semanticCorrectnessClaimed).toBe(false);
+  expect(result.expressionReviewCandidates[0].objectiveVerified).toBe(false);
+  expect(result.expressionReviewCandidates[0].reviewState).toBe('HUMAN_SEMANTIC_REVIEW_AVAILABLE');
+  expect(result.expressionReviewCandidates.some(x=>x.itemId==='ko-out')).toBe(false);
+
+  await page.getByRole('button',{name:'탐험 시작'}).click();
+  await expect(page.getByRole('heading',{name:'탐험 완료'})).toBeVisible();
+  await expect(page.getByText('함께 확인할 표현',{exact:true})).toBeVisible();
+  await expect(page.getByText('1개 문장이 있어요.',{exact:true})).toBeVisible();
+  await expect(page.getByText(/의미 정확도는 부모·교사와 함께 확인/)).toBeVisible();
+});
+
 test('Hide V2 returnToReady emits a V2 learning_event envelope with exact task context',async({page})=>{
   const directive={
     authority:'EXPLICIT_READY_PLANNER_REVIEW_DIRECTIVE',
