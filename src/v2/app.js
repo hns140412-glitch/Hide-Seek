@@ -267,8 +267,27 @@
     }
 
     if(session.stage==='FINAL_SEEK'){
-      view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}${journeyHtml(session.stage)}${crewHtml(w,session.stage)}<div class="learn-head"><span class="phase-chip">${childStageLabel('FINAL_SEEK')}</span><b>${idx}/${total}</b></div><section class="card word-card"><p>마지막으로 힌트 없이 단어를 다시 꺼내보세요.</p><div class="bigword">${esc(w.meaning)}</div><input id="v2Final" class="input" aria-label="최종 회상 답 입력" autocomplete="off" spellcheck="false"><button id="v2FinalCheck" class="btn primary full">마지막 기억 확인</button></section></section>`;
-      $('#v2FinalCheck').onclick=()=>{const r=HideV2Learning.checkFinalSeek(session,m,$('#v2Final').value);HideV2Session.update(r.session);setFlash(r.ok?'마지막 찾기 성공':'괜찮아요. 잠깐 다시 보고 한 번 더 찾아봐요.');render()};
+      const supportPlan=globalThis.HideLanguageModel?.starterExploration?.({
+        eng:w.token,word:w.token,kor:w.meaning,languageDomain:w.languageDomain,meaningMap:w.meaningMap
+      },{encounteredWords:[]})||null;
+      const supportUsed=Number(session.attempts?.[`${w.id}:FINAL_SEEK_ASSIST`]||0)>0;
+      const supportHtml=supportPlan?.scene
+        ?`<section class="final-support"><button id="v2FinalSupport" class="btn secondary full" type="button" ${supportUsed?'disabled':''}>기억 장면 보기</button><div id="v2FinalSupportScene" class="final-support__scene" ${supportUsed?'':'hidden'}><b>기억 장면</b><span>${esc(supportPlan.scene)}</span><small>이 도움을 본 뒤의 성공은 바로 장기 회상으로 세지 않고, 한 번 더 무힌트로 확인해요.</small></div></section>`
+        :'';
+      view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}${journeyHtml(session.stage)}${crewHtml(w,session.stage)}<div class="learn-head"><span class="phase-chip">${childStageLabel('FINAL_SEEK')}</span><b>${idx}/${total}</b></div><section class="card word-card"><p>마지막으로 단어를 기억에서 다시 꺼내보세요.</p><div class="bigword">${esc(w.meaning)}</div><input id="v2Final" class="input" aria-label="최종 회상 답 입력" autocomplete="off" spellcheck="false">${supportHtml}<button id="v2FinalCheck" class="btn primary full">마지막 기억 확인</button></section></section>`;
+      if($('#v2FinalSupport'))$('#v2FinalSupport').onclick=()=>{
+        const r=HideV2Learning.useFinalSupport(session,m,{supportType:'SEMANTIC_SCENE',sourceType:supportPlan.sourceType||'CURATED_SEMANTIC_SUPPORT',sourceRef:supportPlan.sourceRef||null});
+        HideV2Session.update(r.session);
+        $('#v2FinalSupport').disabled=true;
+        const scene=$('#v2FinalSupportScene');if(scene)scene.hidden=false;
+      };
+      $('#v2FinalCheck').onclick=()=>{
+        const live=HideV2Session.current()?.session||session;
+        const r=HideV2Learning.checkFinalSeek(live,m,$('#v2Final').value);
+        HideV2Session.update(r.session);
+        setFlash(r.ok?(r.assisted?'도움을 썼으니 한 번 더 무힌트로 찾아봐요.':'마지막 찾기 성공'):'괜찮아요. 잠깐 다시 보고 한 번 더 찾아봐요.');
+        render()
+      };
       return;
     }
 
