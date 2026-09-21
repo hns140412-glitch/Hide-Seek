@@ -375,8 +375,9 @@ for needle in [
 
 for needle in [
     "missionComposition",
-    "expectedNew:12",
-    "expectedReview:24",
+    "observedNew:items.filter",
+    "observedReview:items.filter",
+    "classificationSource:'ROLE_CONFIRMATION_OR_HISTORY'",
     "layoutIndependent:true",
     "MISSION_REVIEW_CONFIRMATION",
     "LEARNER_HISTORY_INFERENCE",
