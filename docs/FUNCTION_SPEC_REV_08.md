@@ -218,23 +218,25 @@ Each committed mission item carries a mission role:
 
 The role is inferred from learner history unless explicitly preserved from a trusted source. Current real-world patterns such as 12 NEW + 24 REVIEW are valid mission instances, not hard-coded universal counts.
 
+### Current morning mock-test evidence
+The attached photographed sheet is not the source learning print. It is a morning mock vocabulary test performed by parent and child.
 
-### Current recurring test-sheet layout
-For the learner's current photographed vocabulary test sheet:
-- left physical vocabulary block: 12 items = NEW
-- remaining 24 items = REVIEW
-- this is a source-layout profile, not a universal vocabulary rule.
+Observed routine from this mock-test evidence:
+- total 36 items
+- 12 NEW items
+- 24 REVIEW items
+- in this specific mock-test sheet, the NEW 12 happened to be placed in the left block.
 
-Canonical layout profile:
-`WEEKDAY_VOCAB_LEFT12_NEW_REST_REVIEW`
+Critical rule:
+- source learning prints may use different layouts,
+- left/right position must NOT determine NEW / REVIEW,
+- 12 + 24 is the current mission composition pattern, not a universal print-layout parser rule.
 
-OCR must preserve physical provenance:
-- `sourceColumn`
-- `sourceRowIndex`
-- `sourceColumnIndex`
+Role assignment authority:
+1. explicit mission role already preserved,
+2. prior learner lexical history can infer REVIEW,
+3. review screen allows quick NEW / REVIEW correction,
+4. source-column metadata is provenance only and carries no learning-role authority.
 
-Role assignment:
-- LEFT → NEW
-- non-LEFT → REVIEW
-
-The 12/24 positional fallback is allowed only when this exact source-layout profile has already been established. A generic 36-word sheet must not be silently classified by count alone.
+Mission metadata may preserve the current expected composition:
+`expectedNew=12 / expectedReview=24 / layoutIndependent=true`.
