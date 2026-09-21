@@ -18,12 +18,12 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 |---|---|---:|---:|---|---|
 | V2 app bootstrap/store/router | RUNTIME_VERIFIED | yes | N/A | V2 CI | no release/PWA cutover |
 | V1 non-destructive migration | RUNTIME_VERIFIED | yes | partial | browser migration fixture | broader legacy variants not yet sampled |
-| Mission create/active ownership | FUNCTIONAL | yes | partial | browser + store tests | list/edit/archive/delete lifecycle incomplete |
+| Mission create/active ownership | RUNTIME_VERIFIED | yes | partial | browser + store tests | advanced filters/bulk operations not implemented |
 | Camera input path | PARTIAL | yes | no | code/browser file input | physical camera permission/device not verified |
 | Album multi-image intake | FUNCTIONAL | yes | partial | browser input | large/odd image sets not representative-tested |
 | Capture blob persistence | RUNTIME_VERIFIED | yes | fixture blob | IndexedDB + reload test | storage quota/recovery not verified |
 | OCR shared adapter integration | RUNTIME_VERIFIED | yes | fixture only | OCR browser fixture | real varied prints/provider behavior unverified |
-| OCR review persistence/resume | RUNTIME_VERIFIED | yes | fixture only | reload browser test | row edit/reject/confidence UX incomplete |
+| OCR review persistence/resume | RUNTIME_VERIFIED | yes | fixture only | reload + editable review browser tests | confidence guidance/duplicate merge UX still incomplete |
 | MEMORIZE | FUNCTIONAL | yes | fixture | V2 browser flow | richer exploration assistance not yet ported |
 | FIRST FIND | FUNCTIONAL | yes | fixture | V2 browser flow | recovery/retry pedagogy still simplified |
 | MEANING recall | FUNCTIONAL | yes | fixture | V2 browser flow | recognition/contrast variants not yet ported |
@@ -36,21 +36,32 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 | Ready Planner directive intake | RUNTIME_VERIFIED | yes | fixture contract | browser directed lexical-id test | live current Ready runtime integration unverified |
 | Session reload/resume | RUNTIME_VERIFIED | yes | fixture | browser reload test | background/PWA lifecycle not verified |
 | Exploration crew / child-facing polished UI | SKELETON | partial | no | minimal V2 shell | product UI redesign still required |
-| Records / wordbook / mission management surfaces | NOT_STARTED | no | no | none in V2 | must be rewritten, not copied blindly |
+| Mission management surface | RUNTIME_VERIFIED | yes | N/A | selection/rename/archive/delete browser flow | richer history/filtering/bulk actions pending |
+| Records / wordbook surfaces | NOT_STARTED | no | no | none in V2 | must be rewritten, not copied blindly |
 | PWA install/offline/update | NOT_STARTED | no | no | none for V2 | V2 service-worker/release integration pending |
 | Physical device behavior | NOT_STARTED | no | no | DEVICE_VERIFIED=0 | camera/touch/keyboard/install all pending |
 | Production/release | NOT_STARTED | no | no | none | intentional hold |
 
 ## Claim levels
 
-- PRODUCT_COMPLETION: approximately 35%
-- CODED: approximately 52%
-- CI_VERIFIED: approximately 46%
-- BROWSER_RUNTIME_VERIFIED: approximately 35%
+- PRODUCT_COMPLETION: approximately 39%
+- CODED: approximately 56%
+- CI_VERIFIED: approximately 50%
+- BROWSER_RUNTIME_VERIFIED: approximately 40%
 - DEVICE_VERIFIED: 0%
 - RELEASE_VERIFIED: 0%
 
 These values are conservative product-level estimates, not code-volume or gate-count ratios.
+
+### 2026-09-21 surgery increment
+- Mission lifecycle ownership now includes list/select/rename/archive/delete.
+- Active-session mission deletion fails closed.
+- OCR review rows can be corrected or excluded before commit.
+- OCR commit lands in the mission-management surface rather than pretending the home summary is management.
+- Exact pre-document code HEAD `6c419115797afca6e52fdcfc84edc99150769d7c` passed:
+  - Validate Hide Runtime V2 #26 — SUCCESS
+  - Validate Hide & Seek #480 — SUCCESS
+- The completion increase reflects these reachable product capabilities only; test/doc additions themselves do not increase completion.
 
 ## Reusable validated asset pool — separate from V2 completion
 
