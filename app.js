@@ -28,12 +28,12 @@ const DEFAULT_STATE={
  settings:{sound:true,partnerVoice:true,reducedMotion:false,pressureReduced:false},
  sheets:[],
  activeSheetId:"",sessions:[],xp:0,streak:0,lastStudy:"",memory:{},lexicon:{},memoryEvents:{shownBySheet:{},lastLexicalId:""},ocrDraft:null,
- learning:{phase:"first",firstIndex:0,meaningIndex:0,connectionRound:0,weakRound:0,weakQueue:[],weakIndex:0,weakCompleted:[],combo:0,flow:0,fever:false,history:[]},
+ learning:{phase:"prepare",prepIndex:0,prepCompleted:false,firstIndex:0,meaningIndex:0,connectionRound:0,weakRound:0,weakQueue:[],weakIndex:0,weakCompleted:[],combo:0,flow:0,fever:false,history:[]},
  codeRed:{index:0,results:{},history:[],retrace:[],retryOnly:false,targetIds:[]},
  onboardingStep:0,onboardingDone:false
 };
 function senseKey(w){return `${String(w?.eng||"").trim().toLowerCase()}::${String(w?.kor||"").trim().replace(/\s+/g," ")}`}
-function normalizeWord(w,i=0){const eng=String(w.eng||"").trim(),kor=String(w.kor||"").trim(),language=globalThis.HideLanguageModel?.normalizeItem?.(w)||w;return {id:w.id||`w-${Date.now()}-${i}`,lexicalId:w.lexicalId||senseKey({eng,kor}),eng,kor,example:w.example||"",languageDomain:language.languageDomain||w.languageDomain||"ENGLISH",meaningMap:language.meaningMap||w.meaningMap||null,wrong:Number(w.wrong||0),pass:Number(w.pass||0),hint:Number(w.hint||0),confidence:w.confidence||"high",needsReview:!!w.needsReview,manuallyEdited:!!w.manuallyEdited,reviewConfirmed:!!w.reviewConfirmed,sourcePageId:w.sourcePageId||"",learningStats:w.learningStats||{}}}
+function normalizeWord(w,i=0){const eng=String(w.eng||"").trim(),kor=String(w.kor||"").trim(),language=globalThis.HideLanguageModel?.normalizeItem?.(w)||w,role=String(w.missionRole||w.mission_role||"").toUpperCase();return {id:w.id||`w-${Date.now()}-${i}`,lexicalId:w.lexicalId||senseKey({eng,kor}),eng,kor,example:w.example||"",languageDomain:language.languageDomain||w.languageDomain||"ENGLISH",meaningMap:language.meaningMap||w.meaningMap||null,missionRole:["NEW","REVIEW"].includes(role)?role:"",wrong:Number(w.wrong||0),pass:Number(w.pass||0),hint:Number(w.hint||0),confidence:w.confidence||"high",needsReview:!!w.needsReview,manuallyEdited:!!w.manuallyEdited,reviewConfirmed:!!w.reviewConfirmed,sourcePageId:w.sourcePageId||"",learningStats:w.learningStats||{}}}
 function migrate(raw){
  const s=Object.assign(clone(DEFAULT_STATE),raw||{});
  s.schemaVersion=SCHEMA_VERSION;s.appRevision=APP_REV;
@@ -97,6 +97,10 @@ function partnerSpeak(text=$("#partnerText")?.textContent||""){if(!S.settings.pa
 function speakWord(word){if(!("speechSynthesis" in window))return toast("이 기기에서는 음성 기능을 사용할 수 없어요.");speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(word);u.lang="en-US";u.rate=.82;speechSynthesis.speak(u)}
 function markStudy(xp=2){const d=today();if(S.lastStudy!==d){S.streak=S.lastStudy?S.streak+1:1;S.lastStudy=d;S.sessions.push({date:d,count:0})}const r=S.sessions.find(x=>x.date===d);if(r)r.count++;S.xp+=xp;save()}
 function lexiconEntry(w){return S.lexicon?.[w?.lexicalId||senseKey(w)]||null}
+function inferMissionRole(w,sheetId=""){if(["NEW","REVIEW"].includes(w?.missionRole))return w.missionRole;const entry=lexiconEntry(w),prior=(entry?.sourceRefs||[]).some(id=>id&&id!==sheetId);return prior?"REVIEW":"NEW"}
+function applyMissionRoles(items,sheetId=""){return (items||[]).map(w=>({...w,missionRole:inferMissionRole(w,sheetId)}))}
+function ensureMissionRoles(sh=sheet()){if(!sh)return;sh.items=applyMissionRoles(sh.items||[],sh.sheetId)}
+function missionRoleCounts(sh=sheet()){ensureMissionRoles(sh);const rows=(sh?.items||[]).filter(w=>w.eng&&w.kor&&!w.needsReview);return {NEW:rows.filter(w=>w.missionRole==="NEW").length,REVIEW:rows.filter(w=>w.missionRole==="REVIEW").length}}
 function memoryStrength(){const ws=validWords();if(!ws.length)return 0;const measured=ws.map(w=>lexiconEntry(w)?.memoryStrength).filter(v=>Number.isFinite(v));if(!measured.length)return 0;return Math.round(measured.reduce((a,v)=>a+v,0)/measured.length)}
 function memoryQualityModel(sig,correctTotal,wrongTotal,reviewStrengthDelta=0){
  const recoveryBonus=sig.recoveryStatus==='SPACED_RECOVERED'?12:sig.recoveryStatus==='IMMEDIATE_ONLY'?-4:sig.recoveryStatus==='NEEDS_UNASSISTED_RECALL'?-8:0;
@@ -131,11 +135,11 @@ function syncSheetToLexicon(sh=sheet()){
 }
 function selectPastMemoryEvent(){const active=sheet()?.sheetId;if(!active||S.memoryEvents?.shownBySheet?.[active])return null;const pool=Object.values(S.lexicon||{}).filter(x=>(x.sourceRefs||[]).some(id=>id!==active)).sort((a,b)=>(b.nextReviewPriority||0)-(a.nextReviewPriority||0));if(!pool.length)return null;return pool.find(x=>x.lexicalId!==S.memoryEvents?.lastLexicalId)||pool[0]}
 function markMemoryEventShown(entry){const active=sheet()?.sheetId;if(!active||!entry)return;S.memoryEvents=S.memoryEvents||{shownBySheet:{},lastLexicalId:""};S.memoryEvents.shownBySheet=S.memoryEvents.shownBySheet||{};S.memoryEvents.shownBySheet[active]={lexicalId:entry.lexicalId,shownAt:nowISO()};S.memoryEvents.lastLexicalId=entry.lexicalId;save()}
-function learningProgress(){const ws=validWords();if(!ws.length)return 0;const p={first:15,meaning:42,connection:68,weak:82,code:90,done:100}[S.learning.phase]||0;return p}
+function learningProgress(){const ws=validWords();if(!ws.length)return 0;const p={prepare:5,first:22,meaning:45,connection:68,weak:82,code:90,done:100}[S.learning.phase]||0;return p}
 function stateLabel(st){return ({DRAFT:"초안",REVIEW_REQUIRED:"확인 필요",READY:"학습 준비",LEARNING:"학습 중",CODE_RED_READY:"FINAL SEEK 준비",RETRACE_REQUIRED:"다시 찾기",TEST_READY:"시험 준비 완료",COMPLETED:"완료",ARCHIVED:"보관"})[st]||st}
 function traceList(w,kind){w.learningStats=w.learningStats||{};const key=kind+'Trace';if(!Array.isArray(w.learningStats[key]))w.learningStats[key]=[];return w.learningStats[key]}
 function addWordTrace(w,kind,event){const list=traceList(w,kind);list.push({...event,at:event?.at||nowISO()});if(list.length>80)list.splice(0,list.length-80);return list.at(-1)}
-function weakScore(w){return (w.wrong||0)*5+(w.pass||0)*4+(w.hint||0)*3+(w.learningStats?.timeout||0)*4+(w.learningStats?.slowCorrect||0)*2+(w.learningStats?.unsure||0)*2+(w.learningStats?.meaningWrong||0)*3+(w.learningStats?.connectionMismatch||0)*2}
+function weakScore(w){return (w.wrong||0)*5+(w.pass||0)*4+(w.hint||0)*3+(w.learningStats?.timeout||0)*4+(w.learningStats?.slowCorrect||0)*2+(w.learningStats?.unsure||0)*2+(w.learningStats?.firstRecallWrong||0)*3+(w.learningStats?.meaningWrong||0)*3+(w.learningStats?.connectionMismatch||0)*2}
 function deriveMemorySignature(w){
  const acq=traceList(w,'acquisition'),rec=traceList(w,'recognition'),assoc=traceList(w,'association'),retrieval=traceList(w,'retrieval'),assist=traceList(w,'assistance'),recovery=traceList(w,'recovery');
  const semanticWeakness=Math.min(100,(acq.filter(x=>x.event==='LEARNER_UNSURE').length*18)+(rec.filter(x=>x.result==='WRONG').length*24)+(assoc.filter(x=>x.result==='MISMATCH').length*12));
@@ -255,32 +259,50 @@ function renderOCRReview(rows){
   const out=$("#ocrRows .row").map((r,i)=>{const eng=$(".eng",r).value.trim(),kor=$(".kor",r).value.trim(),edited=eng!==String(data[i].eng||"").trim()||kor!==String(data[i].kor||"").trim(),base=normalizeWord({...data[i],eng,kor,needsReview:!!data[i].needsReview,manuallyEdited:!!data[i].manuallyEdited||edited,reviewConfirmed:!!data[i].reviewConfirmed},i);return {...base,sourcePageId:data[i].sourcePageId||"",sourcePageOrder:Number(data[i].sourcePageOrder||0),ocrProvider:data[i].ocrProvider||null,ocrModel:data[i].ocrModel||null,ocrAnalysisVersion:data[i].ocrAnalysisVersion||null,ocrAnalysisDomain:data[i].ocrAnalysisDomain||null,ocrEvidenceItemId:data[i].ocrEvidenceItemId||null,ocrWarnings:Array.isArray(data[i].ocrWarnings)?[...data[i].ocrWarnings]:[]}}).filter(x=>x.eng&&x.kor);
   if(!out.length)return toast("단어와 뜻을 한 개 이상 입력해 주세요.");
   const unresolved=out.filter(x=>x.needsReview).length,sh=sheet();
-  sh.items=out;sh.updatedAt=nowISO();sh.status=unresolved?"REVIEW_REQUIRED":"READY";sh.caseMastery=0;sh.recognitionMeta={...(sh.recognitionMeta||{}),reviewedAt:nowISO(),count:out.length,unresolved};
+  sh.items=applyMissionRoles(out,sh.sheetId);sh.updatedAt=nowISO();sh.status=unresolved?"REVIEW_REQUIRED":"READY";sh.caseMastery=0;sh.recognitionMeta={...(sh.recognitionMeta||{}),reviewedAt:nowISO(),count:out.length,unresolved};
   S.learning=clone(DEFAULT_STATE.learning);S.codeRed=clone(DEFAULT_STATE.codeRed);save();
   toast(unresolved?`저장 완료 · 확인 필요 ${unresolved}개는 학습에서 제외돼요.`:"변경 저장 완료");
   currentTab="study";viewStack=[];render();
  };
  setPartner("확실한 건 두고, 애매한 행만 같이 확인해보자.","note")
 }
-function resumeCurrentLearning(){const st=sheet()?.status||"READY";if(st==="CODE_RED_READY"){viewStack=[];return renderCodeRed()}if(st==="RETRACE_REQUIRED"){viewStack=[];return renderRetrace()}if(st==="TEST_READY"||st==="COMPLETED"){viewStack=[];return renderComplete()}const phase=S.learning.phase||"first";const map={first:renderFirstContact,meaning:renderMeaningCheck,connection:renderConnection,weak:renderWeak,code:renderCodeRed,done:renderComplete};viewStack=[];(map[phase]||renderFirstContact)()}
+function resumeCurrentLearning(){const st=sheet()?.status||"READY";if(st==="CODE_RED_READY"){viewStack=[];return renderCodeRed()}if(st==="RETRACE_REQUIRED"){viewStack=[];return renderRetrace()}if(st==="TEST_READY"||st==="COMPLETED"){viewStack=[];return renderComplete()}const phase=S.learning.phase||"prepare";const map={prepare:renderMemorizeStage,first:renderFirstContact,meaning:renderMeaningCheck,connection:renderConnection,weak:renderWeak,code:renderCodeRed,done:renderComplete};viewStack=[];(map[phase]||renderMemorizeStage)()}
 function renderLearningHub(){
- const sh=sheet();if(!sh)return renderSheets();
+ const sh=sheet();if(!sh)return renderSheets();ensureMissionRoles(sh);
  const ws=validWords();if(!ws.length)return renderSheets();
- const weak=ws.filter(w=>weakScore(w)>0).length,phase=S.learning.phase||'first',order=['first','meaning','connection','weak','code','done'],current=Math.max(0,order.indexOf(phase));
+ const roles=missionRoleCounts(sh),weak=ws.filter(w=>weakScore(w)>0).length,phase=S.learning.phase||'prepare',order=['prepare','first','meaning','connection','weak','code','done'],current=Math.max(0,order.indexOf(phase));
  const stages=[
-  {key:'first',label:'FIRST FIND',desc:'보고, 듣고, 뜻과 철자 형태 익히기'},
-  {key:'meaning',label:'MEANING CLUE',desc:'영어↔뜻 연결 확인'},
-  {key:'connection',label:'CONNECTION TRAIL',desc:'단어와 뜻 빠르게 연결'},
-  {key:'weak',label:'HIDDEN WORDS',desc:'기억 흔적 맞춤 보강'},
-  {key:'code',label:'FINAL SEEK',desc:'전체 철자 최종 검증'}
+  {key:'prepare',label:'외우기',desc:'프린트 단어를 보고 이해하며 먼저 외우기'},
+  {key:'first',label:'FIRST FIND',desc:'가린 뒤 처음 스스로 떠올리기'},
+  {key:'meaning',label:'MEANING CLUE',desc:'단어↔뜻 연결 확인'},
+  {key:'connection',label:'CONNECTION TRAIL',desc:'의미 연결을 빠르게 다시 찾기'},
+  {key:'weak',label:'HIDDEN WORDS',desc:'약한 기억에 맞춤 단서 보강'},
+  {key:'code',label:'FINAL SEEK',desc:'도움 없이 최종 회상'}
  ];
  const resumable=['LEARNING','CODE_RED_READY','RETRACE_REQUIRED'].includes(sh.status);
- const actionLabel=sh.status==='READY'?'탐험 시작':sh.status==='RETRACE_REQUIRED'?'SEEK AGAIN 이어가기':sh.status==='CODE_RED_READY'?'FINAL SEEK 이어가기':resumable?'학습 이어가기':'학습 시작';
- $('#view').innerHTML=`<section class="learning-shell"><div class="learn-head"><div><span class="phase-chip">${stateLabel(sh.status)}</span><h2 style="margin:5px 0 0">${esc(sh.title)}</h2></div><div style="text-align:right"><b>${ws.length}단어</b><small style="display:block">취약 ${weak}개</small></div></div><div class="progress" style="margin-top:10px"><span style="width:${learningProgress()}%"></span></div><button class="btn primary full" id="guidedLearningStart" style="margin-top:12px" type="button">${actionLabel}</button><div class="section-title"><h2>탐험 순서</h2><span>앞 단계를 마치면 다음 길이 열려요</span></div><div class="grid2">${stages.map((s,i)=>{const done=i<current||phase==='done',active=i===current&&phase!=='done',locked=i>current;return `<div class="mission-card ${done?'done':''} ${active?'active':''} ${locked?'locked':''}"><h3>${s.label}</h3><p>${s.desc}</p><small>${done?'완료':active?'현재 단계':'아직 잠김'}</small></div>`}).join('')}</div></section>`;
- $('#guidedLearningStart').onclick=()=>{if(sh.status==='READY'){S.learning.phase='first';sh.status='LEARNING';save()}resumeCurrentLearning()};
- setPartner('한 단계씩 끝내면 다음 탐험이 열려. 지금 해야 할 것만 같이 가자.','default')
+ const actionLabel=sh.status==='READY'?'외우기 시작':sh.status==='RETRACE_REQUIRED'?'SEEK AGAIN 이어가기':sh.status==='CODE_RED_READY'?'FINAL SEEK 이어가기':resumable?'이어가기':'학습 시작';
+ $('#view').innerHTML=`<section class="learning-shell"><div class="learn-head"><div><span class="phase-chip">${stateLabel(sh.status)}</span><h2 style="margin:5px 0 0">${esc(sh.title)}</h2></div><div style="text-align:right"><b>${ws.length}단어</b><small style="display:block">NEW ${roles.NEW} · REVIEW ${roles.REVIEW}</small></div></div><div class="progress" style="margin-top:10px"><span style="width:${learningProgress()}%"></span></div><button class="btn primary full" id="guidedLearningStart" style="margin-top:12px" type="button">${actionLabel}</button><div class="section-title"><h2>탐험 순서</h2><span>외운 뒤 기억을 찾아요</span></div><div class="grid2">${stages.map((s,i)=>{const done=i<current||phase==='done',active=i===current&&phase!=='done',locked=i>current;return `<div class="mission-card ${done?'done':''} ${active?'active':''} ${locked?'locked':''}"><h3>${s.label}</h3><p>${s.desc}</p><small>${done?'완료':active?'현재 단계':'아직 잠김'}</small></div>`}).join('')}</div></section>`;
+ $('#guidedLearningStart').onclick=()=>{if(sh.status==='READY'){S.learning.phase='prepare';S.learning.prepIndex=0;S.learning.prepCompleted=false;sh.status='LEARNING';save()}resumeCurrentLearning()};
+ setPartner('먼저 외우고, 그다음 숨겨진 기억을 찾아보자.','default')
 }
-function renderFirstContact(){const ws=validWords(),i=S.learning.firstIndex%ws.length,w=ws[i],sh=sheet();sh.status='LEARNING';S.learning.phase='first';const exposure=traceList(w,'acquisition');if(!exposure.some(x=>x.event==='EXPOSURE'&&x.sheetId===sh.sheetId))addWordTrace(w,'acquisition',{event:'EXPOSURE',sheetId:sh.sheetId,sceneShown:!!w.example,sceneText:w.example||'',meaningShown:true,meaningText:w.kor,shapeLength:w.eng.length});save();$('#view').innerHTML=`<section class="learning-shell"><div class="learn-head"><div><span class="phase-chip">FIRST FIND</span><h2 style="margin:5px 0 0">신규 단어 습득</h2></div><b>${i+1}/${ws.length}</b></div><div class="progress" style="margin-top:9px"><span style="width:${Math.round((i+1)/ws.length*100)}%"></span></div><section class="card word-card"><div class="eng">${esc(w.eng)}</div><button class="circle-btn" id="speakWord" type="button" style="margin:10px auto 0">발음</button><div class="kor">${esc(w.kor)}</div>${w.example?`<div class="example">${esc(w.example)}</div>`:''}<div class="btn-row" style="margin-top:17px"><button class="btn secondary" id="firstUnsure" type="button">아직 헷갈려</button><button class="btn primary" id="firstNext" type="button">다음 단어</button></div></section></section>`;$('#speakWord').onclick=()=>{addWordTrace(w,'acquisition',{event:'SOUND_REPLAY',sheetId:sh.sheetId});save();speakWord(w.eng)};$('#firstUnsure').onclick=()=>{w.learningStats=w.learningStats||{};w.learningStats.unsure=(w.learningStats.unsure||0)+1;addWordTrace(w,'acquisition',{event:'LEARNER_UNSURE',sheetId:sh.sheetId});S.learning.history.push({at:nowISO(),mode:'first',wordId:w.id,result:'UNSURE'});advanceFirst(false)};$('#firstNext').onclick=()=>advanceFirst(true);setPartner('지금은 시험이 아니야. 소리와 뜻, 철자 모양을 편하게 연결해둬.','default')}
+function renderMemorizeStage(){
+ const sh=sheet();ensureMissionRoles(sh);const ws=validWords(),i=Math.min(Number(S.learning.prepIndex||0),Math.max(0,ws.length-1)),w=ws[i],role=inferMissionRole(w,sh.sheetId),mapHtml=globalThis.HideLanguageModel?.renderMeaningMapHtml?.(w,esc)||'';
+ sh.status='LEARNING';S.learning.phase='prepare';save();
+ $('#view').innerHTML=`<section class="learning-shell"><div class="learn-head"><div><span class="phase-chip">외우기 · ${role}</span><h2 style="margin:5px 0 0">${role==='NEW'?'새 단어 이해하고 외우기':'지난 단어 다시 깨우기'}</h2></div><b>${i+1}/${ws.length}</b></div><div class="progress" style="margin-top:9px"><span style="width:${Math.round((i+1)/ws.length*100)}%"></span></div><section class="card word-card"><div class="eng">${esc(w.eng)}</div><button class="circle-btn" id="speakWord" type="button" style="margin:10px auto 0">발음</button><div class="kor">${esc(w.kor)}</div>${w.example?`<div class="example">${esc(w.example)}</div>`:''}${mapHtml?`<button class="btn secondary full" id="openMeaningMap" style="margin-top:12px" type="button">뜻 연결 탐험</button><div id="prepMeaningMap" hidden>${mapHtml}</div>`:''}<button class="btn primary full" id="prepNext" style="margin-top:14px" type="button">${i===ws.length-1?'외우기 완료 · FIRST FIND':'외웠어요 · 다음'}</button></section></section>`;
+ $('#speakWord').onclick=()=>{addWordTrace(w,'acquisition',{event:'SOUND_REPLAY',sheetId:sh.sheetId,stage:'MEMORIZATION'});save();speakWord(w.eng)};
+ if($('#openMeaningMap'))$('#openMeaningMap').onclick=()=>{const el=$('#prepMeaningMap');el.hidden=!el.hidden;addWordTrace(w,'assistance',{step:'MEANING_MAP',source:'VERIFIED_LANGUAGE_MODEL',stage:'MEMORIZATION',languageDomain:w.languageDomain||'ENGLISH'});save()};
+ $('#prepNext').onclick=()=>{addWordTrace(w,'acquisition',{event:'MEMORIZATION_EXPOSURE',sheetId:sh.sheetId,missionRole:role,meaningMapOpened:!$('#prepMeaningMap')?.hidden});S.learning.prepIndex++;if(S.learning.prepIndex>=ws.length){S.learning.prepIndex=0;S.learning.prepCompleted=true;S.learning.phase='first';save();renderFirstContact()}else{save();renderMemorizeStage()}};
+ setPartner(role==='NEW'?'뜻이 만들어지는 길을 이해하고 장면으로 잡아보자.':'전에 만든 기억을 짧게 다시 깨워보자.','focus')
+}
+function renderFirstContact(){
+ const ws=validWords(),i=S.learning.firstIndex%ws.length,w=ws[i],sh=sheet();sh.status='LEARNING';S.learning.phase='first';save();
+ $('#view').innerHTML=`<section class="learning-shell"><div class="learn-head"><div><span class="phase-chip">FIRST FIND</span><h2 style="margin:5px 0 0">처음 스스로 찾아보기</h2></div><b>${i+1}/${ws.length}</b></div><div class="progress" style="margin-top:9px"><span style="width:${Math.round((i+1)/ws.length*100)}%"></span></div><section class="card word-card"><p>뜻을 보고 방금 외운 단어를 떠올려보세요.</p><div class="kor" style="font-size:25px">${esc(w.kor)}</div><input id="firstRecallInput" class="input" autocomplete="off" autocapitalize="none" spellcheck="false" aria-label="떠올린 단어 입력" placeholder="단어를 입력해보세요"><div class="btn-row" style="margin-top:17px"><button class="btn secondary" id="firstUnsure" type="button">아직 안 떠올라</button><button class="btn primary" id="firstNext" type="button">기억 확인</button></div><div id="firstFeedback" class="example" hidden></div></section></section>`;
+ const finish=(ok,reason)=>{w.learningStats=w.learningStats||{};if(!ok)w.learningStats.firstRecallWrong=(w.learningStats.firstRecallWrong||0)+1;addWordTrace(w,'retrieval',{result:ok?'FIRST_RECALL_CORRECT':'FIRST_RECALL_WRONG',stage:'FIRST_FIND',reason,sheetId:sh.sheetId,assisted:false});S.learning.history.push({at:nowISO(),mode:'first',wordId:w.id,result:ok?'CORRECT':'WRONG'});const fb=$('#firstFeedback');fb.hidden=false;fb.textContent=ok?'찾았어요. 기억에서 바로 꺼냈어요.':`정답은 ${w.eng} · 지금은 다시 보고 다음 보강에서 또 찾아요.`;$('#firstNext').disabled=true;$('#firstUnsure').disabled=true;setTimeout(()=>advanceFirst(ok),ok?260:650)};
+ $('#firstNext').onclick=()=>{const answer=$('#firstRecallInput').value.trim().toLowerCase();if(!answer)return toast('떠올린 단어를 입력해 주세요.');finish(answer===String(w.eng).trim().toLowerCase(),'TYPED_RECALL')};
+ $('#firstUnsure').onclick=()=>finish(false,'UNSURE');
+ $('#firstRecallInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('#firstNext').click()});
+ setPartner('이제 단어는 가렸어. 뜻에서 기억을 직접 꺼내보자.','default')
+}
 function advanceFirst(ok){const ws=validWords();markStudy(ok?2:1);S.learning.firstIndex++;if(S.learning.firstIndex>=ws.length){S.learning.firstIndex=0;S.learning.phase='meaning';save();renderMeaningCheck()}else{save();renderFirstContact()}}
 function optionLabel(w,field){return String(field==='kor'?w.kor:w.eng).trim().replace(/\s+/g,' ')}
 function choiceOptions(correct,field){const correctLabel=optionLabel(correct,field).toLowerCase(),seen=new Set([correctLabel]),pool=shuffle(validWords().filter(x=>x.id!==correct.id)).filter(x=>{const label=optionLabel(x,field).toLowerCase();if(!label||seen.has(label))return false;seen.add(label);return true});return shuffle([correct,...pool.slice(0,3)]).map(x=>({id:x.id,label:optionLabel(x,field)}))}
