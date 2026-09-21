@@ -29,6 +29,7 @@ if(!html.includes('./src/v2/v2.css'))fail.push('V2_LAYOUT_BOUNDARY_STYLESHEET_MI
 if(!html.includes('class="v2-runtime"'))fail.push('V2_BODY_LAYOUT_BOUNDARY_MISSING');
 if(!v2css.includes('.v2-runtime .top-safe'))fail.push('V2_HEADER_HIT_AREA_OVERRIDE_MISSING');
 
+const app=fs.readFileSync(path.join(ROOT,'src/v2/app.js'),'utf8');
 const learning=fs.readFileSync(path.join(ROOT,'src/v2/learning-session.js'),'utf8');
 for(const stage of ['MEMORIZE','FIRST_FIND','MEANING','DOMAIN_EXTENSION','FINAL_SEEK','SEEK_AGAIN_RELEARN','SEEK_AGAIN','COMPLETE']){
   if(!learning.includes("'"+stage+"'"))fail.push('V2_LEARNING_STAGE_MISSING:'+stage);
@@ -78,7 +79,6 @@ const migration=fs.readFileSync(path.join(ROOT,'src/v2/legacy-migration.js'),'ut
 if(migration.includes('removeItem(LEGACY_KEY)')||migration.includes("removeItem('hide_seek_state')"))fail.push('LEGACY_DATA_MUST_NOT_BE_DELETED');
 if(!migration.includes('legacyPreserved:true'))fail.push('NON_DESTRUCTIVE_MIGRATION_EVIDENCE_MISSING');
 
-const app=fs.readFileSync(path.join(ROOT,'src/v2/app.js'),'utf8');
 for(const token of ['renderStarterExplorationHtml','bindThinkingTrail','inference-submit','thinking-reveal','기억 흔적','record-detail','v2RecordBack']){
   if(!app.includes(token))fail.push('V2_THINKING_OR_MEMORY_DETAIL_MISSING:'+token);
 }
