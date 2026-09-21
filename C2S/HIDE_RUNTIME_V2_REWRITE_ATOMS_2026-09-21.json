@@ -1,0 +1,85 @@
+{
+  "schema_version": "1.0",
+  "scope": "Hide Runtime V2 rewrite closure 2026-09-21",
+  "closure_file": "C2S/HIDE_RUNTIME_V2_REWRITE_C2S_CLOSURE_2026-09-21.md",
+  "atoms": [
+    {
+      "id": "HIDE-V2-C2S-001",
+      "type": "DECISION",
+      "statement": "Runtime V2 is the active implementation direction; V1 monolith is reference/rollback only.",
+      "destination": "architecture"
+    },
+    {
+      "id": "HIDE-V2-C2S-002",
+      "type": "CORRECTION",
+      "statement": "Product completion must be separated from code/CI/docs and reusable asset maturity.",
+      "destination": "product-integrity"
+    },
+    {
+      "id": "HIDE-V2-C2S-003",
+      "type": "REQUIREMENT",
+      "statement": "Seek Again recovery follows FINAL SEEK failure and same-day recovery is not spaced recovery.",
+      "destination": "learning-session"
+    },
+    {
+      "id": "HIDE-V2-C2S-004",
+      "type": "DECISION",
+      "statement": "Trail Mastery is current session/mission readiness; Memory Strength is long-term memory evidence.",
+      "destination": "trail-memory-separation"
+    },
+    {
+      "id": "HIDE-V2-C2S-005",
+      "type": "REQUIREMENT",
+      "statement": "Ready owns review policy and Planner schedule; Hide owns evidence/advisory signals only.",
+      "destination": "integration-ownership"
+    },
+    {
+      "id": "HIDE-V2-C2S-006",
+      "type": "REQUIREMENT",
+      "statement": "OCR partial success is preserved and only failed pages are retried.",
+      "destination": "capture-ocr"
+    },
+    {
+      "id": "HIDE-V2-C2S-007",
+      "type": "EVIDENCE",
+      "statement": "390x844 browser layout, reduced-height focus, offline shell and PWA safe-point flows have browser evidence; device verification remains zero.",
+      "destination": "runtime-evidence"
+    },
+    {
+      "id": "HIDE-V2-C2S-008",
+      "type": "DECISION",
+      "statement": "Frozen candidate 02 is the current governed frozen candidate; candidate 01 is superseded.",
+      "destination": "release"
+    },
+    {
+      "id": "HIDE-V2-C2S-009",
+      "type": "BLOCKER",
+      "statement": "Netlify deploy action cannot specify exact source ref; do not consume one-deploy budget.",
+      "destination": "external-resource-gate"
+    },
+    {
+      "id": "HIDE-V2-C2S-010",
+      "type": "FRONTIER",
+      "statement": "Continue child-facing UI/UX surgery against Hide_Seek_UI_MASTER_LOGIC_REV_04 after restoring exact-head CI.",
+      "destination": "next-work"
+    },
+    {
+      "id": "HIDE-V2-C2S-011",
+      "type": "OPEN",
+      "statement": "Representative real-provider OCR, physical device camera/keyboard/PWA lifecycle, and live hosted Ready-Hide roundtrip remain open.",
+      "destination": "validation"
+    },
+    {
+      "id": "HIDE-V2-C2S-012",
+      "type": "EVIDENCE",
+      "statement": "Locked last closed product estimate: Product 62, Coded 79, CI 75, Browser Runtime 70, Device 0, Release 0.",
+      "destination": "status"
+    }
+  ],
+  "coverage": {
+    "UNMAPPED_MATERIAL": 0,
+    "SILENT_LOSS": 0,
+    "FALSE_CONVERGENCE": 0,
+    "C2S_COMPILE_CLOSED": true
+  }
+}
