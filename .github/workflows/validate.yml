@@ -21,3 +21,9 @@ jobs:
           node --check hide-brand-current.js
           node --check hide-bridge.js
           node --check hide-runtime.js
+          node --check hide-release-v01.js
+          node --check hide-pwa-update-v01.js
+          node --check vendor/taky/release-contract.js
+          node --check vendor/taky/pwa-update-state.js
+      - name: Validate shared runtime contract
+        run: node tests/shared-runtime-contract.test.js
