@@ -106,3 +106,22 @@ External deployment is still blocked by:
 `EXTERNAL_DEPLOY_SOURCE_REF_UNSPECIFIABLE`
 
 The available siteId-only Netlify action cannot target this exact frozen SHA, so consuming the one external deploy budget would not prove candidate-02 deployment.
+
+
+## Frozen candidate 03
+
+Candidate 02 is superseded because product UI code changed after that freeze.
+
+Current governed frozen candidate:
+- branch: `frozen/hide-v2-candidate-2026-09-21-03`
+- exact SHA: `e006dc0ca3fdadb704e9403f7af566668093a88f`
+- Validate Hide Runtime V2 #116: SUCCESS
+- Validate Hide & Seek #570: SUCCESS
+- includes Seek Again, Trail Mastery separation, child-facing product UI redesign, mobile/PWA/OCR resilience and Ready V2 contract corrections.
+
+Candidates 01 and 02 MUST NOT be deployed.
+
+External deployment remains blocked by:
+`EXTERNAL_DEPLOY_SOURCE_REF_UNSPECIFIABLE`
+
+The available Netlify siteId-only action still cannot target an exact branch/SHA, so it cannot prove candidate-03 deployment.
