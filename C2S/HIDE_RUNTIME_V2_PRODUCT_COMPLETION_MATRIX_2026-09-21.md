@@ -27,7 +27,7 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 | MEMORIZE / THINKING TRAIL | RUNTIME_VERIFIED | yes | fixture | prediction→reveal→self-comparison + established-clue reuse browser flow | representative multilingual inference histories still open |
 | FIRST FIND | RUNTIME_VERIFIED | yes | fixture | correct/wrong/unsure + English shape + verified Korean meaning-map + verified Hanja sound assist + relearn truth-boundary browser flows | representative source breadth still open |
 | MEANING CLUE | RUNTIME_VERIFIED | yes | fixture | direct recall fallback + session-scoped bidirectional recognition + confusion handoff browser flow | broader representative confusion sets still open |
-| English CONNECTION | RUNTIME_VERIFIED | yes | fixture | Thinking Trail browser flow | adaptive clue personalization and broader representative vocabulary still pending |
+| English CONNECTION | RUNTIME_VERIFIED | yes | fixture | established inference-history personalization + non-recall guidance browser flow | broader representative vocabulary/history still open |
 | Korean RESPONSE TRAIL | RUNTIME_VERIFIED | yes | fixture | production-evidence + target-use truth-boundary browser flow | semantic correctness is intentionally not auto-scored; richer teacher/parent feedback remains open |
 | Korean EVIDENCE TRAIL | RUNTIME_VERIFIED | yes when verified contextEvidence exists | verified-context fixture | browser evidence-selection truth-boundary flow | representative Korean source evidence still open |
 | Hanja SOUND FIND | RUNTIME_VERIFIED | yes when verified soundEvidence exists | verified-sound fixture | dedicated V2 browser sound-recall flow | representative Hanja source/device pronunciation workflow still open |
@@ -48,10 +48,10 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 
 ## Claim levels
 
-- PRODUCT_COMPLETION: approximately 77%
-- CODED: approximately 93%
-- CI_VERIFIED: approximately 90%
-- BROWSER_RUNTIME_VERIFIED: approximately 86%
+- PRODUCT_COMPLETION: approximately 78%
+- CODED: approximately 94%
+- CI_VERIFIED: approximately 91%
+- BROWSER_RUNTIME_VERIFIED: approximately 87%
 - DEVICE_VERIFIED: 0%
 - RELEASE_VERIFIED: 0%
 
@@ -431,3 +431,14 @@ Head before matrix document: 63db5206a836050c3dfe5f2b9fd0238d6baeb464
 - Source-backed Korean/Hanja assistance stores the source reference in evidence.
 - Exact HEAD `950631cd774d85a1227c51235d3168f9bb013146` passed V2 #311 / full Hide #769.
 - Conservative report moves one point for this newly runtime-proven multilingual recovery path: PRODUCT ~77%, CODED ~93%, CI ~90%, Browser Runtime ~86%, Device 0%, Release 0%.
+
+
+### 2026-09-22 English Connection personalization increment
+- English CONNECTION now reuses prior inference history only when the inference-skill profile is ESTABLISHED and the preferred clue actually applies to the current word.
+- Current bounded guidance can prioritize existing WORD_PART, verified ROOT_ETYMOLOGY, SCENE, or PRIOR_WORD support.
+- EMERGING history does not become adaptive guidance.
+- The connection card remains optional guidance; it does not force an answer or a clue choice.
+- Guidance evidence is stored separately as `ADAPTIVE_CONNECTION_GUIDANCE` with `objectiveRecall=false` and `recallScoreImpact=false`.
+- The normal CONNECTION exposure record remains separate.
+- Exact HEAD `b307014e92b8e3448c48e697154b3a2e8cb60db9` passed V2 #319 / full Hide #777.
+- Conservative reporting moves one point for this runtime-proven adaptive connection path: PRODUCT ~78%, CODED ~94%, CI ~91%, Browser Runtime ~87%, Device 0%, Release 0%.
