@@ -130,3 +130,6 @@ button:focus-visible,input:focus-visible{outline:3px solid rgba(62,126,87,.35);o
 .scene-trail small{font-size:8px;color:var(--muted);font-weight:900}.scene-trail b{font-size:10px;letter-spacing:.04em}.scene-trail i{font-style:normal;font-weight:950;color:var(--forest);opacity:.55}
 .inference-outcome .btn.selected{outline:2px solid rgba(71,113,74,.35);background:#e7f0de}
 @media(max-width:420px){.scene-trail{justify-content:flex-start}.scene-trail span{min-width:64px;flex:1 1 64px}}
+
+.prior-skill-cue{display:grid;gap:3px;margin:9px 0 11px;padding:10px 12px;border-radius:14px;background:#f3eaf6;border:1px solid rgba(106,75,120,.12)}
+.prior-skill-cue small{font-size:9px;color:var(--muted);font-weight:850}.prior-skill-cue b{font-size:14px;color:#594467}.prior-skill-cue span{font-size:10px;line-height:1.45;color:var(--muted)}
