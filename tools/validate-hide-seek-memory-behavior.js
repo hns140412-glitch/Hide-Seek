@@ -187,7 +187,7 @@ const reasonOrtho=sandbox.memoryReasonLabel(errorWord);
 const pendingWord={id:'pending',eng:'hold',kor:'잡다',learningStats:{needsUnassistedRecall:true}};
 const reasonPending=sandbox.memoryReasonLabel(pendingWord);
 assert(reasonConf.key==='confusion','confusion trace must surface as 뜻 혼동');
-assert(reasonOrtho.key==='orthographic','retrieval spelling weakness must surface as 철자 취약');
+assert(reasonOrtho.key==='orthographic','retrieval spelling weakness must surface as 글자 형태 취약');
 assert(reasonPending.key==='recovery','pending unassisted recall must have highest recovery reason');
 
 sandbox.S.lexicon[confusionWord.lexicalId||sandbox.senseKey(confusionWord)]={memoryStrength:55,nextReviewPriority:88,reviewDecay:0};
