@@ -699,6 +699,15 @@ for needle in [
         fail.append("TRANSFERABLE_LANGUAGE_MODEL:"+needle)
 
 
+if "language.meaningMap||w.meaningMap" in app:
+    fail.append("MEANING_MAP_FAIL_CLOSED_FALLBACK")
+for needle in [
+    "normalizer=globalThis.HideLanguageModel?.normalizeItem",
+    "meaningMap:normalizer?(language.meaningMap||null):(w.meaningMap||null)",
+]:
+    if needle not in app:
+        fail.append("MEANING_MAP_FAIL_CLOSED_CONTRACT:"+needle)
+
 for needle in [
     "globalThis.HideLanguageModel?.normalizeItem",
     "globalThis.HideLanguageModel?.hasVerifiedMeaningMap",
