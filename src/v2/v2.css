@@ -122,3 +122,308 @@ body.v2-runtime{
     min-height:44px;
   }
 }
+
+
+/* V2 child-facing product system */
+.v2-runtime{
+  --v2-surface:rgba(255,255,255,.88);
+  --v2-ink:#183024;
+  --v2-muted:#66756c;
+  --v2-line:rgba(38,72,50,.12);
+  --v2-shadow:0 12px 36px rgba(51,77,61,.10);
+  --v2-radius-xl:26px;
+  --v2-radius-lg:20px;
+  --v2-radius-md:15px;
+}
+.v2-runtime .view{
+  width:min(100%,760px);
+  margin:0 auto;
+}
+.v2-runtime .quest-overline{
+  margin:0 0 5px;
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  opacity:.62;
+}
+.v2-runtime .quest-hero{
+  position:relative;
+  overflow:hidden;
+  padding:24px;
+  border-radius:var(--v2-radius-xl);
+  background:
+    radial-gradient(circle at 88% 10%,rgba(255,255,255,.82),transparent 30%),
+    linear-gradient(145deg,rgba(229,242,207,.96),rgba(214,234,222,.96));
+  box-shadow:var(--v2-shadow);
+  border:1px solid rgba(255,255,255,.72);
+}
+.v2-runtime .quest-hero:after{
+  content:"";
+  position:absolute;
+  width:170px;
+  height:170px;
+  border:18px solid rgba(70,115,82,.07);
+  border-radius:50%;
+  right:-55px;
+  bottom:-72px;
+}
+.v2-runtime .quest-hero__eyebrow{
+  position:relative;
+  z-index:1;
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.08em;
+}
+.v2-runtime .quest-hero__body{
+  position:relative;
+  z-index:1;
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:18px;
+  margin-top:26px;
+}
+.v2-runtime .quest-hero h1{
+  margin:0;
+  max-width:540px;
+  font-size:clamp(28px,7vw,44px);
+  line-height:1.06;
+  letter-spacing:-.04em;
+  color:var(--v2-ink);
+}
+.v2-runtime .quest-subcopy{
+  margin:12px 0 0;
+  color:var(--v2-muted);
+  font-weight:700;
+}
+.v2-runtime .quest-count{
+  flex:0 0 auto;
+  width:86px;
+  height:86px;
+  border-radius:24px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  background:rgba(255,255,255,.76);
+  box-shadow:0 8px 24px rgba(56,80,64,.08);
+}
+.v2-runtime .quest-count b{font-size:26px;line-height:1}
+.v2-runtime .quest-count span{font-size:11px;font-weight:800;margin-top:6px}
+.v2-runtime .quest-hero__actions{
+  position:relative;
+  z-index:1;
+  display:grid;
+  grid-template-columns:minmax(0,1.35fr) minmax(0,1fr) minmax(0,1fr);
+  gap:10px;
+  margin-top:24px;
+}
+.v2-runtime .btn.ghost{
+  background:rgba(255,255,255,.72);
+  border:1px solid var(--v2-line);
+}
+.v2-runtime .quest-alert{
+  margin-top:12px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  padding:16px 18px;
+  border-radius:18px;
+  background:rgba(225,241,248,.88);
+  border:1px solid rgba(83,129,150,.12);
+}
+.v2-runtime .quest-alert p{margin:3px 0 0;color:var(--v2-muted)}
+.v2-runtime .quest-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-top:12px;
+}
+.v2-runtime .quest-tile{
+  appearance:none;
+  border:1px solid var(--v2-line);
+  border-radius:var(--v2-radius-lg);
+  background:var(--v2-surface);
+  min-height:92px;
+  padding:16px;
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  align-items:center;
+  gap:12px;
+  text-align:left;
+  color:inherit;
+  box-shadow:0 8px 26px rgba(51,77,61,.06);
+}
+.v2-runtime .quest-tile__icon{
+  width:44px;height:44px;border-radius:14px;
+  display:grid;place-items:center;
+  background:rgba(222,237,214,.75);
+  font-size:22px;
+}
+.v2-runtime .quest-tile b{display:block;font-size:16px}
+.v2-runtime .quest-tile small{display:block;margin-top:3px;color:var(--v2-muted)}
+.v2-runtime .quest-tile i{font-size:25px;font-style:normal;opacity:.45}
+.v2-runtime .quest-status,
+.v2-runtime .memory-summary,
+.v2-runtime .memory-signals,
+.v2-runtime .wordbook,
+.v2-runtime .mission-card,
+.v2-runtime .screen-head{
+  border:1px solid var(--v2-line);
+  background:var(--v2-surface);
+  box-shadow:0 8px 26px rgba(51,77,61,.06);
+}
+.v2-runtime .quest-status{
+  margin-top:12px;
+  padding:20px;
+  border-radius:var(--v2-radius-lg);
+}
+.v2-runtime .quest-stat-row,
+.v2-runtime .memory-summary{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+}
+.v2-runtime .quest-stat{
+  min-height:84px;
+  border-radius:16px;
+  background:rgba(236,243,232,.72);
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+}
+.v2-runtime .quest-stat b{font-size:24px}
+.v2-runtime .quest-stat span{font-size:12px;font-weight:800;color:var(--v2-muted);margin-top:5px}
+.v2-runtime .screen-head{
+  border-radius:var(--v2-radius-xl);
+  padding:22px;
+  margin-bottom:12px;
+}
+.v2-runtime .screen-head h1{margin:0;font-size:30px;letter-spacing:-.03em}
+.v2-runtime .screen-head p:last-child{margin:8px 0 0;color:var(--v2-muted)}
+.v2-runtime .mission-list{display:grid;gap:10px}
+.v2-runtime .mission-card{
+  border-radius:var(--v2-radius-lg);
+  padding:18px;
+}
+.v2-runtime .mission-card.is-active{
+  outline:2px solid rgba(73,124,86,.24);
+  background:rgba(244,249,239,.96);
+}
+.v2-runtime .mission-card__status{
+  display:inline-flex;
+  padding:5px 9px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:900;
+  background:rgba(224,238,216,.88);
+}
+.v2-runtime .mission-card h2{margin:10px 0 3px;font-size:20px}
+.v2-runtime .mission-card p{margin:0;color:var(--v2-muted)}
+.v2-runtime .mission-card__actions{
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
+  margin-top:14px;
+}
+.v2-runtime .danger-lite{opacity:.72}
+.v2-runtime .memory-summary{
+  padding:12px;
+  border-radius:var(--v2-radius-lg);
+}
+.v2-runtime .memory-signals{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:10px;
+  padding:14px;
+  border-radius:var(--v2-radius-lg);
+}
+.v2-runtime .memory-signals span{
+  padding:7px 10px;
+  border-radius:999px;
+  background:rgba(239,243,236,.9);
+  font-size:12px;
+}
+.v2-runtime .wordbook{
+  margin-top:12px;
+  padding:18px;
+  border-radius:var(--v2-radius-lg);
+}
+.v2-runtime .word-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 118px;
+  gap:12px;
+  padding:14px 0;
+  border-bottom:1px solid var(--v2-line);
+}
+.v2-runtime .word-row:last-of-type{border-bottom:0}
+.v2-runtime .word-row__body b{display:block;font-size:19px}
+.v2-runtime .word-row__body span,.v2-runtime .word-row__body small{display:block;margin-top:4px;color:var(--v2-muted)}
+.v2-runtime .word-row__meter{text-align:right}
+.v2-runtime .mini-meter{
+  width:100%;
+  height:7px;
+  overflow:hidden;
+  border-radius:999px;
+  background:rgba(80,100,85,.10);
+  margin:6px 0 7px;
+}
+.v2-runtime .mini-meter span{
+  display:block;height:100%;border-radius:inherit;background:currentColor;opacity:.48
+}
+.v2-runtime .quest-progress{
+  margin-bottom:10px;
+  padding:0 2px;
+}
+.v2-runtime .quest-progress__meta{
+  display:flex;justify-content:space-between;gap:8px;
+  font-size:11px;font-weight:900;color:var(--v2-muted);
+}
+.v2-runtime .quest-progress__track{
+  height:7px;border-radius:999px;overflow:hidden;
+  background:rgba(69,91,75,.10);margin-top:6px
+}
+.v2-runtime .quest-progress__track span{
+  display:block;height:100%;border-radius:inherit;background:currentColor;opacity:.48
+}
+.v2-runtime .learning-shell{
+  max-width:620px;
+  margin:0 auto;
+}
+.v2-runtime .learning-shell>.card,
+.v2-runtime .learning-shell>.thinking-map-card{
+  border-radius:var(--v2-radius-xl);
+  box-shadow:var(--v2-shadow);
+}
+.v2-runtime .empty-state{
+  padding:34px 18px;
+  border-radius:var(--v2-radius-lg);
+  text-align:center;
+  background:rgba(244,247,242,.9);
+  color:var(--v2-muted);
+}
+.v2-runtime .empty-state b{display:block;color:var(--v2-ink);font-size:18px}
+.v2-runtime .empty-state p{margin:7px 0 0}
+
+@media(max-width:520px){
+  .v2-runtime .quest-hero{padding:20px}
+  .v2-runtime .quest-hero__body{align-items:flex-start}
+  .v2-runtime .quest-count{width:74px;height:74px;border-radius:20px}
+  .v2-runtime .quest-hero__actions{grid-template-columns:1fr}
+  .v2-runtime .quest-grid{grid-template-columns:1fr 1fr}
+  .v2-runtime .quest-stat-row,.v2-runtime .memory-summary{grid-template-columns:repeat(3,1fr)}
+  .v2-runtime .word-row{grid-template-columns:minmax(0,1fr) 96px}
+  .v2-runtime .mission-card__actions .btn{flex:1 1 calc(50% - 7px)}
+}
+@media(max-width:360px){
+  .v2-runtime .quest-grid{grid-template-columns:1fr}
+  .v2-runtime .quest-hero__body{display:block}
+  .v2-runtime .quest-count{margin-top:14px}
+  .v2-runtime .quest-stat-row,.v2-runtime .memory-summary{grid-template-columns:1fr}
+  .v2-runtime .word-row{grid-template-columns:1fr}
+  .v2-runtime .word-row__meter{text-align:left}
+}
