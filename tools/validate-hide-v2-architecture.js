@@ -4,7 +4,7 @@ const path=require('path');
 const ROOT=path.join(__dirname,'..');
 const modules=[
   'src/v2/app-store.js','src/v2/mission-service.js','src/v2/memory-engine.js',
-  'src/v2/learning-session.js','src/v2/capture-controller.js','src/v2/router.js',
+  'src/v2/learning-session.js','src/v2/session-service.js','src/v2/capture-controller.js','src/v2/router.js',
   'src/v2/legacy-migration.js','src/v2/ready-bridge.js','src/v2/app.js'
 ];
 const fail=[];
