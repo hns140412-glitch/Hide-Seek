@@ -68,11 +68,18 @@
 
   function normalizeItem(item={}){
     const domain=detectDomain(item);
+    const learningProfile=globalThis.HideLearningBasis?.resolve?.(domain)||null;
     return {
       ...item,
       languageDomain:domain,
+      learningProfile,
       meaningMap:normalizeMap(item.meaningMap||item.meaning_map,domain)
     };
+  }
+
+  function learningProfileFor(item={}){
+    const domain=detectDomain(item);
+    return globalThis.HideLearningBasis?.resolve?.(domain)||null;
   }
 
   function hasVerifiedMeaningMap(item={}){
@@ -325,6 +332,7 @@
     summarizeInferenceSkill,
     starterExploration,
     renderStarterExplorationHtml,
+    learningProfileFor,
     sceneBeat
   };
 })();
