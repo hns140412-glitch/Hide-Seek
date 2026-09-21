@@ -84,9 +84,9 @@ test('Hide V2 OCR path uses the shared family adapter and commits reviewed rows'
   });
   await page.goto('/v2.html');
   await page.locator('#sheetLibraryInput').setInputFiles({name:'words.jpg',mimeType:'image/jpeg',buffer:Buffer.from('v2-image')});
-  await expect(page.getByRole('heading',{name:'분석 결과 확인'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'찾은 단어 확인하기'})).toBeVisible();
   await expect(page.getByLabel('OCR 단어 1')).toHaveValue('environment');
-  await page.getByRole('button',{name:'미션으로 저장'}).click();
+  await page.getByRole('button',{name:'이 단어로 탐험 만들기'}).click();
   await expect(page.getByRole('heading',{name:'오늘의 탐험 지도'})).toBeVisible();
   await expect(page.getByText(/1개의 숨은 단어/)).toBeVisible();
   const state=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')));
@@ -104,13 +104,13 @@ test('Hide V2 persists OCR review state across reload',async({page})=>{
   });
   await page.goto('/v2.html');
   await page.locator('#sheetLibraryInput').setInputFiles({name:'island.jpg',mimeType:'image/jpeg',buffer:Buffer.from('persistent-v2-image')});
-  await expect(page.getByRole('heading',{name:'분석 결과 확인'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'찾은 단어 확인하기'})).toBeVisible();
   await expect(page.getByLabel('OCR 단어 1')).toHaveValue('island');
 
   await page.reload();
   await expect(page.getByText('확인하던 단어가 남아 있어요',{exact:true})).toBeVisible();
   await page.getByRole('button',{name:'이어서 확인'}).click();
-  await expect(page.getByRole('heading',{name:'분석 결과 확인'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'찾은 단어 확인하기'})).toBeVisible();
   await expect(page.getByLabel('OCR 단어 1')).toHaveValue('island');
 
   const capture=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')).captureSession);
@@ -269,11 +269,11 @@ test('Hide V2 OCR review allows row correction and exclusion before commit',asyn
   });
   await page.goto('/v2.html');
   await page.locator('#sheetLibraryInput').setInputFiles({name:'review.jpg',mimeType:'image/jpeg',buffer:Buffer.from('review-edit-image')});
-  await expect(page.getByRole('heading',{name:'분석 결과 확인'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'찾은 단어 확인하기'})).toBeVisible();
 
   await page.getByLabel('OCR 단어 1').fill('environment');
   await page.locator('[data-review-toggle="1"]').click();
-  await page.getByRole('button',{name:'미션으로 저장'}).click();
+  await page.getByRole('button',{name:'이 단어로 탐험 만들기'}).click();
 
   const state=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')));
   expect(state.missions).toHaveLength(1);
@@ -506,7 +506,7 @@ test('Hide V2 retries only failed OCR pages and preserves successful page rows',
   expect(capture.pages[1].status).toBe('FAILED');
 
   await page.getByRole('button',{name:'실패한 페이지만 다시 분석'}).click();
-  await expect(page.getByRole('heading',{name:'분석 결과 확인'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'찾은 단어 확인하기'})).toBeVisible();
   await expect(page.getByLabel('OCR 단어 1')).toHaveValue('environment');
   await expect(page.getByLabel('OCR 단어 2')).toHaveValue('island');
   await expect(page.getByText(/CHECK_PRINT/)).toBeVisible();
