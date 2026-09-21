@@ -360,17 +360,31 @@
         return {ok,session:attempt.session,evidenceCompleted:true};
       }
       const text=String(payload.responseText||'').trim();
+      const target=String(w.token||'').trim().normalize('NFKC');
+      const targetUsed=!!target&&text.normalize('NFKC').includes(target);
       HideV2Memory.record(mission.id,w.id,{
         stage:'RESPONSE_TRAIL',
         evidenceMode:'PRODUCTION',
         axes:['EXPRESSION','CONTEXT'],
-        result:text.includes(w.token)?'TARGET_USED':'TARGET_NOT_USED',
+        result:targetUsed?'TARGET_USED':'TARGET_NOT_USED',
         responseText:text,
+        targetUsed,
         objectiveVerified:false,
         objectiveRecall:false,
         recallScoreImpact:false,
         assisted:false
       });
+      const next=nextAfterDomain(session,mission);
+      return {
+        ...next,
+        feedback:{
+          targetUsed,
+          semanticCorrectnessClaimed:false,
+          message:targetUsed
+            ?'목표 단어를 문장에 넣었어요. 문장의 의미 정확도는 여기서 자동 판정하지 않아요.'
+            :`문장은 기록했어요. 목표 단어 “${w.token}”는 들어가지 않았어요. 의미 정확도는 자동 판정하지 않아요.`
+        }
+      };
     }else if(domain==='HANJA'&&w?.soundEvidence){
       const a=String(payload.sound||'').trim().normalize('NFKC');
       const target=String(w.soundEvidence.reading||'').trim().normalize('NFKC');
