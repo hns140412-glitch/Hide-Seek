@@ -247,3 +247,10 @@ Hide exports `reviewAdvisories` as evidence, not a schedule. The packet may incl
 - Product completion matrix: `C2S/HIDE_RUNTIME_V2_PRODUCT_COMPLETION_MATRIX_2026-09-21.md`.
 - Current truthful V2 completion: ~35%; DEVICE_VERIFIED 0%; RELEASE_VERIFIED 0%.
 - Next priorities: mission lifecycle/editing, richer learning assistance port, records/wordbook, PWA ownership, representative OCR, mobile/device verification.
+
+
+## Latest V2 surgery increment
+- Mission lifecycle implemented: list/select/rename/archive/delete with active-session delete fail-closed.
+- OCR review supports correction/exclusion before mission commit.
+- Pre-doc code HEAD `6c419115797afca6e52fdcfc84edc99150769d7c`: V2 #26 PASS, full Hide #480 PASS.
+- Truthful V2 PRODUCT_COMPLETION: ~39%; DEVICE_VERIFIED 0%; RELEASE_VERIFIED 0%.
