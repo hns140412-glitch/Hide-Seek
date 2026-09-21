@@ -343,8 +343,20 @@
     }
 
     if(session.stage==='MEANING'){
-      view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}${journeyHtml(session.stage)}${crewHtml(w,session.stage)}<div class="learn-head"><span class="phase-chip">${childStageLabel('MEANING')}</span><b>${idx}/${total}</b></div><section class="card word-card"><div class="bigword">${esc(w.token)}</div><input id="v2Meaning" class="input" aria-label="뜻 회상 입력" autocomplete="off"><button id="v2MeaningCheck" class="btn primary full">뜻 확인</button></section></section>`;
-      $('#v2MeaningCheck').onclick=()=>{const r=HideV2Learning.checkMeaning(session,m,$('#v2Meaning').value);HideV2Session.update(r.session);setFlash(r.ok?'뜻도 기억했어요':'뜻 회상은 틀렸어요.');render()};
+      const challenge=HideV2Learning.meaningChallenge(session,m);
+      if(challenge){
+        const title=challenge.direction==='MEANING_TO_TOKEN'?'뜻에서 단어 찾기':'단어에서 뜻 찾기';
+        view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}${journeyHtml(session.stage)}${crewHtml(w,session.stage)}<div class="learn-head"><span class="phase-chip">${childStageLabel('MEANING')}</span><b>${idx}/${total}</b></div><section class="card word-card meaning-choice-card"><p class="quest-overline">MEANING CLUE</p><h2>${esc(title)}</h2><div class="bigword">${esc(challenge.prompt)}</div><div class="choice-grid">${challenge.options.map(x=>`<button class="choice meaning-choice" type="button" data-meaning-id="${esc(x.id)}">${esc(x.label)}</button>`).join('')}</div><small>여기는 뜻 연결을 빠르게 확인하는 단계예요. 선택형 성공은 회상 성공으로 세지 않아요.</small></section></section>`;
+        view().querySelectorAll('[data-meaning-id]').forEach(btn=>{btn.onclick=()=>{
+          const r=HideV2Learning.checkMeaningChoice(session,m,btn.dataset.meaningId||'');
+          HideV2Session.update(r.session);
+          setFlash(r.ok?'뜻 연결을 찾았어요':'헷갈린 짝을 기록했어요. 뒤에서 다시 구분해볼게요.');
+          render()
+        }});
+      }else{
+        view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}${journeyHtml(session.stage)}${crewHtml(w,session.stage)}<div class="learn-head"><span class="phase-chip">${childStageLabel('MEANING')}</span><b>${idx}/${total}</b></div><section class="card word-card"><div class="bigword">${esc(w.token)}</div><input id="v2Meaning" class="input" aria-label="뜻 회상 입력" autocomplete="off"><button id="v2MeaningCheck" class="btn primary full">뜻 확인</button></section></section>`;
+        $('#v2MeaningCheck').onclick=()=>{const r=HideV2Learning.checkMeaning(session,m,$('#v2Meaning').value);HideV2Session.update(r.session);setFlash(r.ok?'뜻도 기억했어요':'뜻 회상은 틀렸어요.');render()};
+      }
       return;
     }
 
