@@ -90,8 +90,11 @@ GitHub Actions note: no new run has been emitted for post-#245 synchronize commi
 
 ## Adaptive assistance + progressive exploration delta
 - Transferable inference evidence may reorder existing Memory Ladder help, but it may not invent unavailable help.
-- Adaptive reuse requires repeated evidence: at least 2 assessed outcomes for the same clue with >=50% self-reported MATCH/NEAR.
-- One self-report remains descriptive only and cannot become an adaptive learner preference.
+- Inference evidence maturity is explicitly separated:
+  - LOW: descriptive only.
+  - EMERGING: a clue may be shown as “관찰 중” after at least 2 assessed attempts for that clue with >=50% self-reported MATCH/NEAR, but it **must not reorder Memory Ladder assistance**.
+  - ESTABLISHED: only after at least 6 assessed outcomes in that language domain, with the candidate clue observed at least 3 times and >=60% self-reported MATCH/NEAR, may it reorder **existing** assistance.
+- One self-report never becomes an adaptive learner preference, and EMERGING evidence is not treated as established personalization.
 - Adaptive hint provenance is stored as `TRANSFERABLE_INFERENCE_HISTORY` with `objectiveVerified=false`; recall scoring remains independent.
 - Strong assistance remains terminal: `FRAGMENT → MINIMUM_REVEAL` is not promoted by inference preference.
 - Added browser coverage for verified Korean/Hanja thinking-first maps.
@@ -153,3 +156,26 @@ Latest-head GitHub Actions run: still not emitted; CI_VERIFIED remains NOT CLAIM
 - NEW words with verified meaning maps no longer expose a duplicate `뜻 연결 더 보기` route before inference; thinking-first is the single answer-reveal path.
 
 Latest-head CI note must still be checked live. No Netlify / deploy / merge / user testing is authorized.
+
+
+## TAKY shared-runtime base synchronization — 2026-09-21
+- Root cause of the missing post-#245 PR workflows was identified as PR #4 being `mergeable_state=dirty`: the working branch had diverged behind main while TAKY shared-runtime mechanisms landed on main.
+- Main shared capabilities were integrated into the working branch without reverting Hide's current semantic owners:
+  - `CAP-RELEASE-COMPAT-001`
+  - `CAP-PWA-UPDATE-001`
+  - `CAP-EVENT-ENVELOPE-001`
+  - `CAP-OCR-INGEST-001`
+  - `CAP-HTTP-ADAPTER-001`
+- Shared mechanisms remain semantic-light:
+  - TAKY owns release/PWA state mechanics, immutable event envelope, vision evidence mechanics, and HTTP transport.
+  - Hide retains learning/session/capture semantics, safe-point rules, vocabulary OCR domain/pairing/review semantics, language evidence, and Memory Ladder semantics.
+- Branch release descriptor was preserved at current product state:
+  - app revision = `REV_09`
+  - data schema = `9`
+  - runtime = `2026.09.21-c`
+  - release id = `hide-seek-rev09-r1`
+- Family OCR remains the canonical OCR owner. Vision-ingest and HTTP transport were integrated **inside** `hide-family-ocr-adapter.js`; obsolete main-side direct Gemini OCR ownership was not restored.
+- Duplicate bridge-owned service-worker update machinery was removed; Hide exposes its safe-point semantic through `HideSeekPwaSafePoint`, while the shared PWA adapter owns registration/update mechanics.
+- A branch-only two-parent base synchronization commit was created with the existing working-branch tree and latest main as parents. This did **not** merge PR #4 to main.
+- After that sync, compare state became `behind=0` and PR #4 became `mergeable=true`; Actions resumed with run #253.
+- Run #253 passed product identity and runtime-contract guards, then failed in the standalone Memory behavior fixture because that harness did not provide the newly required inference helper dependencies. The harness was updated; this was a fixture dependency failure, not evidence of a runtime product regression.
