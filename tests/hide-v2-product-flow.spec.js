@@ -509,7 +509,10 @@ test('Hide V2 retries only failed OCR pages and preserves successful page rows',
   await expect(page.getByRole('heading',{name:'찾은 단어 확인하기'})).toBeVisible();
   await expect(page.getByLabel('OCR 단어 1')).toHaveValue('environment');
   await expect(page.getByLabel('OCR 단어 2')).toHaveValue('island');
-  await expect(page.getByText(/CHECK_PRINT/)).toBeVisible();
+  await expect(page.getByText('확인 필요',{exact:true})).toBeVisible();
+  const warningRow=page.locator('.ocr-review-row').filter({has:page.getByText('확인 필요',{exact:true})}).first();
+  await warningRow.locator('.ocr-source-details summary').click();
+  await expect(warningRow.getByText(/CHECK_PRINT/)).toBeVisible();
   expect(calls).toBe(3);
 
   capture=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')).captureSession);
