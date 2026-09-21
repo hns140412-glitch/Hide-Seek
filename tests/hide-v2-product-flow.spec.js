@@ -84,6 +84,38 @@ test('Hide V2 First Find miss briefly relearns without recall inflation',async({
   expect(relearn.assisted).toBe(true);
 });
 
+test('Hide V2 First Find unsure is a pass recall attempt, not fabricated wrong answer',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'첫찾기 unsure'},missions:[{
+        id:'m-first-unsure',title:'첫 찾기 unsure',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        sourceCount:0,provenance:{source:'TEST_FIXTURE'},
+        items:[{id:'w-first-unsure',lexicalId:'benefit::혜택',token:'benefit',meaning:'혜택',example:'A benefit helps.',languageDomain:'ENGLISH',missionRole:'NEW',evidence:[],source:{}}]
+      }],activeMissionId:'m-first-unsure',activeSession:null,captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'탐험 시작'}).click();
+  await page.getByRole('button',{name:'기억하고 찾아보기'}).click();
+  await expect(page.getByRole('button',{name:'아직 안 떠올라'})).toBeVisible();
+  await page.getByRole('button',{name:'아직 안 떠올라'}).click();
+
+  await expect(page.getByText('다시 만나기',{exact:true})).toBeVisible();
+  await expect(page.getByText('benefit',{exact:true})).toBeVisible();
+
+  const evidence=await page.evaluate(()=>{
+    const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
+    return s.missions[0].items[0].evidence;
+  });
+  const pass=evidence.find(x=>x.stage==='FIRST_FIND');
+  expect(pass.result).toBe('PASS');
+  expect(pass.reason).toBe('UNSURE_SELF_REPORT');
+  expect(pass.objectiveVerified).toBe(false);
+  expect(pass.objectiveRecall).toBe(true);
+  expect(pass.assisted).toBe(false);
+  expect(evidence.some(x=>x.stage==='FIRST_FIND'&&x.result==='WRONG')).toBe(false);
+});
+
 test('Hide V2 Final Seek support cannot count as unassisted recall',async({page})=>{
   await page.addInitScript(()=>{
     localStorage.setItem('hide_seek_v2_state',JSON.stringify({
