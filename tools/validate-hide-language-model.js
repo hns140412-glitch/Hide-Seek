@@ -106,6 +106,7 @@ assert(sceneHtml.includes('scene-trail')&&sceneHtml.includes('SURROUNDED'),'scen
 const inferenceHtml=api.renderStarterExplorationHtml({eng:'environment'},{encounteredWords:[]},x=>String(x));
 assert(inferenceHtml.includes('inference-prediction')&&inferenceHtml.includes('inference-confidence'),'first-seen inference controls');
 assert(inferenceHtml.includes('검증 어원')&&inferenceHtml.includes('environ'),'verified visual grammar');
+assert(inferenceHtml.includes('root-step-next')&&inferenceHtml.includes('data-root-step="1" hidden'),'verified roots should reveal progressively');
 
 
 const adaptive=api.prioritizeExistingAssistance(['SOUND','THINKING_SCENE','SHAPE','FRAGMENT','MINIMUM_REVEAL'],{adaptiveClue:{clue:'WORD_PART'}});
