@@ -1119,15 +1119,73 @@ test('Hide V2 English memorization uses thinking trail before reveal without rec
   await page.getByRole('button',{name:'구조·장면 단서 보기'}).click();
   await expect(page.getByText(/earth \+ quake/).first()).toBeVisible();
   await expect(page.getByText(/땅의 흔들림/).first()).toBeVisible();
+  await expect(page.getByText('내 추측과 비교해볼까?',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'비슷했어'}).click();
 
-  const ev=await page.evaluate(()=>{
+  const result=await page.evaluate(()=>{
     const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
-    return s.missions[0].items[0].evidence.find(x=>x.stage==='THINKING_TRAIL');
+    return {
+      inference:s.missions[0].items[0].evidence.find(x=>x.stage==='THINKING_TRAIL'),
+      compare:s.missions[0].items[0].evidence.find(x=>x.stage==='THINKING_TRAIL_COMPARE'),
+      event:s.events.find(x=>x.event==='FIRST_SEEN_PREDICTION'),
+      profile:window.HideLanguageModel.summarizeInferenceSkill(s.events)
+    };
   });
-  expect(ev.evidenceMode).toBe('INFERENCE_SELF_REPORT');
-  expect(ev.objectiveVerified).toBe(false);
-  expect(ev.objectiveRecall).toBe(false);
-  expect(ev.confidence).toBe('HIGH');
+  expect(result.inference.evidenceMode).toBe('INFERENCE_SELF_REPORT');
+  expect(result.inference.objectiveVerified).toBe(false);
+  expect(result.inference.objectiveRecall).toBe(false);
+  expect(result.inference.confidence).toBe('HIGH');
+  expect(result.compare.result).toBe('NEAR');
+  expect(result.compare.objectiveVerified).toBe(false);
+  expect(result.compare.objectiveRecall).toBe(false);
+  expect(result.compare.recallScoreImpact).toBe(false);
+  expect(result.event.outcome).toBe('NEAR');
+  expect(result.event.assessmentSource).toBe('LEARNER_SELF_REPORT');
+  expect(result.profile.assessed).toBe(1);
+  expect(result.profile.evidenceBasis).toBe('LEARNER_SELF_REPORT');
+});
+
+test('Hide V2 reuses only established inference clue preference as optional MEMORIZE guidance',async({page})=>{
+  await page.addInitScript(()=>{
+    const events=Array.from({length:6},(_,i)=>({
+      event:'FIRST_SEEN_PREDICTION',
+      at:new Date(Date.now()-i*1000).toISOString(),
+      missionId:'prior-'+i,
+      wordId:'prior-word-'+i,
+      lexicalId:'prior::'+i,
+      word:'prior'+i,
+      prediction:'추론 '+i,
+      clueUsed:'WORD_PART',
+      confidence:i<2?'HIGH':'MEDIUM',
+      outcome:i===5?'NEAR':'MATCH',
+      outcomeAt:new Date().toISOString(),
+      assessmentSource:'LEARNER_SELF_REPORT',
+      objectiveVerified:false,
+      transferSkillEvidence:true,
+      recallScoreImpact:false
+    }));
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'추론 누적'},missions:[{
+        id:'m-adaptive-think',title:'추론 누적 미션',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        items:[{id:'w-adaptive',lexicalId:'earthquake::지진',token:'earthquake',meaning:'지진',example:'An earthquake shook the city.',languageDomain:'ENGLISH',missionRole:'NEW',evidence:[],source:{},meaningMap:null}],
+        sourceCount:0,provenance:{}
+      }],activeMissionId:'m-adaptive-think',activeSession:null,captureSession:null,events,updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'탐험 시작'}).click();
+  await expect(page.locator('.prior-skill-cue')).toBeVisible();
+  await expect(page.getByText('반복해서 확인된 단서',{exact:true})).toBeVisible();
+  await expect(page.getByText('단어 조각',{exact:true})).toBeVisible();
+  await expect(page.getByText(/다른 단서를 골라도 돼/)).toBeVisible();
+
+  const profile=await page.evaluate(()=>{
+    const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
+    return window.HideLanguageModel.summarizeInferenceSkill(s.events);
+  });
+  expect(profile.evidenceLevel).toBe('ESTABLISHED');
+  expect(profile.adaptiveClue.clue).toBe('WORD_PART');
+  expect(profile.adaptiveClue.evidenceBasis).toBe('LEARNER_SELF_REPORT');
 });
 
 test('Hide V2 memory detail exposes evidence trail behind strength and priority',async({page})=>{
