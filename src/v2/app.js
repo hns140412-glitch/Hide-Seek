@@ -187,8 +187,11 @@
   }
 
   function complete(){
-    const m=mission(),summary=HideV2Memory.missionSummary(m),trail=HideV2Trail.missionSummary(m);
-    HideV2Mission.updateMission(m.id,x=>{x.status='COMPLETED';x.memorySummary=summary;x.trailSummary=trail});
+    const m=mission(),active=HideV2Store.snapshot().activeSession;
+    const scopedIds=Array.isArray(active?.queue)?active.queue:null;
+    const summary=HideV2Memory.missionSummary(m),trail=HideV2Trail.missionSummary(m,{itemIds:scopedIds});
+    const fullMissionScope=trail.fullMissionScope===true;
+    HideV2Mission.updateMission(m.id,x=>{x.status=fullMissionScope?'COMPLETED':'PARTIAL';x.memorySummary=summary;x.trailSummary=trail});
     const readyContext=globalThis.HideV2ReadyBridge?.context?.()||{};
     const returnButton=readyContext.return_target?'<button id="v2ReturnReady" class="btn primary full" style="margin-top:8px">Ready & Set으로 돌아가기</button>':'';
     view().innerHTML=`<section class="card tint-leaf" style="text-align:center"><h1>탐험 완료</h1><p>오늘 찾은 정도와 오래 기억할 정도를 따로 기록했어요.</p><div class="grid3"><div class="status-pill"><b>${trail.trailMastery}%</b><span>길 익힘</span></div><div class="status-pill"><b>${summary.averageMemoryStrength}%</b><span>기억 힘</span></div><div class="status-pill"><b>${trail.recoveredTodayCount}</b><span>다시 찾음</span></div></div><div class="metric"><span>다음에 다시 볼 단어</span><b>${summary.reviewAdvisories.length}</b></div><button id="v2Home" class="btn secondary full">홈으로</button>${returnButton}</section>`;
