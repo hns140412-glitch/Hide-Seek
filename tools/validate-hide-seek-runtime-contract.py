@@ -501,6 +501,8 @@ for needle in [
     "skillProfile=inferenceRecordSummary()",
     "prioritizeExistingAssistance",
     "TRANSFERABLE_INFERENCE_HISTORY",
+    "adaptiveClue",
+    "evidenceLevel",
     "hintPlanSource",
     "planSource:codeSession.hintPlanSource",
     "showParentExplanation",
@@ -519,6 +521,8 @@ for needle in [
     "parentExplanation",
     "preferredAssistanceSteps",
     "prioritizeExistingAssistance",
+    "attempts>=2",
+    "evidenceLevel",
     "parent-explain-card",
 ]:
     if needle not in language_model and needle not in css:
