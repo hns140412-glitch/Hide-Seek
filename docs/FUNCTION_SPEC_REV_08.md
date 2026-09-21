@@ -57,11 +57,22 @@ Commit: create/update an exploration mission atomically after valid rows exist. 
 Data: `recognitionMeta`, `sourceType`, `sourceCount`, normalized word records.
 Next: Learning Hub.
 
-## 7. FIRST FIND
+## 7. MEMORIZATION → FIRST FIND
 
-Purpose: initial acquisition, not testing.
-Interaction: see English word, Korean meaning, example, hear English TTS, move through cards.
-Data: progress/history and study session counters.
+### MEMORIZATION
+Purpose: the learner first memorizes the reviewed print items before Hide retrieval begins.
+Interaction: word + meaning + pronunciation + optional verified meaning map.
+Role-aware rule:
+- NEW: richer understanding support may be offered.
+- REVIEW: resume prior memory context; do not treat the word as newly learned.
+Data: exposure is recorded as memorization exposure only. Exposure does not count as independent recall.
+Next: FIRST FIND.
+
+### FIRST FIND
+Purpose: first unassisted retrieval after memorization.
+Interaction: meaning is shown while the target word is hidden; learner types the recalled word or marks that it did not come to mind.
+Data: FIRST_RECALL_CORRECT / FIRST_RECALL_WRONG are retrieval evidence.
+Rule: showing a word during memorization must never be counted as a successful memory-ladder step.
 Next: MEANING CLUE.
 
 ## 8. MEANING CLUE
@@ -198,3 +209,11 @@ Truth gate:
 - missing verification falls back to ordinary meaning/context support.
 
 The meaning map is dynamic and may grow only from verified analysis and learner encounters.
+
+
+### NEW / REVIEW mission role
+Each committed mission item carries a mission role:
+- NEW: no prior lexical history before this mission.
+- REVIEW: the same lexical/sense item already exists in prior mission history.
+
+The role is inferred from learner history unless explicitly preserved from a trusted source. Current real-world patterns such as 12 NEW + 24 REVIEW are valid mission instances, not hard-coded universal counts.
