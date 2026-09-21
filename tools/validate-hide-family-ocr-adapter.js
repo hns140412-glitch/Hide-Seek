@@ -2,6 +2,7 @@
 const fs=require('fs');
 const vm=require('vm');
 const visionSrc=fs.readFileSync('vendor/taky/vision-ingest.js','utf8');
+const httpSrc=fs.readFileSync('vendor/taky/http-json.js','utf8');
 const src=fs.readFileSync('hide-family-ocr-adapter.js','utf8');
 
 function assert(cond,msg){if(!cond)throw new Error(msg)}
@@ -18,12 +19,15 @@ async function runCase(responseBody,status=200){
     fetch:async(url,options)=>({
       ok:status>=200&&status<300,
       status,
-      json:async()=>responseBody
+      url:String(url),
+      headers:{get:()=>null},
+      text:async()=>JSON.stringify(responseBody)
     }),
     window:{}
   };
   vm.createContext(sandbox);
   vm.runInContext(visionSrc,sandbox);
+  vm.runInContext(httpSrc,sandbox);
   vm.runInContext(src,sandbox);
   const adapter=sandbox.window.FamilyCaptureOcrAdapter;
   return adapter.analyzeVocabularyPage({
