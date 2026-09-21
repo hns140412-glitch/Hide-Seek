@@ -72,7 +72,7 @@
     {
       "id": "HIDE-V2-C2S-012",
       "type": "EVIDENCE",
-      "statement": "Locked last closed product estimate: Product 73, Coded 89, CI 86, Browser Runtime 82, Device 0, Release 0.",
+      "statement": "Locked last closed product estimate: Product 74, Coded 90, CI 87, Browser Runtime 83, Device 0, Release 0.",
       "destination": "status"
     },
     {
@@ -187,6 +187,24 @@
       "id": "HIDE-V2-C2S-031",
       "type": "DECISION",
       "statement": "Safe Hidden Words clue escalation is narrow: TOKEN may use English shape scaffold and MEANING may use existing example/context; unsupported SOUND/SHAPE second clues fail closed to relearn instead of inventing evidence.",
+      "destination": "learning/assistance"
+    },
+    {
+      "id": "HIDE-V2-C2S-032",
+      "type": "EVIDENCE",
+      "statement": "FINAL SEEK keeps the first attempt unassisted; an unassisted English miss may use one shape-based assisted reconstruction before any full relearn exposure.",
+      "destination": "learning/final-seek"
+    },
+    {
+      "id": "HIDE-V2-C2S-033",
+      "type": "CORRECTION",
+      "statement": "A correct FINAL_SEEK_RECONSTRUCT result is assisted and objectively verifiable but not objective recall; SEEK AGAIN remains the unassisted proof.",
+      "destination": "memory-evidence/final-seek"
+    },
+    {
+      "id": "HIDE-V2-C2S-034",
+      "type": "DECISION",
+      "statement": "Do not stack shape reconstruction after semantic FINAL SEEK support; if support was already used, fail closed to relearn before SEEK AGAIN.",
       "destination": "learning/assistance"
     }
   ],
