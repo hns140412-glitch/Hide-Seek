@@ -67,6 +67,7 @@ test('verified Korean and Hanja meaning maps use thinking-first without fake ety
 
   await expect(page.locator('.word-card > .eng')).toHaveText('불가피');
   await expect(page.getByText('검증 의미 구조',{exact:true})).toBeVisible();
+  await expect(page.getByRole('button',{name:'뜻 연결 더 보기'})).toHaveCount(0);
   await expect(page.locator('.root-core b')).toHaveText('不');
   await expect(page.getByText(/부모 설명 한 줄/)).toBeVisible();
   await expect(page.getByText('최근 몇 번 도움이 된 단서',{exact:true})).toHaveCount(0);
@@ -84,6 +85,7 @@ test('verified Korean and Hanja meaning maps use thinking-first without fake ety
 
   await expect(page.locator('.word-card > .eng')).toHaveText('學');
   await expect(page.getByText('검증 의미 구조',{exact:true})).toBeVisible();
+  await expect(page.getByRole('button',{name:'뜻 연결 더 보기'})).toHaveCount(0);
   await expect(page.locator('.root-core b')).toHaveText('學');
   await expect(page.locator('.inference-clue option[value="COMPONENT"]')).toHaveText('글자 구성');
   await expect(page.locator('.inference-clue option[value="RADICAL"]')).toHaveText('부수');
