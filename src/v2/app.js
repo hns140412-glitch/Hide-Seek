@@ -11,8 +11,12 @@
   function home(){
     const s=HideV2Store.snapshot(),m=mission();
     const resumable=globalThis.HideV2Session?.isResumable?.()===true;
-    view().innerHTML=`<section class="world-hero"><div class="hero-case"><div class="hero-kicker"><span>HIDE V2</span><span>REWRITE</span></div><h1>${m?esc(m.title):'새 단어 탐험을 시작해요'}</h1><p>${m?`${m.items.length}개 단어 · 구조 분리형 런타임`:'프린트 사진을 분석하거나 테스트 미션을 만들어 학습 흐름을 확인할 수 있어요.'}</p><div class="hero-actions"><button class="btn primary" id="v2Capture">프린트 분석</button>${m?`<button class="btn secondary" id="v2Start">${resumable?'학습 이어하기':'학습 시작'}</button>`:''}</div></div></section><section class="card"><div class="section-title"><h2>V2 상태</h2><span>monolith-free</span></div><div class="metric"><span>미션</span><b>${s.missions.length}</b></div><div class="metric"><span>저장</span><b>Local-first</b></div><div class="metric"><span>Domain</span><b>EN/KR/HANJA</b></div></section>`;
-    $('#v2Capture').onclick=()=>$('#sheetLibraryInput').click();
+    const capture=globalThis.HideV2Capture?.state?.();
+    const reviewReady=globalThis.HideV2Capture?.hasResumableReview?.()===true;
+    view().innerHTML=`<section class="world-hero"><div class="hero-case"><div class="hero-kicker"><span>HIDE V2</span><span>REWRITE</span></div><h1>${m?esc(m.title):'새 단어 탐험을 시작해요'}</h1><p>${m?`${m.items.length}개 단어 · 구조 분리형 런타임`:'프린트 사진을 분석하고 확인한 뒤 학습을 시작해요.'}</p><div class="hero-actions"><button class="btn primary" id="v2Camera">카메라 촬영</button><button class="btn secondary" id="v2Library">사진 추가</button>${m?`<button class="btn secondary" id="v2Start">${resumable?'학습 이어하기':'학습 시작'}</button>`:''}</div></div></section>${reviewReady?`<section class="card tint-sky"><div class="section-title"><h2>분석 결과가 남아 있어요</h2><span>${capture?.lastRows?.length||0}개</span></div><p>앱을 다시 열어도 검토 중인 OCR 결과를 이어갈 수 있어요.</p><button class="btn primary full" id="v2ResumeReview">분석 결과 이어보기</button></section>`:''}<section class="card"><div class="section-title"><h2>V2 상태</h2><span>monolith-free</span></div><div class="metric"><span>미션</span><b>${s.missions.length}</b></div><div class="metric"><span>촬영 세션</span><b>${capture?.status||'없음'}</b></div><div class="metric"><span>저장</span><b>Local-first</b></div><div class="metric"><span>Domain</span><b>EN/KR/HANJA</b></div></section>`;
+    $('#v2Camera').onclick=()=>$('#sheetCameraInput').click();
+    $('#v2Library').onclick=()=>$('#sheetLibraryInput').click();
+    if($('#v2ResumeReview'))$('#v2ResumeReview').onclick=()=>review(HideV2Capture.reviewRows());
     if($('#v2Start'))$('#v2Start').onclick=()=>{
       const existing=globalThis.HideV2Session?.ensureActiveMission?.();
       if(!existing){const active=mission();HideV2Session.start(active,{targetItemIds:globalThis.HideV2ReadyBridge?.targetItemIds?.(active)||null})}
@@ -23,7 +27,7 @@
   function review(rows){
     const normalized=rows.map((r,i)=>HideV2Mission.normalizeItem(r,i)).filter(Boolean);
     view().innerHTML=`<section class="card"><div class="hero-kicker"><span>OCR REVIEW</span><span>V2</span></div><h2>분석 결과 확인</h2><div class="weak-list">${normalized.map((w,i)=>`<div class="weak-item"><div><b>${esc(w.token)}</b><small> · ${esc(w.meaning)}</small></div><span class="badge">${esc(w.languageDomain)}</span></div>`).join('')}</div><button class="btn primary full" id="v2Commit" type="button">미션으로 저장</button></section>`;
-    $('#v2Commit').onclick=()=>{HideV2Mission.addMission({items:normalized,sourceCount:1,provenance:{source:'V2_OCR_REVIEW'}});HideV2Router.go('home')};
+    $('#v2Commit').onclick=()=>{const mission=HideV2Mission.addMission({items:normalized,sourceCount:Number(HideV2Capture.state()?.pages?.length||1),provenance:{source:'V2_OCR_REVIEW',captureSessionId:HideV2Capture.state()?.id||null}});HideV2Capture.markCommitted(mission.id);HideV2Router.go('home')};
   }
 
   function learn(){
@@ -105,7 +109,8 @@
   function boot(){
     globalThis.HideV2LegacyMigration?.migrateIfNeeded?.();
     $('#settingsBtn').hidden=true;$('#backBtn').hidden=true;$('#partnerBar').hidden=true;$('#bottomNav').hidden=true;
-    $('#sheetLibraryInput').addEventListener('change',e=>{const files=[...e.target.files];e.target.value='';if(files.length)onFiles(files)});
+    const bindFileInput=id=>$(id)?.addEventListener('change',e=>{const files=[...e.target.files];e.target.value='';if(files.length)onFiles(files)});
+    bindFileInput('#sheetCameraInput');bindFileInput('#sheetLibraryInput');
     HideV2Router.subscribe(render);HideV2Store.subscribe(()=>{});render();
     window.HideV2App=Object.freeze({render,review,onFiles,start:()=>{const m=mission();HideV2Session.start(m,{targetItemIds:globalThis.HideV2ReadyBridge?.targetItemIds?.(m)||null});HideV2Router.go('learn')}});
   }
