@@ -51,3 +51,11 @@ No merge, deploy, Netlify, production or device verification has occurred.
 - Product completion is tracked separately in `C2S/HIDE_RUNTIME_V2_PRODUCT_COMPLETION_MATRIX_2026-09-21.md`.
 - V2 product completion is ~35%; reusable asset maturity is separate (~65%) and must not be averaged into V2 completion.
 - No deploy/merge/device verification.
+
+
+## Surgery increment — mission lifecycle / OCR review
+- Mission Service now owns list/select/rename/archive/delete.
+- Delete is blocked for a mission with an active persisted learning session.
+- OCR review is editable before commit: token/meaning correction and row exclusion.
+- The saved result routes into the V2 mission-management surface.
+- This moves V2 PRODUCT_COMPLETION from ~35% to ~39%; reusable asset maturity remains separate.
