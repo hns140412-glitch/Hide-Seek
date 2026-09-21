@@ -6,7 +6,7 @@ const CORE=[
   './vendor/taky/release-contract.js','./vendor/taky/pwa-update-state.js','./vendor/taky/event-envelope.js','./vendor/taky/vision-ingest.js','./vendor/taky/http-json.js',
   './hide-release-v01.js','./hide-pwa-update-v01.js',
   './hide-learning-basis-v01.js','./hide-language-evidence.js','./hide-language-model.js',
-  './app.js','./hide-family-ocr-adapter.js','./hide-runtime.js','./hide-bridge.js','./hide-brand-current.js','./manifest.json','./assets/asset-map.json',
+  './app-core.js','./app-shell-ui.js','./app-learning-flow.js','./app-memory-records.js','./app-bootstrap.js','./app.js','./hide-family-ocr-adapter.js','./hide-runtime.js','./hide-bridge.js','./hide-brand-current.js','./manifest.json','./assets/asset-map.json',
   './assets/icons/icon-180x180.png','./assets/icons/icon-192x192.png','./assets/icons/icon-512x512.png',
   './assets/backgrounds/academy.png','./assets/backgrounds/park.png','./assets/backgrounds/bookstore.png','./assets/backgrounds/cafe.png','./assets/backgrounds/classroom.png','./assets/backgrounds/station.png',
   './assets/characters/guide_default.png','./assets/characters/guide_smile.png','./assets/characters/guide_hint.png','./assets/characters/guide_note.png','./assets/characters/guide_radio.png','./assets/characters/guide_fever.png','./assets/characters/guide_focus.png','./assets/characters/guide_cheer.png','./assets/characters/rabbit.png','./assets/characters/fennec.png','./assets/characters/sloth.png',
