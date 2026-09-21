@@ -184,3 +184,32 @@ Runtime V2 rewrite is now the active implementation direction.
 - SHA `42f7627b405d1026a0339fb5ed11b563d65d8003`
 - V2 #102 PASS / full Hide #556 PASS.
 - Candidate 01 is superseded.
+
+
+## NEW CHAT START — Runtime V2 rewrite closure
+
+Start with:
+1. `C2S/HIDE_RUNTIME_V2_REWRITE_C2S_CLOSURE_2026-09-21.md`
+2. `C2S/HIDE_RUNTIME_V2_REWRITE_ATOMS_2026-09-21.json`
+3. `C2S/HIDE_RUNTIME_V2_PRODUCT_COMPLETION_MATRIX_2026-09-21.md`
+4. `C2S/HIDE_RUNTIME_V2_EXTERNAL_RESOURCE_GATE_2026-09-21.md`
+5. `HANDOFF/HIDE_SEEK_HANDOFF_2026-09-21_LATEST.md`
+6. `Hide_Seek_UI_MASTER_LOGIC_REV_04.md`
+
+Then:
+- live-refresh `rewrite/hide-runtime-v2-2026-09-21`;
+- verify exact HEAD;
+- verify exact-head `Validate Hide Runtime V2` + `Validate Hide & Seek`;
+- if red, repair only the current product/gate mismatch before feature growth;
+- continue child-facing UI/UX surgery after exact-head green.
+
+Hard locks:
+- no V1 monolith feature growth;
+- no product-completion inflation from docs/tests;
+- Trail Mastery != Memory Strength;
+- Ready policy/Planner schedule ownership unchanged;
+- Seek Again same-day recovery != spaced recovery;
+- candidate 01 superseded;
+- candidate 02 is the current frozen candidate;
+- no Netlify siteId-only deploy for frozen validation because exact source ref cannot be specified;
+- DEVICE_VERIFIED remains 0 until physical-device evidence exists.
