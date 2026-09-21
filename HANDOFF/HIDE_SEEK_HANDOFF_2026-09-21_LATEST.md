@@ -337,3 +337,12 @@ Important current frontier:
 - child-facing UI/UX surgery is active and must follow `Hide_Seek_UI_MASTER_LOGIC_REV_04.md`
 - keep Seek Again, Trail Mastery vs Memory Strength, OCR recovery, PWA/mobile, Ready ownership invariants intact
 - real-provider OCR / physical device / hosted Ready-Hide roundtrip remain OPEN.
+
+
+## Latest V2 surgery — product UI/UX
+- Core child-facing home/mission/learning/Memory Ladder surfaces were redesigned around the Hide & Seek exploration model.
+- Primary flow is now active exploration first; secondary tools no longer compete visually with the main task.
+- Learning progress hierarchy, mission cards, Memory Ladder summary and word meters are browser-verified.
+- Exact UI code HEAD `e006dc0ca3fdadb704e9403f7af566668093a88f`: V2 #116 PASS / full Hide #570 PASS.
+- Current truthful V2 PRODUCT_COMPLETION: ~66%; CODED ~82%; CI_VERIFIED ~79%; Browser RUNTIME_VERIFIED ~75%; DEVICE_VERIFIED 0%; RELEASE_VERIFIED 0%.
+- Remaining UI frontier: exploration crew presentation, motion/celebration, final art direction and physical-device visual QA.
