@@ -302,9 +302,13 @@
 
   function renderOcrFailure(result){
     const retained=(result?.rows||[]).length;
-    view().innerHTML=`<section class="card"><h2>${result?.retryAttempt?'다시 분석하지 못했어요':'분석하지 못했어요'}</h2><p>${esc(result?.reason||'OCR_ANALYSIS_FAILED')}</p>${retained?`<p>${retained}개 결과는 보존되어 있어요.</p>`:''}${result?.retryable?'<button id="v2RetryOcr" class="btn primary full">실패한 페이지만 다시 분석</button>':''}<button id="v2Back" class="btn secondary full">돌아가기</button></section>`;
+    const title=result?.retryAttempt?'아직 못 찾은 페이지가 있어요':'사진에서 단어를 다 찾지 못했어요';
+    const lead=retained
+      ?('이미 찾은 '+retained+'개 결과는 그대로 보관했어요. 못 찾은 페이지만 다시 확인하면 돼요.')
+      :'원본 사진은 그대로 남아 있어요. 다시 확인할 수 있는 페이지만 골라 재시도해요.';
+    view().innerHTML=`<section class="card ocr-recovery-card"><p class="quest-overline">KEEP WHAT WE FOUND</p><h2>${esc(title)}</h2><p class="ocr-recovery-lead">${esc(lead)}</p>${result?.retryable?'<button id="v2RetryOcr" class="btn primary full">못 찾은 페이지만 다시 보기</button>':''}<button id="v2Back" class="btn secondary full">홈으로 돌아가기</button><details class="ocr-error-details"><summary>오류 정보</summary><small>${esc(result?.reason||'OCR_ANALYSIS_FAILED')}</small></details></section>`;
     if($('#v2RetryOcr'))$('#v2RetryOcr').onclick=async()=>{
-      view().innerHTML='<section class="card"><h2>다시 분석 중</h2><p>성공한 페이지는 유지하고 실패한 페이지만 다시 확인해요.</p></section>';
+      view().innerHTML='<section class="card ocr-recovery-card"><p class="quest-overline">TRY AGAIN</p><h2>못 찾은 페이지만 다시 보고 있어요</h2><p>이미 찾은 결과는 그대로 두고, 실패했던 페이지만 다시 확인해요.</p></section>';
       const retry=await HideV2Capture.analyzePending();
       if(retry.ok){review(retry.rows);return}
       renderOcrFailure({...retry,retryAttempt:true});
@@ -313,7 +317,7 @@
   }
 
   async function onFiles(files){
-    view().innerHTML='<section class="card"><h2>프린트 분석 중</h2><p>원본을 기준으로 단어와 뜻을 추출하고 있어요.</p></section>';
+    view().innerHTML='<section class="card ocr-recovery-card"><p class="quest-overline">FIND WORDS</p><h2>프린트에서 단어를 찾고 있어요</h2><p>원본 사진을 기준으로 단어와 뜻을 찾아 탐험 준비를 하고 있어요.</p></section>';
     const r=await HideV2Capture.analyzeFiles(files);
     if(!r.ok){renderOcrFailure(r);return}
     review(r.rows);
