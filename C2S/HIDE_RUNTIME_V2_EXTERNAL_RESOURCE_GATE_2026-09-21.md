@@ -90,3 +90,19 @@ Required compliant path:
 - then consume the one-deploy budget.
 
 Do NOT call the current siteId-only deploy action for this frozen-candidate validation goal.
+
+
+## Frozen candidate 02
+
+Current governed frozen candidate:
+- branch: `frozen/hide-v2-candidate-2026-09-21-02`
+- exact SHA: `42f7627b405d1026a0339fb5ed11b563d65d8003`
+- Validate Hide Runtime V2 #102: SUCCESS
+- Validate Hide & Seek #556: SUCCESS
+
+Candidate 01 is superseded and MUST NOT be deployed.
+
+External deployment is still blocked by:
+`EXTERNAL_DEPLOY_SOURCE_REF_UNSPECIFIABLE`
+
+The available siteId-only Netlify action cannot target this exact frozen SHA, so consuming the one external deploy budget would not prove candidate-02 deployment.
