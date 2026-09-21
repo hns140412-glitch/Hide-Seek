@@ -262,3 +262,11 @@ Hide exports `reviewAdvisories` as evidence, not a schedule. The packet may incl
 - Memory strength/priority remain Hide advisory projections; Ready Learning Engine/Planner ownership is unchanged.
 - Pre-doc code HEAD `065f9064c23b2198719573da559e5618109f940d`: V2 #33 PASS, full Hide #487 PASS.
 - Truthful V2 PRODUCT_COMPLETION: ~44%; DEVICE_VERIFIED 0%; RELEASE_VERIFIED 0%.
+
+
+## Latest V2 surgery — Thinking Trail / Memory Detail
+- English MEMORIZE now uses the canonical structure/root/scene Thinking Trail.
+- Inference is captured before reveal without recall inflation.
+- Memory Detail exposes the evidence behind memory strength/review priority.
+- Pre-doc code HEAD `ce0ad263af71a14d2c4939934f2c81cf5f7a3cad`: V2 #40 PASS, full Hide #494 PASS.
+- Truthful V2 PRODUCT_COMPLETION: ~48%; DEVICE_VERIFIED 0%; RELEASE_VERIFIED 0%.
