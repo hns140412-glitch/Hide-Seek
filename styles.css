@@ -124,3 +124,9 @@ button:focus-visible,input:focus-visible{outline:3px solid rgba(62,126,87,.35);o
 .root-orbit-node b{font-size:12px}.root-orbit-node small{font-size:10px;line-height:1.4;color:var(--muted)}
 .truth-source{display:block;margin-top:9px;text-align:right;color:var(--muted);font-size:9px;font-weight:800}
 @media(max-width:420px){.inference-row{grid-template-columns:1fr}.root-orbit{grid-template-columns:1fr}}
+
+.scene-trail{display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap;margin:10px 0 12px;padding:10px;border-radius:16px;background:rgba(255,255,255,.66);border:1px dashed rgba(68,98,70,.18)}
+.scene-trail span{display:grid;place-items:center;gap:2px;min-width:72px;padding:8px 10px;border-radius:13px;background:#eef5e8;text-align:center}
+.scene-trail small{font-size:8px;color:var(--muted);font-weight:900}.scene-trail b{font-size:10px;letter-spacing:.04em}.scene-trail i{font-style:normal;font-weight:950;color:var(--forest);opacity:.55}
+.inference-outcome .btn.selected{outline:2px solid rgba(71,113,74,.35);background:#e7f0de}
+@media(max-width:420px){.scene-trail{justify-content:flex-start}.scene-trail span{min-width:64px;flex:1 1 64px}}
