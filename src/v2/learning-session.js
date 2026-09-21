@@ -207,7 +207,15 @@
   function hiddenWordsPlan(word){
     const mem=HideV2Memory.summary(word);
     const primaryReason=HideV2Memory.reason(mem);
-    const key=primaryReason?.key||'stable';
+    let key=primaryReason?.key||'stable';
+    const soundWeakness=Number(mem?.memorySignature?.phonologicalWeakness||0);
+    if(
+      key==='recovery'&&
+      String(word?.languageDomain||'').toUpperCase()==='HANJA'&&
+      soundWeakness>0&&
+      word?.soundEvidence?.verified&&
+      word.soundEvidence.reading
+    ) key='sound';
     const labels={
       recovery:'힌트 없이 다시 꺼내기',
       confusion:'뜻 헷갈림 다시 구분하기',
@@ -223,6 +231,8 @@
       key,
       label:labels[key]||labels.stable,
       primaryReason,
+      activityReason:key,
+      reasonSource:key!==primaryReason?.key?'MEMORY_SIGNATURE_AXIS_OVERRIDE':'PRIMARY_REASON',
       memory:mem,
       mode,
       prompt:mode==='MEANING'?word?.token:mode==='SHAPE'?englishShapeCue(word?.token):mode==='SOUND'?word?.token:word?.meaning
