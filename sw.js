@@ -5,7 +5,7 @@ const CORE=[
   './','./index.html','./styles.css','./hide-runtime.css','./hide-bridge.css',
   './vendor/taky/release-contract.js','./vendor/taky/pwa-update-state.js','./vendor/taky/event-envelope.js','./vendor/taky/vision-ingest.js','./vendor/taky/http-json.js',
   './hide-release-v01.js','./hide-pwa-update-v01.js',
-  './hide-language-evidence.js','./hide-language-model.js',
+  './hide-learning-basis-v01.js','./hide-language-evidence.js','./hide-language-model.js',
   './app.js','./hide-family-ocr-adapter.js','./hide-runtime.js','./hide-bridge.js','./hide-brand-current.js','./manifest.json','./assets/asset-map.json',
   './assets/icons/icon-180x180.png','./assets/icons/icon-192x192.png','./assets/icons/icon-512x512.png',
   './assets/backgrounds/academy.png','./assets/backgrounds/park.png','./assets/backgrounds/bookstore.png','./assets/backgrounds/cafe.png','./assets/backgrounds/classroom.png','./assets/backgrounds/station.png',
