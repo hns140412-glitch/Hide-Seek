@@ -106,7 +106,11 @@
 
   function learningContextFor(item={}){
     const domain=detectDomain(item);
-    return globalThis.HideLearningBasis?.projectLearningContext?.(domain,item.learningContext||item.learning_context)||null;
+    const resolved = item.learningContext
+      || item.learning_context
+      || globalThis.HideSeekBridge?.resolvedLearningContext?.()
+      || null;
+    return globalThis.HideLearningBasis?.projectLearningContext?.(domain,resolved)||null;
   }
 
   function hasVerifiedMeaningMap(item={}){
