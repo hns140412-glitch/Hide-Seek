@@ -133,3 +133,6 @@ button:focus-visible,input:focus-visible{outline:3px solid rgba(62,126,87,.35);o
 
 .prior-skill-cue{display:grid;gap:3px;margin:9px 0 11px;padding:10px 12px;border-radius:14px;background:#f3eaf6;border:1px solid rgba(106,75,120,.12)}
 .prior-skill-cue small{font-size:9px;color:var(--muted);font-weight:850}.prior-skill-cue b{font-size:14px;color:#594467}.prior-skill-cue span{font-size:10px;line-height:1.45;color:var(--muted)}
+
+.parent-explain-card{display:grid;gap:4px;margin-top:4px;padding:11px 12px;border-radius:14px;background:#fff8e5;border:1px solid rgba(145,112,52,.14)}
+.parent-explain-card small{font-size:9px;color:#8a6e37;font-weight:900}.parent-explain-card b{font-size:11px;line-height:1.55;color:#4c422f}
