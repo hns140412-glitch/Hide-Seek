@@ -43,6 +43,23 @@ for needle in [
     pass
 
 
+for forbidden in [
+    "expectedNew:12",
+    "expectedReview:24",
+    "기준 패턴 · NEW 12 + REVIEW 24",
+]:
+    if forbidden in runtime:
+        fail.append("RUNTIME_MISSION_COMPOSITION_HARDCODE:"+forbidden)
+
+for needle in [
+    "observedNew:items.filter",
+    "observedReview:items.filter",
+    "classificationSource:'ROLE_CONFIRMATION_OR_HISTORY'",
+    "layoutIndependent:true",
+]:
+    if needle not in runtime:
+        fail.append("RUNTIME_MISSION_COMPOSITION_DYNAMIC:"+needle)
+
 for needle in [
     "S.captureSession",
     "renderCaptureSession",
