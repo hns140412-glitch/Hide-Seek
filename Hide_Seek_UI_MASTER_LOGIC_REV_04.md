@@ -396,3 +396,16 @@ The current learner pattern may be 12 NEW + 24 REVIEW, but the engine must infer
 Memorization exposure and retrieval evidence are separate:
 `SEEN != RECALLED`
 `MEMORIZATION_EXPOSURE != FIRST_RECALL_CORRECT`.
+
+
+## MOCK TEST != SOURCE PRINT
+The photographed 36-word sheet used in this review is a parent-child morning mock test, not the original learning handout.
+
+Observed evidence:
+- 12 NEW + 24 REVIEW for the current routine.
+- NEW 12 are on the left only in that specific mock-test artifact.
+
+Do not generalize this layout to intake:
+`PRINT POSITION != MISSION ROLE`.
+
+The source print may change format. NEW/REVIEW belongs to mission composition and learner history, with human correction available at review.
