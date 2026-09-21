@@ -54,51 +54,43 @@ Historical etymology must be verified.
 Transparent morphology or mnemonic support must be labeled separately.
 
 ## Current implementation state
-Latest observed branch HEAD at handoff creation:
-`b51172dcc52f9c11c456cb1bc9fb979e8aaaf7f3`
+Current branch HEAD at handoff refresh:
+`6c08a51812d13df6cc62aa2399c0282ceee3ff60`
 
-Latest observed CI:
-Validate Hide & Seek run #229 = SUCCESS.
-
-Important implemented pieces:
-- Language core v2
-- starter thinking plans for the real NEW 12
-- thinking-first NEW-word memorization UI
-- dynamic encountered-word links using prior lexicon + current mission
-- THINKING_SCENE support in Memory Ladder
-- morning mock-test evidence
-- NEW/REVIEW separation
-- FIRST FIND retrieval semantics
-- real 12+24 browser scenario and regression guards
+Current implementation now includes:
+- verified language evidence extracted to `hide-language-evidence.js` with schema validation / fail-closed behavior,
+- language-domain-isolated inference adaptation,
+- LOW / EMERGING / ESTABLISHED evidence maturity,
+- current-word applicability gating for adaptive clues,
+- language-specific clue taxonomies,
+- Korean/Hanja thinking-first verified meaning maps,
+- language-aware parent explanations,
+- progressive verified root reveal,
+- progressive semantic scene reveal with child-facing Korean labels,
+- explicit support provenance for root/scene reveals,
+- self-report naming via `selfReportedFitRate` / `evidenceBasis='LEARNER_SELF_REPORT'`,
+- adaptive FINAL SEEK hint provenance and current-word applicability gate,
+- NEW-word duplicate meaning-map bypass removed,
+- real NEW12 + REVIEW24 browser regression coverage extended.
 
 Status claims:
-- CODED = YES for above
-- CI_VERIFIED = YES at latest observed HEAD
-- BROWSER_RUNTIME_VERIFIED = YES
-- LIVE_OCR = NOT VERIFIED
-- REAL_DEVICE = NOT VERIFIED
-- DEPLOYED = NO
+- CODED = YES for the above current branch implementation.
+- CI_VERIFIED = check the matching latest HEAD run live; do not inherit any older PASS.
+- BROWSER_RUNTIME_VERIFIED = only if the matching latest HEAD browser run passes.
+- LIVE_OCR = NOT VERIFIED.
+- REAL_DEVICE = NOT VERIFIED.
+- DEPLOYED = NO.
 
 ## Immediate next task
-Continue implementation, not documentation-only work.
+Continue pre-deploy implementation, not deployment.
 
 Priority:
-1. Build a **verified root/etymology data contract**.
-2. For each word, choose:
-   - VERIFIED_ROOT / VERIFIED_ETYMOLOGY
-   - TRANSPARENT_COMPOUND
-   - SEMANTIC_SCENE
-   - MNEMONIC_BRIDGE
-3. Build the interactive visual grammar:
-   - center root/concept,
-   - word parts,
-   - semantic arrows,
-   - one strong mental scene,
-   - current target highlighted,
-   - prior encountered words only as optional reconnects.
-4. Add learner prediction before meaning reveal.
-5. Record prediction/clue/confidence separately from recall score.
-6. Re-run focused tests, then full CI.
+1. Close latest-head CI only when the exact HEAD has a matching run.
+2. Continue implementation gaps in Memory Ladder / retrieval / learning interaction.
+3. Keep adaptive inference descriptive until ESTABLISHED and applicable to the current word.
+4. Preserve self-report vs objective recall separation.
+5. Expand language-specific behavior without forcing English morphology onto Korean/Hanja.
+6. Keep C2S delta and this handoff synchronized after substantial implementation.
 
 Do not:
 - fabricate etymology,
@@ -107,7 +99,9 @@ Do not:
 - treat mock-test page layout as source authority,
 - count exposure as recall,
 - use the user as tester/debugger,
-- deploy/merge without approval.
+- call Netlify,
+- deploy,
+- merge PR #4 without explicit approval.
 
 ## Next-chat instruction
 “최신 TAKY 기준으로 Hide & Seek를 재개해. GitHub의 C2S/HIDE_LANGUAGE_MEMORY_C2S_CLOSURE_2026-09-21.md와 HANDOFF/HIDE_SEEK_HANDOFF_2026-09-21_LATEST.md를 먼저 읽고, implementation/hide-seek-capture-session-v02 최신 HEAD와 CI를 확인해. 신규 12개 실제 fixture를 유지하면서 검증된 어원·어근 시각화 엔진과 처음 본 단어 추론 인터랙션부터 이어서 구현해. 사용자 테스트 금지, Netlify/배포/merge 금지.”
