@@ -16,8 +16,9 @@
   let applyingUpdate = false;
   let lastSnapshot = '';
 
+  const EventEnvelope = globalThis.TakyEventEnvelope;
+  if(!EventEnvelope?.create) throw new Error('HIDE_SHARED_EVENT_ENVELOPE_UNAVAILABLE');
   const iso = () => new Date().toISOString();
-  const id = prefix => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
   function readIncomingContext() {
     const params = new URLSearchParams(location.search);
@@ -77,11 +78,18 @@
 
   function emit(type, payload = {}) {
     const context = getContext();
+    const envelope = EventEnvelope.create({
+      source:'hide-seek',
+      event_type:type,
+      occurred_at:iso(),
+      correlation_id:context.session_id || context.task_id || null,
+      payload
+    });
     const event = {
-      event_id: id('hide-event'),
+      ...envelope,
       type,
-      app: 'hide-seek',
-      at: iso(),
+      app:'hide-seek',
+      at:envelope.occurred_at,
       session_id: context.session_id || null,
       goal_id: context.goal_id || null,
       task_id: context.task_id || null,

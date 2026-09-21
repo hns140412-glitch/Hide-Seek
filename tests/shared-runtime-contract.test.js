@@ -3,6 +3,7 @@ const fs=require('fs');
 const path=require('path');
 const release=require('../vendor/taky/release-contract.js');
 const pwa=require('../vendor/taky/pwa-update-state.js');
+const eventEnvelope=require('../vendor/taky/event-envelope.js');
 delete globalThis.HideSeekReleaseDescriptor;
 require('../hide-release-v01.js');
 const d=globalThis.HideSeekReleaseDescriptor;
@@ -18,6 +19,7 @@ assert(!sw.includes("install',event=>event.waitUntil(caches.open(CACHE).then(cac
 assert(sw.includes("event.data?.type==='APPLY_UPDATE'"));
 assert(index.includes('./vendor/taky/release-contract.js'));
 assert(index.includes('./vendor/taky/pwa-update-state.js'));
+assert(index.includes('./vendor/taky/event-envelope.js'));
 assert(index.includes('./hide-release-v01.js'));
 assert(index.includes('./hide-pwa-update-v01.js'));
 assert(app.includes('globalThis.HideSeekReleaseDescriptor'));
@@ -26,3 +28,12 @@ assert(bridge.includes('globalThis.HideSeekPwaSafePoint=isSafeUpdatePoint'));
 let s='IDLE';
 for(const [ev,ctx,next] of [['DETECT',{},'UPDATE_DETECTED'],['DOWNLOAD_COMPLETE',{},'DOWNLOADED_WAITING'],['EVALUATE_SAFE_POINT',{safe_point:false},'DOWNLOADED_WAITING'],['EVALUATE_SAFE_POINT',{safe_point:true},'SAFE_TO_ACTIVATE'],['ACTIVATE',{safe_point:true},'ACTIVATING']]){const r=pwa.transition(s,ev,ctx);assert.equal(r.ok,true);assert.equal(r.state,next);s=r.state}
 console.log('PASS: Hide consumes TAKY shared release/PWA mechanisms while retaining Hide safe-point semantics');
+
+
+const ev1=eventEnvelope.create({source:'hide-seek',event_type:'TASK_PROGRESS',payload:{x:1}});
+const ev2=eventEnvelope.create({source:'hide-seek',event_type:'TASK_PROGRESS',payload:{x:1}});
+assert.notEqual(ev1.event_id,ev2.event_id);
+assert.equal(ev1.payload_digest,ev2.payload_digest);
+assert(bridge.includes("EventEnvelope.create"));
+assert(!bridge.includes("const id = prefix =>"));
+console.log('PASS: Hide bridge event identity uses TAKY immutable event envelope');

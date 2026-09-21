@@ -23,3 +23,25 @@ test('Hide service worker controls app and update adapter stays safe-point drive
   const state=await page.evaluate(()=>globalThis.HideSeekPwaUpdate.state());
   expect(['IDLE','UPDATE_DETECTED','DOWNLOADED_WAITING','SAFE_TO_ACTIVATE','ACTIVATING','RESTORING','READY']).toContain(state);
 });
+
+
+test('Hide bridge emits shared immutable event envelope while preserving legacy bridge projection',async({page})=>{
+  await page.goto('http://127.0.0.1:4173/');
+  await expect.poll(()=>page.evaluate(()=>!!globalThis.HideSeekBridge)).toBe(true);
+  const out=await page.evaluate(()=>{
+    const a=globalThis.HideSeekBridge.emit('TASK_PROGRESS',{same:'payload'});
+    const b=globalThis.HideSeekBridge.emit('TASK_PROGRESS',{same:'payload'});
+    return {
+      a:{event_id:a.event_id,event_type:a.event_type,type:a.type,source:a.source,app:a.app,payload_digest:a.payload_digest,payload:a.payload},
+      b:{event_id:b.event_id,payload_digest:b.payload_digest},
+      valid:globalThis.TakyEventEnvelope.validate(a).ok
+    };
+  });
+  expect(out.a.event_id).not.toBe(out.b.event_id);
+  expect(out.a.payload_digest).toBe(out.b.payload_digest);
+  expect(out.a.event_type).toBe('TASK_PROGRESS');
+  expect(out.a.type).toBe('TASK_PROGRESS');
+  expect(out.a.source).toBe('hide-seek');
+  expect(out.a.app).toBe('hide-seek');
+  expect(out.valid).toBe(true);
+});
