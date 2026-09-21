@@ -4,7 +4,7 @@ const path=require('path');
 const ROOT=path.join(__dirname,'..');
 const modules=[
   'src/v2/app-store.js','src/v2/mission-service.js','src/v2/memory-engine.js',
-  'src/v2/learning-session.js','src/v2/session-service.js','src/v2/capture-controller.js','src/v2/router.js',
+  'src/v2/learning-session.js','src/v2/session-service.js','src/v2/capture-store.js','src/v2/capture-controller.js','src/v2/router.js',
   'src/v2/legacy-migration.js','src/v2/ready-bridge.js','src/v2/app.js'
 ];
 const fail=[];
@@ -35,6 +35,15 @@ for(const stage of ['MEMORIZE','FIRST_FIND','MEANING','DOMAIN_EXTENSION','FINAL_
 }
 if(!learning.includes('submitMemorize'))fail.push('V2_MEMORIZATION_EVIDENCE_MISSING');
 if(!learning.includes('checkFinalSeek'))fail.push('V2_FINAL_SEEK_EVIDENCE_MISSING');
+
+const captureStore=fs.readFileSync(path.join(ROOT,'src/v2/capture-store.js'),'utf8');
+if(!captureStore.includes("const DB_NAME='hide-seek-v2-assets'"))fail.push('V2_CAPTURE_ASSET_STORE_MISSING');
+const capture=fs.readFileSync(path.join(ROOT,'src/v2/capture-controller.js'),'utf8');
+for(const token of ['captureSession','analysisBatches','lastRows','markCommitted','hasResumableReview']){
+  if(!capture.includes(token))fail.push('V2_CAPTURE_RESUME_CONTRACT_MISSING:'+token);
+}
+if(!html.includes('id="sheetCameraInput"'))fail.push('V2_CAMERA_INPUT_MISSING');
+if(!html.includes('id="sheetLibraryInput"'))fail.push('V2_LIBRARY_INPUT_MISSING');
 
 const store=fs.readFileSync(path.join(ROOT,'src/v2/app-store.js'),'utf8');
 if(!store.includes("const KEY='hide_seek_v2_state'"))fail.push('V2_STATE_OWNER_MISSING');
