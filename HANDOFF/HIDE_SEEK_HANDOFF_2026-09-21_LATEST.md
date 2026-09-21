@@ -164,3 +164,7 @@ Latest branch state must be checked live before work resumes. Do not reuse the o
   - schedule owner: `READY_SET_PLANNER`
   - target: explicit lexical IDs
 - Hide executes retrieval and returns new memory evidence; it does not choose the review date.
+
+
+## Memory advisory handoff contract
+Hide exports `reviewAdvisories` as evidence, not a schedule. The packet may include memory strength, weakness dimensions, confusion, latency, hint dependence, recovery state, spaced-recall evidence and `nextReviewPriority`. Ready Learning Engine interprets the packet, and Ready & Set Planner decides when/where a review becomes a dated task.
