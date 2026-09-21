@@ -12,7 +12,7 @@
     const s=HideV2Store.snapshot(),m=mission();
     view().innerHTML=`<section class="world-hero"><div class="hero-case"><div class="hero-kicker"><span>HIDE V2</span><span>REWRITE</span></div><h1>${m?esc(m.title):'새 단어 탐험을 시작해요'}</h1><p>${m?`${m.items.length}개 단어 · 구조 분리형 런타임`:'프린트 사진을 분석하거나 테스트 미션을 만들어 학습 흐름을 확인할 수 있어요.'}</p><div class="hero-actions"><button class="btn primary" id="v2Capture">프린트 분석</button>${m?'<button class="btn secondary" id="v2Start">학습 시작</button>':''}</div></div></section><section class="card"><div class="section-title"><h2>V2 상태</h2><span>monolith-free</span></div><div class="metric"><span>미션</span><b>${s.missions.length}</b></div><div class="metric"><span>저장</span><b>Local-first</b></div><div class="metric"><span>Domain</span><b>EN/KR/HANJA</b></div></section>`;
     $('#v2Capture').onclick=()=>$('#sheetLibraryInput').click();
-    if($('#v2Start'))$('#v2Start').onclick=()=>{session=HideV2Learning.create(mission());HideV2Router.go('learn')};
+    if($('#v2Start'))$('#v2Start').onclick=()=>{const m=mission();session=HideV2Learning.create(m,{targetItemIds:globalThis.HideV2ReadyBridge?.targetItemIds?.(m)||null});HideV2Router.go('learn')};
   }
 
   function review(rows){
@@ -23,7 +23,7 @@
 
   function learn(){
     const m=mission();if(!m){HideV2Router.go('home');return}
-    if(!session)session=HideV2Learning.create(m);
+    if(!session)session=HideV2Learning.create(m,{targetItemIds:globalThis.HideV2ReadyBridge?.targetItemIds?.(m)||null});
     if(session.stage==='COMPLETE'){complete();return}
     const w=HideV2Learning.current(session,m);const idx=session.index+1,total=m.items.length;
     if(session.stage==='FIRST_FIND'){
@@ -49,8 +49,12 @@
   function complete(){
     const m=mission(),summary=HideV2Memory.missionSummary(m);
     HideV2Mission.updateMission(m.id,x=>{x.status='COMPLETED';x.memorySummary=summary});
-    view().innerHTML=`<section class="card tint-leaf" style="text-align:center"><h1>탐험 완료</h1><p>학습 결과는 기억 증거로 저장됐고, 복습 필요 신호만 Ready Learning Engine에 넘길 수 있어요.</p><div class="metric"><span>복습 후보</span><b>${summary.reviewAdvisories.length}</b></div><button id="v2Home" class="btn primary full">홈으로</button></section>`;
+    const readyContext=globalThis.HideV2ReadyBridge?.context?.()||{};
+    const returnButton=readyContext.return_target?'<button id="v2ReturnReady" class="btn primary full" style="margin-top:8px">Ready & Set으로 돌아가기</button>':'';
+    view().innerHTML=`<section class="card tint-leaf" style="text-align:center"><h1>탐험 완료</h1><p>학습 결과는 기억 증거로 저장됐고, 복습 필요 신호만 Ready Learning Engine에 넘길 수 있어요.</p><div class="metric"><span>복습 후보</span><b>${summary.reviewAdvisories.length}</b></div><button id="v2Home" class="btn secondary full">홈으로</button>${returnButton}</section>`;
+    globalThis.HideV2ReadyBridge?.emitTaskEvent?.('TASK_COMPLETED');
     $('#v2Home').onclick=()=>{session=null;HideV2Router.go('home')};
+    if($('#v2ReturnReady'))$('#v2ReturnReady').onclick=()=>globalThis.HideV2ReadyBridge?.returnToReady?.();
   }
 
   async function onFiles(files){
@@ -70,7 +74,7 @@
     $('#settingsBtn').hidden=true;$('#backBtn').hidden=true;$('#partnerBar').hidden=true;$('#bottomNav').hidden=true;
     $('#sheetLibraryInput').addEventListener('change',e=>{const files=[...e.target.files];e.target.value='';if(files.length)onFiles(files)});
     HideV2Router.subscribe(render);HideV2Store.subscribe(()=>{});render();
-    window.HideV2App=Object.freeze({render,review,onFiles,start:()=>{session=HideV2Learning.create(mission());HideV2Router.go('learn')}});
+    window.HideV2App=Object.freeze({render,review,onFiles,start:()=>{const m=mission();session=HideV2Learning.create(m,{targetItemIds:globalThis.HideV2ReadyBridge?.targetItemIds?.(m)||null});HideV2Router.go('learn')}});
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
