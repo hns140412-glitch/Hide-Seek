@@ -29,6 +29,7 @@ jobs:
       - name: Check JavaScript syntax
         run: |
           node --check app.js
+          node --check hide-learning-basis-v01.js
           node --check hide-language-evidence.js
           node --check hide-brand-current.js
           node --check hide-bridge.js
