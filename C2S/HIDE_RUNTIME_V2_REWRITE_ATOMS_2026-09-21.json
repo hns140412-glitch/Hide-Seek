@@ -72,7 +72,7 @@
     {
       "id": "HIDE-V2-C2S-012",
       "type": "EVIDENCE",
-      "statement": "Locked last closed product estimate: Product 72, Coded 88, CI 85, Browser Runtime 81, Device 0, Release 0.",
+      "statement": "Locked last closed product estimate: Product 73, Coded 89, CI 86, Browser Runtime 82, Device 0, Release 0.",
       "destination": "status"
     },
     {
@@ -170,6 +170,24 @@
       "type": "EVIDENCE",
       "statement": "MEANING recognition MISMATCH stores the confused token/meaning pair as objective recognition evidence without claiming recall, feeding Memory Engine confusion and Hidden Words meaning reinforcement.",
       "destination": "memory-evidence/meaning-confusion"
+    },
+    {
+      "id": "HIDE-V2-C2S-029",
+      "type": "EVIDENCE",
+      "statement": "HIDDEN WORDS uses bounded staged assistance: reinforcement miss -> one safe minimal clue when available -> assisted retry -> full relearn only if still needed -> FINAL SEEK unassisted verification.",
+      "destination": "learning/hidden-words"
+    },
+    {
+      "id": "HIDE-V2-C2S-030",
+      "type": "CORRECTION",
+      "statement": "HIDDEN WORDS SHAPE mode displays a form cue and therefore must record assisted non-recall evidence; direct typed MEANING reinforcement remains objective meaning recall.",
+      "destination": "memory-evidence/assistance-truth-boundary"
+    },
+    {
+      "id": "HIDE-V2-C2S-031",
+      "type": "DECISION",
+      "statement": "Safe Hidden Words clue escalation is narrow: TOKEN may use English shape scaffold and MEANING may use existing example/context; unsupported SOUND/SHAPE second clues fail closed to relearn instead of inventing evidence.",
+      "destination": "learning/assistance"
     }
   ],
   "coverage": {
