@@ -33,6 +33,12 @@ function seededState(){
         learningStats:{inferenceTrace:[{
           event:'FIRST_SEEN_PREDICTION',clueUsed:'ROOT_ETYMOLOGY',confidence:'MEDIUM',
           predictedConcept:'옮기다',finalMeaning:'운반하다',outcome:'MATCH',
+          assessmentSource:'LEARNER_SELF_REPORT',objectiveVerified:false,
+          transferSkillEvidence:true,recallScoreImpact:false
+        },{
+          event:'FIRST_SEEN_PREDICTION',clueUsed:'ROOT_ETYMOLOGY',confidence:'MEDIUM',
+          predictedConcept:'나르다',finalMeaning:'운반하다',outcome:'MATCH',
+          assessmentSource:'LEARNER_SELF_REPORT',objectiveVerified:false,
           transferSkillEvidence:true,recallScoreImpact:false
         }]}
       }]
@@ -55,7 +61,7 @@ test('real NEW 12 + REVIEW 24 follows mission, recall and morning mock-test memo
 
   await expect(page.getByText('새 단어 이해하고 외우기')).toBeVisible();
   await expect(page.getByText('environment',{exact:true})).toBeVisible();
-  await expect(page.getByText('지난 탐험에서 잘 통했던 단서',{exact:true})).toBeVisible();
+  await expect(page.getByText('여러 번 도움이 됐던 단서',{exact:true})).toBeVisible();
   await expect(page.getByText('어근·어원',{exact:true})).toBeVisible();
   let initial=await page.evaluate(()=>{
     const s=JSON.parse(localStorage.getItem('hide_seek_state'));
@@ -170,7 +176,7 @@ test('real NEW 12 + REVIEW 24 follows mission, recall and morning mock-test memo
 
   await page.getByRole('button',{name:'기록'}).click();
   await expect(page.getByText('처음 보는 단어 풀이',{exact:true})).toBeVisible();
-  await expect(page.getByText('13/13',{exact:true})).toBeVisible();
-  await expect(page.getByText('69%',{exact:true})).toBeVisible();
+  await expect(page.getByText('14/14',{exact:true})).toBeVisible();
+  await expect(page.getByText('71%',{exact:true})).toBeVisible();
   await expect(page.getByText('자기판단 맞음+근접',{exact:true})).toBeVisible();
 });
