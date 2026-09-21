@@ -16,7 +16,7 @@ test('Hide V2 boots without legacy app.js and completes a mission end-to-end',as
   await page.goto('/v2.html');
   await expect(page.locator('.brand-copy small')).toHaveText('숨은 단어 탐험');
   await expect(page.getByRole('heading',{name:'V2 영어 미션'})).toBeVisible();
-  await page.getByRole('button',{name:'학습 시작'}).click();
+  await page.getByRole('button',{name:'탐험 시작'}).click();
   await expect(page.getByText('단어 만나기',{exact:true})).toBeVisible();
   await page.getByRole('button',{name:'기억하고 찾아보기'}).click();
 
@@ -54,7 +54,7 @@ test('Hide V2 Korean response stays production evidence, not recall inflation',a
     }));
   });
   await page.goto('/v2.html');
-  await page.getByRole('button',{name:'학습 시작'}).click();
+  await page.getByRole('button',{name:'탐험 시작'}).click();
   await expect(page.getByText('단어 만나기',{exact:true})).toBeVisible();
   await page.getByRole('button',{name:'기억하고 찾아보기'}).click();
   await page.getByLabel('회상 답 입력').fill('불가피');
@@ -171,7 +171,7 @@ test('Hide V2 obeys Ready Planner review directive and limits the session to dir
     }));
   });
   await page.goto('/v2.html?session_id=s1&task_id=task-review-1&review_directive='+encodeURIComponent(JSON.stringify(directive)));
-  await page.getByRole('button',{name:'학습 시작'}).click();
+  await page.getByRole('button',{name:'탐험 시작'}).click();
   await expect(page.getByText('둘째',{exact:true})).toBeVisible();
   await expect(page.getByText('첫째',{exact:true})).toHaveCount(0);
   await page.getByLabel('회상 답 입력').fill('second');
@@ -211,7 +211,7 @@ test('Hide V2 resumes a persisted learning session after reload',async({page})=>
     }));
   });
   await page.goto('/v2.html');
-  await page.getByRole('button',{name:'학습 시작'}).click();
+  await page.getByRole('button',{name:'탐험 시작'}).click();
   await expect(page.getByText('단어 만나기',{exact:true})).toBeVisible();
   await page.getByRole('button',{name:'기억하고 찾아보기'}).click();
   await page.getByLabel('회상 답 입력').fill('benefit');
@@ -219,8 +219,8 @@ test('Hide V2 resumes a persisted learning session after reload',async({page})=>
   await expect(page.getByText('뜻 단서',{exact:true})).toBeVisible();
 
   await page.reload();
-  await expect(page.getByRole('button',{name:'학습 이어하기'})).toBeVisible();
-  await page.getByRole('button',{name:'학습 이어하기'}).click();
+  await expect(page.getByRole('button',{name:'탐험 이어가기'})).toBeVisible();
+  await page.getByRole('button',{name:'탐험 이어가기'}).click();
   await expect(page.getByText('뜻 단서',{exact:true})).toBeVisible();
   const stage=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')).activeSession.stage);
   expect(stage).toBe('MEANING');
@@ -236,7 +236,7 @@ test('Hide V2 mission lifecycle supports selection rename archive and blocks act
     }));
   });
   await page.goto('/v2.html');
-  await page.getByRole('button',{name:'미션 관리'}).click();
+  await page.getByRole('button',{name:'탐험 미션'}).click();
   await expect(page.getByRole('heading',{name:'탐험 미션'})).toBeVisible();
 
   page.once('dialog',async d=>{expect(d.type()).toBe('prompt');await d.accept('둘 미션 수정')});
@@ -246,7 +246,7 @@ test('Hide V2 mission lifecycle supports selection rename archive and blocks act
   await page.locator('[data-action="open"][data-id="m-b"]').click();
   await expect(page.getByRole('heading',{name:'둘 미션 수정'})).toBeVisible();
 
-  await page.getByRole('button',{name:'미션 관리'}).click();
+  await page.getByRole('button',{name:'탐험 미션'}).click();
   page.once('dialog',async d=>{expect(d.type()).toBe('confirm');await d.accept()});
   await page.locator('[data-action="delete"][data-id="m-a"]').click();
   const state=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')));
@@ -300,8 +300,8 @@ test('Hide V2 Memory Ladder projects weakness reasons and wordbook from evidence
     }));
   });
   await page.goto('/v2.html');
-  await page.getByRole('button',{name:'기억 기록'}).click();
-  await expect(page.getByRole('heading',{name:'기억 기록'})).toBeVisible();
+  await page.getByRole('button',{name:'기억 사다리'}).click();
+  await expect(page.getByRole('heading',{name:'기억 사다리'})).toBeVisible();
   await expect(page.getByRole('heading',{name:'단어장'})).toBeVisible();
   await expect(page.getByText('benefit',{exact:true})).toBeVisible();
   await expect(page.getByText('island',{exact:true})).toBeVisible();
@@ -339,7 +339,7 @@ test('Hide V2 wordbook merges repeated lexical encounters across missions',async
     }));
   });
   await page.goto('/v2.html');
-  await page.getByRole('button',{name:'기억 기록'}).click();
+  await page.getByRole('button',{name:'기억 사다리'}).click();
   const planet=await page.evaluate(()=>window.HideV2Memory.wordbook().find(x=>x.token==='planet'));
   expect(planet.encounters).toBe(2);
   expect(planet.missions).toHaveLength(2);
@@ -359,7 +359,7 @@ test('Hide V2 English memorization uses thinking trail before reveal without rec
     }));
   });
   await page.goto('/v2.html');
-  await page.getByRole('button',{name:'학습 시작'}).click();
+  await page.getByRole('button',{name:'탐험 시작'}).click();
   await expect(page.getByText('THINKING TRAIL',{exact:true})).toBeVisible();
   await expect(page.getByRole('button',{name:'구조·장면 단서 보기'})).toBeDisabled();
   await page.locator('.inference-prediction').fill('땅이 흔들리는 것');
@@ -395,7 +395,7 @@ test('Hide V2 memory detail exposes evidence trail behind strength and priority'
     }));
   });
   await page.goto('/v2.html');
-  await page.getByRole('button',{name:'기억 기록'}).click();
+  await page.getByRole('button',{name:'기억 사다리'}).click();
   await page.locator('[data-word-detail]').click();
   await expect(page.getByText('기억 자세히',{exact:true})).toBeVisible();
   await expect(page.getByRole('heading',{name:'planet'})).toBeVisible();
@@ -404,7 +404,7 @@ test('Hide V2 memory detail exposes evidence trail behind strength and priority'
   await expect(page.getByText('마지막 찾기',{exact:true}).first()).toBeVisible();
   await expect(page.getByText('IMMEDIATE_ONLY',{exact:true})).toBeVisible();
   await page.getByRole('button',{name:'기록으로'}).click();
-  await expect(page.getByRole('heading',{name:'기억 기록'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'기억 사다리'})).toBeVisible();
 });
 
 
@@ -423,7 +423,7 @@ test('Hide V2 registers its isolated service worker and can reopen cached shell 
   await context.setOffline(true);
   await page.reload();
   await expect(page.locator('.brand-copy small')).toHaveText('숨은 단어 탐험');
-  await expect(page.getByRole('button',{name:'미션 관리'})).toBeVisible();
+  await expect(page.getByRole('button',{name:'탐험 미션'})).toBeVisible();
   await context.setOffline(false);
 });
 
@@ -530,7 +530,7 @@ test('Hide V2 390x844 primary surfaces have no horizontal overflow and touch tar
   expect(homeMetrics.scrollWidth).toBeLessThanOrEqual(homeMetrics.innerWidth+1);
   expect(homeMetrics.buttons.every(x=>x.h>=44&&x.left>=-1&&x.right<=391)).toBeTruthy();
 
-  await page.getByRole('button',{name:'학습 시작'}).click();
+  await page.getByRole('button',{name:'탐험 시작'}).click();
   await expect(page.getByText('단어 만나기',{exact:true})).toBeVisible();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1)).toBe(true);
 
@@ -559,7 +559,7 @@ test('Hide V2 mobile Korean response keeps textarea and action visible in reduce
     }));
   });
   await page.goto('/v2.html');
-  await page.getByRole('button',{name:'학습 시작'}).click();
+  await page.getByRole('button',{name:'탐험 시작'}).click();
   await page.getByRole('button',{name:'기억하고 찾아보기'}).click();
   await page.getByLabel('회상 답 입력').fill('불가피');
   await page.getByRole('button',{name:'기억 확인'}).click();
@@ -655,7 +655,7 @@ test('Hide V2 wrong final seek enters relearn and seek-again before completing',
     }));
   });
   await page.goto('/v2.html');
-  await page.getByRole('button',{name:'학습 시작'}).click();
+  await page.getByRole('button',{name:'탐험 시작'}).click();
   await page.getByRole('button',{name:'기억하고 찾아보기'}).click();
   await page.getByLabel('회상 답 입력').fill('island');
   await page.getByRole('button',{name:'기억 확인'}).click();
