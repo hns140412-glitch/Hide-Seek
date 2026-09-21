@@ -391,3 +391,23 @@ Latest-head CI note must still be checked live. No Netlify / deploy / merge / us
 - EVIDENCE remains zero until a real evidence-selection/justification interaction exists.
 - This preserves the Ready Korean basis `READ_UNDERSTAND_EVIDENCE_RESPOND` without pretending that Hide has already implemented a full reading-comprehension engine.
 - Hide still consumes resolved Ready learningContext only and does not own subject progression/review policy/scheduling.
+
+
+## Korean verified context-evidence interaction delta
+- Korean EVIDENCE is no longer permanently zero when verified context evidence is available.
+- New fail-closed `contextEvidence` contract is accepted only when:
+  - language domain is KOREAN,
+  - `verified = true`,
+  - `sourceRef` exists,
+  - `contextText` and `evidenceText` exist,
+  - `evidenceText` is actually contained in `contextText`,
+  - and at least two candidate excerpts are supplied with the correct evidence included.
+- Invalid, unverified, or non-Korean context evidence normalizes to null.
+- After MEANING CLUE, eligible Korean items can enter `EVIDENCE TRAIL` and explicitly select the supporting context evidence.
+- Successful/failed evidence selection records objective EVIDENCE + MEANING memory evidence.
+- CONTEXT remains separate: context exposure is still non-objective, and evidence selection is not re-labeled as context recall.
+- Browser regression covers:
+  - EVIDENCE = 0 before explicit evidence interaction,
+  - verified EVIDENCE becoming earned only after selection,
+  - CONTEXT objective recall remaining 0.
+- A selector-binding defect was found during CI, root-caused, minimally fixed, and a plural-selector contract guard was retained.
