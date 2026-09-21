@@ -174,3 +174,27 @@ Report includes:
 - shared session/task/lap identifiers
 
 `HIDE REPORT != READY FACT AUTHORITY != READY PLANNER AUTHORITY`
+
+
+## 19. LANGUAGE MEMORY & MEANING CORE
+
+Hide & Seek's domain is language memory and meaning, not English-only vocabulary.
+
+Shared principle:
+`decompose when valid → connect meaning → form imagery → retrieve → record memory evidence`.
+
+Language-specific interpretation:
+- ENGLISH: PREFIX / ROOT / SUFFIX / MEANING_BRIDGE / CONTEXT.
+- KOREAN: ETYMOLOGY / AFFIX / HANJA_ORIGIN / SEMANTIC_RELATION / CONTEXT.
+- HANJA: RADICAL / COMPONENT / SOUND / MEANING / COMPOUND_CONTEXT.
+
+A verified meaning map may be used as a Memory Ladder cue (`MEANING_MAP`).
+It must help the learner reconstruct meaning; it must not expand the current mission into an unsolicited related-word memorization list.
+
+Truth gate:
+- etymology/root/Hanja claims require verified source data,
+- no runtime invention,
+- no "plausible" decomposition,
+- missing verification falls back to ordinary meaning/context support.
+
+The meaning map is dynamic and may grow only from verified analysis and learner encounters.
