@@ -1413,3 +1413,49 @@ body.v2-runtime{
   color:var(--v2-muted);
   line-height:1.4;
 }
+
+
+/* Memory Ladder find tools: child-facing search + engine-owned state filters */
+.v2-runtime .memory-find-tools{
+  display:grid;
+  gap:10px;
+  margin:12px 0;
+  padding:14px;
+  border:1px solid var(--v2-line);
+  border-radius:18px;
+  background:rgba(255,255,255,.66);
+  box-shadow:0 8px 24px rgba(51,77,61,.04);
+}
+.v2-runtime .memory-find-tools label{
+  display:grid;
+  gap:6px;
+}
+.v2-runtime .memory-find-tools label>span{
+  font-size:12px;
+  font-weight:900;
+  color:var(--v2-muted);
+}
+.v2-runtime .memory-filter-row{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:6px;
+}
+.v2-runtime .memory-filter-row .btn{
+  min-width:0;
+  min-height:42px;
+  padding:8px 6px;
+  font-size:12px;
+}
+.v2-runtime .memory-filter-row .btn.is-active{
+  background:rgba(214,234,201,.92);
+  border-color:rgba(81,118,86,.26);
+}
+.v2-runtime .memory-find-tools>small{
+  color:var(--v2-muted);
+  font-weight:800;
+}
+@media(max-width:390px){
+  .v2-runtime .memory-filter-row{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
