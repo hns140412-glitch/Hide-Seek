@@ -306,7 +306,9 @@ function renderMemorizeStage(){
  const currentEncountered=ws.slice(0,i).map(x=>x.eng).filter(Boolean);
  const encounteredWords=[...new Set([...priorMissionWords,...currentEncountered])];
  const skillProfile=inferenceRecordSummary();
- const thinkingHtml=role==='NEW'?(globalThis.HideLanguageModel?.renderStarterExplorationHtml?.(w,{encounteredWords,skillProfile},esc)||''):'';
+ const actorRole=String(sh.recognitionMeta?.inputActorRole||window.HideSeekBridge?.context?.()?.actor_role||'').toUpperCase();
+ const showParentExplanation=['PARENT','PARENT_CHILD'].includes(actorRole);
+ const thinkingHtml=role==='NEW'?(globalThis.HideLanguageModel?.renderStarterExplorationHtml?.(w,{encounteredWords,skillProfile,showParentExplanation},esc)||''):'';
  sh.status='LEARNING';S.learning.phase='prepare';save();
  const meaningBlock=role==='NEW'&&thinkingHtml
   ?`<button class="btn primary full" id="confirmNewMeaning" style="margin-top:12px" type="button" disabled>뜻 확인하기</button><div id="newMeaningAnswer" hidden><div class="kor">${esc(w.kor)}</div>${w.example?`<div class="example">${esc(w.example)}</div>`:''}<div class="inference-outcome" style="margin-top:12px"><b>내 추론과 비교하면?</b><div class="btn-row" style="margin-top:7px"><button class="btn secondary inference-outcome-btn" data-outcome="MATCH" type="button">맞았어</button><button class="btn secondary inference-outcome-btn" data-outcome="NEAR" type="button">비슷했어</button><button class="btn secondary inference-outcome-btn" data-outcome="MISS" type="button">달랐어</button></div></div></div>`
