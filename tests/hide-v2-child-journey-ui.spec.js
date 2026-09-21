@@ -34,6 +34,9 @@ test('Hide V2 presents one continuous child journey and a completion moment', as
   });
 
   await page.goto('/v2.html');
+  await expect(page.getByRole('heading', { name: '다음 탐험은 이렇게 이어져요' })).toBeVisible();
+  await expect(page.locator('.home-crew')).toBeVisible();
+  await expect(page.locator('.quest-stat-row--quiet')).toBeVisible();
   await page.getByRole('button', { name: '탐험 시작' }).click();
 
   const path = page.locator('.journey-path');
