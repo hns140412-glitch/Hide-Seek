@@ -23,6 +23,19 @@ function seededState(){
         missionRoleSource:'MORNING_MOCK_TEST_EVIDENCE',
         wrong:0,pass:0,hint:0,confidence:'high',needsReview:false,learningStats:{}
       }))
+    },{
+      sheetId:'prior-language-mission',
+      title:'이전 언어 탐험',
+      createdAt:now,updatedAt:now,status:'COMPLETED',caseMastery:100,
+      items:[{
+        id:'prior-transport',eng:'transport',kor:'운반하다',missionRole:'NEW',
+        wrong:0,pass:0,hint:0,confidence:'high',needsReview:false,
+        learningStats:{inferenceTrace:[{
+          event:'FIRST_SEEN_PREDICTION',clueUsed:'ROOT_ETYMOLOGY',confidence:'MEDIUM',
+          predictedConcept:'옮기다',finalMeaning:'운반하다',outcome:'MATCH',
+          transferSkillEvidence:true,recallScoreImpact:false
+        }]}
+      }]
     }],
     activeSheetId:'real-mock-36',
     sessions:[],xp:0,streak:0,lastStudy:'',
@@ -154,6 +167,6 @@ test('real NEW 12 + REVIEW 24 follows mission, recall and morning mock-test memo
 
   await page.getByRole('button',{name:'기록'}).click();
   await expect(page.getByText('처음 보는 단어 풀이',{exact:true})).toBeVisible();
-  await expect(page.getByText('12/12',{exact:true})).toBeVisible();
-  await expect(page.getByText('67%',{exact:true})).toBeVisible();
+  await expect(page.getByText('13/13',{exact:true})).toBeVisible();
+  await expect(page.getByText('69%',{exact:true})).toBeVisible();
 });
