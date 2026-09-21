@@ -482,3 +482,12 @@ Important current frontier:
 - A mismatch stores the confused token/meaning pair and feeds Memory Engine confusion → HIDDEN WORDS meaning reinforcement.
 - Do not source comparison choices from mission items outside a Ready-directed session queue.
 - Current locked reporting: PRODUCT ~72%, CODED ~88%, CI ~85%, Browser Runtime ~81%, Device 0%, Release 0%.
+
+
+## 2026-09-22 staged Hidden Words assistance delta
+- Exact code HEAD `28a70fc7ff3e1f89d1bfaba6b59acf47af5f1557` passed V2 #261 / full Hide #719.
+- HIDDEN WORDS first miss may use one safe minimal clue before any full answer re-exposure.
+- Assisted retry is never objective recall, even when correct; FINAL SEEK remains the unassisted verification.
+- TOKEN may use English shape scaffold; MEANING may use existing example/context. Do not invent unsupported SOUND or second SHAPE clues.
+- SHAPE reinforcement with a visible shape cue is assisted/non-recall.
+- Current locked reporting: PRODUCT ~73%, CODED ~89%, CI ~86%, Browser Runtime ~82%, Device 0%, Release 0%.
