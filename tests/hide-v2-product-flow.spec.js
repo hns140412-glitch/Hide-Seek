@@ -138,6 +138,40 @@ test('Hide V2 normal memorization exposure does not create hint dependency',asyn
   expect(mem.memorySignature.hintDependency).toBe(0);
 });
 
+test('Hide V2 Hidden Words specializes activity from Memory Engine primary reason',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'보강 분기'},missions:[{
+        id:'m-hidden-modes',title:'보강 분기',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        sourceCount:0,provenance:{source:'TEST_FIXTURE'},
+        items:[
+          {id:'w-conf',lexicalId:'benefit::혜택',token:'benefit',meaning:'혜택',languageDomain:'ENGLISH',missionRole:'REVIEW',source:{},evidence:[
+            {stage:'CONNECTION',evidenceMode:'ASSOCIATION',axes:['MEANING'],result:'MISMATCH',objectiveVerified:true,objectiveRecall:false,assisted:false}
+          ]},
+          {id:'w-shape',lexicalId:'environment::환경',token:'environment',meaning:'환경',languageDomain:'ENGLISH',missionRole:'REVIEW',source:{},evidence:[
+            {stage:'FORM_CHECK',evidenceMode:'RECOGNITION',axes:['FORM'],result:'WRONG',objectiveVerified:true,objectiveRecall:false,assisted:false}
+          ]},
+          {id:'w-recovery',lexicalId:'island::섬',token:'island',meaning:'섬',languageDomain:'ENGLISH',missionRole:'REVIEW',source:{},evidence:[
+            {stage:'FIRST_FIND',evidenceMode:'RECALL',axes:['FORM','RECALL'],result:'WRONG',objectiveVerified:true,objectiveRecall:true,assisted:false}
+          ]}
+        ]
+      }],activeMissionId:'m-hidden-modes',activeSession:null,captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  const plans=await page.evaluate(()=>{
+    const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
+    return Object.fromEntries(s.missions[0].items.map(w=>[w.id,window.HideV2Learning.hiddenWordsPlan(w)]));
+  });
+  expect(plans['w-conf'].key).toBe('confusion');
+  expect(plans['w-conf'].mode).toBe('MEANING');
+  expect(plans['w-shape'].key).toBe('orthographic');
+  expect(plans['w-shape'].mode).toBe('SHAPE');
+  expect(plans['w-shape'].prompt).not.toBe('environment');
+  expect(plans['w-recovery'].key).toBe('recovery');
+  expect(plans['w-recovery'].mode).toBe('TOKEN');
+});
+
 test('Hide V2 Hidden Words appears only for engine-detected weakness and keeps relearn separate from recall',async({page})=>{
   await page.addInitScript(()=>{
     localStorage.setItem('hide_seek_v2_state',JSON.stringify({
