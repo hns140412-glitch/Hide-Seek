@@ -311,3 +311,67 @@ CI_VERIFIED = YES for latest observed HEAD
 RUNTIME_VERIFIED = browser flow only
 DEVICE_VERIFIED = NO
 DEPLOYED = NO
+
+
+## 2026-09-21 FINAL C2S RE-CLOSURE
+
+### Canonical ownership corrections
+- Language Memory is not homework, assignment scope, or Hanja grade/level.
+- Ready Learning Engine owns:
+  - homework / assignment interpretation,
+  - Learning Unit construction,
+  - Hanja grade/level resolution,
+  - subject progression/range/review context.
+- Hide & Seek consumes resolved `learningContext` only.
+- Hide must not independently infer Hanja grade/level.
+- Hide Language Memory owns cumulative learner memory evidence:
+  - form / sound / meaning memory,
+  - confusion relations,
+  - assisted vs unassisted recall,
+  - writing/reconstruction evidence when available,
+  - latency / hint dependence / recovery,
+  - spaced retention,
+  - Memory Ladder state.
+
+### Learning Engine basis
+- Hide uses a semantic-light learning-basis adapter rather than duplicating Ready pedagogy.
+- Basis snapshot:
+  - Ready Learning Master 0.5.1
+  - Ready Subject Master 0.2.1
+  - Ready Learning Reference 0.3.0
+- Korean basis:
+  - subject = 국어
+  - method = READ_UNDERSTAND_EVIDENCE_RESPOND
+- Hanja basis:
+  - subject = 한자
+  - method = FORM_SOUND_MEANING_RECALL
+  - loop = ENCODE -> RECALL -> CHECK -> RETRY
+- English remains Hide's word-structure/inference specialist path while referencing Ready's higher-level English loop.
+
+### Current implementation checkpoint
+- Branch HEAD: `88731750f3491422518e84959042e088b3b2cc78`
+- Validate Hide & Seek run #333: SUCCESS on the exact HEAD.
+- PR #4: OPEN / DRAFT / HOLD / DO NOT MERGE.
+- Netlify / production deploy: NOT CALLED.
+- Real-device verification: NOT CLAIMED.
+- Live OCR provider verification: NOT CLAIMED.
+
+### Coverage closure
+- UNMAPPED_MATERIAL = 0 within recovered scope.
+- SILENT_LOSS = 0 within recovered scope.
+- FALSE_CONVERGENCE = 0.
+- CORRECTION_PROPAGATION = COMPLETE for homework/Language Memory/Hanja-grade ownership.
+- RELEASE / MERGE / DEPLOY = NOT APPROVED.
+
+### Resume priority
+1. Continue pre-deploy implementation only.
+2. Keep Ready as owner of homework/Learning Unit/Hanja-level semantics.
+3. Keep Hide as owner of cumulative language-memory evidence and Memory Ladder behavior.
+4. Expand Korean/Hanja memory behavior through resolved learning context, not duplicated subject logic.
+5. Preserve current truth gates, self-report vs objective recall separation, and current-word applicability.
+6. Do not deploy, call Netlify, or merge until explicit approval.
+
+C2S_RE_CLOSED = YES
+LATEST_HEAD_CI_VERIFIED = YES (#333)
+DEPLOYED = NO
+DEVICE_VERIFIED = NO
