@@ -445,3 +445,12 @@ Latest-head CI note must still be checked live. No Netlify / deploy / merge / us
   - Ready Weekly Availability Gate #6 SUCCESS
   - TAKY Codex Worker Self-Test #482 SUCCESS
 - No merge/deploy/Netlify was performed.
+
+
+## Session-level Ready -> Hide -> Ready review execution closure
+- Ready PR #100 now carries Planner-created `review_directive` into the actual Hide specialist launch URL.
+- Hide continues to accept only `EXPLICIT_READY_PLANNER_REVIEW_DIRECTIVE` and never self-activates old-memory review.
+- Hide return events already include `buildTaskSnapshot()` and `memorySummary`.
+- Ready runtime now preserves the validated Hide specialist result on the Ready task and carries it into `taskOutcomes` beside the Planner outcome.
+- Runtime path: `Planner review TODO -> Ready session task -> Hide directive -> Hide retrieval -> Hide memorySummary -> Ready task outcome`.
+- No merge/deploy/Netlify performed.
