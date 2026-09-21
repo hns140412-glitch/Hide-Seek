@@ -442,3 +442,10 @@ Important current frontier:
 - Keep raw OCR `lastRows` separate from editable `reviewDraft`; do not overwrite source evidence with human edits.
 - Memory Ladder search/state filters and mission-map status filters are green and use existing engine/status semantics only.
 - Current locked reporting remains PRODUCT ~68%, CODED ~84%, CI ~81%, Browser Runtime ~77%, Device 0%, Release 0%.
+
+
+## 2026-09-22 First Find recovery delta
+- Exact code HEAD `506029061ac9e2873595545758f1b737e9f1aa4e` passed V2 #220 / full Hide #678.
+- FIRST FIND wrong recall now shows a brief relearn scene before MEANING.
+- The correction exposure is `RELEARN_EXPOSURE`, assisted, and never objective recall.
+- Do not collapse this state back into an immediate silent stage advance.
