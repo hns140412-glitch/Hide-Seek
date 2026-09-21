@@ -27,13 +27,10 @@
       ready_method:'FORM_SOUND_MEANING_RECALL',
       ready_loop:['ENCODE','RECALL','CHECK','RETRY'],
       ready_domains:['형태','음','뜻','회상','쓰기'],
-      progression_basis:'HANJA_GRADE_LEVEL',
-      progression_policy:'USE_EXPLICIT_LEVEL_SOURCE_ONLY',
-      progression_authority:'UNBOUND_REQUIRES_SOURCE_REF',
       hide_memory_axes:['FORM','SOUND','MEANING','RECALL','WRITE_OR_RECONSTRUCT'],
       hide_learning_loop:['ENCODE_FORM_SOUND_MEANING','RECALL','CHECK','RETRY'],
       default_assistance:['MEANING_MAP','SOUND','SHAPE'],
-      evidence_policy:'EXPLICIT_GRADE_LEVEL_SOURCE_PLUS_ACTUAL_WORKBOOK_CONTEXT'
+      evidence_policy:'ACTUAL_WORKBOOK_RANGE_AND_CONFIRMED_STRUCTURE_PRIMARY'
     }),
     ENGLISH:Object.freeze({
       basis_subject:'영어',
@@ -47,16 +44,6 @@
       evidence_policy:'VERIFIED_ETYMOLOGY_OR_SEMANTIC_SUPPORT'
     })
   });
-
-  function normalizeHanjaLevel(input={}){
-    const raw=input.hanjaLevel||input.hanja_level||input.gradeLevel||input.grade_level||null;
-    if(!raw)return null;
-    const level=typeof raw==='object'?String(raw.level||raw.grade||'').trim():String(raw).trim();
-    const scheme=typeof raw==='object'?String(raw.scheme||raw.authority||'').trim():'';
-    const sourceRef=typeof raw==='object'?String(raw.sourceRef||raw.source_ref||'').trim():'';
-    if(!level||!scheme||!sourceRef)return null;
-    return {scheme,level,sourceRef,verified:true};
-  }
 
   function cleanDomain(domain){
     const key=String(domain||'').trim().toUpperCase();
@@ -79,5 +66,5 @@
     return ordered;
   }
 
-  window.HideLearningBasis=Object.freeze({VERSION,BASIS,PROFILES,resolve,assistanceOrder,normalizeHanjaLevel});
+  window.HideLearningBasis=Object.freeze({VERSION,BASIS,PROFILES,resolve,assistanceOrder});
 })();
