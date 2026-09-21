@@ -503,6 +503,17 @@ test('Hide V2 Memory Ladder projects weakness reasons and wordbook from evidence
   await page.goto('/v2.html');
   await page.getByRole('button',{name:'기억 사다리'}).click();
   await expect(page.getByRole('heading',{name:'기억 사다리'})).toBeVisible();
+  await expect(page.getByLabel('기억 단어 검색')).toBeVisible();
+  await page.getByLabel('기억 단어 검색').fill('섬');
+  await expect(page.getByText('1개 단어 보기',{exact:true})).toBeVisible();
+  await expect(page.locator('[data-ladder-word="island::섬"]')).toBeVisible();
+  await expect(page.locator('[data-ladder-word="benefit::혜택"]')).toBeHidden();
+  await page.getByLabel('기억 단어 검색').fill('');
+  await page.getByRole('button',{name:'다시 찾기',exact:true}).click();
+  await expect(page.getByText('1개 단어 보기',{exact:true})).toBeVisible();
+  await expect(page.locator('[data-ladder-word="benefit::혜택"]')).toBeVisible();
+  await expect(page.locator('[data-ladder-word="island::섬"]')).toBeHidden();
+  await page.getByRole('button',{name:'전체',exact:true}).click();
   await page.getByText('기억 기록 자세히 보기',{exact:true}).click();
   await expect(page.getByRole('heading',{name:'단어 기록'})).toBeVisible();
   await expect(page.getByText('benefit',{exact:true})).toBeVisible();
