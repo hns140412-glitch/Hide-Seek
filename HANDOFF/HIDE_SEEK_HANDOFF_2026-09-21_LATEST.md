@@ -465,3 +465,10 @@ Important current frontier:
 - HIDDEN WORDS relearn exposure must remain assisted and non-recall.
 - Do not restore the bug where all `assisted=true` exposure becomes hint dependency. Hint dependency is actual ASSISTANCE/hint evidence only.
 - Current locked reporting: PRODUCT ~70%, CODED ~86%, CI ~83%, Browser Runtime ~79%, Device 0%, Release 0%.
+
+
+## 2026-09-22 reason-specific Hidden Words delta
+- Exact code HEAD `f19dcd84f650ca4e80d970f36a911b4694d9ecd5` passed V2 #243 / full Hide #701.
+- HIDDEN WORDS uses engine primaryReason only: confusion→meaning, orthographic→shape, verified sound→sound recall, other weakness→unassisted token recall.
+- Do not introduce a parallel Hidden Words weakness score.
+- Current locked reporting: PRODUCT ~71%, CODED ~87%, CI ~84%, Browser Runtime ~80%, Device 0%, Release 0%.
