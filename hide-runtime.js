@@ -607,7 +607,7 @@
 
       const editingSheet = session.editingSheetId ? (S.sheets || []).find(x => x.sheetId === session.editingSheetId) : null;
       const sheetId = editingSheet?.sheetId || `sheet-${Date.now()}`;
-      const items = data.map((x, i) => ({
+      let items = data.map((x, i) => ({
         ...normalizeWord({ ...x, needsReview: false }, i),
         sourcePageId: x.sourcePageId,
         sourcePageOrder: x.sourcePageOrder,
@@ -618,6 +618,7 @@
         ocrEvidenceItemId: x.ocrEvidenceItemId || x.sourcePageId || null,
         ocrWarnings: Array.isArray(x.ocrWarnings) ? [...x.ocrWarnings] : []
       }));
+      items = typeof applyMissionRoles === 'function' ? applyMissionRoles(items, sheetId) : items;
       const newSheet = {
         sheetId,
         title: `${new Date().toLocaleDateString('ko-KR')} 숨은 단어`,
