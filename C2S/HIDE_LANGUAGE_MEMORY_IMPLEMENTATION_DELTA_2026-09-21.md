@@ -86,3 +86,16 @@ CI note:
 
 Latest code HEAD before this delta refresh: `80b002b18a81ec324a990fbec9dd6cef7e61201e`.
 GitHub Actions note: no new run has been emitted for post-#245 synchronize commits yet. Therefore the latest HEAD remains CODED but not CI_VERIFIED until a matching run exists.
+
+
+## Adaptive assistance + progressive exploration delta
+- Transferable inference evidence may reorder existing Memory Ladder help, but it may not invent unavailable help.
+- Adaptive reuse requires repeated evidence: at least 2 assessed outcomes for the same clue with >=50% self-reported MATCH/NEAR.
+- One self-report remains descriptive only and cannot become an adaptive learner preference.
+- Adaptive hint provenance is stored as `TRANSFERABLE_INFERENCE_HISTORY` with `objectiveVerified=false`; recall scoring remains independent.
+- Strong assistance remains terminal: `FRAGMENT → MINIMUM_REVEAL` is not promoted by inference preference.
+- Added browser coverage for verified Korean/Hanja thinking-first maps.
+- Verified root/etymology maps now reveal progressively: center concept first, then one verified node at a time. Progressive reveals are assistance evidence with `recallScoreImpact=false`.
+
+Latest observed branch HEAD for this delta: `31290116a6bedc4f8b38e7469bb77cbb58870d40`.
+GitHub Actions still has not emitted a run for post-#245 synchronize commits. Latest-head CI remains NOT CLAIMED.
