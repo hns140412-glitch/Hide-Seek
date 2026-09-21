@@ -113,6 +113,28 @@
     const w=current(session,mission);
     const domain=w?.languageDomain||'ENGLISH';
     if(domain==='KOREAN'){
+      const contextEvidence=globalThis.HideLanguageModel?.normalizeContextEvidence?.(w?.contextEvidence,'KOREAN')||null;
+      if(contextEvidence&&Object.prototype.hasOwnProperty.call(payload,'selectedEvidence')){
+        const attempt=recordAttempt(session,w.id,'EVIDENCE_TRAIL');
+        const selected=String(payload.selectedEvidence||'').trim();
+        const ok=selected===contextEvidence.evidenceText;
+        HideV2Memory.record(mission.id,w.id,{
+          stage:'EVIDENCE_TRAIL',
+          evidenceType:'VERIFIED_CONTEXT_EVIDENCE_SELECTION',
+          evidenceMode:'EVIDENCE_SELECTION',
+          axes:['EVIDENCE','MEANING'],
+          result:ok?'CORRECT':'WRONG',
+          objectiveVerified:true,
+          objectiveRecall:false,
+          recallScoreImpact:false,
+          assisted:false,
+          source:contextEvidence.sourceRef,
+          selectedEvidence:selected,
+          expectedEvidence:contextEvidence.evidenceText,
+          attempt:attempt.count
+        });
+        return {ok,session:attempt.session,evidenceCompleted:true};
+      }
       const text=String(payload.responseText||'').trim();
       HideV2Memory.record(mission.id,w.id,{
         stage:'RESPONSE_TRAIL',
