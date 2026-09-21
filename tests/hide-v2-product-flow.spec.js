@@ -113,3 +113,42 @@ test('Hide V2 migrates V1 mission and memory traces without deleting legacy stat
   expect(state.v2.missions[0].items[0].evidence.some(x=>x.migratedFrom==='V1'&&x.legacyTraceKind==='RETRIEVAL')).toBeTruthy();
   expect(state.v2.events.some(x=>x.type==='V1_DATA_MIGRATED')).toBeTruthy();
 });
+
+test('Hide V2 obeys Ready Planner review directive and limits the session to directed lexical ids',async({page})=>{
+  const directive={
+    authority:'EXPLICIT_READY_PLANNER_REVIEW_DIRECTIVE',
+    reviewPolicyOwner:'READY_LEARNING_ENGINE',
+    scheduleOwner:'READY_SET_PLANNER',
+    lexicalIds:['second::둘째'],
+    directiveId:'directive-1',
+    taskId:'task-review-1',
+    scheduledDate:'2026-09-22'
+  };
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'리뷰 V2'},missions:[{
+        id:'m-review',title:'지정 복습',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        items:[
+          {id:'w-first',lexicalId:'first::첫째',token:'first',meaning:'첫째',languageDomain:'ENGLISH',missionRole:'REVIEW',evidence:[],source:{}},
+          {id:'w-second',lexicalId:'second::둘째',token:'second',meaning:'둘째',languageDomain:'ENGLISH',missionRole:'REVIEW',evidence:[],source:{}}
+        ],sourceCount:0,provenance:{}
+      }],activeMissionId:'m-review',events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html?session_id=s1&task_id=task-review-1&review_directive='+encodeURIComponent(JSON.stringify(directive)));
+  await page.getByRole('button',{name:'학습 시작'}).click();
+  await expect(page.getByText('둘째',{exact:true})).toBeVisible();
+  await expect(page.getByText('첫째',{exact:true})).toHaveCount(0);
+  await page.getByLabel('회상 답 입력').fill('second');
+  await page.getByRole('button',{name:'기억 확인'}).click();
+  await page.getByLabel('뜻 회상 입력').fill('둘째');
+  await page.getByRole('button',{name:'뜻 확인'}).click();
+  await page.getByRole('button',{name:'다음'}).click();
+  await expect(page.getByRole('heading',{name:'탐험 완료'})).toBeVisible();
+  const result=await page.evaluate(()=>window.HideV2ReadyBridge.buildResult());
+  expect(result.reviewDirective.lexicalIds).toEqual(['second::둘째']);
+  const state=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')));
+  expect(state.missions[0].items[0].evidence).toHaveLength(0);
+  expect(state.missions[0].items[1].evidence.length).toBeGreaterThan(0);
+  expect(state.events.some(x=>x.event_type==='TASK_COMPLETED')).toBeTruthy();
+});
