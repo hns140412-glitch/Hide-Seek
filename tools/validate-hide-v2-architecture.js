@@ -36,14 +36,17 @@ const migration=fs.readFileSync(path.join(ROOT,'src/v2/legacy-migration.js'),'ut
 if(migration.includes('removeItem(LEGACY_KEY)')||migration.includes("removeItem('hide_seek_state')"))fail.push('LEGACY_DATA_MUST_NOT_BE_DELETED');
 if(!migration.includes('legacyPreserved:true'))fail.push('NON_DESTRUCTIVE_MIGRATION_EVIDENCE_MISSING');
 
+const ready=fs.readFileSync(path.join(ROOT,'src/v2/ready-bridge.js'),'utf8');
+for(const token of ["EXPLICIT_READY_PLANNER_REVIEW_DIRECTIVE","reviewPolicyOwner:'READY_LEARNING_ENGINE'","scheduleOwner:'READY_SET_PLANNER'"]){
+  if(!ready.includes(token))fail.push('V2_READY_OWNERSHIP_MISSING:'+token);
+}
+const sessionService=fs.readFileSync(path.join(ROOT,'src/v2/session-service.js'),'utf8');
+if(!sessionService.includes('HideV2Store.transaction'))fail.push('SESSION_STATE_MUST_USE_STORE');
+if(!sessionService.includes('activeSession'))fail.push('PERSISTED_ACTIVE_SESSION_OWNER_MISSING');
+
 if(fail.length){
   console.error('FAIL: Hide Runtime V2 architecture');
   for(const x of fail)console.error(x);
   process.exit(1);
 }
 console.log('PASS: Hide Runtime V2 is isolated from legacy monolithic runtime and preserves ownership boundaries');
-
-const ready=fs.readFileSync(path.join(ROOT,'src/v2/ready-bridge.js'),'utf8');
-for(const token of ["EXPLICIT_READY_PLANNER_REVIEW_DIRECTIVE","reviewPolicyOwner:'READY_LEARNING_ENGINE'","scheduleOwner:'READY_SET_PLANNER'"]){
-  if(!ready.includes(token))fail.push('V2_READY_OWNERSHIP_MISSING:'+token);
-}
