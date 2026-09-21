@@ -116,6 +116,77 @@ test('Hide V2 First Find unsure is a pass recall attempt, not fabricated wrong a
   expect(evidence.some(x=>x.stage==='FIRST_FIND'&&x.result==='WRONG')).toBe(false);
 });
 
+test('Hide V2 Hidden Words appears only for engine-detected weakness and keeps relearn separate from recall',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'숨은 단어 보강'},missions:[{
+        id:'m-hidden',title:'숨은 단어 보강',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        sourceCount:0,provenance:{source:'TEST_FIXTURE'},
+        items:[{id:'w-hidden',lexicalId:'benefit::혜택',token:'benefit',meaning:'혜택',example:'A benefit helps.',languageDomain:'ENGLISH',missionRole:'NEW',evidence:[],source:{}}]
+      }],activeMissionId:'m-hidden',activeSession:null,captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'탐험 시작'}).click();
+  await page.getByRole('button',{name:'기억하고 찾아보기'}).click();
+
+  await page.getByLabel('회상 답 입력').fill('wrong');
+  await page.getByRole('button',{name:'기억 확인'}).click();
+  await page.getByRole('button',{name:'다시 숨기고 뜻 단서로'}).click();
+
+  await page.getByLabel('뜻 회상 입력').fill('혜택');
+  await page.getByRole('button',{name:'뜻 확인'}).click();
+  await page.getByRole('button',{name:'다음'}).click();
+
+  await expect(page.getByText('숨은 단어 보강',{exact:true})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'힌트 없이 다시 꺼내기'})).toBeVisible();
+  expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')).activeSession.stage)).toBe('HIDDEN_WORDS');
+
+  await page.getByLabel('숨은 단어 보강 답 입력').fill('wrong');
+  await page.getByRole('button',{name:'보강 기억 확인'}).click();
+  await expect(page.getByText('다시 만나기',{exact:true})).toBeVisible();
+  await expect(page.getByText('benefit',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'다시 숨기고 마지막 찾기'}).click();
+  await expect(page.getByText('마지막 찾기',{exact:true})).toBeVisible();
+
+  const evidence=await page.evaluate(()=>{
+    const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
+    return s.missions[0].items[0].evidence;
+  });
+  const hidden=evidence.find(x=>x.stage==='HIDDEN_WORDS');
+  const relearn=evidence.find(x=>x.stage==='HIDDEN_WORDS_RELEARN');
+  expect(hidden.result).toBe('WRONG');
+  expect(hidden.objectiveRecall).toBe(true);
+  expect(hidden.assisted).toBe(false);
+  expect(hidden.reinforcementReason).toBe('recovery');
+  expect(relearn.evidenceMode).toBe('RELEARN_EXPOSURE');
+  expect(relearn.objectiveRecall).toBe(false);
+  expect(relearn.recallScoreImpact).toBe(false);
+  expect(relearn.assisted).toBe(true);
+});
+
+test('Hide V2 skips Hidden Words for stable current evidence',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'안정 통과'},missions:[{
+        id:'m-stable-skip',title:'안정 통과',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        sourceCount:0,provenance:{source:'TEST_FIXTURE'},
+        items:[{id:'w-stable-skip',lexicalId:'island::섬',token:'island',meaning:'섬',languageDomain:'ENGLISH',missionRole:'NEW',evidence:[],source:{}}]
+      }],activeMissionId:'m-stable-skip',activeSession:null,captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'탐험 시작'}).click();
+  await page.getByRole('button',{name:'기억하고 찾아보기'}).click();
+  await page.getByLabel('회상 답 입력').fill('island');
+  await page.getByRole('button',{name:'기억 확인'}).click();
+  await page.getByLabel('뜻 회상 입력').fill('섬');
+  await page.getByRole('button',{name:'뜻 확인'}).click();
+  await page.getByRole('button',{name:'다음'}).click();
+  await expect(page.getByText('마지막 찾기',{exact:true})).toBeVisible();
+  expect(await page.getByText('숨은 단어 보강',{exact:true}).count()).toBe(0);
+});
+
 test('Hide V2 Final Seek support cannot count as unassisted recall',async({page})=>{
   await page.addInitScript(()=>{
     localStorage.setItem('hide_seek_v2_state',JSON.stringify({
