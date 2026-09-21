@@ -645,7 +645,8 @@ for needle in [
 for needle in [
     "finalSeekUnits",
     "finalSeekDistractorPool",
-    "languageDomain:inferenceWordDomain(w)",
+    "domain=inferenceWordDomain(w)",
+    "languageDomain:domain",
     "codeSession.units",
     "글자 열쇠",
 ]:
