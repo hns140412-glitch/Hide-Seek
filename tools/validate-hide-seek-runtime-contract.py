@@ -511,6 +511,11 @@ for needle in [
     "planSource:codeSession.hintPlanSource",
     "showParentExplanation",
     "supplementalMapHtml=role==='NEW'&&thinkingHtml?'':mapHtml",
+    "VERIFIED_STRUCTURE_MAP",
+    "VERIFIED_MEANING_MAP",
+    "supportStep",
+    "ROOT_PROGRESSIVE_REVEAL",
+    "supportType:plan?.type||null",
     "PARENT_CHILD",
 ]:
     if needle not in app:
