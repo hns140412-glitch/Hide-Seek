@@ -1,17 +1,19 @@
 {
   "source_repository": "hns140412-glitch/TAKY",
-  "source_main_sha": "79e62baf73313278d1b77c93139a9a7a2bebd608",
+  "source_main_sha": "fdee8e3cada89974f039f8cb4e2b8e6084b38600",
   "capabilities": [
     "CAP-RELEASE-COMPAT-001",
     "CAP-PWA-UPDATE-001",
     "CAP-EVENT-ENVELOPE-001",
-    "CAP-OCR-INGEST-001"
+    "CAP-OCR-INGEST-001",
+    "CAP-HTTP-ADAPTER-001"
   ],
   "vendored_files": {
     "vendor/taky/release-contract.js": "SHARED/runtime/release-contract.js",
     "vendor/taky/pwa-update-state.js": "SHARED/runtime/pwa-update-state.js",
     "vendor/taky/event-envelope.js": "SHARED/runtime/event-envelope.js",
-    "vendor/taky/vision-ingest.js": "SHARED/runtime/vision-ingest.js"
+    "vendor/taky/vision-ingest.js": "SHARED/runtime/vision-ingest.js",
+    "vendor/taky/http-json.js": "SHARED/runtime/http-json.js"
   },
-  "semantic_boundary": "Hide & Seek retains learning/session/capture event meaning, OCR prompt content, vocabulary pairing, confidence review and commit semantics; shared runtime owns immutable event envelope and semantic-light vision ingest/evidence mechanics only."
+  "semantic_boundary": "Hide & Seek retains learning/session/capture meaning, OCR prompts/pairing/review, Gemini model choice, API key ownership and domain error messaging; shared runtime owns semantic-light event/vision/HTTP transport mechanics only."
 }
