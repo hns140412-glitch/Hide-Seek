@@ -18,6 +18,7 @@ pwa_update=read("hide-pwa-update-v01.js")
 event_envelope=read("vendor/taky/event-envelope.js")
 vision_ingest=read("vendor/taky/vision-ingest.js")
 http_json=read("vendor/taky/http-json.js")
+learning_basis=read("hide-learning-basis-v01.js")
 language_evidence=read("hide-language-evidence.js")
 language_model=read("hide-language-model.js")
 runtime=read("hide-runtime.js")
@@ -413,6 +414,7 @@ for needle in [
     "importScripts('./hide-release-v01.js')",
     "const CACHE='hide-seek:'+RELEASE.release_id",
     "'./hide-family-ocr-adapter.js'",
+    "'./hide-learning-basis-v01.js'",
     "'./hide-language-evidence.js'",
     "'./hide-runtime.js'",
     "'./hide-runtime.css'",
@@ -561,6 +563,36 @@ for needle in ["buildRequest","normalizeResult","validateEvidence"]:
 for needle in ["request","normalizeStatus","buildRequestInit"]:
     if needle not in http_json:
         fail.append("TAKY_SHARED_HTTP_CONTRACT:"+needle)
+
+for needle in [
+    "2026.09.21-learning-basis-v1",
+    "basis_subject:'국어'",
+    "basis_subject:'한자'",
+    "READ_UNDERSTAND_EVIDENCE_RESPOND",
+    "FORM_SOUND_MEANING_RECALL",
+    "ENCODE','RECALL','CHECK','RETRY",
+]:
+    if needle not in learning_basis:
+        fail.append("LANGUAGE_LEARNING_BASIS:"+needle)
+
+for needle in [
+    "HideLearningBasis?.resolve",
+    "learningProfile",
+]:
+    if needle not in language_model:
+        fail.append("LANGUAGE_MODEL_LEARNING_BASIS:"+needle)
+
+for needle in [
+    "HideLearningBasis?.assistanceOrder",
+    "basisOrdered",
+]:
+    if needle not in app:
+        fail.append("MEMORY_LADDER_LEARNING_BASIS:"+needle)
+
+basis_idx=index.find('hide-learning-basis-v01.js')
+model_idx=index.find('hide-language-model.js')
+if basis_idx<0 or model_idx<0 or basis_idx>model_idx:
+    fail.append("LANGUAGE_BASIS_SCRIPT_ORDER")
 
 for needle in [
     "SCHEMA_VERSION=2",
