@@ -42,6 +42,16 @@ jobs:
           node --check vendor/taky/event-envelope.js
           node --check vendor/taky/vision-ingest.js
           node --check vendor/taky/http-json.js
+          node --check src/v2/app-store.js
+          node --check src/v2/mission-service.js
+          node --check src/v2/memory-engine.js
+          node --check src/v2/learning-session.js
+          node --check src/v2/capture-controller.js
+          node --check src/v2/router.js
+          node --check src/v2/legacy-migration.js
+          node --check src/v2/app.js
+      - name: Validate Hide Runtime V2 architecture
+        run: node tools/validate-hide-v2-architecture.js
       - name: Validate shared runtime contract
         run: node tests/shared-runtime-contract.test.js
       - name: Install browser test harness
