@@ -307,13 +307,20 @@
 
   function records(){
     const book=HideV2Memory.wordbook(),dash=HideV2Memory.dashboard();
+    const ladderBand=x=>x.memoryStrength>=80?'STABLE':x.memoryStrength>=45?'CLIMBING':'SEEK_AGAIN';
+    const bandLabel={SEEK_AGAIN:'다시 찾을 단어',CLIMBING:'올라가는 단어',STABLE:'안정된 단어'};
+    const bands=['SEEK_AGAIN','CLIMBING','STABLE'].map(key=>({key,items:book.filter(x=>ladderBand(x)===key)}));
     view().innerHTML=`
       <section class="screen-head"><p class="quest-overline">MEMORY LADDER</p><h1>기억 사다리</h1><p>잘 기억되는 단어와 다시 찾아볼 단어를 한눈에 봐요.</p></section>
       <section class="memory-summary"><div class="quest-stat"><b>${dash.averageStrength}%</b><span>전체 기억 힘</span></div><div class="quest-stat"><b>${dash.needsRecall}</b><span>다시 찾기</span></div><div class="quest-stat"><b>${dash.stable}</b><span>안정 단어</span></div></section>
+      <section class="ladder-board" aria-label="기억 사다리 단계">
+        ${bands.map((band,index)=>`<article class="ladder-rung ladder-rung--${band.key.toLowerCase()}"><div class="ladder-rung__head"><span>${index+1}</span><div><b>${bandLabel[band.key]}</b><small>${band.items.length}개 단어</small></div></div><div class="ladder-rung__words">${band.items.length?band.items.slice(0,8).map(x=>`<button type="button" data-ladder-word="${esc(x.lexicalId)}"><b>${esc(x.token)}</b><small>${x.memoryStrength}%</small></button>`).join(''):'<span class="ladder-empty">아직 이 단계의 단어가 없어요</span>'}</div></article>`).join('')}
+      </section>
       <section class="memory-signals"><span>뜻 혼동 <b>${dash.confusion}</b></span><span>글자 형태 <b>${dash.orthographic}</b></span><span>소리 <b>${dash.sound}</b></span><span>느린 회상 <b>${dash.slowRecall}</b></span><span>힌트 의존 <b>${dash.hintDependent}</b></span></section>
       <section class="wordbook"><div class="section-title"><div><p class="quest-overline">WORD TRAIL</p><h2>단어 기록</h2></div><span>다시 볼 순서</span></div>${book.length?book.map((x,i)=>`<article class="word-row" data-wordbook-index="${i}"><div class="word-row__body"><b>${esc(x.token)}</b><span>${esc(x.meaning)} · ${languageLabel(x.languageDomain)}</span><small>${esc(x.primaryReason.label)} · ${x.encounters}번 만남</small></div><div class="word-row__meter"><b>${x.memoryStrength}%</b><div class="mini-meter"><span style="width:${x.memoryStrength}%"></span></div><button class="btn ghost" data-word-detail="${i}" type="button">기억 보기</button></div></article>`).join(''):'<div class="empty-state"><b>아직 기억 기록이 없어요</b><p>단어 탐험을 마치면 이곳에 기억 사다리가 생겨요.</p></div>'}</section>
       <button class="btn secondary full" id="v2RecordsHome">홈으로</button>`;
     $('#v2RecordsHome').onclick=()=>HideV2Router.go('home');
+    view().querySelectorAll('[data-ladder-word]').forEach(btn=>{btn.onclick=()=>HideV2Router.go('record-detail',{lexicalId:btn.dataset.ladderWord})});
     view().querySelectorAll('[data-word-detail]').forEach(btn=>{
       btn.onclick=()=>{const entry=book[Number(btn.dataset.wordDetail)];if(entry)HideV2Router.go('record-detail',{lexicalId:entry.lexicalId})};
     });
