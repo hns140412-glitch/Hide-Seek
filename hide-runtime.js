@@ -542,7 +542,7 @@
         <p>프린트 양식과 관계없이 오늘 미션에서 NEW / REVIEW를 확인해요.</p>
         <div class="card tint-leaf" style="margin-top:10px">
           <b>오늘 미션 구성</b>
-          <p style="margin:4px 0 0">기준 패턴 · NEW 12 + REVIEW 24</p>
+          <p style="margin:4px 0 0">프린트마다 구성은 달라질 수 있어요. 위치가 아니라 확인된 역할을 기준으로 해요.</p>
           <small id="hideRoleCount">현재 NEW ${counts.NEW} · REVIEW ${counts.REVIEW}</small>
         </div>
         <div id="hideBatchRows" class="table" style="margin-top:12px"></div>
@@ -684,9 +684,9 @@
           models: [...new Set(items.map(x => x.ocrModel).filter(Boolean))],
           evidenceItemIds: [...new Set(items.map(x => x.ocrEvidenceItemId).filter(Boolean))],
           missionComposition:{
-            expectedNew:12,
-            expectedReview:24,
-            observedFrom:'MORNING_MOCK_TEST_ROUTINE',
+            observedNew:items.filter(x=>x.missionRole==='NEW').length,
+            observedReview:items.filter(x=>x.missionRole==='REVIEW').length,
+            classificationSource:'ROLE_CONFIRMATION_OR_HISTORY',
             layoutIndependent:true
           },
           sourcePages: session.pages.map(p => ({
