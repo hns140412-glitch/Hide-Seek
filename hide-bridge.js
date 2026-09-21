@@ -1,9 +1,9 @@
 (() => {
   'use strict';
 
-  const BRIDGE_VERSION = '2026.09.21-b';
+  const BRIDGE_VERSION = '2026.09.21-c';
   const EVENT_LIMIT = 120;
-  const SHARED_PARAM_NAMES = ['session_id', 'goal_id', 'task_id', 'lap_id', 'return_target', 'snap_target', 'child_id', 'actor_role', 'crew_member_id', 'crew_member_name', 'crew_rules_version'];
+  const SHARED_PARAM_NAMES = ['session_id', 'goal_id', 'task_id', 'lap_id', 'return_target', 'snap_target', 'child_id', 'actor_role', 'crew_member_id', 'crew_member_name', 'crew_rules_version', 'review_directive'];
   const legacyTerms = [
     [/Word Detective Team/g, 'Hidden Word Trail'],
     [/사건 파일/g, '단어 탐험'],
@@ -31,6 +31,30 @@
 
   function getContext() {
     return S.sharedLearningContext || {};
+  }
+
+  function reviewDirective() {
+    const raw = getContext().review_directive;
+    if (!raw) return null;
+    let parsed = raw;
+    if (typeof raw === 'string') {
+      try { parsed = JSON.parse(raw); } catch { return null; }
+    }
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
+    if (String(parsed.reviewPolicyOwner || '') !== 'READY_LEARNING_ENGINE') return null;
+    if (String(parsed.scheduleOwner || '') !== 'READY_SET_PLANNER') return null;
+    const lexicalIds = Array.isArray(parsed.lexicalIds)
+      ? [...new Set(parsed.lexicalIds.map(x => String(x || '').trim()).filter(Boolean))].slice(0, 24)
+      : [];
+    if (!lexicalIds.length) return null;
+    return Object.freeze({
+      authority:'EXPLICIT_READY_PLANNER_REVIEW_DIRECTIVE',
+      reviewPolicyOwner:'READY_LEARNING_ENGINE',
+      scheduleOwner:'READY_SET_PLANNER',
+      lexicalIds,
+      directiveId:String(parsed.directiveId || '').trim() || null,
+      taskId:String(parsed.taskId || getContext().task_id || '').trim() || null
+    });
   }
 
   function persistBridgeState() {
@@ -400,6 +424,7 @@
       sendToSnap,
       requestImaginationCloud,
       buildMemorySummary,
+      reviewDirective,
       isSafeUpdatePoint
     });
   }
