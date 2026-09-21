@@ -813,6 +813,15 @@ for needle in [
         fail.append("HANJA_MEMORY_EVIDENCE_AXES:"+needle)
 
 for needle in [
+    "evidenceType:'MEANING_ASSOCIATION',evidenceMode:'ASSOCIATION'",
+    "evidenceType:'MEANING_RECOGNITION',evidenceMode:'RECOGNITION'",
+    "evidenceType:'VERIFIED_CONTEXT_EVIDENCE_SELECTION',evidenceMode:'EVIDENCE_SELECTION'",
+    "objectiveVerified:true,objectiveRecall:false",
+]:
+    if needle not in app:
+        fail.append("LANGUAGE_EVIDENCE_MODE_TRUTH_BOUNDARY:"+needle)
+
+for needle in [
     "languageMemoryEvidence",
 ]:
     if needle not in bridge:
