@@ -216,6 +216,7 @@
     return keys.map(value=>({value,label:clueLabel(value)}));
   }
   function clueApplicableToPlan(plan={},clue=''){
+    if(!plan||typeof plan!=='object')return false;
     const key=String(clue||'');
     const roles=new Set((plan.nodes||[]).map(x=>String(x.role||'').toUpperCase()));
     if(key==='ROOT_ETYMOLOGY')return !!plan.claimsHistoricalEtymology||['VERIFIED_ETYMOLOGY','VERIFIED_ROOT'].includes(plan.type);
