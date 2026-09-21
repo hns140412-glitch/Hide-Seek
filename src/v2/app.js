@@ -411,11 +411,29 @@
 
   function missions(){
     const list=HideV2Mission.listMissions(),activeId=HideV2Store.snapshot().activeMissionId;
+    const missionGroup=m=>m.status==='ARCHIVED'?'ARCHIVED':m.status==='COMPLETED'?'COMPLETED':'OPEN';
     const mapSummary=list.length
       ?(list.some(x=>x.id===activeId)?'지금 이어갈 탐험이 맨 앞에 있어요. 끝난 탐험은 뒤에서 조용히 기다려요.':'이어갈 탐험을 하나 골라 오늘의 길을 정해봐요.')
       :'새 프린트를 가져오면 첫 탐험 길이 여기 생겨요.';
-    view().innerHTML=`<section class="screen-head mission-map-head"><p class="quest-overline">MISSION MAP</p><h1>오늘의 탐험 지도</h1><p>${esc(mapSummary)}</p></section><section class="mission-path" aria-label="탐험 미션 지도">${list.length?list.map((m,i)=>`<article class="mission-card mission-map-card ${m.id===activeId?'is-active':''}" data-mission-id="${esc(m.id)}"><div class="mission-map-marker" aria-hidden="true"><span>${i+1}</span></div><div class="mission-card__main"><span class="mission-card__status">${missionStatusLabel(m.status)}</span><h2>${esc(m.title)}</h2><p>${m.items.length}개의 숨은 단어 · ${m.id===activeId?'지금 이어갈 길':'다른 탐험 길'}</p></div><div class="mission-map-actions"><button class="btn primary" data-action="open" data-id="${esc(m.id)}">${m.id===activeId?'이어서 탐험':'이 길 선택'}</button><details class="mission-tools"><summary>정리 도구</summary><div class="mission-card__actions"><button class="btn ghost" data-action="rename" data-id="${esc(m.id)}">이름 바꾸기</button><button class="btn ghost" data-action="archive" data-id="${esc(m.id)}">보관</button><button class="btn ghost danger-lite" data-action="delete" data-id="${esc(m.id)}">삭제</button></div></details></div></article>`).join(''):'<div class="empty-state"><b>아직 탐험 길이 없어요</b><p>홈에서 프린트 사진을 추가하면 첫 미션을 만들 수 있어요.</p></div>'}</section><button class="btn secondary full" id="v2MissionHome">홈으로</button>`;
+    view().innerHTML=`<section class="screen-head mission-map-head"><p class="quest-overline">MISSION MAP</p><h1>오늘의 탐험 지도</h1><p>${esc(mapSummary)}</p></section>${list.length?`<section class="mission-find-tools" aria-label="탐험 미션 필터"><div class="mission-filter-row" role="group" aria-label="탐험 상태 필터"><button class="btn ghost is-active" type="button" data-mission-filter="ALL">전체</button><button class="btn ghost" type="button" data-mission-filter="OPEN">이어가기</button><button class="btn ghost" type="button" data-mission-filter="COMPLETED">완료</button><button class="btn ghost" type="button" data-mission-filter="ARCHIVED">보관</button></div><small id="v2MissionFilterCount" aria-live="polite">${list.length}개 탐험 보기</small></section>`:''}<section class="mission-path" aria-label="탐험 미션 지도">${list.length?list.map((m,i)=>`<article class="mission-card mission-map-card ${m.id===activeId?'is-active':''}" data-mission-id="${esc(m.id)}" data-mission-state="${missionGroup(m)}"><div class="mission-map-marker" aria-hidden="true"><span>${i+1}</span></div><div class="mission-card__main"><span class="mission-card__status">${missionStatusLabel(m.status)}</span><h2>${esc(m.title)}</h2><p>${m.items.length}개의 숨은 단어 · ${m.id===activeId?'지금 이어갈 길':'다른 탐험 길'}</p></div><div class="mission-map-actions"><button class="btn primary" data-action="open" data-id="${esc(m.id)}">${m.id===activeId?'이어서 탐험':'이 길 선택'}</button><details class="mission-tools"><summary>정리 도구</summary><div class="mission-card__actions"><button class="btn ghost" data-action="rename" data-id="${esc(m.id)}">이름 바꾸기</button><button class="btn ghost" data-action="archive" data-id="${esc(m.id)}">보관</button><button class="btn ghost danger-lite" data-action="delete" data-id="${esc(m.id)}">삭제</button></div></details></div></article>`).join(''):'<div class="empty-state"><b>아직 탐험 길이 없어요</b><p>홈에서 프린트 사진을 추가하면 첫 미션을 만들 수 있어요.</p></div>'}</section><button class="btn secondary full" id="v2MissionHome">홈으로</button>`;
     $('#v2MissionHome').onclick=()=>HideV2Router.go('home');
+    let activeMissionFilter='ALL';
+    const applyMissionFilter=()=>{
+      let visible=0;
+      view().querySelectorAll('[data-mission-state]').forEach(card=>{
+        const show=activeMissionFilter==='ALL'||card.dataset.missionState===activeMissionFilter;
+        card.hidden=!show;
+        card.style.display=show?'':'none';
+        if(show)visible++;
+      });
+      const count=$('#v2MissionFilterCount');
+      if(count)count.textContent=`${visible}개 탐험 보기`;
+    };
+    view().querySelectorAll('[data-mission-filter]').forEach(btn=>{btn.onclick=()=>{
+      activeMissionFilter=btn.dataset.missionFilter||'ALL';
+      view().querySelectorAll('[data-mission-filter]').forEach(x=>x.classList.toggle('is-active',x===btn));
+      applyMissionFilter();
+    }});
     view().querySelectorAll('[data-action]').forEach(btn=>{
       btn.onclick=()=>{
         const id=btn.dataset.id,action=btn.dataset.action;
