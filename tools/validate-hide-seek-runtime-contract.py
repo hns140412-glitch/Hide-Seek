@@ -9,6 +9,7 @@ def read(path):
     return (ROOT/path).read_text(encoding="utf-8")
 
 app=read("app.js")
+language_model=read("hide-language-model.js")
 runtime=read("hide-runtime.js")
 bridge=read("hide-bridge.js")
 css=read("styles.css")
@@ -273,7 +274,7 @@ for needle in [
 sw=read("sw.js")
 
 for needle in [
-    'const CACHE="hide-seek-capture-v10"',
+    'const CACHE="hide-seek-capture-v11"',
     '"./hide-family-ocr-adapter.js"',
     '"./hide-runtime.js"',
     '"./hide-runtime.css"',
@@ -294,8 +295,8 @@ for needle in [
 
 
 for needle in [
-    'const APP_REV="REV_08"',
-    'const SCHEMA_VERSION=8',
+    'const APP_REV="REV_09"',
+    'const SCHEMA_VERSION=9',
 ]:
     if needle not in app:
         fail.append("APP_SCHEMA_REVISION_CONTRACT:"+needle)
@@ -389,3 +390,30 @@ if fail:
     raise SystemExit(1)
 
 print("PASS: Hide & Seek capture, review, shared-session, device, cache, migration and active-world contracts")
+
+
+for needle in [
+    "ENGLISH",
+    "KOREAN",
+    "HANJA",
+    "PREFIX",
+    "ROOT",
+    "ETYMOLOGY",
+    "HANJA_ORIGIN",
+    "RADICAL",
+    "COMPONENT",
+    "verificationState==='VERIFIED'",
+    "MEANING_MAP",
+    "renderMeaningMapHtml",
+]:
+    if needle not in language_model:
+        fail.append("LANGUAGE_MODEL_CONTRACT:"+needle)
+
+for needle in [
+    "window.HideLanguageModel?.normalizeItem",
+    "window.HideLanguageModel?.hasVerifiedMeaningMap",
+    "MEANING_MAP",
+    "VERIFIED_LANGUAGE_MODEL",
+]:
+    if needle not in app:
+        fail.append("LANGUAGE_MEMORY_LADDER_INTEGRATION:"+needle)
