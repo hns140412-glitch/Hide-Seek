@@ -35,8 +35,8 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 | Memory advisory to Ready | PARTIAL | no current hosted V2 target | candidate-contract shaped | Hide V2 producer + Ready V2 consumer contract CI | hosted current-candidate roundtrip unverified |
 | Ready Planner directive intake | RUNTIME_VERIFIED | yes | fixture contract | browser directed lexical-id test | live current Ready runtime integration unverified |
 | Session reload/resume | RUNTIME_VERIFIED | yes | fixture | browser reload test | background/PWA lifecycle not verified |
-| Child-facing core UI/UX | RUNTIME_VERIFIED | yes | browser/mobile viewport | redesigned home/mission/learning/memory hierarchy + 390×844 flow tests | final art direction, motion and device visual QA pending |
-| Exploration crew presentation layer | SKELETON | partial | no | canonical crew rules only | crew member presence/interaction UI not yet rebuilt in V2 |
+| Child-facing core UI/UX | RUNTIME_VERIFIED | yes | browser/mobile viewport | home/mission/learning/completion/Memory Ladder/OCR review-recovery + 390×844 flow tests | final art direction and physical-device visual QA pending |
+| Exploration crew presentation layer | RUNTIME_VERIFIED | yes | adapter/fallback browser fixture | answer-safe crew strip + home/completion/Memory Ladder presentation tests | live current Snap crew-provider roundtrip and final art direction remain open |
 | Mission management surface | RUNTIME_VERIFIED | yes | N/A | selection/rename/archive/delete browser flow | richer history/filtering/bulk actions pending |
 | Records / wordbook surfaces | RUNTIME_VERIFIED | yes | fixture/history-shaped | cumulative wordbook + weakness dashboard + evidence detail browser flow | filtering/search/export pending |
 | PWA install/offline/update | RUNTIME_VERIFIED | yes | browser | isolated V2 manifest/SW/offline shell/update safe-point tests | physical install/device lifecycle still unverified |
@@ -186,3 +186,24 @@ Head before matrix document: 63db5206a836050c3dfe5f2b9fd0238d6baeb464
   - Validate Hide & Seek #570 — SUCCESS
 - PRODUCT_COMPLETION increase reflects reachable child-facing product surfaces, not CSS volume or test count.
 - UI/UX is materially improved but not final: exploration crew presence, motion/celebration, final visual art direction and physical-device visual QA remain OPEN.
+
+
+### 2026-09-22 child-facing continuity / truth-alignment increment
+- Home, mission map, six-stage learning journey, completion, Memory Ladder, memory detail, OCR review and OCR recovery now use one child-facing exploration hierarchy.
+- Exploration Crew presentation is consumed through the V2 crew adapter; Hide still does not own crew personality or intervention grammar.
+- Answer-safe crew support remains non-answer-revealing.
+- Completion metrics are subordinate to achievement/next-action messaging.
+- Memory Ladder no longer uses invented UI-only 80/45 thresholds. It follows Memory Engine semantics:
+  - `needsUnassistedRecall || memoryStrength < 60` -> 다시 찾기;
+  - `primaryReason.key === stable` -> 안정;
+  - otherwise -> 올라가기.
+- Child memory reasons now use the engine-owned `primaryReason` rather than ad-hoc signature field guesses.
+- Raw Memory/priority/weakness diagnostics remain available but are collapsed behind child-facing path explanations.
+- OCR review presents visible human-readable warnings while raw provider/warning codes remain available under technical details.
+- OCR partial-success recovery remains preserve-first and retries failed pages only.
+- Completion celebration has subtle browser motion and a verified `prefers-reduced-motion: reduce` no-animation path.
+- Exact pre-document code HEAD `6a3c31e70c2e30aa770e08733162f1eaad2cf7dc` passed:
+  - Validate Hide Runtime V2 #173 — SUCCESS
+  - Validate Hide & Seek #627 — SUCCESS.
+- PRODUCT_COMPLETION remains approximately 66%; CODED approximately 82%; CI_VERIFIED approximately 79%; BROWSER_RUNTIME_VERIFIED approximately 75%; DEVICE_VERIFIED 0%; RELEASE_VERIFIED 0%.
+- No percentage increase is claimed for CSS/test/document volume. Remaining material blockers are representative live-provider OCR, physical-device verification, current frozen Ready↔Hide roundtrip, final visual art direction, and release/deploy source-ref proof.
