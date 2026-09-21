@@ -72,7 +72,7 @@
     {
       "id": "HIDE-V2-C2S-012",
       "type": "EVIDENCE",
-      "statement": "Locked last closed product estimate: Product 75, Coded 91, CI 88, Browser Runtime 84, Device 0, Release 0.",
+      "statement": "Locked last closed product estimate: Product 76, Coded 92, CI 89, Browser Runtime 85, Device 0, Release 0.",
       "destination": "status"
     },
     {
@@ -224,6 +224,24 @@
       "type": "DECISION",
       "statement": "Immediate Hanja sound recovery may carry a session-scoped activity override so a concrete phonological weakness is not masked by generic recovery; this does not alter Memory Engine scores or Ready review/scheduling ownership.",
       "destination": "learning/hidden-words"
+    },
+    {
+      "id": "HIDE-V2-C2S-038",
+      "type": "EVIDENCE",
+      "statement": "Runtime V2 MEMORIZE records first-seen prediction, clue used and confidence before reveal, then learner MATCH/NEAR/MISS comparison after reveal.",
+      "destination": "learning/thinking-trail"
+    },
+    {
+      "id": "HIDE-V2-C2S-039",
+      "type": "CORRECTION",
+      "statement": "Inference outcome remains LEARNER_SELF_REPORT with objectiveVerified=false, objectiveRecall=false and no recall-score impact; it must not inflate memory strength.",
+      "destination": "evidence-truth-boundary/inference"
+    },
+    {
+      "id": "HIDE-V2-C2S-040",
+      "type": "DECISION",
+      "statement": "Only ESTABLISHED and current-plan-applicable inference clue tendencies may surface as optional later guidance; LOW/EMERGING evidence must not become stable personalization.",
+      "destination": "learning/adaptive-inference"
     }
   ],
   "coverage": {
