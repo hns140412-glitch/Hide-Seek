@@ -40,7 +40,7 @@ function seededState(){
       recognitionMeta:{inputActorRole:'PARENT_CHILD'},
       items:[
         {
-          id:'ko-1',eng:'불가피',kor:'피할 수 없음',languageDomain:'KOREAN',missionRole:'NEW',
+          id:'ko-1',eng:'불가피',kor:'피할 수 없음',example:'비가 너무 많이 와서 일정 변경이 불가피했다.',languageDomain:'KOREAN',missionRole:'NEW',
           meaningMap:map('KOREAN',[
             {role:'HANJA_ORIGIN',label:'不',meaning:'아니다'},
             {role:'HANJA_ORIGIN',label:'避',meaning:'피하다'}
@@ -176,6 +176,20 @@ test('verified Korean and Hanja meaning maps use thinking-first without fake ety
   expect(domainSkill.english.adaptiveClue?.clue).toBe('ROOT_ETYMOLOGY');
   expect(domainSkill.korean.attempts).toBe(1);
   expect(domainSkill.korean.adaptiveClue).toBeNull();
+
+  const koreanEvidence=await page.evaluate(()=>{
+    const w=validWords().find(x=>x.id==='ko-1');
+    return languageMemoryEvidenceSummary(w);
+  });
+  expect(koreanEvidence.languageDomain).toBe('KOREAN');
+  expect(koreanEvidence.axes.CONTEXT).toBeGreaterThanOrEqual(1);
+  expect(koreanEvidence.axes.MEANING).toBeGreaterThanOrEqual(1);
+  expect(koreanEvidence.axes.RECALL).toBeGreaterThanOrEqual(1);
+  expect(koreanEvidence.axes.EXPRESSION).toBeGreaterThanOrEqual(1);
+  expect(koreanEvidence.objectiveRecallCounts.CONTEXT).toBe(0);
+  expect(koreanEvidence.axes.EVIDENCE).toBe(0);
+  expect(koreanEvidence.objectiveRecallCounts.EVIDENCE).toBe(0);
+
   expect(domainSkill.hanja.attempts).toBe(1);
   expect(domainSkill.hanja.adaptiveClue).toBeNull();
 
