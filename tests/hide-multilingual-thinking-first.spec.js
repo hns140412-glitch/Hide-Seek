@@ -72,12 +72,15 @@ test('verified Korean and Hanja meaning maps use thinking-first without fake ety
     const ko=validWords().find(x=>x.id==='ko-1');
     const hanja=validWords().find(x=>x.id==='hanja-1');
     const en=(S.sheets||[]).flatMap(x=>x.items||[]).find(x=>x.id==='en-prior');
-    const pack=w=>{const s=makeCodeSession(w);return {domain:s.languageDomain,units:s.units,keys:s.keys.map(k=>({ch:k.ch,real:k.real}))}};
+    const pack=w=>{const s=makeCodeSession(w);return {domain:s.languageDomain,units:s.units,distractorSource:s.distractorSource,distractorCount:s.distractorCount,keys:s.keys.map(k=>({ch:k.ch,real:k.real}))}};
     return {ko:pack(ko),hanja:pack(hanja),en:pack(en)};
   });
   expect(seekKeys.ko.domain).toBe('KOREAN');
   expect(seekKeys.hanja.domain).toBe('HANJA');
   expect(seekKeys.en.domain).toBe('ENGLISH');
+  expect(seekKeys.en.distractorSource).toBe('ENGLISH_ALPHABET');
+  expect(['SAME_LANGUAGE_ENCOUNTERS','NONE']).toContain(seekKeys.ko.distractorSource);
+  expect(['SAME_LANGUAGE_ENCOUNTERS','NONE']).toContain(seekKeys.hanja.distractorSource);
   expect(seekKeys.ko.keys.every(k=>!/^[A-Za-z]$/.test(k.ch))).toBe(true);
   expect(seekKeys.hanja.keys.every(k=>!/^[A-Za-z]$/.test(k.ch))).toBe(true);
   expect(seekKeys.en.keys.filter(k=>!k.real).length).toBeGreaterThanOrEqual(3);
