@@ -171,8 +171,11 @@
       if($('#v2RetryOcr'))$('#v2RetryOcr').onclick=async()=>{
         view().innerHTML='<section class="card"><h2>다시 분석 중</h2><p>성공한 페이지는 유지하고 실패한 페이지만 다시 확인해요.</p></section>';
         const retry=await HideV2Capture.analyzePending();
-        if(retry.ok)review(retry.rows);
-        else onFiles([]);
+        if(retry.ok){review(retry.rows);return}
+        const retained=(retry.rows||[]).length;
+        view().innerHTML=`<section class="card"><h2>다시 분석하지 못했어요</h2><p>${esc(retry.reason)}</p>${retained?`<p>${retained}개 결과는 계속 보존되어 있어요.</p>`:''}<button id="v2RetryOcrAgain" class="btn primary full">다시 시도</button><button id="v2Back" class="btn secondary full">돌아가기</button></section>`;
+        $('#v2RetryOcrAgain').onclick=()=>$('#v2RetryOcr')?.click?.();
+        $('#v2Back').onclick=()=>HideV2Router.go('home');
       };
       $('#v2Back').onclick=()=>HideV2Router.go('home');
       return;
