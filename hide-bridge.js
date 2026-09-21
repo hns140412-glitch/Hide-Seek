@@ -13,11 +13,11 @@
 
   const originalSave = save;
   let bridgePersisting = false;
-  let applyingUpdate = false;
   let lastSnapshot = '';
 
+  const EventEnvelope = globalThis.TakyEventEnvelope;
+  if(!EventEnvelope?.create) throw new Error('HIDE_SHARED_EVENT_ENVELOPE_UNAVAILABLE');
   const iso = () => new Date().toISOString();
-  const id = prefix => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
   function readIncomingContext() {
     const params = new URLSearchParams(location.search);
@@ -141,18 +141,24 @@
 
   function emit(type, payload = {}) {
     const context = getContext();
+    const envelope = EventEnvelope.create({
+      source:'hide-seek',
+      event_type:type,
+      occurred_at:iso(),
+      correlation_id:context.session_id || context.task_id || null,
+      payload
+    });
     const event = {
-      event_id: id('hide-event'),
+      ...envelope,
       type,
-      app: 'hide-seek',
-      at: iso(),
+      app:'hide-seek',
+      at:envelope.occurred_at,
       session_id: context.session_id || null,
       goal_id: context.goal_id || null,
       task_id: context.task_id || null,
       lap_id: context.lap_id || null,
       child_id: context.child_id || null,
-      actor_role: context.actor_role || null,
-      payload
+      actor_role: context.actor_role || null
     };
 
     S.takyLearningOutbox = [...(S.takyLearningOutbox || []), event].slice(-EVENT_LIMIT);
@@ -268,6 +274,8 @@
     return !['LEARNING', 'CODE_RED_READY', 'RETRACE_REQUIRED'].includes(status);
   }
 
+  globalThis.HideSeekPwaSafePoint=isSafeUpdatePoint;
+
   function ensureCaptureResumeChip() {
     const active = S.hideSeekCaptureSession && S.hideSeekCaptureSession.status === 'CAPTURING' && S.hideSeekCaptureSession.pages?.length;
     let chip = document.getElementById('hideCaptureResumeChip');
@@ -314,72 +322,6 @@
       };
       document.body.appendChild(chip);
     }
-  }
-
-  async function applyWaitingUpdate(registration) {
-    if (applyingUpdate || !registration?.waiting) return;
-    if (!isSafeUpdatePoint()) return ensureUpdateChip(registration);
-    applyingUpdate = true;
-    S.hideUpdateReady = false;
-    persistBridgeState();
-    emit('UPDATE_APPLY', { safePoint: true });
-    let reloaded = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (reloaded) return;
-      reloaded = true;
-      location.reload();
-    }, { once: true });
-    registration.waiting.postMessage({ type: 'APPLY_UPDATE' });
-  }
-
-  function ensureUpdateChip(registration) {
-    let chip = document.getElementById('hideUpdateChip');
-    if (!registration?.waiting) {
-      chip?.remove();
-      return;
-    }
-    S.hideUpdateReady = true;
-    persistBridgeState();
-    if (!chip) {
-      chip = document.createElement('button');
-      chip.id = 'hideUpdateChip';
-      chip.className = 'hide-system-chip hide-system-chip-update';
-      chip.type = 'button';
-      chip.textContent = '업데이트 준비됨';
-      chip.onclick = () => {
-        if (isSafeUpdatePoint()) applyWaitingUpdate(registration);
-        else toast('학습이나 촬영이 끝난 안전한 시점에 적용할게요.');
-      };
-      document.body.appendChild(chip);
-    }
-  }
-
-  async function inspectUpdateRegistration(registration) {
-    if (!registration) return;
-    if (registration.waiting) {
-      if (isSafeUpdatePoint()) await applyWaitingUpdate(registration);
-      else ensureUpdateChip(registration);
-    }
-  }
-
-  async function watchSafeUpdates() {
-    if (!('serviceWorker' in navigator)) return;
-    try {
-      const registration = await navigator.serviceWorker.ready;
-      await inspectUpdateRegistration(registration);
-      registration.addEventListener('updatefound', () => {
-        const worker = registration.installing;
-        if (!worker) return;
-        worker.addEventListener('statechange', () => {
-          if (worker.state === 'installed' && navigator.serviceWorker.controller) {
-            setTimeout(() => inspectUpdateRegistration(registration), 0);
-          }
-        });
-      });
-      window.setInterval(() => {
-        if (S.hideUpdateReady && isSafeUpdatePoint()) inspectUpdateRegistration(registration);
-      }, 2500);
-    } catch {}
   }
 
   function normalizeBrandAttributes(root = document) {
@@ -446,7 +388,6 @@
       }));
     }).observe(document.body, { childList: true, subtree: true });
     lastSnapshot = JSON.stringify(buildTaskSnapshot());
-    watchSafeUpdates();
 
     window.HideSeekBridge = Object.freeze({
       version: BRIDGE_VERSION,
