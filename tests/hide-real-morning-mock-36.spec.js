@@ -53,11 +53,17 @@ test('real NEW 12 + REVIEW 24 follows mission, recall and morning mock-test memo
   for(let i=0;i<12;i++){
     const expected=fixture.items[i];
     await expect(page.getByText(expected.eng,{exact:true})).toBeVisible();
+    await expect(page.getByText('처음 본 단어처럼 추론해보기',{exact:true})).toBeVisible();
+    await expect(page.getByRole('button',{name:'외웠어요 · 다음'})).toBeDisabled();
+    await page.locator('.inference-prediction').fill('내가 생각한 '+expected.kor);
+    await page.locator('.inference-clue').selectOption(i===0?'ROOT_ETYMOLOGY':'SCENE');
+    await page.locator('.inference-confidence').selectOption(i===0?'HIGH':'MEDIUM');
+    await page.getByRole('button',{name:'내 추론 남기기'}).click();
+    await page.getByRole('button',{name:'구조·장면 단서 보기'}).click();
     if(i===0){
-      await expect(page.getByText('먼저 생각해보기',{exact:true})).toBeVisible();
-      await expect(page.getByRole('button',{name:'외웠어요 · 다음'})).toBeDisabled();
-      await page.getByRole('button',{name:'장면 단서 보기'}).click();
-      await expect(page.getByText(/집, 학교, 공기, 물, 나무/)).toBeVisible();
+      await expect(page.getByText('검증 어원',{exact:true})).toBeVisible();
+      await expect(page.getByText('environ',{exact:true})).toBeVisible();
+      await expect(page.getByText(/둘러싸인 상태/)).toBeVisible();
     }
     await page.getByRole('button',{name:'뜻 확인하기'}).click();
     await expect(page.getByText(expected.kor,{exact:true})).toBeVisible();
@@ -86,12 +92,14 @@ test('real NEW 12 + REVIEW 24 follows mission, recall and morning mock-test memo
     return {
       prep:s.learning.prepCompleted,
       retrieval:(w.learningStats?.retrievalTrace||[]).map(x=>x.result),
-      acquisition:(w.learningStats?.acquisitionTrace||[]).map(x=>x.event)
+      acquisition:(w.learningStats?.acquisitionTrace||[]).map(x=>x.event),
+      inference:(w.learningStats?.inferenceTrace||[]).map(x=>({event:x.event,clueUsed:x.clueUsed,confidence:x.confidence,recallScoreImpact:x.recallScoreImpact,finalMeaning:x.finalMeaning}))
     };
   });
   expect(firstRecall.prep).toBe(true);
   expect(firstRecall.acquisition).toContain('MEANING_CONFIRMATION');
   expect(firstRecall.acquisition).toContain('MEMORIZATION_EXPOSURE');
+  expect(firstRecall.inference.at(-1)).toMatchObject({event:'FIRST_SEEN_PREDICTION',clueUsed:'ROOT_ETYMOLOGY',confidence:'HIGH',recallScoreImpact:false,finalMeaning:'환경'});
   expect(firstRecall.retrieval).toContain('FIRST_RECALL_CORRECT');
 
   await page.getByRole('button',{name:'탐험 미션'}).click();
