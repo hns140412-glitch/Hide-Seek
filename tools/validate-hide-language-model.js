@@ -146,8 +146,17 @@ assert(skill.attempts===4&&skill.assessed===3,'inference skill counts');
 assert(skill.successRate===67,'inference success rate');
 assert(skill.bestClue?.clue==='SCENE','best clue should derive from assessed outcomes');
 assert(skill.highConfidenceMisses===1,'confidence calibration evidence');
-assert(skill.adaptiveClue?.clue==='ROOT_ETYMOLOGY','repeated clue evidence should become adaptive');
+assert(!skill.adaptiveClue&&skill.emergingClue?.clue==='ROOT_ETYMOLOGY'&&skill.evidenceLevel==='EMERGING','early repeated clue evidence should remain emerging');
 const oneShot=api.summarizeInferenceSkill([{event:'FIRST_SEEN_PREDICTION',clueUsed:'SCENE',confidence:'HIGH',outcome:'MATCH'}]);
 assert(oneShot.bestClue?.clue==='SCENE'&&!oneShot.adaptiveClue&&oneShot.evidenceLevel==='LOW','one self-report must not become adaptive preference');
+const established=api.summarizeInferenceSkill([
+  {event:'FIRST_SEEN_PREDICTION',clueUsed:'ROOT_ETYMOLOGY',confidence:'MEDIUM',outcome:'MATCH'},
+  {event:'FIRST_SEEN_PREDICTION',clueUsed:'ROOT_ETYMOLOGY',confidence:'MEDIUM',outcome:'MATCH'},
+  {event:'FIRST_SEEN_PREDICTION',clueUsed:'ROOT_ETYMOLOGY',confidence:'MEDIUM',outcome:'NEAR'},
+  {event:'FIRST_SEEN_PREDICTION',clueUsed:'SCENE',confidence:'MEDIUM',outcome:'MISS'},
+  {event:'FIRST_SEEN_PREDICTION',clueUsed:'WORD_PART',confidence:'MEDIUM',outcome:'MATCH'},
+  {event:'FIRST_SEEN_PREDICTION',clueUsed:'SCENE',confidence:'LOW',outcome:'NEAR'}
+]);
+assert(established.evidenceLevel==='ESTABLISHED'&&established.adaptiveClue?.clue==='ROOT_ETYMOLOGY','adaptive preference requires established evidence');
 
 console.log('PASS: language memory model supports truth-gated etymology, inference and multilingual exploration');
