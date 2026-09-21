@@ -540,3 +540,11 @@ Important current frontier:
 - Missing/unverified multilingual evidence must fail closed to relearn; never infer an etymology/component/pronunciation.
 - FIRST_FIND_ASSIST remains assisted/non-recall.
 - Current locked reporting: PRODUCT ~77%, CODED ~93%, CI ~90%, Browser Runtime ~86%, Device 0%, Release 0%.
+
+
+## 2026-09-22 English Connection personalization delta
+- Exact HEAD `b307014e92b8e3448c48e697154b3a2e8cb60db9` passed V2 #319 / full Hide #777.
+- Only ESTABLISHED inference history may surface optional Connection guidance, and only when the clue is applicable to the current word.
+- EMERGING history must not be promoted to adaptive guidance.
+- CONNECTION_GUIDANCE is non-recall evidence; normal CONNECTION exposure remains separate.
+- Current locked reporting: PRODUCT ~78%, CODED ~94%, CI ~91%, Browser Runtime ~87%, Device 0%, Release 0%.
