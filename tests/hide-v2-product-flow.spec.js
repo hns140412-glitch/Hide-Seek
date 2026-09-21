@@ -43,6 +43,59 @@ test('Hide V2 boots without legacy app.js and completes a mission end-to-end',as
   expect(state.missions[0].memorySummary.authority).toBe('SPECIALIST_MEMORY_ADVISORY_ONLY');
 });
 
+test('Hide V2 Final Seek support cannot count as unassisted recall',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'지원 검증'},missions:[{
+        id:'m-final-support',title:'FINAL 지원 미션',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        sourceCount:0,provenance:{source:'TEST_FIXTURE'},
+        items:[{id:'w-final-support',lexicalId:'island::섬',token:'island',meaning:'섬',languageDomain:'ENGLISH',missionRole:'NEW',evidence:[],source:{}}]
+      }],activeMissionId:'m-final-support',activeSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'탐험 시작'}).click();
+  await page.getByRole('button',{name:'기억하고 찾아보기'}).click();
+  await page.getByLabel('회상 답 입력').fill('island');
+  await page.getByRole('button',{name:'기억 확인'}).click();
+  await page.getByLabel('뜻 회상 입력').fill('섬');
+  await page.getByRole('button',{name:'뜻 확인'}).click();
+  await page.getByRole('button',{name:'다음'}).click();
+
+  await expect(page.getByText('마지막 찾기',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'기억 장면 보기'}).click();
+  await expect(page.getByText('기억 장면',{exact:true})).toBeVisible();
+  await page.getByLabel('최종 회상 답 입력').fill('island');
+  await page.getByRole('button',{name:'마지막 기억 확인'}).click();
+
+  await expect(page.getByText('다시 만나기',{exact:true})).toBeVisible();
+  const assisted=await page.evaluate(()=>{
+    const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
+    return s.missions[0].items[0].evidence;
+  });
+  const support=assisted.find(x=>x.stage==='FINAL_SEEK_SUPPORT');
+  const final=assisted.find(x=>x.stage==='FINAL_SEEK');
+  expect(support.assisted).toBe(true);
+  expect(support.objectiveRecall).toBe(false);
+  expect(final.result).toBe('CORRECT');
+  expect(final.assisted).toBe(true);
+  expect(final.objectiveRecall).toBe(false);
+  expect(final.recallScoreImpact).toBe(false);
+
+  await page.getByRole('button',{name:'다시 숨기기'}).click();
+  await page.getByLabel('다시 찾기 답 입력').fill('island');
+  await page.getByRole('button',{name:'다시 찾기'}).click();
+  await expect(page.getByRole('heading',{name:'탐험 완료'})).toBeVisible();
+
+  const recovered=await page.evaluate(()=>{
+    const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
+    return s.missions[0].items[0].evidence.find(x=>x.stage==='SEEK_AGAIN'&&x.result==='CORRECT');
+  });
+  expect(recovered.objectiveRecall).toBe(true);
+  expect(recovered.assisted).toBe(false);
+  expect(recovered.spacedEvidence).toBe(false);
+});
+
 test('Hide V2 Korean response stays production evidence, not recall inflation',async({page})=>{
   await page.addInitScript(()=>{
     localStorage.setItem('hide_seek_v2_state',JSON.stringify({
