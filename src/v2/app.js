@@ -79,7 +79,7 @@
     const normalized=rows.map((r,i)=>HideV2Mission.normalizeItem(r,i)).filter(Boolean);
     const draft=normalized.map(x=>({...x,excluded:false}));
     const renderRows=()=>{
-      view().innerHTML=`<section class="card"><div class="hero-kicker"><span>OCR REVIEW</span><span>V2</span></div><h2>분석 결과 확인</h2><p>틀린 단어/뜻은 고치고, 필요 없는 행은 제외한 뒤 저장하세요.</p><div class="weak-list">${draft.map((w,i)=>`<div class="weak-item" data-review-row="${i}"><div style="display:grid;gap:6px;flex:1"><input class="input" data-review-token="${i}" aria-label="OCR 단어 ${i+1}" value="${esc(w.token)}"><input class="input" data-review-meaning="${i}" aria-label="OCR 뜻 ${i+1}" value="${esc(w.meaning)}"><small>${esc(w.languageDomain)} · ${esc(w.source?.pageId||'source')}</small></div><button class="btn secondary" data-review-toggle="${i}" type="button">${w.excluded?'복원':'제외'}</button></div>`).join('')}</div><button class="btn primary full" id="v2Commit" type="button">미션으로 저장</button></section>`;
+      view().innerHTML=`<section class="card"><div class="hero-kicker"><span>OCR REVIEW</span><span>V2</span></div><h2>분석 결과 확인</h2><p>틀린 단어/뜻은 고치고, 필요 없는 행은 제외한 뒤 저장하세요.</p><div class="weak-list">${draft.map((w,i)=>`<div class="weak-item" data-review-row="${i}"><div style="display:grid;gap:6px;flex:1"><input class="input" data-review-token="${i}" aria-label="OCR 단어 ${i+1}" value="${esc(w.token)}"><input class="input" data-review-meaning="${i}" aria-label="OCR 뜻 ${i+1}" value="${esc(w.meaning)}"><small>${esc(w.languageDomain)} · ${esc(w.source?.pageId||'source')} · confidence ${esc(w.source?.confidence||'medium')}</small>${w.source?.warnings?.length?`<small class="ocr-warning">확인 필요 · ${esc(w.source.warnings.join(', '))}</small>`:''}</div><button class="btn secondary" data-review-toggle="${i}" type="button">${w.excluded?'복원':'제외'}</button></div>`).join('')}</div><button class="btn primary full" id="v2Commit" type="button">미션으로 저장</button></section>`;
       draft.forEach((w,i)=>{
         const token=$(`[data-review-token="${i}"]`),meaning=$(`[data-review-meaning="${i}"]`),toggle=$(`[data-review-toggle="${i}"]`);
         token.disabled=w.excluded;meaning.disabled=w.excluded;
@@ -165,7 +165,18 @@
   async function onFiles(files){
     view().innerHTML='<section class="card"><h2>프린트 분석 중</h2><p>원본을 기준으로 단어와 뜻을 추출하고 있어요.</p></section>';
     const r=await HideV2Capture.analyzeFiles(files);
-    if(!r.ok){view().innerHTML=`<section class="card"><h2>분석하지 못했어요</h2><p>${esc(r.reason)}</p><button id="v2Back" class="btn secondary full">돌아가기</button></section>`;$('#v2Back').onclick=()=>HideV2Router.go('home');return}
+    if(!r.ok){
+      const retained=(r.rows||[]).length;
+      view().innerHTML=`<section class="card"><h2>분석하지 못했어요</h2><p>${esc(r.reason)}</p>${retained?`<p>${retained}개 결과는 보존했고 실패한 페이지만 다시 분석할 수 있어요.</p>`:''}${r.retryable?'<button id="v2RetryOcr" class="btn primary full">실패한 페이지만 다시 분석</button>':''}<button id="v2Back" class="btn secondary full">돌아가기</button></section>`;
+      if($('#v2RetryOcr'))$('#v2RetryOcr').onclick=async()=>{
+        view().innerHTML='<section class="card"><h2>다시 분석 중</h2><p>성공한 페이지는 유지하고 실패한 페이지만 다시 확인해요.</p></section>';
+        const retry=await HideV2Capture.analyzePending();
+        if(retry.ok)review(retry.rows);
+        else onFiles([]);
+      };
+      $('#v2Back').onclick=()=>HideV2Router.go('home');
+      return;
+    }
     review(r.rows);
   }
 
