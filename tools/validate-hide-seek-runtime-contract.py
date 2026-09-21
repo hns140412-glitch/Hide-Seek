@@ -403,8 +403,8 @@ for needle in [
         fail.append("LANGUAGE_MODEL_CONTRACT:"+needle)
 
 for needle in [
-    "window.HideLanguageModel?.normalizeItem",
-    "window.HideLanguageModel?.hasVerifiedMeaningMap",
+    "globalThis.HideLanguageModel?.normalizeItem",
+    "globalThis.HideLanguageModel?.hasVerifiedMeaningMap",
     "MEANING_MAP",
     "VERIFIED_LANGUAGE_MODEL",
 ]:
