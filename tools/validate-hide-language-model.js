@@ -83,6 +83,11 @@ const hanjaExplore=api.starterExploration(hanja,{});
 assert(hanjaExplore?.type==='VERIFIED_MEANING_MAP','hanja verified map should enter thinking-first exploration');
 const hanjaHtml=api.renderStarterExplorationHtml(hanja,{},x=>String(x));
 assert(hanjaHtml.includes('검증 의미 구조')&&hanjaHtml.includes('學'),'hanja verified meaning-map visual');
+const maliciousHistorical=api.normalizeItem({word:'가상어',languageDomain:'KOREAN',meaningMap:{verified:true,verificationState:'VERIFIED',sourceType:'TEST_FIXTURE',sourceRef:'fixture://malicious-history',coreMeaning:'가상 뜻',claimsHistoricalEtymology:true,nodes:[{role:'HANJA_ORIGIN',label:'假',meaning:'가짜'}]}});
+const maliciousPlan=api.starterExploration(maliciousHistorical,{});
+const maliciousHtml=api.renderStarterExplorationHtml(maliciousHistorical,{},x=>String(x));
+assert(maliciousPlan?.claimsHistoricalEtymology===false,'generic verified meaning map must ignore historical-claim escalation');
+assert(maliciousHtml.includes('검증 의미 구조')&&!maliciousHtml.includes('검증 어원'),'generic verified meaning map must never render as verified etymology');
 
 
 const html=api.renderMeaningMapHtml(english,x=>String(x));
