@@ -448,6 +448,26 @@ for needle in [
         fail.append("LANGUAGE_MODEL_CONTRACT:"+needle)
 
 for needle in [
+    "starterExploration",
+    "renderStarterExplorationHtml",
+    "CURATED_SEMANTIC_SUPPORT",
+    "claimsHistoricalEtymology:false",
+    "TRANSPARENT_COMPOUND",
+    "SEMANTIC_SCENE",
+]:
+    if needle not in language_model:
+        fail.append("THINKING_FIRST_LANGUAGE_SUPPORT:"+needle)
+
+for needle in [
+    "THINKING_SCENE",
+    "MEANING_CONFIRMATION",
+    "thinkingTrailUsed",
+    "먼저 네 머릿속에 장면",
+]:
+    if needle not in app:
+        fail.append("THINKING_FIRST_MEMORIZATION:"+needle)
+
+for needle in [
     "globalThis.HideLanguageModel?.normalizeItem",
     "globalThis.HideLanguageModel?.hasVerifiedMeaningMap",
     "MEANING_MAP",
