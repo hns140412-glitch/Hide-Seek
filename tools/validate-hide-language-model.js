@@ -7,6 +7,7 @@ const code=fs.readFileSync('hide-language-model.js','utf8');
 const sandbox={window:{}};
 vm.createContext(sandbox);
 vm.runInContext(basisCode,sandbox);
+sandbox.HideLearningBasis=sandbox.window.HideLearningBasis;
 vm.runInContext(evidenceCode,sandbox);
 vm.runInContext(code,sandbox);
 const api=sandbox.window.HideLanguageModel;
