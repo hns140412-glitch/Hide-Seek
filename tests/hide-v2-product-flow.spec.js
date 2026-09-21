@@ -479,12 +479,12 @@ test('Hide V2 mission map filters open completed and archived journeys without c
   await expect(page.locator('[data-mission-id="m-done"]')).toBeHidden();
   await expect(page.locator('[data-mission-id="m-archive"]')).toBeHidden();
 
-  await page.getByRole('button',{name:'완료',exact:true}).click();
+  await page.getByRole('button',{name:'끝낸 탐험',exact:true}).click();
   await expect(page.getByText('1개 탐험 보기',{exact:true})).toBeVisible();
   await expect(page.locator('[data-mission-id="m-done"]')).toBeVisible();
   await expect(page.locator('[data-mission-id="m-ready"]')).toBeHidden();
 
-  await page.getByRole('button',{name:'보관',exact:true}).click();
+  await page.getByRole('button',{name:'보관함',exact:true}).click();
   await expect(page.getByText('1개 탐험 보기',{exact:true})).toBeVisible();
   await expect(page.locator('[data-mission-id="m-archive"]')).toBeVisible();
   await expect(page.locator('[data-mission-id="m-done"]')).toBeHidden();
