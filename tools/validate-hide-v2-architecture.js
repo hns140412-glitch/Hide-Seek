@@ -5,7 +5,7 @@ const ROOT=path.join(__dirname,'..');
 const modules=[
   'src/v2/app-store.js','src/v2/mission-service.js','src/v2/memory-engine.js',
   'src/v2/learning-session.js','src/v2/capture-controller.js','src/v2/router.js',
-  'src/v2/legacy-migration.js','src/v2/app.js'
+  'src/v2/legacy-migration.js','src/v2/ready-bridge.js','src/v2/app.js'
 ];
 const fail=[];
 for(const file of modules){
@@ -42,3 +42,8 @@ if(fail.length){
   process.exit(1);
 }
 console.log('PASS: Hide Runtime V2 is isolated from legacy monolithic runtime and preserves ownership boundaries');
+
+const ready=fs.readFileSync(path.join(ROOT,'src/v2/ready-bridge.js'),'utf8');
+for(const token of ["EXPLICIT_READY_PLANNER_REVIEW_DIRECTIVE","reviewPolicyOwner:'READY_LEARNING_ENGINE'","scheduleOwner:'READY_SET_PLANNER'"]){
+  if(!ready.includes(token))fail.push('V2_READY_OWNERSHIP_MISSING:'+token);
+}
