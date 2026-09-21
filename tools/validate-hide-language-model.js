@@ -21,6 +21,10 @@ assert(!evidence.validateRecord('bad',{supportType:'TRANSPARENT_COMPOUND',source
 assert(api.detectDomain({eng:'transport',kor:'운반하다'})==='ENGLISH','english detection');
 assert(api.detectDomain({word:'불가피'})==='KOREAN','korean detection');
 assert(api.detectDomain({word:'學'})==='HANJA','hanja detection');
+const koParent=api.parentExplanation({word:'불가피',languageDomain:'KOREAN',meaningMap:{verified:true,sourceType:'CURATED',title:'불가피',coreMeaning:'피할 수 없음',imageryCue:'피할 수 없는 길',memoryBridge:'不(아닐 불)+避(피할 피) → 피할 수 없음',nodes:[{role:'HANJA_ORIGIN',label:'不',meaning:'아니다'},{role:'HANJA_ORIGIN',label:'避',meaning:'피하다'}],bridges:[]}});
+assert(koParent?.mode==='VERIFIED_MEANING_STRUCTURE'&&koParent.text.includes('구성 요소'),'korean parent explanation must use meaning structure');
+const hanjaParent=api.parentExplanation({word:'學',languageDomain:'HANJA',meaningMap:{verified:true,sourceType:'CURATED',title:'學',coreMeaning:'배우다',imageryCue:'배우는 장면',memoryBridge:'구성을 보고 뜻을 연결',nodes:[{role:'COMPONENT',label:'學',meaning:'배우다'}],bridges:[]}});
+assert(hanjaParent?.mode==='VERIFIED_CHARACTER_STRUCTURE'&&hanjaParent.text.includes('글자의 핵심 구성'),'hanja parent explanation must use character structure');
 const englishClues=api.clueOptions('ENGLISH').map(x=>x.value);
 const koreanClues=api.clueOptions('KOREAN').map(x=>x.value);
 const hanjaClues=api.clueOptions('HANJA').map(x=>x.value);
