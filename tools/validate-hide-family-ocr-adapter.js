@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 const fs=require('fs');
 const vm=require('vm');
+const visionSrc=fs.readFileSync('vendor/taky/vision-ingest.js','utf8');
 const src=fs.readFileSync('hide-family-ocr-adapter.js','utf8');
 
 function assert(cond,msg){if(!cond)throw new Error(msg)}
@@ -22,6 +23,7 @@ async function runCase(responseBody,status=200){
     window:{}
   };
   vm.createContext(sandbox);
+  vm.runInContext(visionSrc,sandbox);
   vm.runInContext(src,sandbox);
   const adapter=sandbox.window.FamilyCaptureOcrAdapter;
   return adapter.analyzeVocabularyPage({
@@ -54,6 +56,7 @@ async function runCase(responseBody,status=200){
   assert(ok.rows[1].sourceColumn==='RIGHT','right source column must be preserved');
   assert(ok.rows[0].sourceColumnIndex===0,'column-local row index must be preserved');
   assert(ok.analysis_domain==='HIDE_VOCABULARY','analysis domain must remain explicit');
+  assert(/^vision_/.test(ok.vision_ingest_request_id||''),'shared vision ingest request provenance must be preserved');
 
   const mismatch=await runCase({
     analysis_domain:'READY_ASSIGNMENT_FACT',
@@ -66,6 +69,13 @@ async function runCase(responseBody,status=200){
     result:{drafts:[{group_key:'ENGLISH:HOMEWORK'}]}
   });
   assert(unsupported.ok===false&&unsupported.reason==='HIDE_VOCABULARY_RESULT_UNSUPPORTED','assignment drafts must not masquerade as vocabulary OCR');
+
+
+  const evidenceMismatch=await runCase({
+    analysis_domain:'HIDE_VOCABULARY',
+    result:{analysis_domain:'HIDE_VOCABULARY',rows:[{eng:'word',kor:'뜻',confidence:'high',evidence_item_id:'foreign-page'}]}
+  });
+  assert(evidenceMismatch.ok===false&&evidenceMismatch.reason==='OCR_EVIDENCE_MISMATCH','foreign OCR evidence id must fail closed');
 
   const httpFail=await runCase({reason:'HIDE_VOCABULARY_UNSUPPORTED'},422);
   assert(httpFail.ok===false&&httpFail.reason==='HIDE_VOCABULARY_UNSUPPORTED','server unsupported response must remain explicit');
