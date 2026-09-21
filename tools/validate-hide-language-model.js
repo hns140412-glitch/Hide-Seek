@@ -42,6 +42,32 @@ assert(!evidence.validateRecord('bad',{supportType:'TRANSPARENT_COMPOUND',source
 assert(api.detectDomain({eng:'transport',kor:'운반하다'})==='ENGLISH','english detection');
 assert(api.detectDomain({word:'불가피'})==='KOREAN','korean detection');
 assert(api.detectDomain({word:'學'})==='HANJA','hanja detection');
+
+const koContextEvidence=api.normalizeItem({
+  word:'불가피',
+  languageDomain:'KOREAN',
+  contextEvidence:{
+    verified:true,
+    sourceType:'TEST_FIXTURE',
+    sourceRef:'fixture://ko-context',
+    contextText:'비가 너무 많이 와서 일정 변경이 불가피했다.',
+    evidenceText:'일정 변경이 불가피했다',
+    candidates:['비가 너무 많이 와서','일정 변경이 불가피했다']
+  }
+});
+assert(koContextEvidence.contextEvidence?.evidenceText==='일정 변경이 불가피했다','verified Korean context evidence must survive');
+const invalidKoContextEvidence=api.normalizeItem({
+  word:'불가피',
+  languageDomain:'KOREAN',
+  contextEvidence:{verified:true,sourceRef:'fixture://ko-context',contextText:'다른 문장',evidenceText:'없는 근거',candidates:['없는 근거','다른 선택']}
+});
+assert(invalidKoContextEvidence.contextEvidence===null,'context evidence must fail closed when evidence is not in context');
+const englishContextEvidence=api.normalizeItem({
+  word:'evidence',
+  languageDomain:'ENGLISH',
+  contextEvidence:{verified:true,sourceRef:'fixture://en-context',contextText:'evidence appears here',evidenceText:'evidence',candidates:['evidence','here']}
+});
+assert(englishContextEvidence.contextEvidence===null,'context evidence contract is Korean-only');
 const koParent=api.parentExplanation({word:'불가피',languageDomain:'KOREAN',meaningMap:{verified:true,sourceType:'TEST_FIXTURE',sourceRef:'fixture://ko-meaning-map',title:'불가피',coreMeaning:'피할 수 없음',imageryCue:'피할 수 없는 길',memoryBridge:'不(아닐 불)+避(피할 피) → 피할 수 없음',nodes:[{role:'HANJA_ORIGIN',label:'不',meaning:'아니다'},{role:'HANJA_ORIGIN',label:'避',meaning:'피하다'}],bridges:[]}});
 assert(koParent?.mode==='VERIFIED_MEANING_STRUCTURE'&&koParent.text.includes('구성 요소'),'korean parent explanation must use meaning structure');
 const hanjaParent=api.parentExplanation({word:'學',languageDomain:'HANJA',meaningMap:{verified:true,sourceType:'TEST_FIXTURE',sourceRef:'fixture://hanja-meaning-map',title:'學',coreMeaning:'배우다',imageryCue:'배우는 장면',memoryBridge:'구성을 보고 뜻을 연결',nodes:[{role:'COMPONENT',label:'學',meaning:'배우다'}],bridges:[]}});
