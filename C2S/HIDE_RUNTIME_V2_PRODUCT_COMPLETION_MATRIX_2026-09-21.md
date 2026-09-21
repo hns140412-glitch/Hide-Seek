@@ -18,12 +18,12 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 |---|---|---:|---:|---|---|
 | V2 app bootstrap/store/router | RUNTIME_VERIFIED | yes | N/A | V2 CI | no release/PWA cutover |
 | V1 non-destructive migration | RUNTIME_VERIFIED | yes | partial | browser migration fixture | broader legacy variants not yet sampled |
-| Mission create/active ownership | RUNTIME_VERIFIED | yes | partial | browser + store tests | advanced filters/bulk operations not implemented |
+| Mission create/active ownership | RUNTIME_VERIFIED | yes | partial | browser + store tests | bulk operations not implemented |
 | Camera input path | PARTIAL | yes | no | code/browser file input | physical camera permission/device not verified |
 | Album multi-image intake | RUNTIME_VERIFIED | yes | synthetic multi-page | browser multi-page + retry flow | large/odd real image sets not representative-tested |
 | Capture blob persistence | RUNTIME_VERIFIED | yes | fixture blob | IndexedDB + reload test | storage quota/recovery not verified |
 | OCR shared adapter integration | RUNTIME_VERIFIED | yes | provider-shaped fixture only | multi-page partial-failure/retry browser flow | real varied prints/provider behavior unverified |
-| OCR review persistence/resume | RUNTIME_VERIFIED | yes | provider-shaped fixture only | reload + editable review + warning/provenance + explicit duplicate-merge browser tests | real-provider calibration incomplete |
+| OCR review persistence/resume | RUNTIME_VERIFIED | yes | provider-shaped fixture only | reload + editable review-draft persistence + warning/provenance + explicit duplicate-merge browser tests | real-provider calibration incomplete |
 | MEMORIZE | FUNCTIONAL | yes | fixture | V2 browser flow | richer exploration assistance not yet ported |
 | FIRST FIND | FUNCTIONAL | yes | fixture | V2 browser flow | recovery/retry pedagogy still simplified |
 | MEANING recall | FUNCTIONAL | yes | fixture | V2 browser flow | recognition/contrast variants not yet ported |
@@ -39,7 +39,7 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 | Child-facing core UI/UX | RUNTIME_VERIFIED | yes | browser/mobile viewport | home/mission/learning/completion/Memory Ladder/OCR review-recovery + 390×844 + exploration art-direction checks | physical-device visual QA/final device polish pending |
 | Exploration crew presentation layer | RUNTIME_VERIFIED | yes | adapter/fallback browser fixture | answer-safe crew strip + home/completion/Memory Ladder presentation tests | live current Snap crew-provider roundtrip and final art direction remain open |
 | Mission management surface | RUNTIME_VERIFIED | yes | N/A | selection/rename/archive/delete browser flow | richer history/filtering/bulk actions pending |
-| Records / wordbook surfaces | RUNTIME_VERIFIED | yes | fixture/history-shaped | cumulative wordbook + weakness dashboard + evidence detail browser flow | filtering/search/export pending |
+| Records / wordbook surfaces | RUNTIME_VERIFIED | yes | fixture/history-shaped | cumulative wordbook + weakness dashboard + evidence detail browser flow | export pending |
 | PWA install/offline/update | RUNTIME_VERIFIED | yes | browser | isolated V2 manifest/SW/offline shell/update safe-point tests | physical install/device lifecycle still unverified |
 | Mobile 390×844 browser layout | RUNTIME_VERIFIED | yes | browser viewport | overflow/touch target/focus reduced-height tests | physical keyboard/touch/device browser still unverified |
 | Physical device behavior | NOT_STARTED | no | no | DEVICE_VERIFIED=0 | camera permission/touch/OS keyboard/install all pending |
@@ -241,3 +241,13 @@ Head before matrix document: 63db5206a836050c3dfe5f2b9fd0238d6baeb464
   - Validate Hide Runtime V2 #196 — SUCCESS
   - Validate Hide & Seek #654 — SUCCESS.
 - Conservative reporting after this user-reachable closure: PRODUCT_COMPLETION ~68%, CODED ~84%, CI_VERIFIED ~81%, BROWSER_RUNTIME_VERIFIED ~77%, DEVICE_VERIFIED 0%, RELEASE_VERIFIED 0%.
+
+
+### 2026-09-22 local-first review-draft continuity increment
+- OCR review now persists the actual human review draft, not only raw OCR rows.
+- Corrections, exclusions and explicit duplicate-merge decisions survive reload and resume.
+- Raw OCR `lastRows` remain immutable evidence input while `reviewDraft` stores human review state separately.
+- Fresh capture/re-analysis clears stale reviewDraft before a new review is created.
+- Memory Ladder search/state filters and mission map status filters are browser-verified but do not change memory/mission semantics.
+- Exact code HEAD `75dd5431625ac7b37b857df9aeb346487176c4ab` passed V2 #213 / full Hide #671.
+- Conservative completion percentages remain unchanged at PRODUCT ~68%, CODED ~84%, CI ~81%, Browser Runtime ~77%, Device 0%, Release 0%.
