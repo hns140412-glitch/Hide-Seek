@@ -237,3 +237,13 @@ Hide exports `reviewAdvisories` as evidence, not a schedule. The packet may incl
 - Korean lexical FIRST FIND is not expression.
 - Korean RESPONSE TRAIL is sentence-level learner production.
 - Sentence production is stored as production/context evidence without automatic semantic correctness claims.
+
+
+## Runtime V2 rewrite handoff
+- Active rewrite branch: `rewrite/hide-runtime-v2-2026-09-21` (Draft PR #12).
+- V1 remains reference/rollback only; do not resume feature growth on the monolithic runtime.
+- V2 has independent state, mission, learning-session, memory, capture, router and Ready integration owners.
+- OCR review and active learning session survive reload in browser regression.
+- Product completion matrix: `C2S/HIDE_RUNTIME_V2_PRODUCT_COMPLETION_MATRIX_2026-09-21.md`.
+- Current truthful V2 completion: ~35%; DEVICE_VERIFIED 0%; RELEASE_VERIFIED 0%.
+- Next priorities: mission lifecycle/editing, richer learning assistance port, records/wordbook, PWA ownership, representative OCR, mobile/device verification.
