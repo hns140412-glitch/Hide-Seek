@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - 'v2.html'
+      - 'manifest-v2.json'
+      - 'sw-v2.js'
       - 'src/v2/**'
       - 'tests/hide-v2-product-flow.spec.js'
       - 'tools/validate-hide-v2-architecture.js'
