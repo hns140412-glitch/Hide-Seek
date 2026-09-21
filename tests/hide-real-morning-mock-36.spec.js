@@ -110,13 +110,13 @@ test('real NEW 12 + REVIEW 24 follows mission, recall and morning mock-test memo
       prep:s.learning.prepCompleted,
       retrieval:(w.learningStats?.retrievalTrace||[]).map(x=>x.result),
       acquisition:(w.learningStats?.acquisitionTrace||[]).map(x=>x.event),
-      inference:(w.learningStats?.inferenceTrace||[]).map(x=>({event:x.event,clueUsed:x.clueUsed,confidence:x.confidence,recallScoreImpact:x.recallScoreImpact,finalMeaning:x.finalMeaning,outcome:x.outcome,transferSkillEvidence:x.transferSkillEvidence}))
+      inference:(w.learningStats?.inferenceTrace||[]).map(x=>({event:x.event,clueUsed:x.clueUsed,confidence:x.confidence,recallScoreImpact:x.recallScoreImpact,finalMeaning:x.finalMeaning,outcome:x.outcome,transferSkillEvidence:x.transferSkillEvidence,assessmentSource:x.assessmentSource,objectiveVerified:x.objectiveVerified}))
     };
   });
   expect(firstRecall.prep).toBe(true);
   expect(firstRecall.acquisition).toContain('MEANING_CONFIRMATION');
   expect(firstRecall.acquisition).toContain('MEMORIZATION_EXPOSURE');
-  expect(firstRecall.inference.at(-1)).toMatchObject({event:'FIRST_SEEN_PREDICTION',clueUsed:'ROOT_ETYMOLOGY',confidence:'HIGH',recallScoreImpact:false,finalMeaning:'환경',outcome:'MATCH',transferSkillEvidence:true});
+  expect(firstRecall.inference.at(-1)).toMatchObject({event:'FIRST_SEEN_PREDICTION',clueUsed:'ROOT_ETYMOLOGY',confidence:'HIGH',recallScoreImpact:false,finalMeaning:'환경',outcome:'MATCH',transferSkillEvidence:true,assessmentSource:'LEARNER_SELF_REPORT',objectiveVerified:false});
   expect(firstRecall.retrieval).toContain('FIRST_RECALL_CORRECT');
 
   await page.getByRole('button',{name:'탐험 미션'}).click();
@@ -171,4 +171,5 @@ test('real NEW 12 + REVIEW 24 follows mission, recall and morning mock-test memo
   await expect(page.getByText('처음 보는 단어 풀이',{exact:true})).toBeVisible();
   await expect(page.getByText('13/13',{exact:true})).toBeVisible();
   await expect(page.getByText('69%',{exact:true})).toBeVisible();
+  await expect(page.getByText('자기판단 맞음+근접',{exact:true})).toBeVisible();
 });
