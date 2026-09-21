@@ -45,3 +45,18 @@ test('Hide bridge emits shared immutable event envelope while preserving legacy 
   expect(out.a.app).toBe('hide-seek');
   expect(out.valid).toBe(true);
 });
+
+
+test('Hide loads shared vision ingest without replacing vocabulary semantics',async({page})=>{
+  await page.goto('http://127.0.0.1:4173/');
+  const out=await page.evaluate(()=>({
+    vision:!!globalThis.TakyVisionIngest,
+    request:globalThis.TakyVisionIngest?.buildRequest?.({
+      source:'hide-seek:test',
+      manifest:[{source_id:'page-1',mime_type:'image/jpeg'}]
+    })
+  }));
+  expect(out.vision).toBe(true);
+  expect(out.request.ok).toBe(true);
+  expect(out.request.request.analyzable_source_ids).toEqual(['page-1']);
+});
