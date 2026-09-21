@@ -203,3 +203,16 @@ Latest-head CI note must still be checked live. No Netlify / deploy / merge / us
   - completion state becomes `장면 연결 완료`.
 - Each reveal logs `SCENE_PROGRESSIVE_REVEAL` with beat index, beat ID, language domain, support type, source/sourceRef, and `recallScoreImpact=false`.
 - Real NEW12 browser coverage verifies mountain as GROUND -> RISE -> PEAK while the child sees `평평한 땅 -> 위로 솟기 -> 높은 꼭대기`.
+
+
+## Verified multilingual meaning-map truth gate delta
+- Item-level Korean/Hanja `meaningMap` can no longer become verified from `verified:true` alone.
+- A verified meaning map now requires:
+  - explicit verification state,
+  - non-empty `sourceType`,
+  - non-empty `sourceRef`,
+  - at least one valid meaning/component node,
+  - non-empty `coreMeaning`.
+- Missing provenance or incomplete structure fails closed to no verified map rather than rendering `검증 의미 구조`.
+- Browser fixtures use explicit test provenance; production semantics remain responsible for real source references.
+- This closes the path where Korean/Hanja structure could be presented as verified without traceable evidence.
