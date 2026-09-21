@@ -138,10 +138,10 @@ The available Netlify deploy action accepts siteId only and cannot specify exact
 
 ## 11. Product completion — locked reporting
 Current last closed product-level estimate:
-- PRODUCT_COMPLETION: ~67%
-- CODED: ~83%
-- CI_VERIFIED: ~80%
-- Browser RUNTIME_VERIFIED: ~76%
+- PRODUCT_COMPLETION: ~68%
+- CODED: ~84%
+- CI_VERIFIED: ~81%
+- Browser RUNTIME_VERIFIED: ~77%
 - DEVICE_VERIFIED: 0%
 - RELEASE_VERIFIED: 0%
 
@@ -218,3 +218,14 @@ FALSE_CONVERGENCE = 0: live deploy/device/real-provider claims remain OPEN.
   - DEVICE_VERIFIED 0%
   - RELEASE_VERIFIED 0%.
 - Still OPEN: representative live-provider OCR, physical camera/device/OS keyboard/PWA lifecycle, current frozen Ready↔Hide hosted roundtrip, physical-device visual QA, exact-ref release/deploy.
+
+
+## 16. 2026-09-22 assisted recall / OCR provenance closure
+- FINAL SEEK assistance is explicit evidence, not hidden success inflation.
+- Correct FINAL SEEK after support is `assisted=true`, `objectiveRecall=false`, and cannot complete the item as an unassisted recall.
+- The learner must pass through Seek Again; same-day unassisted recovery remains `IMMEDIATE_ONLY` until later spaced evidence exists.
+- OCR review-to-mission commit preserves source page/row/confidence/provider/model/analysisVersion.
+- Duplicate lexical OCR rows require explicit review merge; merged mission items preserve every source occurrence under `source.occurrences`.
+- Editing a merged row invalidates the grouping instead of silently carrying a stale merge.
+- Exact code HEAD `771e4888af4ff3121347d93ca4184f63768e94f1` passed V2 #196 and full Hide #654.
+- Locked reporting: PRODUCT ~68%, CODED ~84%, CI ~81%, Browser Runtime ~77%, Device 0%, Release 0%.
