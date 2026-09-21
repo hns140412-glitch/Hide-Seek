@@ -304,6 +304,7 @@ test('Hide V2 Memory Ladder projects weakness reasons and wordbook from evidence
   await page.goto('/v2.html');
   await page.getByRole('button',{name:'기억 사다리'}).click();
   await expect(page.getByRole('heading',{name:'기억 사다리'})).toBeVisible();
+  await page.getByText('기억 기록 자세히 보기',{exact:true}).click();
   await expect(page.getByRole('heading',{name:'단어 기록'})).toBeVisible();
   await expect(page.getByText('benefit',{exact:true})).toBeVisible();
   await expect(page.getByText('island',{exact:true})).toBeVisible();
@@ -398,6 +399,7 @@ test('Hide V2 memory detail exposes evidence trail behind strength and priority'
   });
   await page.goto('/v2.html');
   await page.getByRole('button',{name:'기억 사다리'}).click();
+  await page.getByText('기억 기록 자세히 보기',{exact:true}).click();
   await page.locator('[data-word-detail]').click();
   await expect(page.getByText('기억 자세히',{exact:true})).toBeVisible();
   await expect(page.getByRole('heading',{name:'planet'})).toBeVisible();
@@ -779,6 +781,8 @@ test('Hide V2 mission and memory surfaces use product cards instead of raw statu
   await expect(page.getByText('완료',{exact:true})).toBeVisible();
   await page.getByRole('button',{name:'홈으로'}).click();
   await page.getByRole('button',{name:'기억 사다리'}).click();
+  await expect(page.locator('.memory-summary')).toBeHidden();
+  await page.getByText('기억 기록 자세히 보기',{exact:true}).click();
   await expect(page.locator('.memory-summary')).toBeVisible();
   await expect(page.locator('.word-row')).toHaveCount(1);
   await expect(page.getByRole('button',{name:'기억 보기'})).toBeVisible();
