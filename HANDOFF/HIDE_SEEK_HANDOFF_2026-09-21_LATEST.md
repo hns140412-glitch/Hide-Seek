@@ -24,10 +24,10 @@ Latest pre-document code checkpoint:
 - Validate Hide & Seek #627: SUCCESS
 
 Locked conservative reporting:
-- PRODUCT_COMPLETION ~68%
-- CODED ~84%
-- CI_VERIFIED ~81%
-- BROWSER_RUNTIME_VERIFIED ~77%
+- PRODUCT_COMPLETION ~69%
+- CODED ~85%
+- CI_VERIFIED ~82%
+- BROWSER_RUNTIME_VERIFIED ~78%
 - DEVICE_VERIFIED 0%
 - RELEASE_VERIFIED 0%
 
@@ -432,7 +432,7 @@ Important current frontier:
 - FINAL SEEK support cannot be counted as unassisted recall; support-assisted success routes into Seek Again and same-day recovery remains IMMEDIATE_ONLY.
 - OCR review → mission commit preserves provider/page/row/confidence/model/version provenance.
 - Duplicate OCR rows are merged only by explicit review action and all occurrences remain traceable under `source.occurrences`.
-- Current locked reporting: PRODUCT ~68%, CODED ~84%, CI ~81%, Browser Runtime ~77%, Device 0%, Release 0%.
+- Current locked reporting: PRODUCT ~69%, CODED ~85%, CI ~82%, Browser Runtime ~78%, Device 0%, Release 0%.
 - Continue branch-only. Do not deploy/merge/Netlify.
 
 
@@ -441,7 +441,7 @@ Important current frontier:
 - OCR resume must restore the actual editable review draft: corrected values, exclusions and explicit duplicate merges.
 - Keep raw OCR `lastRows` separate from editable `reviewDraft`; do not overwrite source evidence with human edits.
 - Memory Ladder search/state filters and mission-map status filters are green and use existing engine/status semantics only.
-- Current locked reporting remains PRODUCT ~68%, CODED ~84%, CI ~81%, Browser Runtime ~77%, Device 0%, Release 0%.
+- Current locked reporting remains PRODUCT ~69%, CODED ~85%, CI ~82%, Browser Runtime ~78%, Device 0%, Release 0%.
 
 
 ## 2026-09-22 First Find recovery delta
@@ -449,3 +449,11 @@ Important current frontier:
 - FIRST FIND wrong recall now shows a brief relearn scene before MEANING.
 - The correction exposure is `RELEARN_EXPOSURE`, assisted, and never objective recall.
 - Do not collapse this state back into an immediate silent stage advance.
+
+
+## 2026-09-22 First Find explicit-failure delta
+- Exact code HEAD `9261d6c07dbd37df1e9132bf6d15799072338983` passed V2 #227 / full Hide #685.
+- FIRST FIND supports correct typed recall, objectively checked wrong typed recall, and explicit child `아직 안 떠올라` PASS.
+- UNSURE is a recall attempt but not an objectively verified answer: `objectiveRecall=true`, `objectiveVerified=false`.
+- Wrong/unsure both route into assisted non-recall relearn exposure before MEANING.
+- Current locked reporting: PRODUCT ~69%, CODED ~85%, CI ~82%, Browser Runtime ~78%, Device 0%, Release 0%.
