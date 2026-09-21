@@ -1,0 +1,16 @@
+{
+  "name": "Hide & Seek V2",
+  "short_name": "Hide & Seek",
+  "description": "머릿속에 숨어버린 단어 찾기 — Runtime V2",
+  "id": "./v2.html",
+  "start_url": "./v2.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#eaf2e7",
+  "theme_color": "#dcecc9",
+  "orientation": "any",
+  "icons": [
+    {"src":"./assets/icons/icon-192x192.png","sizes":"192x192","type":"image/png","purpose":"any"},
+    {"src":"./assets/icons/icon-512x512.png","sizes":"512x512","type":"image/png","purpose":"any"}
+  ]
+}
