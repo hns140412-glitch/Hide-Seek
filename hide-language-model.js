@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION='2026.09.21-language-core-v15';
+  const VERSION='2026.09.21-language-core-v16';
 
   const MODELS={
     ENGLISH:{
@@ -254,9 +254,14 @@
     const ranked=Object.entries(byClue).map(([clue,v])=>({clue,...v,successRate:v.attempts?Math.round(v.success/v.attempts*100):0})).sort((a,b)=>b.successRate-a.successRate||b.attempts-a.attempts);
     const high=outcomeRows.filter(x=>x.confidence==='HIGH');
     const highMiss=high.filter(x=>x.outcome==='MISS').length;
-    const adaptiveClue=ranked.find(x=>x.attempts>=2&&x.successRate>=50)||null;
     const evidenceLevel=outcomeRows.length>=6?'ESTABLISHED':outcomeRows.length>=2?'EMERGING':'LOW';
-    return {attempts:rows.length,assessed:outcomeRows.length,success,successRate:outcomeRows.length?Math.round(success/outcomeRows.length*100):0,bestClue:ranked[0]||null,adaptiveClue,evidenceLevel,byClue:ranked,highConfidenceMisses:highMiss,calibrationFlag:high.length&&highMiss/high.length>=.5?'RECALIBRATE':'OK'};
+    const adaptiveClue=evidenceLevel==='ESTABLISHED'
+      ?(ranked.find(x=>x.attempts>=3&&x.successRate>=60)||null)
+      :null;
+    const emergingClue=evidenceLevel==='EMERGING'
+      ?(ranked.find(x=>x.attempts>=2&&x.successRate>=50)||null)
+      :null;
+    return {attempts:rows.length,assessed:outcomeRows.length,success,successRate:outcomeRows.length?Math.round(success/outcomeRows.length*100):0,bestClue:ranked[0]||null,emergingClue,adaptiveClue,evidenceLevel,byClue:ranked,highConfidenceMisses:highMiss,calibrationFlag:high.length&&highMiss/high.length>=.5?'RECALIBRATE':'OK'};
   }
 
   function renderStarterExplorationHtml(item,context={},esc=(x)=>String(x??'')){
@@ -269,8 +274,12 @@
     const sceneTrail=plan.visual?.length?'<div class="scene-trail">'+plan.visual.map((x,i)=>'<span><small>'+esc(String(i+1))+'</small><b>'+esc(x)+'</b></span>').join('<i>→</i>')+'</div>':'';
     const links=plan.links.length?'<div class="thinking-links"><b>전에 만난 연결</b>'+plan.links.map(x=>'<span>'+esc(x)+'</span>').join('')+'</div>':'';
     const truthBadge=plan.verified?(plan.claimsHistoricalEtymology?'검증 어원':plan.type==='TRANSPARENT_COMPOUND'?'검증 구조':'검증 의미 구조'):'현대 구조/의미 단서';
-    const adaptiveClue=context.skillProfile?.adaptiveClue?.clue||'';
-    const priorSkill=adaptiveClue&&clueApplicableToPlan(plan,adaptiveClue)?'<div class="prior-skill-cue"><small>여러 번 도움이 됐던 단서</small><b>'+esc(clueLabel(adaptiveClue))+'</b><span>이 단어에도 쓸 수 있는 단서야. 참고만 하고 다른 단서를 골라도 돼.</span></div>':'';
+    const stableClue=context.skillProfile?.adaptiveClue?.clue||'';
+    const emergingClue=context.skillProfile?.emergingClue?.clue||'';
+    const adaptiveClue=stableClue||(context.skillProfile?.evidenceLevel==='EMERGING'?emergingClue:'');
+    const priorSkill=adaptiveClue&&clueApplicableToPlan(plan,adaptiveClue)
+      ?'<div class="prior-skill-cue" data-evidence-level="'+esc(context.skillProfile.evidenceLevel||'LOW')+'"><small>'+(stableClue?'반복해서 확인된 단서':'최근 몇 번 도움이 된 단서')+'</small><b>'+esc(clueLabel(adaptiveClue))+'</b><span>'+(stableClue?'여러 번 확인된 경향이야. 그래도 이번 단어에서는 다른 단서를 골라도 돼.':'아직 경향을 확인 중이야. 추천은 참고만 해.')+'</span></div>'
+      :'';
     const parent= context.showParentExplanation?parentExplanation(item):null;
     const parentHtml=parent?'<div class="parent-explain-card"><small>부모 설명 한 줄 · '+esc(parent.mode)+'</small><b>'+esc(parent.text)+'</b></div>':'';
     return '<section class="thinking-map-card" data-thinking-word="'+esc(plan.word)+'" data-support-type="'+esc(plan.type)+'">'+
