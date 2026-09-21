@@ -8,6 +8,8 @@
     FIRST_FIND_RELEARN:'다시 만나기',
     MEANING:'뜻 단서',
     DOMAIN_EXTENSION:'연결 길',
+    HIDDEN_WORDS:'숨은 단어 보강',
+    HIDDEN_WORDS_RELEARN:'다시 만나기',
     FINAL_SEEK:'마지막 찾기',
     SEEK_AGAIN_RELEARN:'다시 만나기',
     SEEK_AGAIN:'다시 찾기',
@@ -22,6 +24,8 @@
     EVIDENCE_TRAIL:'근거 찾기',
     SOUND_FIND:'소리 찾기',
     CONNECTION:'연결 길',
+    HIDDEN_WORDS:'숨은 단어 보강',
+    HIDDEN_WORDS_RELEARN:'보강 다시 보기',
     FINAL_SEEK:'마지막 찾기',
     SEEK_AGAIN_RELEARN:'다시 만나기',
     SEEK_AGAIN:'다시 찾기',
@@ -56,7 +60,7 @@
     const steps=[
       ['MEMORIZE','01 만나기'],['FIRST_FIND','02 첫 찾기'],['MEANING','03 뜻 단서'],['DOMAIN_EXTENSION','04 연결 길'],['FINAL_SEEK','05 마지막 찾기'],['SEEK_AGAIN','06 다시 찾기']
     ];
-    const normalized=stage==='SEEK_AGAIN_RELEARN'?'SEEK_AGAIN':stage==='FIRST_FIND_RELEARN'?'FIRST_FIND':stage;
+    const normalized=stage==='SEEK_AGAIN_RELEARN'?'SEEK_AGAIN':stage==='FIRST_FIND_RELEARN'?'FIRST_FIND':stage==='HIDDEN_WORDS'||stage==='HIDDEN_WORDS_RELEARN'?'DOMAIN_EXTENSION':stage;
     const activeIndex=Math.max(0,steps.findIndex(([key])=>key===normalized));
     return `<ol class="journey-path" aria-label="단어 탐험 길">${steps.map(([key,label],i)=>`<li class="${i<activeIndex?'is-done':''} ${i===activeIndex?'is-current':''}"><span aria-hidden="true">${i<activeIndex?'✓':i+1}</span><small>${esc(label)}</small></li>`).join('')}</ol>`;
   };
@@ -362,6 +366,31 @@
         view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}${journeyHtml(session.stage)}${crewHtml(w,session.stage)}<div class="learn-head"><span class="phase-chip">연결 길</span><b>${idx}/${total}</b></div><section class="card">${globalThis.HideLanguageModel?.renderMeaningMapHtml?.({eng:w.token,word:w.token,languageDomain:w.languageDomain,meaningMap:w.meaningMap},esc)||`<p>${esc(w.example||w.meaning)}</p>`}<button id="v2DomainDone" class="btn primary full">다음</button></section></section>`;
         $('#v2DomainDone').onclick=()=>{HideV2Session.update(HideV2Learning.submitDomainExtension(session,m,{}).session);render()};
       }
+      return;
+    }
+
+    if(session.stage==='HIDDEN_WORDS'){
+      const plan=HideV2Learning.hiddenWordsPlan(w);
+      const soundMode=plan.key==='sound'&&w?.soundEvidence?.reading;
+      const prompt=soundMode?'이 글자의 음을 기억에서 다시 꺼내보세요.':'뜻을 보고 단어를 힌트 없이 다시 꺼내보세요.';
+      const cue=soundMode?w.token:w.meaning;
+      const aria=soundMode?'숨은 단어 음 답 입력':'숨은 단어 보강 답 입력';
+      view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}${journeyHtml(session.stage)}${crewHtml(w,session.stage)}<div class="learn-head"><span class="phase-chip">${childStageLabel('HIDDEN_WORDS')}</span><b>${idx}/${total}</b></div><section class="card word-card hidden-words-card"><p class="quest-overline">HIDDEN WORDS</p><h2>${esc(plan.label)}</h2><p>${esc(prompt)}</p><div class="bigword">${esc(cue)}</div><small>보강 이유 · ${esc(plan.primaryReason?.label||'기억 흔적')}</small><input id="v2HiddenAnswer" class="input" aria-label="${esc(aria)}" autocomplete="off" spellcheck="false"><button id="v2HiddenCheck" class="btn primary full" type="button">보강 기억 확인</button></section></section>`;
+      $('#v2HiddenCheck').onclick=()=>{
+        const answer=$('#v2HiddenAnswer').value.trim();
+        if(!answer){setFlash('기억에서 떠올린 답을 입력해 주세요.');return}
+        const r=HideV2Learning.submitHiddenWords(session,m,{answer});
+        HideV2Session.update(r.session);
+        setFlash(r.ok?'보강 기억을 찾았어요':'잠깐 다시 만나고 마지막 찾기로 갈게요.');
+        render()
+      };
+      return;
+    }
+
+    if(session.stage==='HIDDEN_WORDS_RELEARN'){
+      const plan=HideV2Learning.hiddenWordsPlan(w);
+      view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}${journeyHtml(session.stage)}${crewHtml(w,session.stage)}<div class="learn-head"><span class="phase-chip">${childStageLabel('HIDDEN_WORDS_RELEARN')}</span><b>${idx}/${total}</b></div><section class="card word-card hidden-words-relearn"><p>보강에서 놓친 단어를 한 번만 다시 보고 마지막 찾기로 가요.</p><div class="bigword">${esc(w.token)}</div><h2 style="text-align:center">${esc(w.meaning)}</h2>${w.example?`<p class="example">${esc(w.example)}</p>`:''}<small>${esc(plan.label)} · 지금 보는 것은 회상 성공으로 세지 않아요.</small><button id="v2HiddenRehide" class="btn primary full" type="button">다시 숨기고 마지막 찾기</button></section></section>`;
+      $('#v2HiddenRehide').onclick=()=>{HideV2Session.update(HideV2Learning.submitHiddenWordsRelearn(session,m).session);render()};
       return;
     }
 
