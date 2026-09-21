@@ -137,6 +137,20 @@
     return {word:String(item.eng||item.word||item.token||'').trim().toLowerCase(),supportType,verified:false,sourceType:supportType==='TRANSPARENT_COMPOUND'?'CURATED_MORPHOLOGY':'CURATED_SEMANTIC_SUPPORT',sourceRef:null,claimsHistoricalEtymology:false,center:null,nodes:[],bridge:fallback.why||'',scene:fallback.scene||''};
   }
 
+  const SCENE_LABELS={
+    GROUND:'평평한 땅',RISE:'위로 솟기',PEAK:'높은 꼭대기',
+    STAR:'별',ORBIT:'주위를 돌기',WORLD:'둥근 천체',
+    DRY:'메마름',WIDE:'넓게 펼쳐짐',SPARSE:'드문 식물',
+    WATER:'물',HORIZON:'지평선',VAST:'끝없이 넓음',
+    LAND:'가운데 땅',SURROUNDED:'사방이 물',
+    TREES:'나무',VINES:'덩굴',DENSE:'빽빽함'
+  };
+  function sceneBeat(x){
+    if(x&&typeof x==='object')return {id:String(x.id||x.label||''),label:String(x.label||x.id||'')};
+    const id=String(x||'');
+    return {id,label:SCENE_LABELS[id]||id};
+  }
+
   const STARTER_EXPLORATION={
     environment:{type:'SEMANTIC_SCENE',question:'네 주변에서 environment라고 부를 수 있는 것들은 무엇이 있을까?',scene:'집, 학교, 공기, 물, 나무처럼 우리를 둘러싼 모든 것을 한 장면에 모아봐.',why:'environment는 우리가 살아가는 주변 환경 전체를 가리켜.',connect:['climate','ocean','rainforest']},
     rainforest:{type:'TRANSPARENT_COMPOUND',parts:[{label:'rain',meaning:'비'},{label:'forest',meaning:'숲'}],question:'비가 아주 많이 오는 숲을 머릿속에 그리면 어떤 모습일까?',scene:'굵은 비, 높은 나무, 축축한 초록빛 숲을 떠올려봐.',why:'rain + forest → 비가 많이 내리는 숲 → 열대우림',connect:['jungle','climate']},
@@ -267,7 +281,7 @@
     const verifiedNodes=plan.nodes?.length?'<div class="root-orbit" data-progressive-root>'+plan.nodes.map((n,i)=>'<span class="root-orbit-node" data-root-step="'+i+'" '+(i?'hidden':'')+'><b>'+esc(n.label)+'</b><small>'+esc(n.meaning)+'</small></span>').join('')+'</div>'+(plan.nodes.length>1?'<button class="btn secondary full root-step-next" type="button" data-next-step="1">다음 뜻의 흔적 보기</button>':''):'';
     const visualCenter=plan.center||{label:plan.word,meaning:plan.type==='TRANSPARENT_COMPOUND'?'조각을 합쳐 뜻 만들기':'장면에서 핵심 개념 잡기'};
     const rootCore='<div class="root-core"><small>'+(plan.verified?'핵심 흔적':'핵심 개념')+'</small><b>'+esc(visualCenter.label)+'</b><span>'+esc(visualCenter.meaning)+'</span></div>';
-    const sceneTrail=plan.visual?.length?'<div class="scene-trail">'+plan.visual.map((x,i)=>'<span><small>'+esc(String(i+1))+'</small><b>'+esc(x)+'</b></span>').join('<i>→</i>')+'</div>':'';
+    const sceneTrail=plan.visual?.length?'<div class="scene-trail">'+plan.visual.map((x,i)=>{const beat=sceneBeat(x);return '<span data-scene-id="'+esc(beat.id)+'"><small>'+esc(String(i+1))+'</small><b>'+esc(beat.label)+'</b></span>'}).join('<i>→</i>')+'</div>':'';
     const links=plan.links.length?'<div class="thinking-links"><b>전에 만난 연결</b>'+plan.links.map(x=>'<span>'+esc(x)+'</span>').join('')+'</div>':'';
     const truthBadge=plan.verified?(plan.claimsHistoricalEtymology?'검증 어원':plan.type==='TRANSPARENT_COMPOUND'?'검증 구조':'검증 의미 구조'):'현대 구조/의미 단서';
     const stableClue=context.skillProfile?.adaptiveClue?.clue||'';
@@ -302,6 +316,7 @@
     parentExplanation,
     summarizeInferenceSkill,
     starterExploration,
-    renderStarterExplorationHtml
+    renderStarterExplorationHtml,
+    sceneBeat
   };
 })();
