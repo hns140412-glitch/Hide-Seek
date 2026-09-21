@@ -275,6 +275,24 @@ for needle in [
         fail.append("FAMILY_OCR_ADAPTER_CONTRACT:"+needle)
 
 for needle in [
+    "sourceColumn",
+    "sourceRowIndex",
+    "sourceColumnIndex",
+]:
+    if needle not in family_ocr:
+        fail.append("FAMILY_OCR_LAYOUT_CONTRACT:"+needle)
+
+for needle in [
+    "WEEKDAY_VOCAB_LEFT12_NEW_REST_REVIEW",
+    "LEFT_COLUMN",
+    "newCount:12",
+    "reviewCount:24",
+    "SOURCE_LAYOUT_COLUMN",
+]:
+    if needle not in runtime:
+        fail.append("VOCAB_12_24_LAYOUT_CONTRACT:"+needle)
+
+for needle in [
     "window.FamilyCaptureOcrAdapter",
     "analyzeVocabularyPage",
     "ocrAnalysisDomain",
