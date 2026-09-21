@@ -264,3 +264,21 @@ Memory rules:
 - ASSISTED_CORRECT sets needsUnassistedRecall=true.
 - RECOVERED_CORRECT records unassisted recovery with spacedEvidence=false unless a real time gap is established.
 - External mock-test evidence must not be mislabeled as Hide internal FINAL SEEK evidence.
+
+
+## 21. THINKING-FIRST NEW WORD EXPLORATION
+
+NEW words must not default to immediate word-meaning display when a supported thinking trail exists.
+
+Preferred order:
+`WORD → THINKING QUESTION → OPTIONAL SCENE CUE → MEANING CONFIRMATION → MEMORIZATION → FIRST FIND`
+
+Rules:
+- The learner is invited to form a mental scene before checking the Korean meaning.
+- The next-word action remains locked until meaning confirmation on supported NEW words.
+- REVIEW words remain fast reactivation, not full first-learning exploration.
+- Transparent compounds may use visible word-part composition when linguistically safe (for example rain+forest, earth+quake).
+- Opaque-looking words must not be split into plausible-but-false pieces (for example island is treated as a semantic scene, not is+land).
+- Curated semantic support is explicitly not historical etymology.
+- Related-word links show only already encountered words so the map does not become a second memorization list.
+- THINKING_SCENE usage is assistance/acquisition support, not independent recall.
