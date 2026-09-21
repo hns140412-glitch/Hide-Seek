@@ -279,6 +279,12 @@ test('Hide V2 OCR review explicitly merges duplicate lexical rows and preserves 
   await page.getByRole('button',{name:'같은 단어 2곳 하나로 묶기'}).click();
   await expect(page.getByText('묶음에 포함',{exact:true})).toBeVisible();
   await expect(page.getByLabel('OCR 단어 2')).toBeDisabled();
+
+  await page.reload();
+  await expect(page.getByText('확인하던 단어가 남아 있어요',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'이어서 확인'}).click();
+  await expect(page.getByText('묶음에 포함',{exact:true})).toBeVisible();
+  await expect(page.getByLabel('OCR 단어 2')).toBeDisabled();
   await page.getByRole('button',{name:'이 단어로 탐험 만들기'}).click();
 
   const state=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')));
@@ -293,29 +299,38 @@ test('Hide V2 OCR review explicitly merges duplicate lexical rows and preserves 
   expect(item.source.provider).toBe('FIXTURE_VISION');
 });
 
-test('Hide V2 persists OCR review state across reload',async({page})=>{
+test('Hide V2 persists editable OCR review decisions across reload',async({page})=>{
   await page.route('**/api/capture/analyze',async route=>{
     await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
       ok:true,provider:'FIXTURE_VISION',model:'v2-fixture',analysis_domain:'HIDE_VOCABULARY',
       result:{analysis_domain:'HIDE_VOCABULARY',analysis_version:'HIDE_VOCABULARY_OCR_V1',
-        rows:[{eng:'island',kor:'섬',confidence:'high',warnings:[],mission_role:'NEW'}]}
+        rows:[
+          {eng:'islan',kor:'섬',confidence:'medium',warnings:['SPELLING'],mission_role:'NEW'},
+          {eng:'noise',kor:'소음',confidence:'high',warnings:[],mission_role:'NEW'}
+        ]}
     })});
   });
   await page.goto('/v2.html');
-  await page.locator('#sheetLibraryInput').setInputFiles({name:'island.jpg',mimeType:'image/jpeg',buffer:Buffer.from('persistent-v2-image')});
+  await page.locator('#sheetLibraryInput').setInputFiles({name:'review-draft.jpg',mimeType:'image/jpeg',buffer:Buffer.from('persistent-review-draft')});
   await expect(page.getByRole('heading',{name:'찾은 단어 확인하기'})).toBeVisible();
-  await expect(page.getByLabel('OCR 단어 1')).toHaveValue('island');
+  await page.getByLabel('OCR 단어 1').fill('island');
+  await page.locator('[data-review-toggle="1"]').click();
+  await expect(page.getByLabel('OCR 단어 2')).toBeDisabled();
 
   await page.reload();
   await expect(page.getByText('확인하던 단어가 남아 있어요',{exact:true})).toBeVisible();
   await page.getByRole('button',{name:'이어서 확인'}).click();
   await expect(page.getByRole('heading',{name:'찾은 단어 확인하기'})).toBeVisible();
   await expect(page.getByLabel('OCR 단어 1')).toHaveValue('island');
+  await expect(page.getByLabel('OCR 단어 2')).toBeDisabled();
+  await expect(page.locator('[data-review-toggle="1"]')).toHaveText('다시 넣기');
 
   const capture=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')).captureSession);
   expect(capture.status).toBe('REVIEW');
   expect(capture.pages).toHaveLength(1);
-  expect(capture.lastRows[0].eng).toBe('island');
+  expect(capture.lastRows[0].eng).toBe('islan');
+  expect(capture.reviewDraft[0].token).toBe('island');
+  expect(capture.reviewDraft[1].excluded).toBe(true);
 });
 
 test('Hide V2 migrates V1 mission and memory traces without deleting legacy state',async({page})=>{
