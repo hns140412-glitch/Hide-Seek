@@ -1,5 +1,58 @@
 # HIDE & SEEK — HANDOFF — 2026-09-21 LATEST
 
+## CURRENT AUTHORITATIVE OVERRIDE — 2026-09-22
+Use latest TAKY governance. The active continuation is Runtime V2 rewrite, not the legacy implementation branch.
+
+Read first, in order:
+1. `C2S/HIDE_RUNTIME_V2_REWRITE_C2S_CLOSURE_2026-09-21.md`
+2. `C2S/HIDE_RUNTIME_V2_REWRITE_ATOMS_2026-09-21.json`
+3. `C2S/HIDE_RUNTIME_V2_PRODUCT_COMPLETION_MATRIX_2026-09-21.md`
+4. `C2S/HIDE_RUNTIME_V2_EXTERNAL_RESOURCE_GATE_2026-09-21.md`
+5. this handoff
+6. `Hide_Seek_UI_MASTER_LOGIC_REV_04.md`
+
+Repository: `hns140412-glitch/Hide-Seek`
+Active branch: `rewrite/hide-runtime-v2-2026-09-21`
+PR #12: DRAFT / HOLD / DO NOT MERGE
+V1 monolith: reference/rollback only.
+Do not deploy, call Netlify, or merge.
+First action on resume: live-refresh exact branch HEAD and exact-head V2/full-Hide CI. If red, repair only the current gate/product mismatch before feature growth.
+
+Latest pre-document code checkpoint:
+- SHA `6a3c31e70c2e30aa770e08733162f1eaad2cf7dc`
+- Validate Hide Runtime V2 #173: SUCCESS
+- Validate Hide & Seek #627: SUCCESS
+
+Locked conservative reporting:
+- PRODUCT_COMPLETION ~66%
+- CODED ~82%
+- CI_VERIFIED ~79%
+- BROWSER_RUNTIME_VERIFIED ~75%
+- DEVICE_VERIFIED 0%
+- RELEASE_VERIFIED 0%
+
+Current child-facing state:
+- narrative/crew-guided home;
+- `오늘의 탐험 지도` mission surface;
+- six-stage continuous child journey;
+- achievement/next-action-first completion;
+- engine-aligned Memory Ladder + child-readable memory detail;
+- child-friendly OCR review and preserve-first failed-page recovery;
+- answer-safe Exploration Crew presentation;
+- reduced-motion-safe completion celebration.
+
+Still OPEN:
+- representative live-provider/real-print OCR calibration;
+- physical camera/device/OS keyboard/PWA lifecycle;
+- current frozen Ready↔Hide hosted roundtrip;
+- final visual art direction/device visual QA;
+- exact-ref release/deploy proof.
+
+---
+
+## Historical handoff context
+The material below is retained as history. Where it conflicts with the CURRENT AUTHORITATIVE OVERRIDE above, the override wins.
+
 ## Resume command
 Use latest TAKY governance. Read:
 - `C2S/HIDE_LANGUAGE_MEMORY_C2S_CLOSURE_2026-09-21.md`
@@ -346,3 +399,15 @@ Important current frontier:
 - Exact UI code HEAD `e006dc0ca3fdadb704e9403f7af566668093a88f`: V2 #116 PASS / full Hide #570 PASS.
 - Current truthful V2 PRODUCT_COMPLETION: ~66%; CODED ~82%; CI_VERIFIED ~79%; Browser RUNTIME_VERIFIED ~75%; DEVICE_VERIFIED 0%; RELEASE_VERIFIED 0%.
 - Remaining UI frontier: exploration crew presentation, motion/celebration, final art direction and physical-device visual QA.
+
+
+## 2026-09-22 Runtime V2 child-facing handoff delta
+- Pre-document code HEAD `6a3c31e70c2e30aa770e08733162f1eaad2cf7dc` is green on V2 #173 / full Hide #627.
+- Memory Ladder child grouping is now engine-aligned; do not restore UI-only 80/45 thresholds.
+- `memoryPathState` uses `needsUnassistedRecall`, engine `memoryStrength < 60`, and `primaryReason.key`.
+- Exploration Crew remains Snap-owned. Hide only consumes presentation/minimal answer-safe support.
+- OCR warning UX: human-readable warning stays visible; raw warning/provider details may be collapsed but must remain inspectable.
+- OCR partial failure remains preserve-first and failed-pages-only retry.
+- Completion metrics remain available but subordinate to achievement/next-action.
+- Reduced-motion users receive no completion animation.
+- Do not claim physical-device, live-provider, hosted Ready↔Hide, release, or deployment verification.
