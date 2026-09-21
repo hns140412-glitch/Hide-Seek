@@ -586,6 +586,6 @@
   }
 
   window.HideV2Learning=Object.freeze({
-    STAGES,create,current,advance,submitMemorize,checkFirstFind,markFirstFindUnsure,submitFirstFindRelearn,meaningChallenge,checkMeaningChoice,checkMeaning,hiddenWordsPlan,hiddenWordsSupportPlan,submitDomainExtension,submitHiddenWords,submitHiddenWordsAssist,submitHiddenWordsRelearn,finalReconstructionPlan,useFinalSupport,checkFinalSeek,submitFinalReconstruction,submitSeekAgainRelearn,checkSeekAgain
+    STAGES,create,current,advance,submitMemorize,checkFirstFind,markFirstFindUnsure,submitFirstFindRelearn,meaningChallenge,checkMeaningChoice,checkMeaning,hiddenWordsPlan,hiddenWordsSupportPlan,submitDomainExtension,submitSoundRelearn,submitHiddenWords,submitHiddenWordsAssist,submitHiddenWordsRelearn,finalReconstructionPlan,useFinalSupport,checkFinalSeek,submitFinalReconstruction,submitSeekAgainRelearn,checkSeekAgain
   });
 })();
