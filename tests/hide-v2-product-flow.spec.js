@@ -439,17 +439,15 @@ test('Hide V2 PWA safe point blocks update activation during active learning or 
     s.activeSession=null;
     s.captureSession={id:'c1',status:'REVIEW',pages:[],lastRows:[{eng:'island',kor:'섬'}],analysisBatches:[]};
     localStorage.setItem('hide_seek_v2_state',JSON.stringify(s));
-    window.location.reload();
   });
-  await page.waitForLoadState('domcontentloaded');
+  await page.reload();
   expect(await page.evaluate(()=>window.HideV2Pwa.safePoint())).toBe(false);
 
   await page.evaluate(()=>{
     const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
     s.captureSession={...s.captureSession,status:'COMMITTED'};
     localStorage.setItem('hide_seek_v2_state',JSON.stringify(s));
-    window.location.reload();
   });
-  await page.waitForLoadState('domcontentloaded');
+  await page.reload();
   expect(await page.evaluate(()=>window.HideV2Pwa.safePoint())).toBe(true);
 });
