@@ -342,3 +342,12 @@ FALSE_CONVERGENCE = 0: live deploy/device/real-provider claims remain OPEN.
 - Only established clue tendencies are surfaced as optional future guidance; the child can choose another clue.
 - Exact HEAD `2714be8bd84985c7e3dde763aee270723486c1be` passed V2 #304 / full Hide #762.
 - Locked reporting: PRODUCT ~76%, CODED ~92%, CI ~89%, Browser Runtime ~85%, Device 0%, Release 0%.
+
+
+## 26. 2026-09-22 multilingual FIRST FIND recovery
+- FIRST FIND bounded assistance is now multilingual but evidence-gated.
+- English uses deterministic shape scaffolding; Korean requires a verified meaningMap; Hanja requires verified soundEvidence.
+- Unverified/missing multilingual support fails closed to full relearn rather than inventing a clue.
+- Assisted success remains non-recall and cannot inflate memory strength.
+- Exact HEAD `950631cd774d85a1227c51235d3168f9bb013146` passed V2 #311 / full Hide #769.
+- Locked reporting: PRODUCT ~77%, CODED ~93%, CI ~90%, Browser Runtime ~86%, Device 0%, Release 0%.
