@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const STAGES=['MEMORIZE','FIRST_FIND','FIRST_FIND_RELEARN','MEANING','DOMAIN_EXTENSION','HIDDEN_WORDS','FINAL_SEEK','SEEK_AGAIN_RELEARN','SEEK_AGAIN','COMPLETE'];
+  const STAGES=['MEMORIZE','FIRST_FIND','FIRST_FIND_RELEARN','MEANING','DOMAIN_EXTENSION','HIDDEN_WORDS','HIDDEN_WORDS_ASSIST','FINAL_SEEK','SEEK_AGAIN_RELEARN','SEEK_AGAIN','COMPLETE'];
   const clone=x=>JSON.parse(JSON.stringify(x));
   const current=(session,mission)=>mission.items.find(x=>x.id===session.queue?.[session.index])||null;
   const initialStageFor=w=>String(w?.missionRole||'NEW').toUpperCase()==='REVIEW'?'FIRST_FIND':'MEMORIZE';
@@ -229,6 +229,17 @@
     };
   }
 
+  function hiddenWordsSupportPlan(word,plan=hiddenWordsPlan(word)){
+    if(plan?.mode==='TOKEN'){
+      const cue=englishShapeCue(word?.token);
+      if(cue)return {type:'SHAPE',label:'글자 골격 단서',cue};
+    }
+    if(plan?.mode==='MEANING'&&String(word?.example||'').trim()){
+      return {type:'CONTEXT',label:'문장 단서',cue:String(word.example).trim()};
+    }
+    return null;
+  }
+
   function nextAfterDomain(session,mission){
     const next=clone(session);
     const w=current(next,mission);
@@ -264,8 +275,43 @@
       source:mode==='SOUND'?(w.soundEvidence?.sourceRef||null):null
     });
     const next=clone(session);
+    const support=hiddenWordsSupportPlan(w,plan);
+    next.stage=ok?'FINAL_SEEK':support?'HIDDEN_WORDS_ASSIST':'HIDDEN_WORDS_RELEARN';
+    return {ok,plan,support,session:next};
+  }
+
+  function submitHiddenWordsAssist(session,mission,payload={}){
+    const w=current(session,mission);
+    const plan=hiddenWordsPlan(w);
+    const support=hiddenWordsSupportPlan(w,plan);
+    if(!support){
+      const next=clone(session);
+      next.stage='HIDDEN_WORDS_RELEARN';
+      return {ok:false,unsupported:true,plan,support:null,session:next};
+    }
+    const typed=String(payload.answer||'').trim().normalize('NFKC');
+    const mode=plan.mode||'TOKEN';
+    const target=mode==='MEANING'
+      ?String(w.meaning||'').trim().normalize('NFKC')
+      :String(w.token||'').trim().normalize('NFKC').toLowerCase();
+    const answer=mode==='MEANING'?typed:typed.toLowerCase();
+    const ok=!!answer&&answer===target;
+    HideV2Memory.record(mission.id,w.id,{
+      stage:'HIDDEN_WORDS_ASSIST',
+      evidenceMode:'ASSISTED_RECALL',
+      axes:mode==='MEANING'?['MEANING','RECALL']:['FORM','RECALL'],
+      result:ok?'CORRECT':'WRONG',
+      objectiveVerified:true,
+      objectiveRecall:false,
+      recallScoreImpact:false,
+      assisted:true,
+      reinforcementReason:plan.key,
+      reinforcementMode:mode,
+      supportType:support.type
+    });
+    const next=clone(session);
     next.stage=ok?'FINAL_SEEK':'HIDDEN_WORDS_RELEARN';
-    return {ok,plan,session:next};
+    return {ok,plan,support,session:next};
   }
 
   function submitHiddenWordsRelearn(session,mission){
@@ -440,6 +486,6 @@
   }
 
   window.HideV2Learning=Object.freeze({
-    STAGES,create,current,advance,submitMemorize,checkFirstFind,markFirstFindUnsure,submitFirstFindRelearn,meaningChallenge,checkMeaningChoice,checkMeaning,hiddenWordsPlan,submitDomainExtension,submitHiddenWords,submitHiddenWordsRelearn,useFinalSupport,checkFinalSeek,submitSeekAgainRelearn,checkSeekAgain
+    STAGES,create,current,advance,submitMemorize,checkFirstFind,markFirstFindUnsure,submitFirstFindRelearn,meaningChallenge,checkMeaningChoice,checkMeaning,hiddenWordsPlan,hiddenWordsSupportPlan,submitDomainExtension,submitHiddenWords,submitHiddenWordsAssist,submitHiddenWordsRelearn,useFinalSupport,checkFinalSeek,submitSeekAgainRelearn,checkSeekAgain
   });
 })();
