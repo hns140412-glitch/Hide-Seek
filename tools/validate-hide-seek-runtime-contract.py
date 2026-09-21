@@ -634,6 +634,22 @@ for needle in [
     if needle not in language_model:
         fail.append("LANGUAGE_MODEL_LEARNING_BASIS:"+needle)
 
+for needle in [
+    "learningContext:normalizer?(language.learningContext||null):null",
+]:
+    if needle not in app:
+        fail.append("NORMALIZED_WORD_RESOLVED_CONTEXT:"+needle)
+
+for needle in [
+    "learningContextRef",
+    "learningUnitId",
+    "hanjaLevelLabel",
+    "hanjaLevelSchemeRef",
+    "resolvedBy:lc.resolvedBy||'READY_LEARNING_ENGINE'",
+]:
+    if needle not in bridge:
+        fail.append("MEMORY_ADVISORY_CONTEXT_CORRELATION:"+needle)
+
 if "learningContext:item.learningContext||item.learning_context||null" in language_model:
     fail.append("UNRESOLVED_LEARNING_CONTEXT_PASSTHROUGH")
 
