@@ -28,7 +28,7 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 | FIRST FIND | RUNTIME_VERIFIED | yes | fixture | correct/wrong/unsure + relearn-exposure browser flows | richer adaptive assistance still open |
 | MEANING CLUE | RUNTIME_VERIFIED | yes | fixture | direct recall fallback + session-scoped bidirectional recognition + confusion handoff browser flow | broader representative confusion sets still open |
 | English CONNECTION | RUNTIME_VERIFIED | yes | fixture | Thinking Trail browser flow | adaptive clue personalization and broader representative vocabulary still pending |
-| Korean RESPONSE TRAIL | RUNTIME_VERIFIED | yes | fixture | V2 browser production-evidence flow | qualitative feedback not implemented |
+| Korean RESPONSE TRAIL | RUNTIME_VERIFIED | yes | fixture | production-evidence + target-use truth-boundary browser flow | semantic correctness is intentionally not auto-scored; richer teacher/parent feedback remains open |
 | Korean EVIDENCE TRAIL | RUNTIME_VERIFIED | yes when verified contextEvidence exists | verified-context fixture | browser evidence-selection truth-boundary flow | representative Korean source evidence still open |
 | Hanja SOUND FIND | RUNTIME_VERIFIED | yes when verified soundEvidence exists | verified-sound fixture | dedicated V2 browser sound-recall flow | representative Hanja source/device pronunciation workflow still open |
 | HIDDEN WORDS reinforcement | RUNTIME_VERIFIED | conditional | fixture | Memory Engine-gated + reason-specific + staged-assistance browser flows | deeper multi-step ladder remains partial beyond one safe clue escalation |
@@ -345,3 +345,15 @@ Head before matrix document: 63db5206a836050c3dfe5f2b9fd0238d6baeb464
 - If the learner already used the optional semantic memory-scene support during FINAL SEEK, a second reconstruction clue is not stacked; the flow fails closed to relearn.
 - Exact code HEAD `47cf0c0391c13311cb3faa3c33cf305a2c8e5c63` passed V2 #268 / full Hide #726.
 - Conservative reporting rises one point for this newly runtime-proven reconstruction/recovery journey: PRODUCT ~74%, CODED ~90%, CI ~87%, Browser Runtime ~83%, Device 0%, Release 0%.
+
+
+### 2026-09-22 Korean Response Trail truth-boundary feedback increment
+- RESPONSE TRAIL now gives child-readable feedback for whether the target word was actually used in the submitted sentence.
+- This is deliberately narrow:
+  - target present → TARGET_USED;
+  - target absent → TARGET_NOT_USED;
+  - sentence semantic correctness is **not** automatically claimed.
+- Evidence remains PRODUCTION with objectiveVerified=false, objectiveRecall=false, recallScoreImpact=false.
+- The response is locked after submission before the journey continues, preventing accidental duplicate production evidence.
+- Exact HEAD `17ea285c2c8a53ab2735c6be08f99d5f34debfab` passed V2 #275 / full Hide #733.
+- Completion percentages remain unchanged because this closes a feedback/truth-boundary gap inside an already reachable Korean path.
