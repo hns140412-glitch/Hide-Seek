@@ -57,3 +57,36 @@ After a hosted V2 target exists, configure Ready's `ReadySetSpecialistTargets.hi
 ## Claim boundary
 
 `FROZEN_CANDIDATE_READY != EXTERNAL_DEPLOYED != LIVE_ROUNDTRIP_VERIFIED != DEVICE_VERIFIED`
+
+
+## Netlify binding resolution update
+
+Resolved authoritative existing site binding:
+- link_id: `link_6a9d3a910a108191b064364655f076f8`
+- site name: `hide-seek-taky`
+- siteId: `55aa69e3-1da8-4e4f-9b83-23de14b8fc87`
+- production URL: `https://hide-seek-taky.netlify.app`
+- current production deploy id: `6aa262eef7e52f00093aac72`
+- current production commit: `49fa106ff20f7c497d7f18bd903be34479ec28c3`
+- current production branch: `main`
+- Netlify historical commit URL uses repository name `ZPD-Word`, but the same commit is present in current `hns140412-glitch/Hide-Seek`; this is a repository rename lineage, not a separate source.
+
+## External execution blocker refined
+
+The available Netlify deploy connector accepts only `siteId` and does not accept a source branch, commit SHA, source package, or deploy-preview ref.
+
+Therefore an invocation cannot prove that it will deploy frozen candidate
+`679d7cbed3f1fbece1de363f82084bb12cfa02e6`
+rather than rebuild the production branch `main`.
+
+No Netlify deploy preview/status is attached to the frozen SHA in GitHub.
+
+Classification:
+`EXTERNAL_DEPLOY_SOURCE_REF_UNSPECIFIABLE`
+
+Required compliant path:
+- obtain a deployment action that accepts exact branch/SHA/source package, or
+- enable an existing governed branch/preview deployment path for the frozen candidate,
+- then consume the one-deploy budget.
+
+Do NOT call the current siteId-only deploy action for this frozen-candidate validation goal.
