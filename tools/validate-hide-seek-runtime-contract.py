@@ -499,6 +499,10 @@ for needle in [
     "비슷했어",
     "달랐어",
     "skillProfile=inferenceRecordSummary()",
+    "prioritizeExistingAssistance",
+    "TRANSFERABLE_INFERENCE_HISTORY",
+    "hintPlanSource",
+    "planSource:codeSession.hintPlanSource",
     "showParentExplanation",
     "PARENT_CHILD",
 ]:
@@ -513,6 +517,8 @@ for needle in [
     "prior-skill-cue",
     "RECALIBRATE",
     "parentExplanation",
+    "preferredAssistanceSteps",
+    "prioritizeExistingAssistance",
     "parent-explain-card",
 ]:
     if needle not in language_model and needle not in css:
