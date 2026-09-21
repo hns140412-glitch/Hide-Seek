@@ -255,3 +255,12 @@ FALSE_CONVERGENCE = 0: live deploy/device/real-provider claims remain OPEN.
 - UNSURE is a recall attempt but not an objectively verified answer: `objectiveRecall=true`, `objectiveVerified=false`.
 - Wrong/unsure both route into assisted non-recall relearn exposure before MEANING.
 - Current locked reporting: PRODUCT ~69%, CODED ~85%, CI ~82%, Browser Runtime ~78%, Device 0%, Release 0%.
+
+
+## 19. 2026-09-22 HIDDEN WORDS conditional reinforcement
+- HIDDEN WORDS is restored in Runtime V2 as a conditional reinforcement nested in the canonical learning journey, not as a new policy owner.
+- Entry authority is the V2 Memory Engine `primaryReason`; stable words bypass reinforcement.
+- Reinforcement recall is objective retrieval; a failed reinforcement may show one relearn exposure, which remains assisted/non-recall.
+- Memory Engine correction: ordinary memorization/relearn exposure no longer contributes to `hintDependency`; only actual ASSISTANCE/hint-level evidence does.
+- Exact code HEAD `b2577641cbbc3703eb84e7ab583d6d741ff22eee` passed V2 #236 / full Hide #694.
+- Locked reporting: PRODUCT ~70%, CODED ~86%, CI ~83%, Browser Runtime ~79%, Device 0%, Release 0%.
