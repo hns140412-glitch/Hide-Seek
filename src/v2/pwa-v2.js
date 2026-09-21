@@ -5,6 +5,7 @@
   const STATE_KEY='hide_seek_v2_pwa_update_state';
   const RESTORE_KEY='hide_seek_v2_pwa_restore';
   let registration=null;
+  let registerPromise=null;
   let state=sessionStorage.getItem(STATE_KEY)||'IDLE';
 
   function persist(next){
@@ -68,12 +69,18 @@
     if(!('serviceWorker' in navigator))return {ok:false,reason:'SERVICE_WORKER_UNSUPPORTED'};
     try{
       const reg=await navigator.serviceWorker.register('./sw-v2.js',{scope:'./'});
+      registration=reg;
       observe(reg);finalizeRestore();
       return {ok:true,registration:reg};
     }catch(error){
       step('FAIL',{error:String(error?.message||error)});
       return {ok:false,reason:String(error?.message||error)};
     }
+  }
+  function ensureRegistered(){
+    if(registerPromise)return registerPromise;
+    registerPromise=register().finally(()=>{ if(!registration) registerPromise=null; });
+    return registerPromise;
   }
   navigator.serviceWorker?.addEventListener?.('controllerchange',()=>{
     if(!sessionStorage.getItem(RESTORE_KEY))return;
@@ -82,7 +89,8 @@
   });
   window.addEventListener('hide-v2-state-saved',()=>evaluateWaiting());
   window.addEventListener('online',()=>registration?.update?.());
-  window.addEventListener('load',()=>register());
+  if(document.readyState==='complete')ensureRegistered();
+  else window.addEventListener('load',()=>ensureRegistered(),{once:true});
 
   globalThis.HideV2Pwa=Object.freeze({
     version:'2.0.0',
@@ -90,6 +98,7 @@
     release:()=>RELEASE,
     safePoint,
     evaluateWaiting,
-    register
+    register,
+    ensureRegistered
   });
 })();
