@@ -210,7 +210,6 @@
     let key=primaryReason?.key||'stable';
     const soundWeakness=Number(mem?.memorySignature?.phonologicalWeakness||0);
     if(
-      key==='recovery'&&
       String(word?.languageDomain||'').toUpperCase()==='HANJA'&&
       soundWeakness>0&&
       word?.soundEvidence?.verified&&
