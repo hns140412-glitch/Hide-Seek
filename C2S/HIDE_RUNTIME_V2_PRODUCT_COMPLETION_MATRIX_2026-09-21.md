@@ -38,16 +38,16 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 | Exploration crew / child-facing polished UI | SKELETON | partial | no | minimal V2 shell | product UI redesign still required |
 | Mission management surface | RUNTIME_VERIFIED | yes | N/A | selection/rename/archive/delete browser flow | richer history/filtering/bulk actions pending |
 | Records / wordbook surfaces | RUNTIME_VERIFIED | yes | fixture/history-shaped | cumulative wordbook + weakness dashboard + evidence detail browser flow | filtering/search/export pending |
-| PWA install/offline/update | NOT_STARTED | no | no | none for V2 | V2 service-worker/release integration pending |
+| PWA install/offline/update | RUNTIME_VERIFIED | yes | browser | isolated V2 manifest/SW/offline shell/update safe-point tests | physical install/device lifecycle still unverified |
 | Physical device behavior | NOT_STARTED | no | no | DEVICE_VERIFIED=0 | camera/touch/keyboard/install all pending |
 | Production/release | NOT_STARTED | no | no | none | intentional hold |
 
 ## Claim levels
 
-- PRODUCT_COMPLETION: approximately 48%
-- CODED: approximately 65%
-- CI_VERIFIED: approximately 59%
-- BROWSER_RUNTIME_VERIFIED: approximately 51%
+- PRODUCT_COMPLETION: approximately 52%
+- CODED: approximately 69%
+- CI_VERIFIED: approximately 64%
+- BROWSER_RUNTIME_VERIFIED: approximately 57%
 - DEVICE_VERIFIED: 0%
 - RELEASE_VERIFIED: 0%
 
@@ -120,3 +120,16 @@ Head before matrix document: 63db5206a836050c3dfe5f2b9fd0238d6baeb464
   - Validate Hide Runtime V2 #40 — SUCCESS
   - Validate Hide & Seek #494 — SUCCESS
 - Completion increase reflects these reachable product capabilities only.
+
+
+### V2 PWA/offline ownership surgery increment
+- V2 now owns `manifest-v2.json`, `sw-v2.js`, `release-v2.js`, and `pwa-v2.js`.
+- The V2 service worker caches only V2 runtime assets; it does not cache V1 `index.html/app.js/hide-runtime.js`.
+- Offline navigation falls back to cached `v2.html`.
+- Update activation is blocked while an active learning session or CAPTURING/REVIEW capture session exists.
+- V2 store persistence emits a safe-point signal for update evaluation.
+- Product-flow Playwright previously had `serviceWorkers:'block'`; this made PWA claims impossible to verify. The product-flow project now allows service workers and performs real SW registration/offline-shell checks.
+- Exact pre-document code HEAD `eaafb969ff4b40c3bb547bbc81dea8f6240d030b` passed:
+  - Validate Hide Runtime V2 #54 — SUCCESS
+  - Validate Hide & Seek #508 — SUCCESS
+- Physical-device installation, camera permission and mobile browser lifecycle remain unverified and do not count toward DEVICE_VERIFIED.
