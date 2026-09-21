@@ -83,7 +83,7 @@
 
   function bindThinkingTrail(missionId,w){
     const card=$('.thinking-map-card');if(!card)return;
-    const submit=$('.inference-submit',card),reveal=$('.thinking-reveal',card);
+    const submit=$('.inference-submit',card),reveal=$('.thinking-reveal',card),compare=$('.inference-compare',card);
     if(submit){
       submit.onclick=()=>{
         const prediction=$('.inference-prediction',card)?.value.trim()||'';
@@ -101,6 +101,24 @@
           assisted:false,
           prediction,clue,confidence
         });
+        HideV2Store.transaction(s=>{
+          s.events=Array.isArray(s.events)?s.events:[];
+          s.events.push({
+            event:'FIRST_SEEN_PREDICTION',
+            at:new Date().toISOString(),
+            missionId,
+            wordId:w.id,
+            lexicalId:w.lexicalId||null,
+            word:w.token,
+            prediction,
+            clueUsed:clue,
+            confidence,
+            objectiveVerified:false,
+            recallScoreImpact:false,
+            assessmentSource:'LEARNER_SELF_REPORT'
+          });
+          if(s.events.length>120)s.events=s.events.slice(-120);
+        });
         submit.disabled=true;
         if(reveal)reveal.disabled=false;
       };
@@ -108,9 +126,45 @@
     if(reveal){
       reveal.onclick=()=>{
         const body=$('.thinking-reveal-body',card);if(body)body.hidden=false;
+        if(compare)compare.hidden=false;
         reveal.disabled=true;
       };
     }
+    card.querySelectorAll('.inference-outcome-btn').forEach(btn=>{
+      btn.onclick=()=>{
+        const outcome=String(btn.dataset.outcome||'').toUpperCase();
+        if(!['MATCH','NEAR','MISS'].includes(outcome))return;
+        HideV2Store.transaction(s=>{
+          const events=Array.isArray(s.events)?s.events:[];
+          for(let i=events.length-1;i>=0;i--){
+            const e=events[i];
+            if(e?.event==='FIRST_SEEN_PREDICTION'&&e.wordId===w.id&&!e.outcome){
+              e.outcome=outcome;
+              e.outcomeAt=new Date().toISOString();
+              e.assessmentSource='LEARNER_SELF_REPORT';
+              e.objectiveVerified=false;
+              e.transferSkillEvidence=true;
+              e.recallScoreImpact=false;
+              break;
+            }
+          }
+        });
+        HideV2Memory.record(missionId,w.id,{
+          stage:'THINKING_TRAIL_COMPARE',
+          evidenceMode:'INFERENCE_SELF_REPORT',
+          axes:['MEANING','CONTEXT'],
+          result:outcome,
+          objectiveVerified:false,
+          objectiveRecall:false,
+          recallScoreImpact:false,
+          assisted:false,
+          assessmentSource:'LEARNER_SELF_REPORT'
+        });
+        card.querySelectorAll('.inference-outcome-btn').forEach(x=>x.disabled=true);
+        btn.classList.add('selected');
+        setFlash(outcome==='MATCH'?'내 추론이 잘 맞았어요.':outcome==='NEAR'?'거의 가까이 갔어요.':'어떤 단서가 달랐는지 다음에 다시 써볼 수 있어요.');
+      };
+    });
     const rootNext=$('.root-step-next',card);
     if(rootNext)rootNext.onclick=()=>{
       const hidden=[...card.querySelectorAll('[data-root-step][hidden]')];
@@ -316,7 +370,9 @@
 
     if(session.stage==='MEMORIZE'){
       const item={eng:w.token,word:w.token,kor:w.meaning,languageDomain:w.languageDomain,meaningMap:w.meaningMap};
-      const thinkingHtml=globalThis.HideLanguageModel?.renderStarterExplorationHtml?.(item,{encounteredWords:[]},esc)||'';
+      const inferenceEvents=HideV2Store.snapshot().events||[];
+      const skillProfile=globalThis.HideLanguageModel?.summarizeInferenceSkill?.(inferenceEvents)||null;
+      const thinkingHtml=globalThis.HideLanguageModel?.renderStarterExplorationHtml?.(item,{encounteredWords:[],skillProfile},esc)||'';
       view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}${journeyHtml(session.stage)}${crewHtml(w,session.stage)}<div class="learn-head"><span class="phase-chip">${childStageLabel('MEMORIZE')}</span><b>${idx}/${total}</b></div><section class="card word-card"><div class="bigword">${esc(w.token)}</div><h2 style="text-align:center">${esc(w.meaning)}</h2>${w.example?`<p class="example">${esc(w.example)}</p>`:''}</section>${thinkingHtml}<button id="v2Memorized" class="btn primary full">기억하고 찾아보기</button></section>`;
       bindThinkingTrail(m.id,w);
       $('#v2Memorized').onclick=()=>{HideV2Session.update(HideV2Learning.submitMemorize(session,m).session);render()};
