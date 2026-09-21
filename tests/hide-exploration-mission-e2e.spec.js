@@ -36,8 +36,8 @@ test('printed handout becomes Hide exploration mission and enters FIRST FIND',as
           analysis_domain:'HIDE_VOCABULARY',
           analysis_version:'HIDE_VOCABULARY_OCR_V1',
           rows:[
-            {eng:'benefit',kor:'혜택',confidence:'high',evidence_item_id:'fixture-page',warnings:[]},
-            {eng:'essential',kor:'필수적인',confidence:'low',evidence_item_id:'fixture-page',warnings:['일부 흐림']}
+            {eng:'benefit',kor:'혜택',confidence:'high',warnings:[]},
+            {eng:'essential',kor:'필수적인',confidence:'low',warnings:['일부 흐림']}
           ]
         }
       })
@@ -141,7 +141,7 @@ test('parent can create the same Hide exploration mission intake path',async({pa
           analysis_domain:'HIDE_VOCABULARY',
           analysis_version:'HIDE_VOCABULARY_OCR_V1',
           rows:[
-            {eng:'challenge',kor:'도전',confidence:'high',evidence_item_id:'fixture-parent-page',warnings:[]}
+            {eng:'challenge',kor:'도전',confidence:'high',warnings:[]}
           ]
         }
       })
