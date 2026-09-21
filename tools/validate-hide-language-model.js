@@ -81,4 +81,16 @@ const inferenceHtml=api.renderStarterExplorationHtml({eng:'environment'},{encoun
 assert(inferenceHtml.includes('inference-prediction')&&inferenceHtml.includes('inference-confidence'),'first-seen inference controls');
 assert(inferenceHtml.includes('검증 어원')&&inferenceHtml.includes('environ'),'verified visual grammar');
 
+
+const skill=api.summarizeInferenceSkill([
+  {event:'FIRST_SEEN_PREDICTION',clueUsed:'ROOT_ETYMOLOGY',confidence:'HIGH',outcome:'MATCH'},
+  {event:'FIRST_SEEN_PREDICTION',clueUsed:'SCENE',confidence:'MEDIUM',outcome:'NEAR'},
+  {event:'FIRST_SEEN_PREDICTION',clueUsed:'ROOT_ETYMOLOGY',confidence:'HIGH',outcome:'MISS'},
+  {event:'FIRST_SEEN_PREDICTION',clueUsed:'WORD_PART',confidence:'LOW'}
+]);
+assert(skill.attempts===4&&skill.assessed===3,'inference skill counts');
+assert(skill.successRate===67,'inference success rate');
+assert(skill.bestClue?.clue==='SCENE','best clue should derive from assessed outcomes');
+assert(skill.highConfidenceMisses===1,'confidence calibration evidence');
+
 console.log('PASS: language memory model supports truth-gated etymology, inference and multilingual exploration');
