@@ -140,3 +140,5 @@ button:focus-visible,input:focus-visible{outline:3px solid rgba(62,126,87,.35);o
 .root-orbit-node[hidden]{display:none!important}
 
 .scene-trail [data-scene-step][hidden]{display:none!important}
+
+.scene-link[hidden]{display:none!important}
