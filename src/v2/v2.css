@@ -1387,3 +1387,29 @@ body.v2-runtime{
   color:var(--v2-muted);
   line-height:1.4;
 }
+
+
+/* OCR duplicate review: explicit merge with source provenance retained */
+.v2-runtime .ocr-duplicate-badge{
+  display:inline-flex;
+  align-items:center;
+  min-height:28px;
+  padding:4px 9px;
+  border-radius:999px;
+  background:rgba(219,235,207,.86);
+  font-size:11px;
+  font-weight:900;
+}
+.v2-runtime .ocr-review-row.is-merged{
+  border-style:dashed;
+  background:rgba(244,247,240,.64);
+}
+.v2-runtime .ocr-review-row.is-merged .ocr-review-fields{
+  opacity:.58;
+}
+.v2-runtime .ocr-merged-note{
+  display:block;
+  padding:8px 2px 2px;
+  color:var(--v2-muted);
+  line-height:1.4;
+}
