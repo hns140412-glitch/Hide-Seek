@@ -215,6 +215,7 @@
     const bindFileInput=id=>$(id)?.addEventListener('change',e=>{const files=[...e.target.files];e.target.value='';if(files.length)onFiles(files)});
     bindFileInput('#sheetCameraInput');bindFileInput('#sheetLibraryInput');
     HideV2Router.subscribe(render);HideV2Store.subscribe(()=>{});render();
+    globalThis.HideV2Pwa?.ensureRegistered?.();
     window.HideV2App=Object.freeze({render,review,onFiles,start:()=>{const m=mission();HideV2Session.start(m,{targetItemIds:globalThis.HideV2ReadyBridge?.targetItemIds?.(m)||null});HideV2Router.go('learn')}});
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
