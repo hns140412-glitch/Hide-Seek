@@ -17,6 +17,18 @@ function seededState(){
     crewMember:{explorerId:'dooby',name:'두비',voice:false,source:'SNAP_POP_CANONICAL'},
     settings:{sound:false,partnerVoice:false,reducedMotion:true,pressureReduced:true},
     sheets:[{
+      sheetId:'prior-english-inference',
+      title:'이전 영어 추론',
+      createdAt:now,updatedAt:now,status:'COMPLETED',caseMastery:100,
+      items:[{
+        id:'en-prior',eng:'transport',kor:'운반하다',languageDomain:'ENGLISH',missionRole:'NEW',
+        wrong:0,pass:0,hint:0,confidence:'high',needsReview:false,
+        learningStats:{inferenceTrace:[
+          {event:'FIRST_SEEN_PREDICTION',languageDomain:'ENGLISH',clueUsed:'ROOT_ETYMOLOGY',confidence:'MEDIUM',outcome:'MATCH',assessmentSource:'LEARNER_SELF_REPORT',objectiveVerified:false,transferSkillEvidence:true,recallScoreImpact:false},
+          {event:'FIRST_SEEN_PREDICTION',languageDomain:'ENGLISH',clueUsed:'ROOT_ETYMOLOGY',confidence:'MEDIUM',outcome:'NEAR',assessmentSource:'LEARNER_SELF_REPORT',objectiveVerified:false,transferSkillEvidence:true,recallScoreImpact:false}
+        ]}
+      }]
+    },{
       sheetId:'multilingual-thinking-first',
       title:'국어·한자 의미 구조 검증',
       createdAt:now,updatedAt:now,status:'READY',caseMastery:0,
@@ -57,8 +69,11 @@ test('verified Korean and Hanja meaning maps use thinking-first without fake ety
   await expect(page.getByText('검증 의미 구조',{exact:true})).toBeVisible();
   await expect(page.locator('.root-core b')).toHaveText('不');
   await expect(page.getByText(/부모 설명 한 줄/)).toBeVisible();
+  await expect(page.getByText('여러 번 도움이 됐던 단서',{exact:true})).toHaveCount(0);
+  await expect(page.locator('.inference-clue option[value="HANJA_ORIGIN"]')).toHaveText('한자어 구성');
+  await expect(page.locator('.inference-clue option[value="ROOT_ETYMOLOGY"]')).toHaveCount(0);
   await page.locator('.inference-prediction').fill('피할 수 없는 것');
-  await page.locator('.inference-clue').selectOption('WORD_PART');
+  await page.locator('.inference-clue').selectOption('HANJA_ORIGIN');
   await page.locator('.inference-confidence').selectOption('MEDIUM');
   await page.getByRole('button',{name:'내 추론 남기기'}).click();
   await page.getByRole('button',{name:'구조·장면 단서 보기'}).click();
@@ -69,8 +84,11 @@ test('verified Korean and Hanja meaning maps use thinking-first without fake ety
   await expect(page.locator('.word-card > .eng')).toHaveText('學');
   await expect(page.getByText('검증 의미 구조',{exact:true})).toBeVisible();
   await expect(page.locator('.root-core b')).toHaveText('學');
+  await expect(page.locator('.inference-clue option[value="COMPONENT"]')).toHaveText('글자 구성');
+  await expect(page.locator('.inference-clue option[value="RADICAL"]')).toHaveText('부수');
+  await expect(page.locator('.inference-clue option[value="ROOT_ETYMOLOGY"]')).toHaveCount(0);
   await page.locator('.inference-prediction').fill('배우는 뜻');
-  await page.locator('.inference-clue').selectOption('WORD_PART');
+  await page.locator('.inference-clue').selectOption('COMPONENT');
   await page.getByRole('button',{name:'내 추론 남기기'}).click();
   await page.getByRole('button',{name:'구조·장면 단서 보기'}).click();
 
@@ -81,6 +99,8 @@ test('verified Korean and Hanja meaning maps use thinking-first without fake ety
   });
   expect(evidence).toMatchObject({
     event:'FIRST_SEEN_PREDICTION',
+    languageDomain:'KOREAN',
+    clueUsed:'HANJA_ORIGIN',
     outcome:'NEAR',
     assessmentSource:'LEARNER_SELF_REPORT',
     objectiveVerified:false,
