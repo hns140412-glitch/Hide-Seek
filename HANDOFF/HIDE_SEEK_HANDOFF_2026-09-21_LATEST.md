@@ -111,3 +111,24 @@ Do not:
 
 ## Next-chat instruction
 “최신 TAKY 기준으로 Hide & Seek를 재개해. GitHub의 C2S/HIDE_LANGUAGE_MEMORY_C2S_CLOSURE_2026-09-21.md와 HANDOFF/HIDE_SEEK_HANDOFF_2026-09-21_LATEST.md를 먼저 읽고, implementation/hide-seek-capture-session-v02 최신 HEAD와 CI를 확인해. 신규 12개 실제 fixture를 유지하면서 검증된 어원·어근 시각화 엔진과 처음 본 단어 추론 인터랙션부터 이어서 구현해. 사용자 테스트 금지, Netlify/배포/merge 금지.”
+
+
+## 2026-09-21 implementation continuation
+Read additionally:
+- `C2S/HIDE_LANGUAGE_MEMORY_IMPLEMENTATION_DELTA_2026-09-21.md`
+
+Implemented after the original handoff:
+- truth-gated verified etymology/root paths expanded across the real NEW 12,
+- first-seen prediction + clue + confidence capture,
+- learner self-comparison after meaning reveal,
+- inference evidence isolated from recall score,
+- cumulative cross-mission transferable inference summary,
+- optional reuse of the learner's historically effective clue,
+- semantic-scene visual trails where historical decomposition would be misleading.
+
+Important truth boundary:
+- learner MATCH/NEAR/MISS is self-report, not objective correctness,
+- ocean stays semantic-scene support because deeper origin is uncertain,
+- rainforest stays transparent compound support.
+
+Latest branch state must be checked live before work resumes. Do not reuse the old #229/#244 result as proof for a newer HEAD.
