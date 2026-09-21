@@ -567,6 +567,7 @@ for needle in [
     "inferenceRecordSummary",
     "(S.sheets||[]).flatMap",
     "inference-outcome-btn",
+    "bindInferenceOutcomeButtons",
     "$('.inference-outcome-btn').forEach",
     "맞았어",
     "비슷했어",
