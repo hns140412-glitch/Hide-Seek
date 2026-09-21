@@ -178,4 +178,15 @@ test('verified Korean and Hanja meaning maps use thinking-first without fake ety
   expect(domainSkill.korean.adaptiveClue).toBeNull();
   expect(domainSkill.hanja.attempts).toBe(1);
   expect(domainSkill.hanja.adaptiveClue).toBeNull();
+
+  const hanjaEvidence=await page.evaluate(()=>{
+    const w=validWords().find(x=>x.id==='hanja-1');
+    return languageMemoryEvidenceSummary(w);
+  });
+  expect(hanjaEvidence.languageDomain).toBe('HANJA');
+  expect(hanjaEvidence.axes.FORM).toBeGreaterThanOrEqual(1);
+  expect(hanjaEvidence.axes.MEANING).toBeGreaterThanOrEqual(1);
+  expect(hanjaEvidence.axes.RECALL).toBeGreaterThanOrEqual(1);
+  expect(hanjaEvidence.axes.WRITE_OR_RECONSTRUCT).toBeGreaterThanOrEqual(1);
+  expect(hanjaEvidence.objectiveRecallCounts.SOUND).toBe(0);
 });
