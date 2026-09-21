@@ -181,3 +181,11 @@ Hide exports `reviewAdvisories` as evidence, not a schedule. The packet may incl
 - FIRST FIND, MEANING CLUE and FINAL SEEK emit axis-specific evidence.
 - SOUND replay remains exposure evidence only unless an actual sound-recall interaction exists.
 - Ready Learning Engine may interpret these evidence axes; Hide does not infer grade/range or schedule review.
+
+
+## Korean evidence separation lock
+- Korean memory evidence axes are CONTEXT / MEANING / EVIDENCE / RECALL / EXPRESSION.
+- Context exposure is not objective context recall.
+- Word-meaning association is not source-text evidence selection.
+- EVIDENCE must remain unearned until a real evidence-selection/justification interaction exists.
+- Hide collects memory evidence only; Ready owns higher-level Korean learning policy and Planner owns scheduling.
