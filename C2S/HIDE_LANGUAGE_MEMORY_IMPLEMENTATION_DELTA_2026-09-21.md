@@ -422,3 +422,26 @@ Latest-head CI note must still be checked live. No Netlify / deploy / merge / us
   - `vision_ingest_manifest`
 - Hide continues to own vocabulary-specific result normalization, NEW/REVIEW provenance handling, and vocabulary evidence checks.
 - OCR implementation status must distinguish shared foundation from live-provider/device verification; do not label OCR itself as 0% merely because live-provider verification remains incomplete.
+
+
+## Ready review-policy / Planner scheduling roundtrip integration
+- Ready integration branch: `integration/hide-memory-review-roundtrip-v01`
+- Draft PR: Ready-Set #100
+- Hide memory summary remains `SPECIALIST_MEMORY_ADVISORY_ONLY`.
+- Ready now has a branch-only adapter `ready-hide-memory-review-v01.js` that:
+  1. validates Hide advisory ownership/provenance,
+  2. interprets unresolved recall / non-stable evidence into a Ready-owned review-policy decision,
+  3. emits no date and owns no TODO,
+  4. hands the policy decision to Ready Set Planner.
+- Planner schedules only inside explicit candidate dates with Parent-confirmed availability.
+- If no confirmed window exists, scheduling fails closed with `NO_CONFIRMED_REVIEW_WINDOW`.
+- Only after Planner creates a dated TODO does it emit `EXPLICIT_READY_PLANNER_REVIEW_DIRECTIVE` with lexical IDs/directive/task identity.
+- Hide's existing `reviewDirective()` consumes this contract and does not reinterpret scheduling.
+- Validation on Ready PR #100 initial implementation head:
+  - Hide Memory Review Roundtrip #1 SUCCESS
+  - Ready Integration CI #260 SUCCESS
+  - Ready Runtime E2E #348 SUCCESS
+  - Ready Daily Availability Gate #12 SUCCESS
+  - Ready Weekly Availability Gate #6 SUCCESS
+  - TAKY Codex Worker Self-Test #482 SUCCESS
+- No merge/deploy/Netlify was performed.
