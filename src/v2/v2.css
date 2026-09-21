@@ -1097,3 +1097,27 @@ body.v2-runtime{
     grid-template-columns:1fr;
   }
 }
+
+
+/* OCR recovery: preserve-first messaging */
+.v2-runtime .ocr-recovery-card{
+  display:grid;
+  gap:12px;
+}
+.v2-runtime .ocr-recovery-lead{
+  margin:0;
+  line-height:1.5;
+  font-weight:800;
+}
+.v2-runtime .ocr-error-details summary{
+  min-height:40px;
+  display:flex;
+  align-items:center;
+  cursor:pointer;
+  font-weight:800;
+  color:var(--v2-muted);
+}
+.v2-runtime .ocr-error-details small{
+  overflow-wrap:anywhere;
+  color:var(--v2-muted);
+}
