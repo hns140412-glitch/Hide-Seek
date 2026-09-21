@@ -303,7 +303,7 @@ Latest-head CI note must still be checked live. No Netlify / deploy / merge / us
   - assisted vs unassisted recall,
   - writing/reconstruction evidence when available,
   - retrieval latency / hint dependence / recovery,
-  - spaced retention and Memory Ladder state.
+  - spaced-recall / retention evidence and Memory Ladder state; scheduling remains outside Hide.
 - Homework and Hanja grade are contextual inputs that may shape a session; they are not themselves Language Memory.
 - Ready and Hide remain sibling products; this handoff shares semantic-light learning context only, not identity/role/permission ownership.
 
@@ -312,6 +312,6 @@ Latest-head CI note must still be checked live. No Netlify / deploy / merge / us
 - Hide does **not** own review dates, long-term review cadence, or calendar allocation.
 - Hide owns memory evidence and advisory signals only, including memory strength, confusion, assisted/unassisted recall, spaced-recall evidence, recovery state, and next-review priority.
 - Ready Learning Engine interprets those signals into subject/review policy.
-- Ready Planner owns actual scheduling and rescheduling through dated TODOs, free-window allocation, carry-over, and planner constraints.
+- Ready & Set Planner owns actual scheduling and rescheduling through dated TODOs, free-window allocation, carry-over, and planner constraints.
 - Canonical loop: `Hide memory evidence -> Ready learning/review policy -> Ready Planner schedule -> future Hide retrieval -> new memory evidence`.
 - A Hide-side `nextReviewPriority` is a priority signal, never a date/time schedule.
