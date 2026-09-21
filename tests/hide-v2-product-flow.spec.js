@@ -116,6 +116,28 @@ test('Hide V2 First Find unsure is a pass recall attempt, not fabricated wrong a
   expect(evidence.some(x=>x.stage==='FIRST_FIND'&&x.result==='WRONG')).toBe(false);
 });
 
+test('Hide V2 normal memorization exposure does not create hint dependency',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'힌트 분리'},missions:[{
+        id:'m-hint-boundary',title:'힌트 분리',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        sourceCount:0,provenance:{source:'TEST_FIXTURE'},
+        items:[{id:'w-hint-boundary',lexicalId:'island::섬',token:'island',meaning:'섬',languageDomain:'ENGLISH',missionRole:'NEW',evidence:[],source:{}}]
+      }],activeMissionId:'m-hint-boundary',activeSession:null,captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'탐험 시작'}).click();
+  await page.getByRole('button',{name:'기억하고 찾아보기'}).click();
+
+  const mem=await page.evaluate(()=>{
+    const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
+    return window.HideV2Memory.summary(s.missions[0].items[0]);
+  });
+  expect(mem.assistedCount).toBe(1);
+  expect(mem.memorySignature.hintDependency).toBe(0);
+});
+
 test('Hide V2 Hidden Words appears only for engine-detected weakness and keeps relearn separate from recall',async({page})=>{
   await page.addInitScript(()=>{
     localStorage.setItem('hide_seek_v2_state',JSON.stringify({
