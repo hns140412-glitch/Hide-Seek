@@ -68,3 +68,13 @@ No merge, deploy, Netlify, production or device verification has occurred.
 - Same lexicalId across missions is merged into a cumulative wordbook record.
 - Records surface exposes aggregate memory and per-word review reasons.
 - V2 PRODUCT_COMPLETION moves from ~39% to ~44%; DEVICE_VERIFIED remains 0%.
+
+
+## Surgery increment — English Thinking Trail / memory detail
+- V2 uses `HideLanguageModel.renderStarterExplorationHtml()` as the canonical English structure/scene renderer.
+- Learner predicts meaning/concept and selects the clue used before structure reveal.
+- Inference evidence is self-report only and does not raise objective recall.
+- Verified root/etymology, transparent compound, and semantic-scene truth classes remain distinct.
+- Wordbook now provides per-word Memory Detail and recent Evidence Trail.
+- Pre-doc code HEAD `ce0ad263af71a14d2c4939934f2c81cf5f7a3cad`: V2 #40 PASS, full Hide #494 PASS.
+- V2 PRODUCT_COMPLETION: ~48%; DEVICE_VERIFIED remains 0%.
