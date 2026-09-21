@@ -5,6 +5,7 @@ const release=require('../vendor/taky/release-contract.js');
 const pwa=require('../vendor/taky/pwa-update-state.js');
 const eventEnvelope=require('../vendor/taky/event-envelope.js');
 const vision=require('../vendor/taky/vision-ingest.js');
+const httpJson=require('../vendor/taky/http-json.js');
 delete globalThis.HideSeekReleaseDescriptor;
 require('../hide-release-v01.js');
 const d=globalThis.HideSeekReleaseDescriptor;
@@ -23,6 +24,7 @@ assert(index.includes('./vendor/taky/release-contract.js'));
 assert(index.includes('./vendor/taky/pwa-update-state.js'));
 assert(index.includes('./vendor/taky/event-envelope.js'));
 assert(index.includes('./vendor/taky/vision-ingest.js'));
+assert(index.includes('./vendor/taky/http-json.js'));
 assert(index.includes('./hide-release-v01.js'));
 assert(index.includes('./hide-pwa-update-v01.js'));
 assert(app.includes('globalThis.HideSeekReleaseDescriptor'));
@@ -54,3 +56,11 @@ assert(familyOcr.includes('VisionIngest.validateEvidence'));
 assert(familyOcr.includes('OCR_EVIDENCE_MISMATCH'));
 assert(hideRuntime.includes('ocrVisionIngestRequestId'));
 console.log('PASS: Hide consumes shared vision ingest evidence mechanics while retaining vocabulary pairing semantics');
+
+
+assert.equal(httpJson.normalizeStatus(403).category,'AUTH_REJECTED');
+assert.equal(httpJson.normalizeStatus(429,{retry_after:'2',now_ms:0}).category,'RATE_LIMITED');
+assert(familyOcr.includes('TakyHttpJson'));
+assert(familyOcr.includes('HttpJson.request'));
+assert(familyOcr.includes("credentials:'same-origin'"));
+console.log('PASS: Hide consumes shared HTTP transport while Family OCR retains endpoint/domain semantics');
