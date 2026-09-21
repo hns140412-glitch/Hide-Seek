@@ -37,9 +37,21 @@ test('Hide V2 presents one continuous child journey and a completion moment', as
   await expect(page.getByRole('heading', { name: '다음 탐험은 이렇게 이어져요' })).toBeVisible();
   await expect(page.locator('.home-crew')).toBeVisible();
   await expect(page.locator('.quest-stat-row--quiet')).toBeVisible();
+  const worldArt=await page.evaluate(()=>({
+    bodyBackground:getComputedStyle(document.body).backgroundImage,
+    heroInset:getComputedStyle(document.querySelector('.quest-hero'),'::before').inset
+  }));
+  expect(worldArt.bodyBackground).not.toBe('none');
+  expect(worldArt.heroInset).not.toBe('auto');
   await page.getByRole('button', { name: '탐험 미션' }).click();
   await expect(page.getByRole('heading', { name: '오늘의 탐험 지도' })).toBeVisible();
   await expect(page.locator('.mission-path')).toBeVisible();
+  const missionArt=await page.locator('.mission-map-card').first().evaluate(el=>({
+    markerWidth:getComputedStyle(el,'::before').width,
+    markerDisplay:getComputedStyle(el,'::before').display
+  }));
+  expect(missionArt.markerWidth).toBe('12px');
+  expect(missionArt.markerDisplay).not.toBe('none');
   await expect(page.getByRole('button', { name: '이어서 탐험' })).toBeVisible();
   await expect(page.getByText('정리 도구', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: '홈으로' }).click();
