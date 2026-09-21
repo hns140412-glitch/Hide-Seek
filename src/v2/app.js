@@ -13,9 +13,10 @@
     const resumable=globalThis.HideV2Session?.isResumable?.()===true;
     const capture=globalThis.HideV2Capture?.state?.();
     const reviewReady=globalThis.HideV2Capture?.hasResumableReview?.()===true;
-    view().innerHTML=`<section class="world-hero"><div class="hero-case"><div class="hero-kicker"><span>HIDE V2</span><span>REWRITE</span></div><h1>${m?esc(m.title):'새 단어 탐험을 시작해요'}</h1><p>${m?`${m.items.length}개 단어 · 구조 분리형 런타임`:'프린트 사진을 분석하고 확인한 뒤 학습을 시작해요.'}</p><div class="hero-actions"><button class="btn primary" id="v2Camera">카메라 촬영</button><button class="btn secondary" id="v2Library">사진 추가</button>${m?`<button class="btn secondary" id="v2Start">${resumable?'학습 이어하기':'학습 시작'}</button>`:''}</div></div></section><section class="card"><button class="btn secondary full" id="v2MissionList">미션 관리</button></section>${reviewReady?`<section class="card tint-sky"><div class="section-title"><h2>분석 결과가 남아 있어요</h2><span>${capture?.lastRows?.length||0}개</span></div><p>앱을 다시 열어도 검토 중인 OCR 결과를 이어갈 수 있어요.</p><button class="btn primary full" id="v2ResumeReview">분석 결과 이어보기</button></section>`:''}<section class="card"><div class="section-title"><h2>V2 상태</h2><span>monolith-free</span></div><div class="metric"><span>미션</span><b>${s.missions.length}</b></div><div class="metric"><span>촬영 세션</span><b>${capture?.status||'없음'}</b></div><div class="metric"><span>저장</span><b>Local-first</b></div><div class="metric"><span>Domain</span><b>EN/KR/HANJA</b></div></section>`;
+    view().innerHTML=`<section class="world-hero"><div class="hero-case"><div class="hero-kicker"><span>HIDE V2</span><span>REWRITE</span></div><h1>${m?esc(m.title):'새 단어 탐험을 시작해요'}</h1><p>${m?`${m.items.length}개 단어 · 구조 분리형 런타임`:'프린트 사진을 분석하고 확인한 뒤 학습을 시작해요.'}</p><div class="hero-actions"><button class="btn primary" id="v2Camera">카메라 촬영</button><button class="btn secondary" id="v2Library">사진 추가</button>${m?`<button class="btn secondary" id="v2Start">${resumable?'학습 이어하기':'학습 시작'}</button>`:''}</div></div></section><section class="card" style="display:grid;gap:8px"><button class="btn secondary full" id="v2MissionList">미션 관리</button><button class="btn secondary full" id="v2Records">기억 기록</button></section>${reviewReady?`<section class="card tint-sky"><div class="section-title"><h2>분석 결과가 남아 있어요</h2><span>${capture?.lastRows?.length||0}개</span></div><p>앱을 다시 열어도 검토 중인 OCR 결과를 이어갈 수 있어요.</p><button class="btn primary full" id="v2ResumeReview">분석 결과 이어보기</button></section>`:''}<section class="card"><div class="section-title"><h2>V2 상태</h2><span>monolith-free</span></div><div class="metric"><span>미션</span><b>${s.missions.length}</b></div><div class="metric"><span>촬영 세션</span><b>${capture?.status||'없음'}</b></div><div class="metric"><span>저장</span><b>Local-first</b></div><div class="metric"><span>Domain</span><b>EN/KR/HANJA</b></div></section>`;
     $('#v2Camera').onclick=()=>$('#sheetCameraInput').click();
     $('#v2MissionList').onclick=()=>HideV2Router.go('missions');
+    $('#v2Records').onclick=()=>HideV2Router.go('records');
     $('#v2Library').onclick=()=>$('#sheetLibraryInput').click();
     if($('#v2ResumeReview'))$('#v2ResumeReview').onclick=()=>review(HideV2Capture.reviewRows());
     if($('#v2Start'))$('#v2Start').onclick=()=>{
@@ -138,10 +139,16 @@
     });
   }
 
+  function records(){
+    const book=HideV2Memory.wordbook(),dash=HideV2Memory.dashboard();
+    view().innerHTML=`<section class="card"><div class="section-title"><h2>기억 기록</h2><span>${dash.total}단어</span></div><div class="grid3"><div class="status-pill"><b>${dash.averageStrength}%</b><span>Memory</span></div><div class="status-pill"><b>${dash.needsRecall}</b><span>재회상</span></div><div class="status-pill"><b>${dash.stable}</b><span>안정</span></div></div><div class="metric"><span>뜻 혼동</span><b>${dash.confusion}</b></div><div class="metric"><span>글자 형태 취약</span><b>${dash.orthographic}</b></div><div class="metric"><span>소리 회상 취약</span><b>${dash.sound}</b></div><div class="metric"><span>느린 회상</span><b>${dash.slowRecall}</b></div><div class="metric"><span>힌트 의존</span><b>${dash.hintDependent}</b></div></section><section class="card"><div class="section-title"><h2>단어장</h2><span>우선 복습순</span></div>${book.length?book.map((x,i)=>`<article class="weak-item" data-wordbook-index="${i}"><div style="flex:1"><b>${esc(x.token)}</b><small style="display:block">${esc(x.meaning)} · ${esc(x.languageDomain)} · ${x.encounters}회</small><small style="display:block">${esc(x.primaryReason.label)}</small></div><div style="text-align:right"><b>${x.memoryStrength}%</b><small style="display:block">P${x.nextReviewPriority}</small></div></article>`).join(''):'<p>아직 기억 기록이 없어요.</p>'}<button class="btn secondary full" id="v2RecordsHome">홈으로</button></section>`;
+    $('#v2RecordsHome').onclick=()=>HideV2Router.go('home');
+  }
+
   function render(){
     if(flash){const t=$('#toast');if(t){t.textContent=flash;t.classList.add('show')}}
     const r=HideV2Router.current();
-    if(r.name==='learn')learn();else if(r.name==='missions')missions();else home();
+    if(r.name==='learn')learn();else if(r.name==='missions')missions();else if(r.name==='records')records();else home();
   }
   function boot(){
     globalThis.HideV2LegacyMigration?.migrateIfNeeded?.();
