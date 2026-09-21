@@ -454,3 +454,15 @@ Latest-head CI note must still be checked live. No Netlify / deploy / merge / us
 - Ready runtime now preserves the validated Hide specialist result on the Ready task and carries it into `taskOutcomes` beside the Planner outcome.
 - Runtime path: `Planner review TODO -> Ready session task -> Hide directive -> Hide retrieval -> Hide memorySummary -> Ready task outcome`.
 - No merge/deploy/Netlify performed.
+
+
+## Language Memory evidence truth-boundary refinement
+- `objectiveVerified` is now separated from `objectiveRecall`.
+- `evidenceMode` now distinguishes EXPOSURE / RECALL / RECOGNITION / ASSOCIATION / EVIDENCE_SELECTION / RECONSTRUCTION.
+- `objectiveRecall=true` is reserved for actual unassisted retrieval/reconstruction paths such as typed FIRST FIND and unassisted character reconstruction.
+- Choice-based MEANING_RECOGNITION is objectively checkable but is not counted as recall.
+- CONNECTION TRAIL MEANING_ASSOCIATION is objectively checkable but is not counted as recall.
+- VERIFIED_CONTEXT_EVIDENCE_SELECTION is objectively checkable evidence selection but is not counted as recall.
+- Context/Sound exposure remains non-objective exposure.
+- `languageMemoryEvidenceSummary()` now reports both `objectiveVerifiedCounts` and `objectiveRecallCounts`, plus `evidenceModes`.
+- This prevents recognition/association/evidence-selection success from inflating memory recall claims.
