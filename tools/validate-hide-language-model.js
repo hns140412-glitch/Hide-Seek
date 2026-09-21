@@ -27,6 +27,10 @@ const hanjaParent=api.parentExplanation({word:'學',languageDomain:'HANJA',meani
 assert(hanjaParent?.mode==='VERIFIED_CHARACTER_STRUCTURE'&&hanjaParent.text.includes('글자의 핵심 구성'),'hanja parent explanation must use character structure');
 const unprovenMap=api.normalizeItem({word:'미검증',languageDomain:'KOREAN',meaningMap:{verified:true,sourceType:'CURATED',coreMeaning:'근거 없음',nodes:[{role:'CONCEPT',label:'미검증',meaning:'근거 없음'}]}});
 assert(!unprovenMap.meaningMap,'verified meaning map without sourceRef must fail closed');
+const emptyNodeMap=api.normalizeItem({word:'빈구조',languageDomain:'KOREAN',meaningMap:{verified:true,sourceType:'TEST_FIXTURE',sourceRef:'fixture://empty-node',coreMeaning:'뜻은 있으나 구조 없음',nodes:[]}});
+assert(!emptyNodeMap.meaningMap,'verified meaning map without nodes must fail closed');
+const emptyMeaningMap=api.normalizeItem({word:'빈뜻',languageDomain:'KOREAN',meaningMap:{verified:true,sourceType:'TEST_FIXTURE',sourceRef:'fixture://empty-meaning',coreMeaning:'',nodes:[{role:'CONCEPT',label:'빈뜻',meaning:'구조'}]}});
+assert(!emptyMeaningMap.meaningMap,'verified meaning map without coreMeaning must fail closed');
 const englishClues=api.clueOptions('ENGLISH').map(x=>x.value);
 const koreanClues=api.clueOptions('KOREAN').map(x=>x.value);
 const hanjaClues=api.clueOptions('HANJA').map(x=>x.value);
