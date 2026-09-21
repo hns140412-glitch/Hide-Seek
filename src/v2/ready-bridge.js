@@ -29,12 +29,39 @@
     const ids=(mission?.items||[]).filter(w=>d.lexicalIds.includes(w.lexicalId)).map(w=>w.id);
     return ids.length?ids:null;
   }
+  function expressionReviewCandidates(mission,itemIds=null){
+    if(!mission)return [];
+    const scope=Array.isArray(itemIds)?new Set(itemIds):null;
+    return (mission.items||[])
+      .filter(w=>!scope||scope.has(w.id))
+      .map(w=>{
+        const rows=(Array.isArray(w.evidence)?w.evidence:[]).filter(x=>x.stage==='RESPONSE_TRAIL'&&x.evidenceMode==='PRODUCTION');
+        const latest=rows.length?rows[rows.length-1]:null;
+        if(!latest)return null;
+        return {
+          itemId:w.id,
+          lexicalId:w.lexicalId||null,
+          token:w.token,
+          languageDomain:w.languageDomain,
+          responseText:String(latest.responseText||''),
+          targetUsed:latest.targetUsed===true,
+          semanticCorrectnessClaimed:false,
+          objectiveVerified:false,
+          reviewState:'HUMAN_SEMANTIC_REVIEW_AVAILABLE',
+          evidenceAt:latest.at||null
+        };
+      })
+      .filter(Boolean);
+  }
+
   function buildResult(){
     const s=HideV2Store.snapshot();
     const m=s.missions.find(x=>x.id===s.activeMissionId)||null;
     const activeSession=s.activeSession||null;
     const completed=m?.status==='COMPLETED'||activeSession?.stage==='COMPLETE';
-    const trail=m?HideV2Trail.missionSummary(m,{itemIds:activeSession?.queue||null}):null;
+    const scopeItemIds=activeSession?.queue||null;
+    const trail=m?HideV2Trail.missionSummary(m,{itemIds:scopeItemIds}):null;
+    const expressionReviews=expressionReviewCandidates(m,scopeItemIds);
     return {
       resultContract:'HIDE_SPECIALIST_RESULT_V2',
       sourceApp:'hide-seek',
@@ -48,6 +75,8 @@
       trailMastery:trail?.trailMastery??null,
       trailSummary:trail,
       memorySummary:m?HideV2Memory.missionSummary(m):null,
+      expressionReviewCandidates:expressionReviews,
+      humanSemanticReviewAvailable:expressionReviews.length>0,
       reviewDirective:reviewDirective(),
       completedAt:new Date().toISOString()
     };
@@ -68,5 +97,5 @@
     location.assign(url.href);
     return {ok:true,event};
   }
-  window.HideV2ReadyBridge=Object.freeze({context,reviewDirective,targetItemIds,buildResult,emitTaskEvent,returnToReady});
+  window.HideV2ReadyBridge=Object.freeze({context,reviewDirective,targetItemIds,expressionReviewCandidates,buildResult,emitTaskEvent,returnToReady});
 })();
