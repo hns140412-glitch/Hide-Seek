@@ -126,6 +126,23 @@ test('verified Korean and Hanja meaning maps use thinking-first without fake ety
   await page.getByRole('button',{name:'내 추론 남기기'}).click();
   await page.getByRole('button',{name:'구조·장면 단서 보기'}).click();
   await expect(page.getByText(/부모 설명 한 줄 · VERIFIED_CHARACTER_STRUCTURE/)).toBeVisible();
+  await page.getByRole('button',{name:'뜻 확인하기'}).click();
+  await page.getByRole('button',{name:'맞았어'}).click();
+  await page.getByRole('button',{name:'외우기 완료 · FIRST FIND'}).click();
+
+  await expect(page.getByText('FIRST FIND',{exact:true})).toBeVisible();
+  await expect(page.getByText('피할 수 없음',{exact:true})).toBeVisible();
+  await page.getByLabel('떠올린 단어 입력').fill('불가피');
+  await page.getByRole('button',{name:'기억 확인'}).click();
+  await page.waitForTimeout(320);
+
+  await expect(page.getByText('배우다',{exact:true})).toBeVisible();
+  await page.getByLabel('떠올린 단어 입력').fill('學');
+  await page.getByRole('button',{name:'기억 확인'}).click();
+  await page.waitForTimeout(320);
+
+  await expect(page.getByText('MEANING CLUE',{exact:true})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'단어 → 뜻'})).toBeVisible();
 
   const evidence=await page.evaluate(()=>{
     const s=JSON.parse(localStorage.getItem('hide_seek_state'));
