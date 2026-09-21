@@ -600,3 +600,54 @@ body.v2-runtime{
     font-size:8px;
   }
 }
+
+
+/* Home -> mission -> memory ladder continuity */
+.v2-runtime .trail-bridge{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr);
+  gap:8px;
+  align-items:center;
+  margin:14px 0;
+  padding:12px;
+  border:1px solid var(--v2-line);
+  border-radius:20px;
+  background:rgba(255,255,255,.72);
+}
+.v2-runtime .trail-bridge>i{
+  color:var(--v2-muted);
+  font-style:normal;
+  font-weight:900;
+}
+.v2-runtime .trail-bridge__step{
+  min-width:0;
+  display:grid;
+  justify-items:center;
+  gap:3px;
+  text-align:center;
+}
+.v2-runtime .trail-bridge__step>span{
+  width:28px;
+  height:28px;
+  display:grid;
+  place-items:center;
+  border-radius:999px;
+  background:rgba(204,226,190,.92);
+  font-weight:950;
+}
+.v2-runtime .trail-bridge__step b{
+  font-size:12px;
+}
+.v2-runtime .trail-bridge__step small{
+  color:var(--v2-muted);
+  font-size:10px;
+  line-height:1.25;
+}
+@media(max-width:390px){
+  .v2-runtime .trail-bridge{
+    gap:5px;
+    padding:10px 8px;
+  }
+  .v2-runtime .trail-bridge__step b{font-size:11px}
+  .v2-runtime .trail-bridge__step small{font-size:9px}
+}
