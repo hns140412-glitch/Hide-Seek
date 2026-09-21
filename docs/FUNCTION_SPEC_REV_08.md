@@ -282,3 +282,17 @@ Rules:
 - Curated semantic support is explicitly not historical etymology.
 - Related-word links show only already encountered words so the map does not become a second memorization list.
 - THINKING_SCENE usage is assistance/acquisition support, not independent recall.
+
+
+### Reuse in Memory Ladder
+Thinking-first support must not disappear after memorization.
+
+When a supported NEW word later shows weak evidence such as MORNING_MOCK_TEST WRONG/CONFUSED, the Memory Ladder may use:
+`THINKING_SCENE → later cues`
+
+Properties:
+- THINKING_SCENE is low-cost assistance.
+- It restores the learner's semantic/visual route before exposing spelling.
+- It does not count as independent recall.
+- It may include transparent word parts and already encountered connections.
+- It must not introduce unseen related words as new memorization targets.
