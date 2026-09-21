@@ -192,6 +192,7 @@ test('Hide V2 obeys Ready Planner review directive and limits the session to dir
 
 test('Hide V2 resumes a persisted learning session after reload',async({page})=>{
   await page.addInitScript(()=>{
+    if(localStorage.getItem('hide_seek_v2_state'))return;
     localStorage.setItem('hide_seek_v2_state',JSON.stringify({
       version:1,profile:{displayName:'재개 탐험가'},missions:[{
         id:'m-resume',title:'재개 미션',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
