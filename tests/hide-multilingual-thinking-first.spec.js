@@ -200,7 +200,7 @@ test('verified Korean and Hanja meaning maps use thinking-first without fake ety
   expect(koreanEvidence.axes.MEANING).toBeGreaterThanOrEqual(1);
   expect(koreanEvidence.axes.RECALL).toBeGreaterThanOrEqual(1);
   expect(koreanEvidence.axes.EXPRESSION).toBeGreaterThanOrEqual(1);
-  expect(koreanEvidence.objectiveRecallCounts.CONTEXT).toBeGreaterThanOrEqual(1);
+  expect(koreanEvidence.objectiveRecallCounts.CONTEXT).toBe(0);
   expect(koreanEvidence.axes.EVIDENCE).toBeGreaterThanOrEqual(1);
   expect(koreanEvidence.objectiveRecallCounts.EVIDENCE).toBeGreaterThanOrEqual(1);
 
