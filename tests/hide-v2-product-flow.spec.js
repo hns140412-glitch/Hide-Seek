@@ -138,6 +138,73 @@ test('Hide V2 normal memorization exposure does not create hint dependency',asyn
   expect(mem.memorySignature.hintDependency).toBe(0);
 });
 
+test('Hide V2 Meaning Clue uses bidirectional recognition and feeds confusion reinforcement',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'뜻 혼동'},missions:[{
+        id:'m-meaning-choice',title:'뜻 혼동',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        sourceCount:0,provenance:{source:'TEST_FIXTURE'},
+        items:[
+          {id:'w-benefit',lexicalId:'benefit::혜택',token:'benefit',meaning:'혜택',languageDomain:'ENGLISH',missionRole:'NEW',evidence:[],source:{}},
+          {id:'w-island',lexicalId:'island::섬',token:'island',meaning:'섬',languageDomain:'ENGLISH',missionRole:'NEW',evidence:[],source:{}}
+        ]
+      }],activeMissionId:'m-meaning-choice',activeSession:null,captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'탐험 시작'}).click();
+  await page.getByRole('button',{name:'기억하고 찾아보기'}).click();
+  await page.getByLabel('회상 답 입력').fill('benefit');
+  await page.getByRole('button',{name:'기억 확인'}).click();
+
+  await expect(page.getByRole('heading',{name:'단어에서 뜻 찾기'})).toBeVisible();
+  await page.getByRole('button',{name:'섬',exact:true}).click();
+  await expect(page.getByText('연결 길',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'다음'}).click();
+  await expect(page.getByText('숨은 단어 보강',{exact:true})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'뜻 헷갈림 다시 구분하기'})).toBeVisible();
+  await expect(page.getByLabel('숨은 단어 뜻 답 입력')).toBeVisible();
+
+  const evidence=await page.evaluate(()=>{
+    const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
+    return s.missions[0].items[0].evidence;
+  });
+  const meaning=evidence.find(x=>x.stage==='MEANING');
+  expect(meaning.evidenceMode).toBe('RECOGNITION');
+  expect(meaning.result).toBe('MISMATCH');
+  expect(meaning.objectiveVerified).toBe(true);
+  expect(meaning.objectiveRecall).toBe(false);
+  expect(meaning.recallScoreImpact).toBe(false);
+  expect(meaning.confusedWithToken).toBe('island');
+  expect(meaning.confusedWithMeaning).toBe('섬');
+
+  const plan=await page.evaluate(()=>{
+    const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
+    return window.HideV2Learning.hiddenWordsPlan(s.missions[0].items[0]);
+  });
+  expect(plan.key).toBe('confusion');
+  expect(plan.mode).toBe('MEANING');
+});
+
+test('Hide V2 single-item Meaning Clue keeps direct recall fallback',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'뜻 단답'},missions:[{
+        id:'m-meaning-single',title:'뜻 단답',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        sourceCount:0,provenance:{source:'TEST_FIXTURE'},
+        items:[{id:'w-single',lexicalId:'island::섬',token:'island',meaning:'섬',languageDomain:'ENGLISH',missionRole:'NEW',evidence:[],source:{}}]
+      }],activeMissionId:'m-meaning-single',activeSession:null,captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'탐험 시작'}).click();
+  await page.getByRole('button',{name:'기억하고 찾아보기'}).click();
+  await page.getByLabel('회상 답 입력').fill('island');
+  await page.getByRole('button',{name:'기억 확인'}).click();
+  await expect(page.getByLabel('뜻 회상 입력')).toBeVisible();
+  expect(await page.getByText('단어에서 뜻 찾기',{exact:true}).count()).toBe(0);
+});
+
 test('Hide V2 Hidden Words specializes activity from Memory Engine primary reason',async({page})=>{
   await page.addInitScript(()=>{
     localStorage.setItem('hide_seek_v2_state',JSON.stringify({
