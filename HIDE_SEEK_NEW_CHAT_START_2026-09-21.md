@@ -145,3 +145,9 @@ OCR ownership:
 - Treat Ready's family capture/OCR transport as the existing shared foundation.
 - Hide must reuse it and only own HIDE_VOCABULARY interpretation/review semantics.
 - Do not report OCR as unimplemented when only live-provider/device verification is missing.
+
+
+Ready memory-review integration:
+- Ready draft PR #100 implements the branch-only roundtrip adapter.
+- Preserve ownership: Hide evidence only -> Ready policy -> Planner schedule -> Hide retrieval.
+- Do not merge Ready PR #100 or deploy without explicit gate/human approval.
