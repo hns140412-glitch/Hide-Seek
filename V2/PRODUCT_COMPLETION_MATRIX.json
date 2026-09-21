@@ -1,0 +1,77 @@
+{
+  "version": "2026-09-21.1",
+  "rule": "TKY-PRODUCT-001",
+  "product": "Hide & Seek Runtime V2",
+  "reusable_asset_maturity_is_not_v2_completion": true,
+  "overall_v2_completion_percent": 2,
+  "claim_levels": {
+    "CODED": 2,
+    "CI_VERIFIED": 0,
+    "RUNTIME_VERIFIED": 0,
+    "DEVICE_VERIFIED": 0,
+    "RELEASE_VERIFIED": 0
+  },
+  "structural_integrity_status": "REWRITE_IN_PROGRESS",
+  "critical_journeys": [
+    {
+      "feature": "App shell/router/store",
+      "status": "NOT_STARTED",
+      "evidence_ref": "V2/ARCHITECTURE.md",
+      "user_path_reachable": false,
+      "representative_input": "NOT_APPLICABLE",
+      "known_gaps": [
+        "implementation not started"
+      ]
+    },
+    {
+      "feature": "Mission create/manage",
+      "status": "NOT_STARTED",
+      "evidence_ref": "V2/ARCHITECTURE.md",
+      "user_path_reachable": false,
+      "representative_input": false,
+      "known_gaps": [
+        "implementation not started"
+      ]
+    },
+    {
+      "feature": "Capture -> OCR -> review",
+      "status": "NOT_STARTED",
+      "evidence_ref": "V1 reusable contracts only",
+      "user_path_reachable": false,
+      "representative_input": false,
+      "known_gaps": [
+        "V2 integration not implemented"
+      ]
+    },
+    {
+      "feature": "Learning session",
+      "status": "NOT_STARTED",
+      "evidence_ref": "V1 reusable contracts only",
+      "user_path_reachable": false,
+      "representative_input": false,
+      "known_gaps": [
+        "V2 runtime not implemented"
+      ]
+    },
+    {
+      "feature": "Memory -> Ready/Planner roundtrip",
+      "status": "NOT_STARTED",
+      "evidence_ref": "V1 reusable contracts only",
+      "user_path_reachable": false,
+      "representative_input": false,
+      "known_gaps": [
+        "V2 roundtrip not implemented"
+      ]
+    },
+    {
+      "feature": "Mobile device path",
+      "status": "NOT_STARTED",
+      "evidence_ref": "DEVICE_VERIFIED=0",
+      "user_path_reachable": false,
+      "representative_input": "NOT_APPLICABLE",
+      "known_gaps": [
+        "device validation not run"
+      ]
+    }
+  ]
+}
