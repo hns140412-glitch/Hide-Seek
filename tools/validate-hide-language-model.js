@@ -1,12 +1,18 @@
 const fs=require('fs');
 const vm=require('vm');
 const assert=(x,m)=>{if(!x)throw new Error(m)};
+const evidenceCode=fs.readFileSync('hide-language-evidence.js','utf8');
 const code=fs.readFileSync('hide-language-model.js','utf8');
 const sandbox={window:{}};
 vm.createContext(sandbox);
+vm.runInContext(evidenceCode,sandbox);
 vm.runInContext(code,sandbox);
 const api=sandbox.window.HideLanguageModel;
 assert(api,'language model missing');
+const evidence=sandbox.window.HideLanguageEvidence;
+assert(evidence?.SCHEMA_VERSION===1,'language evidence schema');
+assert(Array.isArray(evidence.invalidRecords)&&evidence.invalidRecords.length===0,'language evidence records must validate');
+assert(Object.keys(evidence.records||{}).length===10,'verified evidence record count');
 
 assert(api.detectDomain({eng:'transport',kor:'운반하다'})==='ENGLISH','english detection');
 assert(api.detectDomain({word:'불가피'})==='KOREAN','korean detection');
