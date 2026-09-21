@@ -369,12 +369,17 @@ for needle in [
     "sourceColumn",
     "sourceRowIndex",
     "sourceColumnIndex",
-    "EXPLICIT_OCR_ROLE",
     "missionRoleSource:String",
     "missionRole:['NEW','REVIEW']",
 ]:
     if needle not in family_ocr:
         fail.append("FAMILY_OCR_LAYOUT_CONTRACT:"+needle)
+
+for needle in [
+    "EXPLICIT_OCR_ROLE",
+]:
+    if needle not in runtime:
+        fail.append("OCR_ROLE_PROVENANCE_CONTRACT:"+needle)
 
 for needle in [
     "missionComposition",
