@@ -75,11 +75,29 @@
       if (Number.isFinite(view?.priority)) priorities.push({ lexicalId: w.lexicalId || senseKey(w), priority: Math.round(Number(view.priority)), reason: key });
     }
     priorities.sort((a, b) => b.priority - a.priority);
+    const roleCounts = words.reduce((a,w)=>{const role=String(w.missionRole||'').toUpperCase();if(role==='NEW'||role==='REVIEW')a[role]+=1;return a},{NEW:0,REVIEW:0});
+    const mockCounts={CORRECT:0,CONFUSED:0,WRONG:0,ASSISTED_CORRECT:0,RECOVERED_CORRECT:0};
+    let thinkingSceneAssistanceCount=0;
+    for(const w of words){
+      const assessment=Array.isArray(w.learningStats?.assessmentTrace)?w.learningStats.assessmentTrace:[];
+      for(const x of assessment){
+        if(x?.source==='MORNING_MOCK_TEST'&&x?.result in mockCounts)mockCounts[x.result]+=1;
+      }
+      const assistance=Array.isArray(w.learningStats?.assistanceTrace)?w.learningStats.assistanceTrace:[];
+      thinkingSceneAssistanceCount+=assistance.filter(x=>x?.step==='THINKING_SCENE').length;
+    }
     return {
+      authority:'SPECIALIST_MEMORY_ADVISORY_ONLY',
       averageMemoryStrength: measured ? Math.round(strengthTotal / measured) : 0,
       reasonCounts,
       needsUnassistedRecallCount: reasonCounts.recovery,
-      topReviewPriorities: priorities.slice(0, 5)
+      topReviewPriorities: priorities.slice(0, 5),
+      missionComposition:{newCount:roleCounts.NEW,reviewCount:roleCounts.REVIEW},
+      morningMockTest:{
+        recordedCount:Object.values(mockCounts).reduce((a,n)=>a+n,0),
+        resultCounts:mockCounts
+      },
+      thinkingSceneAssistanceCount
     };
   }
 
@@ -103,6 +121,8 @@
       seekAgainRemainingCount: Array.isArray(S.codeRed?.retrace) ? S.codeRed.retrace.length : 0,
       learningProvenance: sh?.learningProvenance ? { ...sh.learningProvenance } : {},
       cumulativeLexiconCount: Object.keys(S.lexicon || {}).length,
+      missionComposition: sh?.missionComposition ? { ...sh.missionComposition } : (()=>{const ms=buildMemorySummary();return {expectedNew:ms.missionComposition.newCount,expectedReview:ms.missionComposition.reviewCount,layoutIndependent:true}})(),
+      morningMockTestSummary: buildMemorySummary().morningMockTest,
       memorySummary: buildMemorySummary()
     };
   }
@@ -175,7 +195,10 @@
           trailMastery: Number(p.trailMastery || 0),
           learningPhase: p.learningPhase || null,
           finalSeekAttemptCount: Number(p.finalSeekAttemptCount || 0),
-          seekAgainRemainingCount: Number(p.seekAgainRemainingCount || 0)
+          seekAgainRemainingCount: Number(p.seekAgainRemainingCount || 0),
+          missionComposition: p.missionComposition || null,
+          morningMockTestSummary: p.morningMockTestSummary || null,
+          specialistAuthority: 'SPECIALIST_MEMORY_ADVISORY_ONLY'
         };
         url.searchParams.set('specialist_report', JSON.stringify(report));
       }
