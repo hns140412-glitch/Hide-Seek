@@ -254,3 +254,11 @@ Hide exports `reviewAdvisories` as evidence, not a schedule. The packet may incl
 - OCR review supports correction/exclusion before mission commit.
 - Pre-doc code HEAD `6c419115797afca6e52fdcfc84edc99150769d7c`: V2 #26 PASS, full Hide #480 PASS.
 - Truthful V2 PRODUCT_COMPLETION: ~39%; DEVICE_VERIFIED 0%; RELEASE_VERIFIED 0%.
+
+
+## Latest V2 surgery — Memory Ladder / records
+- V2 Memory Ladder and cumulative wordbook are now implemented and browser-verified.
+- Same lexical item accumulates across missions.
+- Memory strength/priority remain Hide advisory projections; Ready Learning Engine/Planner ownership is unchanged.
+- Pre-doc code HEAD `065f9064c23b2198719573da559e5618109f940d`: V2 #33 PASS, full Hide #487 PASS.
+- Truthful V2 PRODUCT_COMPLETION: ~44%; DEVICE_VERIFIED 0%; RELEASE_VERIFIED 0%.
