@@ -30,7 +30,7 @@
     const meaning=rows.filter(x=>Array.isArray(x.axes)&&x.axes.includes('MEANING'));
     const form=rows.filter(x=>Array.isArray(x.axes)&&(x.axes.includes('FORM')||x.axes.includes('WRITE_OR_RECONSTRUCT')));
     const spaced=rows.filter(x=>x.spacedEvidence===true&&x.objectiveRecall===true&&x.result==='CORRECT');
-    const immediateRecovery=rows.filter(x=>x.stage==='FINAL_SEEK'&&x.objectiveRecall===true&&x.result==='CORRECT'&&x.spacedEvidence!==true);
+    const immediateRecovery=rows.filter(x=>['FINAL_SEEK','SEEK_AGAIN'].includes(x.stage)&&x.objectiveRecall===true&&x.result==='CORRECT'&&x.spacedEvidence!==true);
     const confusionCount=association.filter(x=>x.result==='MISMATCH').length+meaning.filter(x=>x.result==='MISMATCH').length;
     const hintCount=assisted.length+rows.filter(x=>Number(x.hintLevel||0)>0).length;
     const timeoutCount=rows.filter(x=>x.result==='TIMEOUT').length;
