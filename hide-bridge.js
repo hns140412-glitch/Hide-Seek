@@ -1,9 +1,9 @@
 (() => {
   'use strict';
 
-  const BRIDGE_VERSION = '2026.09.07-a';
+  const BRIDGE_VERSION = '2026.09.10-c';
   const EVENT_LIMIT = 120;
-  const SHARED_PARAM_NAMES = ['session_id', 'goal_id', 'task_id', 'lap_id', 'return_target', 'snap_target', 'child_id'];
+  const SHARED_PARAM_NAMES = ['session_id', 'goal_id', 'task_id', 'lap_id', 'return_target', 'snap_target', 'child_id', 'target_time_ms', 'session_start_at', 'paused_at', 'issue_ms'];
   const legacyTerms = [
     [/Word Detective Team/g, 'Hidden Word Trail'],
     [/사건 파일/g, '단어 탐험'],
@@ -105,7 +105,7 @@
     return event;
   }
 
-  function safeReturnUrl(taskState = 'PARTIAL') {
+  function safeReturnUrl(taskState = 'PARTIAL', eventIdValue = null) {
     const context = getContext();
     if (!context.return_target) return null;
     try {
@@ -115,6 +115,7 @@
       if (context.goal_id) url.searchParams.set('goal_id', context.goal_id);
       if (context.task_id) url.searchParams.set('task_id', context.task_id);
       if (context.lap_id) url.searchParams.set('lap_id', context.lap_id);
+      if (eventIdValue) url.searchParams.set('event_id', eventIdValue);
       url.searchParams.set('task_state', taskState);
       url.searchParams.set('from_app', 'hide-seek');
       return url.href;
@@ -124,14 +125,14 @@
   }
 
   function returnToBase(taskState = 'PARTIAL', payload = {}) {
-    emit(
+    const event = emit(
       taskState === 'COMPLETED' ? 'TASK_COMPLETED' :
       taskState === 'BLOCKED' ? 'TASK_BLOCKED' :
       taskState === 'HELP_NEEDED' ? 'HELP_NEEDED' :
       'TASK_PARTIAL',
       { ...buildTaskSnapshot(), ...payload }
     );
-    const url = safeReturnUrl(taskState);
+    const url = safeReturnUrl(taskState, event.event_id);
     if (url) location.href = url;
     else toast('베이스캠프 연결 주소가 없어요. 현재 결과는 기기에 보존했어요.');
   }
@@ -147,9 +148,9 @@
     try {
       const url = new URL(context.snap_target, location.href);
       if (!['http:', 'https:'].includes(url.protocol)) return event;
-      if (context.session_id) url.searchParams.set('session_id', context.session_id);
-      if (context.task_id) url.searchParams.set('task_id', context.task_id);
-      if (context.lap_id) url.searchParams.set('lap_id', context.lap_id);
+      ['session_id','goal_id','task_id','lap_id','return_target','child_id','target_time_ms','session_start_at','paused_at','issue_ms'].forEach(key => {
+        if (context[key]) url.searchParams.set(key, context[key]);
+      });
       url.searchParams.set('from_app', 'hide-seek');
       url.searchParams.set('word', event.payload.word);
       if (event.payload.context) url.searchParams.set('word_context', event.payload.context);
