@@ -41,6 +41,7 @@ function seededState(){
       items:[
         {
           id:'ko-1',eng:'불가피',kor:'피할 수 없음',example:'비가 너무 많이 와서 일정 변경이 불가피했다.',languageDomain:'KOREAN',missionRole:'NEW',
+          contextEvidence:{verified:true,sourceType:'TEST_FIXTURE',sourceRef:'fixture://ko-context-evidence',contextText:'비가 너무 많이 와서 일정 변경이 불가피했다.',evidenceText:'일정 변경이 불가피했다',candidates:['비가 너무 많이 와서','일정 변경이 불가피했다']},
           meaningMap:map('KOREAN',[
             {role:'HANJA_ORIGIN',label:'不',meaning:'아니다'},
             {role:'HANJA_ORIGIN',label:'避',meaning:'피하다'}
@@ -153,6 +154,19 @@ test('verified Korean and Hanja meaning maps use thinking-first without fake ety
   await expect(page.getByText('MEANING CLUE',{exact:true})).toBeVisible();
   await expect(page.getByRole('heading',{name:'단어 → 뜻'})).toBeVisible();
 
+  const beforeEvidenceTrail=await page.evaluate(()=>{
+    const w=validWords().find(x=>x.id==='ko-1');
+    return languageMemoryEvidenceSummary(w);
+  });
+  expect(beforeEvidenceTrail.axes.EVIDENCE).toBe(0);
+  expect(beforeEvidenceTrail.objectiveRecallCounts.CONTEXT).toBe(0);
+
+  await page.getByRole('button',{name:'피할 수 없음'}).click();
+  await expect(page.getByText('EVIDENCE TRAIL',{exact:true})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'문맥 근거 찾기'})).toBeVisible();
+  await page.getByRole('button',{name:'일정 변경이 불가피했다'}).click();
+  await page.waitForTimeout(340);
+
   const evidence=await page.evaluate(()=>{
     const s=JSON.parse(localStorage.getItem('hide_seek_state'));
     const mission=s.sheets.find(x=>x.sheetId==='multilingual-thinking-first');
@@ -186,9 +200,9 @@ test('verified Korean and Hanja meaning maps use thinking-first without fake ety
   expect(koreanEvidence.axes.MEANING).toBeGreaterThanOrEqual(1);
   expect(koreanEvidence.axes.RECALL).toBeGreaterThanOrEqual(1);
   expect(koreanEvidence.axes.EXPRESSION).toBeGreaterThanOrEqual(1);
-  expect(koreanEvidence.objectiveRecallCounts.CONTEXT).toBe(0);
-  expect(koreanEvidence.axes.EVIDENCE).toBe(0);
-  expect(koreanEvidence.objectiveRecallCounts.EVIDENCE).toBe(0);
+  expect(koreanEvidence.objectiveRecallCounts.CONTEXT).toBeGreaterThanOrEqual(1);
+  expect(koreanEvidence.axes.EVIDENCE).toBeGreaterThanOrEqual(1);
+  expect(koreanEvidence.objectiveRecallCounts.EVIDENCE).toBeGreaterThanOrEqual(1);
 
   expect(domainSkill.hanja.attempts).toBe(1);
   expect(domainSkill.hanja.adaptiveClue).toBeNull();
