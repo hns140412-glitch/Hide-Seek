@@ -154,7 +154,7 @@ test('real NEW 12 + REVIEW 24 follows mission, recall and morning mock-test memo
   expect(firstRecall.retrieval).toContain('FIRST_RECALL_CORRECT');
 
   await page.getByRole('button',{name:'탐험 미션'}).click();
-  await page.getByRole('button',{name:'상세'}).click();
+  await page.locator('.detail-sheet[data-id="real-mock-36"]').click();
   await page.getByRole('button',{name:'아침 모의시험 결과 기록'}).click();
 
   async function mark(word,resultLabel){
