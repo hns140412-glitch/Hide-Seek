@@ -780,12 +780,6 @@ for forbidden in [
     if forbidden in app:
         fail.append("LANGUAGE_NEUTRAL_LEARNING_UI:"+forbidden)
 
-for forbidden in [
-    "$('.korean-evidence-choice').forEach",
-]:
-    if forbidden in app:
-        fail.append("KOREAN_EVIDENCE_BINDING_SINGLE_SELECTOR:"+forbidden)
-
 for needle in [
     "$('.korean-evidence-choice').forEach",
     "addLanguageMemoryEvidence",
