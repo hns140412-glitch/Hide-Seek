@@ -296,3 +296,11 @@ Hide exports `reviewAdvisories` as evidence, not a schedule. The packet may incl
 - Hide producer HEAD `4a9797a048a1c4a2c04023e90f35f97ee6d43d12`: V2 #73 PASS / full Hide #527 PASS.
 - Ready consumer pre-doc HEAD `84b68624612c745b5a30274cb0b5744199963a53`: roundtrip #13 PASS / Integration #278 PASS / Runtime E2E #445 PASS.
 - Product completion remains ~56%; live current-candidate cross-app roundtrip is OPEN.
+
+
+## Frozen candidate update
+- Current only eligible deployment candidate: `frozen/hide-v2-candidate-2026-09-21-02`
+- Exact SHA: `42f7627b405d1026a0339fb5ed11b563d65d8003`
+- V2 #102 PASS / full Hide #556 PASS.
+- Candidate 01 is superseded.
+- Do not use siteId-only Netlify deploy because exact source ref cannot be specified.
