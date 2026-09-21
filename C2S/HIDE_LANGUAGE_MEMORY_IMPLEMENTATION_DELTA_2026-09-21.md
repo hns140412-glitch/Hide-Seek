@@ -411,3 +411,14 @@ Latest-head CI note must still be checked live. No Netlify / deploy / merge / us
   - verified EVIDENCE becoming earned only after selection,
   - CONTEXT objective recall remaining 0.
 - A selector-binding defect was found during CI, root-caused, minimally fixed, and a plural-selector contract guard was retained.
+
+
+## Ready OCR foundation reuse correction
+- Ready & Set main already owns the family capture/OCR transport boundary through `/api/capture/analyze`, TAKY shared `vision-ingest`, source evidence validation, and `ANSWER_REFERENCE` exclusion.
+- Hide must not implement a second OCR engine or duplicate provider transport semantics.
+- Hide's `hide-family-ocr-adapter.js` remains a domain adapter for `HIDE_VOCABULARY` only.
+- Hide now aligns its request with the Ready/shared vision contract by sending:
+  - `vision_ingest_request_id`
+  - `vision_ingest_manifest`
+- Hide continues to own vocabulary-specific result normalization, NEW/REVIEW provenance handling, and vocabulary evidence checks.
+- OCR implementation status must distinguish shared foundation from live-provider/device verification; do not label OCR itself as 0% merely because live-provider verification remains incomplete.
