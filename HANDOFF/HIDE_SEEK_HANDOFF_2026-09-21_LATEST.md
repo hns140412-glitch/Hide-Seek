@@ -500,3 +500,11 @@ Important current frontier:
 - Reconstruction success is not objective recall and must be followed by SEEK AGAIN unassisted verification.
 - If semantic FINAL SEEK support was already used, do not stack reconstruction; route to relearn.
 - Current locked reporting: PRODUCT ~74%, CODED ~90%, CI ~87%, Browser Runtime ~83%, Device 0%, Release 0%.
+
+
+## 2026-09-22 Hanja SOUND miss recovery delta
+- Exact code HEAD `ad8872a9305a121b783142f00e4a8d2c22e6ad1c` passed V2 #284 / full Hide #742.
+- Wrong Hanja SOUND FIND now enters verified reading relearn exposure, then re-hides and routes into SOUND-specific HIDDEN WORDS reinforcement.
+- The re-exposure is assisted/non-recall; no inferred reading is allowed.
+- The session may carry a temporary activity-only SOUND recovery handoff when generic recovery would otherwise mask the specific sound weakness. Do not interpret this as a new Memory Engine score or Ready review policy.
+- Current locked reporting: PRODUCT ~75%, CODED ~91%, CI ~88%, Browser Runtime ~84%, Device 0%, Release 0%.
