@@ -82,9 +82,24 @@ test('real NEW 12 + REVIEW 24 follows mission, recall and morning mock-test memo
     await page.getByRole('button',{name:'내 추론 남기기'}).click();
     await page.getByRole('button',{name:'구조·장면 단서 보기'}).click();
     if(expected.eng==='mountain'){
+      await expect(page.locator('[data-scene-id="GROUND"]')).toBeVisible();
       await expect(page.locator('[data-scene-id="GROUND"]')).toHaveText(/평평한 땅/);
+      await expect(page.locator('[data-scene-id="RISE"]')).toBeHidden();
+      await expect(page.locator('[data-scene-id="PEAK"]')).toBeHidden();
+      await page.getByRole('button',{name:'다음 장면 이어보기'}).click();
+      await expect(page.locator('[data-scene-id="RISE"]')).toBeVisible();
       await expect(page.locator('[data-scene-id="RISE"]')).toHaveText(/위로 솟기/);
+      await page.getByRole('button',{name:'다음 장면 이어보기'}).click();
+      await expect(page.locator('[data-scene-id="PEAK"]')).toBeVisible();
       await expect(page.locator('[data-scene-id="PEAK"]')).toHaveText(/높은 꼭대기/);
+      await expect(page.getByRole('button',{name:'장면 연결 완료'})).toBeDisabled();
+      const sceneTrace=await page.evaluate(()=>{
+        const s=JSON.parse(localStorage.getItem('hide_seek_state'));
+        return s.sheets[0].items.find(x=>x.eng==='mountain')?.learningStats?.assistanceTrace?.filter(x=>x.step==='SCENE_PROGRESSIVE_REVEAL')||[];
+      });
+      expect(sceneTrace).toHaveLength(2);
+      expect(sceneTrace[0]).toMatchObject({beatIndex:1,beatId:'RISE',recallScoreImpact:false});
+      expect(sceneTrace[1]).toMatchObject({beatIndex:2,beatId:'PEAK',recallScoreImpact:false});
     }
     if(i===0){
       await expect(page.getByText('검증 어원',{exact:true})).toBeVisible();
