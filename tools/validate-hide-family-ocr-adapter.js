@@ -11,6 +11,8 @@ async function runCase(responseBody,status=200){
   const sandbox={
     console,
     navigator:{onLine:true},
+    Blob:class Blob{},
+    URLSearchParams:class URLSearchParams{},
     FormData:class{
       constructor(){this.map=new Map();this.files=[]}
       set(k,v){this.map.set(k,v)}
