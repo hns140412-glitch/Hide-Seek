@@ -499,6 +499,8 @@ for needle in [
     "비슷했어",
     "달랐어",
     "skillProfile=inferenceRecordSummary()",
+    "showParentExplanation",
+    "PARENT_CHILD",
 ]:
     if needle not in app:
         fail.append("TRANSFERABLE_INFERENCE_CONTRACT:"+needle)
@@ -510,6 +512,8 @@ for needle in [
     "scene-trail",
     "prior-skill-cue",
     "RECALIBRATE",
+    "parentExplanation",
+    "parent-explain-card",
 ]:
     if needle not in language_model and needle not in css:
         fail.append("TRANSFERABLE_LANGUAGE_MODEL:"+needle)
