@@ -73,7 +73,7 @@
       ...item,
       languageDomain:domain,
       learningProfile,
-      learningContext:globalThis.HideLearningBasis?.projectLearningContext?.(domain,item.learningContext||item.learning_context)||null,
+      learningContext:globalThis.HideLearningBasis?.projectLearningContext?.(domain,item.learningContext||item.learning_context||globalThis.HideSeekBridge?.learningContext?.())||null,
       meaningMap:normalizeMap(item.meaningMap||item.meaning_map,domain)
     };
   }
@@ -85,7 +85,7 @@
 
   function learningContextFor(item={}){
     const domain=detectDomain(item);
-    return globalThis.HideLearningBasis?.projectLearningContext?.(domain,item.learningContext||item.learning_context)||null;
+    return globalThis.HideLearningBasis?.projectLearningContext?.(domain,item.learningContext||item.learning_context||globalThis.HideSeekBridge?.learningContext?.())||null;
   }
 
   function hasVerifiedMeaningMap(item={}){
