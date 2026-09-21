@@ -154,3 +154,13 @@ Latest branch state must be checked live before work resumes. Do not reuse the o
 - Ready & Set Planner owns actual scheduling and rescheduling through dated TODOs, free-window allocation, carry-over, and planner constraints.
 - Canonical loop: `Hide memory evidence -> Ready learning/review policy -> Ready & Set Planner schedule -> future Hide retrieval -> new memory evidence`.
 - A Hide-side `nextReviewPriority` is a priority signal, never a date/time schedule.
+
+
+## Planner-owned review activation lock
+- `nextReviewPriority` = advisory signal only; never a schedule or permission for Hide to start a future review by itself.
+- Hide must not autonomously pick a past word for review from its priority ranking.
+- Future/past-memory review activation requires explicit `review_directive` from the Ready chain:
+  - review policy owner: `READY_LEARNING_ENGINE`
+  - schedule owner: `READY_SET_PLANNER`
+  - target: explicit lexical IDs
+- Hide executes retrieval and returns new memory evidence; it does not choose the review date.
