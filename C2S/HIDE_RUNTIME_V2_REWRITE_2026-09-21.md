@@ -109,3 +109,15 @@ No merge, deploy, Netlify, production or device verification has occurred.
 - Hide producer HEAD `4a9797a048a1c4a2c04023e90f35f97ee6d43d12`: V2 #73 PASS / full Hide #527 PASS.
 - Ready consumer pre-doc HEAD `84b68624612c745b5a30274cb0b5744199963a53`: roundtrip #13 PASS / Integration #278 PASS / Runtime E2E #445 PASS.
 - This is candidate-contract verification, not live hosted roundtrip verification. PRODUCT_COMPLETION stays ~56%.
+
+
+## Surgery increment — child-facing product UI/UX
+- Home now prioritizes the active exploration as the primary child decision.
+- Camera/library, mission management and Memory Ladder are secondary actions rather than equal-weight developer controls.
+- Learning screens expose progress hierarchy while keeping one primary action per stage.
+- Mission management uses exploration cards and child-facing status labels.
+- Memory screens use Memory Ladder summaries and per-word meters instead of raw metric tables.
+- Internal runtime vocabulary remains hidden from the child-facing surface.
+- Exact pre-document UI code HEAD `e006dc0ca3fdadb704e9403f7af566668093a88f`: V2 #116 PASS / full Hide #570 PASS.
+- Current V2 PRODUCT_COMPLETION: ~66%.
+- This is not final visual art completion. Exploration crew presence, motion/celebration and physical-device visual QA remain OPEN.
