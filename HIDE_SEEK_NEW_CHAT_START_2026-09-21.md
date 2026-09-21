@@ -156,3 +156,9 @@ Ready memory-review integration:
 Session roundtrip:
 - Ready PR #100 carries review_directive into Hide launch and preserves Hide memorySummary on return.
 - Keep all scheduling/policy ownership unchanged.
+
+
+Language Memory evidence semantics:
+- objectiveVerified != objectiveRecall.
+- Recognition, association, and context-evidence selection must not inflate recall.
+- Use evidenceMode to preserve interaction semantics.
