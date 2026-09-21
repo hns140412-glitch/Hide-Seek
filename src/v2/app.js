@@ -35,7 +35,7 @@
 
   const journeyHtml=stage=>{
     const steps=[
-      ['MEMORIZE','만나기'],['FIRST_FIND','첫 찾기'],['MEANING','뜻 단서'],['DOMAIN_EXTENSION','연결 길'],['FINAL_SEEK','마지막 찾기'],['SEEK_AGAIN','다시 찾기']
+      ['MEMORIZE','01 만나기'],['FIRST_FIND','02 첫 찾기'],['MEANING','03 뜻 단서'],['DOMAIN_EXTENSION','04 연결 길'],['FINAL_SEEK','05 마지막 찾기'],['SEEK_AGAIN','06 다시 찾기']
     ];
     const normalized=stage==='SEEK_AGAIN_RELEARN'?'SEEK_AGAIN':stage;
     const activeIndex=Math.max(0,steps.findIndex(([key])=>key===normalized));
