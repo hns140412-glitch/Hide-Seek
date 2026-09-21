@@ -472,3 +472,13 @@ Important current frontier:
 - HIDDEN WORDS uses engine primaryReason only: confusion→meaning, orthographic→shape, verified sound→sound recall, other weakness→unassisted token recall.
 - Do not introduce a parallel Hidden Words weakness score.
 - Current locked reporting: PRODUCT ~71%, CODED ~87%, CI ~84%, Browser Runtime ~80%, Device 0%, Release 0%.
+
+
+## 2026-09-22 bidirectional Meaning Clue delta
+- Exact code HEAD `e15e86fdd7053903c1093251d13bdc31398a8bea` passed V2 #251 / full Hide #709.
+- MEANING CLUE uses bidirectional recognition only when valid comparison peers exist inside the active `session.queue`.
+- Single-item/peerless sessions keep direct typed meaning recall.
+- Recognition is `objectiveVerified=true` but `objectiveRecall=false`.
+- A mismatch stores the confused token/meaning pair and feeds Memory Engine confusion → HIDDEN WORDS meaning reinforcement.
+- Do not source comparison choices from mission items outside a Ready-directed session queue.
+- Current locked reporting: PRODUCT ~72%, CODED ~88%, CI ~85%, Browser Runtime ~81%, Device 0%, Release 0%.
