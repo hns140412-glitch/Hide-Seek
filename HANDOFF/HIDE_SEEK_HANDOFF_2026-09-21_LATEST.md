@@ -304,3 +304,36 @@ Hide exports `reviewAdvisories` as evidence, not a schedule. The packet may incl
 - V2 #102 PASS / full Hide #556 PASS.
 - Candidate 01 is superseded.
 - Do not use siteId-only Netlify deploy because exact source ref cannot be specified.
+
+
+## C2S closure handoff — Runtime V2 rewrite
+
+Canonical continuation files:
+- `C2S/HIDE_RUNTIME_V2_REWRITE_C2S_CLOSURE_2026-09-21.md`
+- `C2S/HIDE_RUNTIME_V2_REWRITE_ATOMS_2026-09-21.json`
+- `C2S/HIDE_RUNTIME_V2_PRODUCT_COMPLETION_MATRIX_2026-09-21.md`
+- `C2S/HIDE_RUNTIME_V2_EXTERNAL_RESOURCE_GATE_2026-09-21.md`
+
+Current implementation direction:
+- Continue only on `rewrite/hide-runtime-v2-2026-09-21`.
+- V1 monolith is reference/rollback only.
+- First action in next chat: live-refresh exact HEAD and restore exact-head V2/full-Hide CI if not green.
+- Do not deploy/merge/Netlify until a deploy action can specify the exact frozen candidate source ref.
+
+Last locked product estimate:
+- PRODUCT_COMPLETION ~62%
+- CODED ~79%
+- CI_VERIFIED ~75%
+- Browser RUNTIME_VERIFIED ~70%
+- DEVICE_VERIFIED 0%
+- RELEASE_VERIFIED 0%
+
+Current frozen candidate:
+- `frozen/hide-v2-candidate-2026-09-21-02`
+- SHA `42f7627b405d1026a0339fb5ed11b563d65d8003`
+- V2 #102 PASS / full Hide #556 PASS
+
+Important current frontier:
+- child-facing UI/UX surgery is active and must follow `Hide_Seek_UI_MASTER_LOGIC_REV_04.md`
+- keep Seek Again, Trail Mastery vs Memory Strength, OCR recovery, PWA/mobile, Ready ownership invariants intact
+- real-provider OCR / physical device / hosted Ready-Hide roundtrip remain OPEN.
