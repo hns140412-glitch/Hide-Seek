@@ -278,3 +278,11 @@ Hide exports `reviewAdvisories` as evidence, not a schedule. The packet may incl
 - Playwright product-flow service-worker blocking was corrected; PWA validation now permits actual registration.
 - Pre-doc code HEAD `eaafb969ff4b40c3bb547bbc81dea8f6240d030b`: V2 #54 PASS, full Hide #508 PASS.
 - Truthful V2 PRODUCT_COMPLETION: ~52%; DEVICE_VERIFIED 0%; RELEASE_VERIFIED 0%.
+
+
+## Latest V2 surgery — OCR resilience / mobile browser
+- Successful OCR pages are preserved across partial failure; retry targets failed pages only.
+- OCR confidence/warnings/provenance are visible and persisted.
+- 390×844 browser layout/touch target checks and reduced-height focus/keyboard simulation pass.
+- Pre-doc code HEAD `a5b4734bc06c49d37eb80c05752b7f75ca7538d8`: V2 #68 PASS, full Hide #522 PASS.
+- Truthful V2 PRODUCT_COMPLETION: ~56%; actual provider OCR and DEVICE_VERIFIED remain unproven.
