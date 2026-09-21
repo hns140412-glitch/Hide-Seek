@@ -31,23 +31,23 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 | Korean RESPONSE TRAIL | FUNCTIONAL | yes | fixture | V2 browser evidence semantics | qualitative feedback not implemented |
 | Hanja SOUND FIND | PARTIAL | yes when verified soundEvidence exists | fixture | domain contract | dedicated V2 browser Hanja path still needed |
 | FINAL SEEK | FUNCTIONAL | yes | fixture | V2 browser flow | richer reconstruction/hint ladder not ported |
-| Memory evidence recording | FUNCTIONAL | yes | fixture | memory-engine + browser | strength model intentionally simplified |
+| Memory evidence recording | RUNTIME_VERIFIED | yes | fixture | V2 Memory Ladder browser flow | long-term calibration still needs representative history |
 | Memory advisory to Ready | FUNCTIONAL | yes | fixture | Ready bridge contract | live cross-app current-candidate roundtrip unverified |
 | Ready Planner directive intake | RUNTIME_VERIFIED | yes | fixture contract | browser directed lexical-id test | live current Ready runtime integration unverified |
 | Session reload/resume | RUNTIME_VERIFIED | yes | fixture | browser reload test | background/PWA lifecycle not verified |
 | Exploration crew / child-facing polished UI | SKELETON | partial | no | minimal V2 shell | product UI redesign still required |
 | Mission management surface | RUNTIME_VERIFIED | yes | N/A | selection/rename/archive/delete browser flow | richer history/filtering/bulk actions pending |
-| Records / wordbook surfaces | NOT_STARTED | no | no | none in V2 | must be rewritten, not copied blindly |
+| Records / wordbook surfaces | RUNTIME_VERIFIED | yes | fixture/history-shaped | cumulative wordbook + weakness dashboard browser flow | filtering/search/detail drill-down pending |
 | PWA install/offline/update | NOT_STARTED | no | no | none for V2 | V2 service-worker/release integration pending |
 | Physical device behavior | NOT_STARTED | no | no | DEVICE_VERIFIED=0 | camera/touch/keyboard/install all pending |
 | Production/release | NOT_STARTED | no | no | none | intentional hold |
 
 ## Claim levels
 
-- PRODUCT_COMPLETION: approximately 39%
-- CODED: approximately 56%
-- CI_VERIFIED: approximately 50%
-- BROWSER_RUNTIME_VERIFIED: approximately 40%
+- PRODUCT_COMPLETION: approximately 44%
+- CODED: approximately 61%
+- CI_VERIFIED: approximately 55%
+- BROWSER_RUNTIME_VERIFIED: approximately 46%
 - DEVICE_VERIFIED: 0%
 - RELEASE_VERIFIED: 0%
 
@@ -97,3 +97,13 @@ Head before matrix document: 63db5206a836050c3dfe5f2b9fd0238d6baeb464
 - Validate Hide Runtime V2 #16: SUCCESS
 - Validate Hide & Seek #470: SUCCESS
 - no Netlify / deploy / merge / production / device verification
+
+
+### Memory Ladder / records surgery increment
+- V2 Memory Ladder derives memory strength, next review priority, recovery status and weakness dimensions from V2 evidence.
+- Weakness dimensions now include semantic, phonological, orthographic, confusion, slow/timeout recall, hint dependency and decay.
+- Spaced unassisted recall is distinguished from immediate recovery.
+- Wordbook merges the same lexical item across missions without duplicating the memory identity.
+- Records screen exposes aggregate memory state and per-word review priority.
+- Exact pre-document code HEAD `065f9064c23b2198719573da559e5618109f940d` passed V2 #33 and full Hide #487.
+- Completion increase reflects the newly reachable Memory Ladder/wordbook product path only.
