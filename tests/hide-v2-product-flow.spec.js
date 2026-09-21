@@ -1320,6 +1320,116 @@ test('Hide V2 reuses only established inference clue preference as optional MEMO
   expect(profile.adaptiveClue.evidenceBasis).toBe('LEARNER_SELF_REPORT');
 });
 
+test('Hide V2 English Connection reuses only established inference guidance without recall inflation',async({page})=>{
+  await page.addInitScript(()=>{
+    const events=Array.from({length:6},(_,i)=>({
+      event:'FIRST_SEEN_PREDICTION',
+      at:new Date(Date.now()-i*1000).toISOString(),
+      missionId:'prior-'+i,
+      wordId:'prior-word-'+i,
+      lexicalId:'prior::'+i,
+      word:'prior'+i,
+      prediction:'추론 '+i,
+      clueUsed:'WORD_PART',
+      confidence:'MEDIUM',
+      outcome:i===5?'NEAR':'MATCH',
+      outcomeAt:new Date().toISOString(),
+      assessmentSource:'LEARNER_SELF_REPORT',
+      objectiveVerified:false,
+      transferSkillEvidence:true,
+      recallScoreImpact:false
+    }));
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'연결 개인화'},missions:[{
+        id:'m-connect-guide',title:'연결 개인화',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        sourceCount:0,provenance:{source:'TEST_FIXTURE'},
+        items:[{
+          id:'w-connect-guide',lexicalId:'earthquake::지진',token:'earthquake',meaning:'지진',
+          example:'An earthquake shook the city.',languageDomain:'ENGLISH',missionRole:'NEW',evidence:[],source:{},meaningMap:null
+        }]
+      }],activeMissionId:'m-connect-guide',activeSession:null,captureSession:null,events,updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'탐험 시작'}).click();
+  await page.getByRole('button',{name:'기억하고 찾아보기'}).click();
+  await page.getByLabel('회상 답 입력').fill('earthquake');
+  await page.getByRole('button',{name:'기억 확인'}).click();
+  await page.getByLabel('뜻 회상 입력').fill('지진');
+  await page.getByRole('button',{name:'뜻 확인'}).click();
+
+  await expect(page.getByText('연결 길',{exact:true})).toBeVisible();
+  await expect(page.locator('.connection-guidance')).toBeVisible();
+  await expect(page.getByText('내 추론 기록에서 자주 맞았던 길',{exact:true})).toBeVisible();
+  await expect(page.getByText('단어 조각부터 연결',{exact:true})).toBeVisible();
+  await expect(page.getByText('earth + quake',{exact:true})).toBeVisible();
+
+  await page.getByRole('button',{name:'다음'}).click();
+  const evidence=await page.evaluate(()=>{
+    const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
+    return s.missions[0].items[0].evidence;
+  });
+  const guide=evidence.find(x=>x.stage==='CONNECTION_GUIDANCE');
+  const connection=evidence.find(x=>x.stage==='CONNECTION');
+  expect(guide.evidenceMode).toBe('ADAPTIVE_CONNECTION_GUIDANCE');
+  expect(guide.result).toBe('SEEN');
+  expect(guide.clue).toBe('WORD_PART');
+  expect(guide.evidenceBasis).toBe('LEARNER_SELF_REPORT');
+  expect(guide.objectiveRecall).toBe(false);
+  expect(guide.recallScoreImpact).toBe(false);
+  expect(guide.assisted).toBe(true);
+  expect(connection.evidenceMode).toBe('EXPOSURE');
+  expect(connection.objectiveRecall).toBe(false);
+});
+
+test('Hide V2 English Connection does not promote emerging inference history into adaptive guidance',async({page})=>{
+  await page.addInitScript(()=>{
+    const events=Array.from({length:2},(_,i)=>({
+      event:'FIRST_SEEN_PREDICTION',
+      at:new Date(Date.now()-i*1000).toISOString(),
+      missionId:'emerging-'+i,
+      wordId:'emerging-word-'+i,
+      lexicalId:'emerging::'+i,
+      word:'emerging'+i,
+      prediction:'추론 '+i,
+      clueUsed:'WORD_PART',
+      confidence:'MEDIUM',
+      outcome:'MATCH',
+      outcomeAt:new Date().toISOString(),
+      assessmentSource:'LEARNER_SELF_REPORT',
+      objectiveVerified:false,
+      transferSkillEvidence:true,
+      recallScoreImpact:false
+    }));
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'연결 초기경향'},missions:[{
+        id:'m-connect-emerging',title:'연결 초기경향',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        sourceCount:0,provenance:{source:'TEST_FIXTURE'},
+        items:[{
+          id:'w-connect-emerging',lexicalId:'earthquake::지진',token:'earthquake',meaning:'지진',
+          example:'An earthquake shook the city.',languageDomain:'ENGLISH',missionRole:'NEW',evidence:[],source:{},meaningMap:null
+        }]
+      }],activeMissionId:'m-connect-emerging',activeSession:null,captureSession:null,events,updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'탐험 시작'}).click();
+  await page.getByRole('button',{name:'기억하고 찾아보기'}).click();
+  await page.getByLabel('회상 답 입력').fill('earthquake');
+  await page.getByRole('button',{name:'기억 확인'}).click();
+  await page.getByLabel('뜻 회상 입력').fill('지진');
+  await page.getByRole('button',{name:'뜻 확인'}).click();
+
+  await expect(page.getByText('연결 길',{exact:true})).toBeVisible();
+  expect(await page.locator('.connection-guidance').count()).toBe(0);
+  const profile=await page.evaluate(()=>{
+    const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
+    return window.HideLanguageModel.summarizeInferenceSkill(s.events);
+  });
+  expect(profile.evidenceLevel).toBe('EMERGING');
+  expect(profile.adaptiveClue).toBeNull();
+});
+
 test('Hide V2 memory detail exposes evidence trail behind strength and priority',async({page})=>{
   await page.addInitScript(()=>{
     localStorage.setItem('hide_seek_v2_state',JSON.stringify({
