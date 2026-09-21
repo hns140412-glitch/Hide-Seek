@@ -25,7 +25,7 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 | OCR shared adapter integration | RUNTIME_VERIFIED | yes | provider-shaped fixture only | multi-page partial-failure/retry browser flow | real varied prints/provider behavior unverified |
 | OCR review persistence/resume | RUNTIME_VERIFIED | yes | provider-shaped fixture only | reload + editable review-draft persistence + warning/provenance + explicit duplicate-merge browser tests | real-provider calibration incomplete |
 | MEMORIZE / THINKING TRAIL | RUNTIME_VERIFIED | yes | fixture | prediction→reveal→self-comparison + established-clue reuse browser flow | representative multilingual inference histories still open |
-| FIRST FIND | RUNTIME_VERIFIED | yes | fixture | correct/wrong/unsure + bounded shape-assist + relearn truth-boundary browser flows | representative multilingual recovery still open |
+| FIRST FIND | RUNTIME_VERIFIED | yes | fixture | correct/wrong/unsure + English shape + verified Korean meaning-map + verified Hanja sound assist + relearn truth-boundary browser flows | representative source breadth still open |
 | MEANING CLUE | RUNTIME_VERIFIED | yes | fixture | direct recall fallback + session-scoped bidirectional recognition + confusion handoff browser flow | broader representative confusion sets still open |
 | English CONNECTION | RUNTIME_VERIFIED | yes | fixture | Thinking Trail browser flow | adaptive clue personalization and broader representative vocabulary still pending |
 | Korean RESPONSE TRAIL | RUNTIME_VERIFIED | yes | fixture | production-evidence + target-use truth-boundary browser flow | semantic correctness is intentionally not auto-scored; richer teacher/parent feedback remains open |
@@ -419,3 +419,15 @@ Head before matrix document: 63db5206a836050c3dfe5f2b9fd0238d6baeb464
 - Adaptive guidance is conservative: ESTABLISHED evidence can surface a preferred clue, while the child may still choose another clue. No forced answer or recall scoring is introduced.
 - Exact HEAD `2714be8bd84985c7e3dde763aee270723486c1be` passed V2 #304 / full Hide #762.
 - Conservative reporting rises one point for this newly runtime-proven active inference loop: PRODUCT ~76%, CODED ~92%, CI ~89%, Browser Runtime ~85%, Device 0%, Release 0%.
+
+
+### 2026-09-22 multilingual First Find recovery increment
+- FIRST FIND safe-assistance now supports more than English while remaining evidence-gated:
+  - English → deterministic shape cue;
+  - Korean → verified meaning-map structural cue only;
+  - Hanja → verified source-linked sound cue only.
+- Korean/Hanja assistance fails closed when verified evidence is unavailable; no inferred etymology, component or pronunciation is invented.
+- All FIRST_FIND_ASSIST successes remain assisted/non-recall with `recallScoreImpact=false`.
+- Source-backed Korean/Hanja assistance stores the source reference in evidence.
+- Exact HEAD `950631cd774d85a1227c51235d3168f9bb013146` passed V2 #311 / full Hide #769.
+- Conservative report moves one point for this newly runtime-proven multilingual recovery path: PRODUCT ~77%, CODED ~93%, CI ~90%, Browser Runtime ~86%, Device 0%, Release 0%.
