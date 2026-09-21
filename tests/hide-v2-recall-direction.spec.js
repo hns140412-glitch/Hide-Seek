@@ -1,3 +1,4 @@
+// P0-02: direction evidence regression; base OCR repair is inherited via PR merge ref.
 const {test,expect}=require('@playwright/test');
 
 test('V2 preserves bidirectional recall evidence without changing ownership',async({page})=>{
