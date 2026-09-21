@@ -161,6 +161,15 @@ for needle in [
         fail.append("MISSING_LEARNING_RESUME_OR_PROVENANCE:"+needle)
 
 for needle in [
+    "THINKING_SCENE:1",
+    "mockWeak",
+    "stage:'MEMORY_LADDER'",
+    "외울 때 만든 장면부터 다시 꺼내보자",
+]:
+    if needle not in app:
+        fail.append("THINKING_SCENE_MEMORY_LADDER:"+needle)
+
+for needle in [
     "renderMemorizeStage",
     "MEMORIZATION_EXPOSURE",
     "FIRST_RECALL_CORRECT",
