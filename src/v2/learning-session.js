@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const STAGES=['MEMORIZE','FIRST_FIND','MEANING','DOMAIN_EXTENSION','FINAL_SEEK','SEEK_AGAIN_RELEARN','SEEK_AGAIN','COMPLETE'];
+  const STAGES=['MEMORIZE','FIRST_FIND','FIRST_FIND_RELEARN','MEANING','DOMAIN_EXTENSION','FINAL_SEEK','SEEK_AGAIN_RELEARN','SEEK_AGAIN','COMPLETE'];
   const clone=x=>JSON.parse(JSON.stringify(x));
   const current=(session,mission)=>mission.items.find(x=>x.id===session.queue?.[session.index])||null;
   const initialStageFor=w=>String(w?.missionRole||'NEW').toUpperCase()==='REVIEW'?'FIRST_FIND':'MEMORIZE';
@@ -40,6 +40,7 @@
     const next=clone(session);
     if(next.stage==='MEMORIZE'){next.stage='FIRST_FIND';return next}
     if(next.stage==='FIRST_FIND'){next.stage='MEANING';return next}
+    if(next.stage==='FIRST_FIND_RELEARN'){next.stage='MEANING';return next}
     if(next.stage==='MEANING'){next.stage='DOMAIN_EXTENSION';return next}
     if(next.stage==='DOMAIN_EXTENSION'){next.stage='FINAL_SEEK';return next}
     if(next.stage==='SEEK_AGAIN_RELEARN'){next.stage='SEEK_AGAIN';return next}
@@ -87,7 +88,25 @@
       assisted:false,
       attempt:attempt.count
     });
-    return {ok,session:advance(attempt.session,mission)};
+    if(ok)return {ok,session:advance(attempt.session,mission)};
+    const next=clone(attempt.session);
+    next.stage='FIRST_FIND_RELEARN';
+    return {ok,session:next};
+  }
+
+  function submitFirstFindRelearn(session,mission){
+    const w=current(session,mission);
+    HideV2Memory.record(mission.id,w.id,{
+      stage:'FIRST_FIND_RELEARN',
+      evidenceMode:'RELEARN_EXPOSURE',
+      axes:['FORM','MEANING'],
+      result:'SEEN',
+      objectiveVerified:false,
+      objectiveRecall:false,
+      recallScoreImpact:false,
+      assisted:true
+    });
+    return {session:advance(session,mission)};
   }
 
   function checkMeaning(session,mission,answer){
@@ -262,6 +281,6 @@
   }
 
   window.HideV2Learning=Object.freeze({
-    STAGES,create,current,advance,submitMemorize,checkFirstFind,checkMeaning,submitDomainExtension,useFinalSupport,checkFinalSeek,submitSeekAgainRelearn,checkSeekAgain
+    STAGES,create,current,advance,submitMemorize,checkFirstFind,submitFirstFindRelearn,checkMeaning,submitDomainExtension,useFinalSupport,checkFinalSeek,submitSeekAgainRelearn,checkSeekAgain
   });
 })();
