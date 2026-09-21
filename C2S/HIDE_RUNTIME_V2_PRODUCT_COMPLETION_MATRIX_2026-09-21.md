@@ -23,7 +23,7 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 | Album multi-image intake | RUNTIME_VERIFIED | yes | synthetic multi-page | browser multi-page + retry flow | large/odd real image sets not representative-tested |
 | Capture blob persistence | RUNTIME_VERIFIED | yes | fixture blob | IndexedDB + reload test | storage quota/recovery not verified |
 | OCR shared adapter integration | RUNTIME_VERIFIED | yes | provider-shaped fixture only | multi-page partial-failure/retry browser flow | real varied prints/provider behavior unverified |
-| OCR review persistence/resume | RUNTIME_VERIFIED | yes | provider-shaped fixture only | reload + editable review + warning/provenance browser tests | duplicate merge UX and real-provider calibration incomplete |
+| OCR review persistence/resume | RUNTIME_VERIFIED | yes | provider-shaped fixture only | reload + editable review + warning/provenance + explicit duplicate-merge browser tests | real-provider calibration incomplete |
 | MEMORIZE | FUNCTIONAL | yes | fixture | V2 browser flow | richer exploration assistance not yet ported |
 | FIRST FIND | FUNCTIONAL | yes | fixture | V2 browser flow | recovery/retry pedagogy still simplified |
 | MEANING recall | FUNCTIONAL | yes | fixture | V2 browser flow | recognition/contrast variants not yet ported |
@@ -31,7 +31,7 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 | Korean RESPONSE TRAIL | RUNTIME_VERIFIED | yes | fixture | V2 browser production-evidence flow | qualitative feedback not implemented |
 | Korean EVIDENCE TRAIL | RUNTIME_VERIFIED | yes when verified contextEvidence exists | verified-context fixture | browser evidence-selection truth-boundary flow | representative Korean source evidence still open |
 | Hanja SOUND FIND | RUNTIME_VERIFIED | yes when verified soundEvidence exists | verified-sound fixture | dedicated V2 browser sound-recall flow | representative Hanja source/device pronunciation workflow still open |
-| FINAL SEEK | FUNCTIONAL | yes | fixture | V2 browser flow | richer reconstruction/hint ladder not ported |
+| FINAL SEEK | RUNTIME_VERIFIED | yes | fixture | browser flow + assisted→unassisted truth-boundary regression | richer reconstruction ladder remains partial |
 | Memory evidence recording | RUNTIME_VERIFIED | yes | fixture | V2 Memory Ladder browser flow | long-term calibration still needs representative history |
 | Memory advisory to Ready | PARTIAL | no current hosted V2 target | candidate-contract shaped | Hide V2 producer + Ready V2 consumer contract CI | hosted current-candidate roundtrip unverified |
 | Ready Planner directive intake | RUNTIME_VERIFIED | yes | fixture contract | browser directed lexical-id test | live current Ready runtime integration unverified |
@@ -47,10 +47,10 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 
 ## Claim levels
 
-- PRODUCT_COMPLETION: approximately 67%
-- CODED: approximately 83%
-- CI_VERIFIED: approximately 80%
-- BROWSER_RUNTIME_VERIFIED: approximately 76%
+- PRODUCT_COMPLETION: approximately 68%
+- CODED: approximately 84%
+- CI_VERIFIED: approximately 81%
+- BROWSER_RUNTIME_VERIFIED: approximately 77%
 - DEVICE_VERIFIED: 0%
 - RELEASE_VERIFIED: 0%
 
@@ -223,3 +223,21 @@ Head before matrix document: 63db5206a836050c3dfe5f2b9fd0238d6baeb464
   - Validate Hide Runtime V2 #182 — SUCCESS
   - Validate Hide & Seek #636 — SUCCESS.
 - The conservative product estimate rises only for the newly reachable Korean evidence-selection path plus newly runtime-proven Hanja sound path: PRODUCT_COMPLETION ~67%, CODED ~83%, CI_VERIFIED ~80%, BROWSER_RUNTIME_VERIFIED ~76%. DEVICE_VERIFIED and RELEASE_VERIFIED remain 0%.
+
+
+### 2026-09-22 assisted-recall / OCR provenance closure increment
+- FINAL SEEK support is now truth-separated from unassisted recall:
+  - using the answer-safe memory scene records explicit assistance;
+  - a correct answer after assistance does not count as objective recall;
+  - the learner must pass through Seek Again for an unassisted retrieval;
+  - same-day recovery remains `IMMEDIATE_ONLY` and `needsUnassistedRecall=true` until spaced evidence exists.
+- OCR review → mission commit now preserves page/row/confidence/provider/model/analysisVersion instead of losing nested source provenance during a second normalize pass.
+- Duplicate OCR lexical rows are no longer silently deleted or duplicated by default:
+  - review visibly marks repeated lexical rows;
+  - the user explicitly chooses to merge them;
+  - one mission item is created while all source occurrences remain under `source.occurrences`;
+  - editing a merged row breaks the merge rather than silently preserving a stale grouping.
+- Exact code HEAD `771e4888af4ff3121347d93ca4184f63768e94f1` passed:
+  - Validate Hide Runtime V2 #196 — SUCCESS
+  - Validate Hide & Seek #654 — SUCCESS.
+- Conservative reporting after this user-reachable closure: PRODUCT_COMPLETION ~68%, CODED ~84%, CI_VERIFIED ~81%, BROWSER_RUNTIME_VERIFIED ~77%, DEVICE_VERIFIED 0%, RELEASE_VERIFIED 0%.
