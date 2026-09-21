@@ -9,6 +9,7 @@
     MEANING:'뜻 단서',
     DOMAIN_EXTENSION:'연결 길',
     HIDDEN_WORDS:'숨은 단어 보강',
+    HIDDEN_WORDS_ASSIST:'단서로 다시 찾기',
     HIDDEN_WORDS_RELEARN:'다시 만나기',
     FINAL_SEEK:'마지막 찾기',
     SEEK_AGAIN_RELEARN:'다시 만나기',
@@ -25,6 +26,7 @@
     SOUND_FIND:'소리 찾기',
     CONNECTION:'연결 길',
     HIDDEN_WORDS:'숨은 단어 보강',
+    HIDDEN_WORDS_ASSIST:'보강 단서',
     HIDDEN_WORDS_RELEARN:'보강 다시 보기',
     FINAL_SEEK:'마지막 찾기',
     SEEK_AGAIN_RELEARN:'다시 만나기',
@@ -60,7 +62,7 @@
     const steps=[
       ['MEMORIZE','01 만나기'],['FIRST_FIND','02 첫 찾기'],['MEANING','03 뜻 단서'],['DOMAIN_EXTENSION','04 연결 길'],['FINAL_SEEK','05 마지막 찾기'],['SEEK_AGAIN','06 다시 찾기']
     ];
-    const normalized=stage==='SEEK_AGAIN_RELEARN'?'SEEK_AGAIN':stage==='FIRST_FIND_RELEARN'?'FIRST_FIND':stage==='HIDDEN_WORDS'||stage==='HIDDEN_WORDS_RELEARN'?'DOMAIN_EXTENSION':stage;
+    const normalized=stage==='SEEK_AGAIN_RELEARN'?'SEEK_AGAIN':stage==='FIRST_FIND_RELEARN'?'FIRST_FIND':(stage==='HIDDEN_WORDS'||stage==='HIDDEN_WORDS_ASSIST'||stage==='HIDDEN_WORDS_RELEARN')?'DOMAIN_EXTENSION':stage;
     const activeIndex=Math.max(0,steps.findIndex(([key])=>key===normalized));
     return `<ol class="journey-path" aria-label="단어 탐험 길">${steps.map(([key,label],i)=>`<li class="${i<activeIndex?'is-done':''} ${i===activeIndex?'is-current':''}"><span aria-hidden="true">${i<activeIndex?'✓':i+1}</span><small>${esc(label)}</small></li>`).join('')}</ol>`;
   };
@@ -398,7 +400,31 @@
         if(!answer){setFlash('기억에서 떠올린 답을 입력해 주세요.');return}
         const r=HideV2Learning.submitHiddenWords(session,m,{answer});
         HideV2Session.update(r.session);
-        setFlash(r.ok?'보강 기억을 찾았어요':'잠깐 다시 만나고 마지막 찾기로 갈게요.');
+        setFlash(r.ok?'보강 기억을 찾았어요':r.support?'작은 단서로 한 번 더 찾아볼게요.':'잠깐 다시 만나고 마지막 찾기로 갈게요.');
+        render()
+      };
+      return;
+    }
+
+    if(session.stage==='HIDDEN_WORDS_ASSIST'){
+      const plan=HideV2Learning.hiddenWordsPlan(w);
+      const support=HideV2Learning.hiddenWordsSupportPlan(w,plan);
+      if(!support){
+        HideV2Session.update({...session,stage:'HIDDEN_WORDS_RELEARN'});
+        render();
+        return;
+      }
+      const prompt=plan.mode==='MEANING'
+        ?'문장 단서를 보고 뜻을 다시 떠올려보세요.'
+        :'글자 골격 단서를 보고 전체 단어를 다시 떠올려보세요.';
+      const aria=plan.mode==='MEANING'?'숨은 단어 도움 뜻 답 입력':'숨은 단어 도움 답 입력';
+      view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}${journeyHtml(session.stage)}${crewHtml(w,session.stage)}<div class="learn-head"><span class="phase-chip">${childStageLabel('HIDDEN_WORDS_ASSIST')}</span><b>${idx}/${total}</b></div><section class="card word-card hidden-words-assist"><p class="quest-overline">ONE SMALL CLUE</p><h2>${esc(support.label)}</h2><p>${esc(prompt)}</p><div class="memory-trace"><b>${esc(support.label)}</b><span>${esc(support.cue)}</span></div><small>이 단서를 본 뒤 맞혀도 바로 무힌트 회상으로 세지 않아요. 마지막 찾기에서 다시 확인해요.</small><input id="v2HiddenAssistAnswer" class="input" aria-label="${esc(aria)}" autocomplete="off" spellcheck="false"><button id="v2HiddenAssistCheck" class="btn primary full" type="button">단서로 다시 확인</button></section></section>`;
+      $('#v2HiddenAssistCheck').onclick=()=>{
+        const answer=$('#v2HiddenAssistAnswer').value.trim();
+        if(!answer){setFlash('단서를 보고 떠올린 답을 입력해 주세요.');return}
+        const r=HideV2Learning.submitHiddenWordsAssist(session,m,{answer});
+        HideV2Session.update(r.session);
+        setFlash(r.ok?'단서로 다시 찾았어요. 마지막엔 무힌트로 확인해요.':'이번엔 정답을 잠깐 다시 보고 마지막 찾기로 갈게요.');
         render()
       };
       return;
