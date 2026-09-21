@@ -83,9 +83,10 @@ const starter=api.starterExploration({eng:'rainforest'},{encounteredWords:['jung
 assert(starter?.type==='TRANSPARENT_COMPOUND','rainforest should use transparent compound support');
 assert(starter?.links.includes('jungle'),'encountered connection should appear');
 assert(starter?.claimsHistoricalEtymology===false,'starter support must not claim historical etymology');
-const opaque=api.starterExploration({eng:'island'},{encounteredWords:['ocean']});
-assert(opaque?.type==='SEMANTIC_SCENE','island must avoid fake structural split');
-assert(!opaque?.parts?.length,'island should not be split into fake parts');
+const islandPlan=api.starterExploration({eng:'island'},{encounteredWords:['ocean']});
+assert(islandPlan?.type==='VERIFIED_ETYMOLOGY'&&islandPlan?.verified===true,'island should use verified historical path');
+assert(!islandPlan?.parts?.length,'island must not be split using a fake modern is+land decomposition');
+assert(islandPlan?.nodes?.some(x=>x.role==='SPELLING_NOTE'&&x.label==='s'),'island must preserve the later spelling-s note');
 const thinkingHtml=api.renderStarterExplorationHtml({eng:'earthquake'},{encounteredWords:['environment']},x=>String(x));
 assert(thinkingHtml.includes('earth')&&thinkingHtml.includes('quake'),'earthquake compound pieces should render');
 assert(thinkingHtml.includes('environment'),'encountered link should render');
