@@ -64,6 +64,11 @@ test('printed handout becomes Hide exploration mission and enters FIRST FIND',as
   await expect(page.locator('#hideBatchRows .eng').nth(1)).toHaveValue('essential');
   await expect(page.locator('#hideBatchRows .kor').nth(1)).toHaveValue('필수적인');
   await expect(page.getByText('확인 필요')).toBeVisible();
+  await expect(page.getByText('첫 등장',{exact:true}).first()).toBeVisible();
+  await page.locator('[data-role-toggle="0"]').click();
+  await expect(page.getByText('검토에서 확정',{exact:true}).first()).toBeVisible();
+  await page.locator('[data-role-toggle="0"]').click();
+
 
   await page.getByRole('button',{name:'이대로 확인'}).click();
   await page.getByRole('button',{name:'탐험 미션 만들기'}).click();
