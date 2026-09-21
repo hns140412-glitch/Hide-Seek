@@ -229,3 +229,13 @@ FALSE_CONVERGENCE = 0: live deploy/device/real-provider claims remain OPEN.
 - Editing a merged row invalidates the grouping instead of silently carrying a stale merge.
 - Exact code HEAD `771e4888af4ff3121347d93ca4184f63768e94f1` passed V2 #196 and full Hide #654.
 - Locked reporting: PRODUCT ~68%, CODED ~84%, CI ~81%, Browser Runtime ~77%, Device 0%, Release 0%.
+
+
+## 17. 2026-09-22 local-first OCR review-draft continuity
+- Persistent review now includes the learner/parent's edited review draft, not only OCR source rows.
+- `captureSession.lastRows` preserves raw normalized OCR output; `captureSession.reviewDraft` preserves editable human review state.
+- Token/meaning corrections, exclusions, and explicit duplicate merge decisions survive reload and resume.
+- New capture/re-analysis clears stale reviewDraft before a new review begins.
+- Exact code HEAD `75dd5431625ac7b37b857df9aeb346487176c4ab` passed V2 #213 / full Hide #671.
+- Memory Ladder search/state filters and mission map status filters are also browser-verified; they reuse existing Memory Engine/mission status semantics and do not create new policy.
+- Locked reporting remains PRODUCT ~68%, CODED ~84%, CI ~81%, Browser Runtime ~77%, Device 0%, Release 0%.
