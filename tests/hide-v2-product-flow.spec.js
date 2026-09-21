@@ -187,10 +187,11 @@ test('Hide V2 obeys Ready Planner review directive and limits the session to dir
   expect(result.resultContract).toBe('HIDE_SPECIALIST_RESULT_V2');
   expect(result.runtime).toBe('V2');
   expect(result.activeMissionId).toBe('m-review');
-  expect(result.missionStatus).toBe('COMPLETED');
+  expect(result.missionStatus).toBe('PARTIAL');
   expect(result.taskState).toBe('COMPLETED');
   expect(result.learningPhase).toBe('COMPLETE');
-  expect(result.trailMastery).toBeNull();
+  expect(result.trailMastery).toBe(100);
+  expect(result.trailSummary.fullMissionScope).toBe(false);
   expect(result.reviewDirective.lexicalIds).toEqual(['second::둘째']);
   const state=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')));
   expect(state.missions[0].items[0].evidence).toHaveLength(0);
@@ -687,4 +688,11 @@ test('Hide V2 wrong final seek enters relearn and seek-again before completing',
   });
   expect(memory.memorySignature.recoveryStatus).toBe('IMMEDIATE_ONLY');
   expect(memory.needsUnassistedRecall).toBe(true);
+  const trail=await page.evaluate(()=>{
+    const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
+    return window.HideV2Trail.missionSummary(s.missions[0],{itemIds:s.activeSession?.queue||null});
+  });
+  expect(trail.trailMastery).toBe(100);
+  expect(trail.recoveredTodayCount).toBe(1);
+  expect(trail.semantics).toBe('CURRENT_SESSION_OR_MISSION_READINESS_NOT_LONG_TERM_MEMORY');
 });
