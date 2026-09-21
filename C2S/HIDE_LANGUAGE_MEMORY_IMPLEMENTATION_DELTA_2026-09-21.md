@@ -315,3 +315,17 @@ Latest-head CI note must still be checked live. No Netlify / deploy / merge / us
 - Ready & Set Planner owns actual scheduling and rescheduling through dated TODOs, free-window allocation, carry-over, and planner constraints.
 - Canonical loop: `Hide memory evidence -> Ready learning/review policy -> Ready & Set Planner schedule -> future Hide retrieval -> new memory evidence`.
 - A Hide-side `nextReviewPriority` is a priority signal, never a date/time schedule.
+
+
+## Planner-owned review activation delta
+- Hide no longer autonomously selects a past lexical item by sorting `nextReviewPriority` and deciding that it should be reviewed now.
+- `nextReviewPriority` remains an advisory memory-state signal only.
+- A past-memory review event may activate only from an explicit `review_directive` supplied through the shared context.
+- The directive fails closed unless:
+  - `reviewPolicyOwner = READY_LEARNING_ENGINE`,
+  - `scheduleOwner = READY_SET_PLANNER`,
+  - and at least one explicit `lexicalId` is supplied.
+- Hide consumes the directed lexical IDs in the order supplied. It does not substitute another word from its own priority ranking.
+- The directive contract intentionally carries review targets, not Hide-generated dates or TODO ownership.
+- Bridge version advanced to `2026.09.21-c`.
+- Validation now forbids autonomous `nextReviewPriority` sorting in the past-memory review selector.
