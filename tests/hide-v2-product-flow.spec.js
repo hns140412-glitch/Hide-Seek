@@ -17,6 +17,8 @@ test('Hide V2 boots without legacy app.js and completes a mission end-to-end',as
   await expect(page.getByText('Runtime V2')).toBeVisible();
   await expect(page.getByRole('heading',{name:'V2 영어 미션'})).toBeVisible();
   await page.getByRole('button',{name:'학습 시작'}).click();
+  await expect(page.getByText('MEMORIZE',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'기억하고 찾아보기'}).click();
 
   await expect(page.getByText('FIRST FIND',{exact:true})).toBeVisible();
   await page.getByLabel('회상 답 입력').fill('benefit');
@@ -28,6 +30,9 @@ test('Hide V2 boots without legacy app.js and completes a mission end-to-end',as
 
   await expect(page.getByText('CONNECTION',{exact:true})).toBeVisible();
   await page.getByRole('button',{name:'다음'}).click();
+  await expect(page.getByText('FINAL SEEK',{exact:true})).toBeVisible();
+  await page.getByLabel('최종 회상 답 입력').fill('benefit');
+  await page.getByRole('button',{name:'마지막 기억 확인'}).click();
 
   await expect(page.getByRole('heading',{name:'탐험 완료'})).toBeVisible();
   const state=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')));
@@ -49,6 +54,8 @@ test('Hide V2 Korean response stays production evidence, not recall inflation',a
   });
   await page.goto('/v2.html');
   await page.getByRole('button',{name:'학습 시작'}).click();
+  await expect(page.getByText('MEMORIZE',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'기억하고 찾아보기'}).click();
   await page.getByLabel('회상 답 입력').fill('불가피');
   await page.getByRole('button',{name:'기억 확인'}).click();
   await page.getByLabel('뜻 회상 입력').fill('피할 수 없음');
@@ -56,6 +63,7 @@ test('Hide V2 Korean response stays production evidence, not recall inflation',a
   await expect(page.getByText('RESPONSE TRAIL',{exact:true})).toBeVisible();
   await page.locator('#v2Response').fill('비 때문에 일정 변경은 불가피했다.');
   await page.getByRole('button',{name:'표현 남기기'}).click();
+  await expect(page.getByText('FINAL SEEK',{exact:true})).toBeVisible();
   const ev=await page.evaluate(()=>{
     const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
     return s.missions[0].items[0].evidence.find(x=>x.stage==='RESPONSE_TRAIL');
@@ -144,6 +152,9 @@ test('Hide V2 obeys Ready Planner review directive and limits the session to dir
   await page.getByLabel('뜻 회상 입력').fill('둘째');
   await page.getByRole('button',{name:'뜻 확인'}).click();
   await page.getByRole('button',{name:'다음'}).click();
+  await expect(page.getByText('FINAL SEEK',{exact:true})).toBeVisible();
+  await page.getByLabel('최종 회상 답 입력').fill('second');
+  await page.getByRole('button',{name:'마지막 기억 확인'}).click();
   await expect(page.getByRole('heading',{name:'탐험 완료'})).toBeVisible();
   const result=await page.evaluate(()=>window.HideV2ReadyBridge.buildResult());
   expect(result.reviewDirective.lexicalIds).toEqual(['second::둘째']);
@@ -165,6 +176,8 @@ test('Hide V2 resumes a persisted learning session after reload',async({page})=>
   });
   await page.goto('/v2.html');
   await page.getByRole('button',{name:'학습 시작'}).click();
+  await expect(page.getByText('MEMORIZE',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'기억하고 찾아보기'}).click();
   await page.getByLabel('회상 답 입력').fill('benefit');
   await page.getByRole('button',{name:'기억 확인'}).click();
   await expect(page.getByText('MEANING',{exact:true})).toBeVisible();
