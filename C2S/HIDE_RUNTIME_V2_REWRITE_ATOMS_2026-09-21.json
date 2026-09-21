@@ -122,6 +122,12 @@
       "type": "EVIDENCE",
       "statement": "OCR local-first review continuity persists human corrections, exclusions and explicit duplicate-merge decisions separately from raw OCR lastRows; reload/resume restores reviewDraft.",
       "destination": "capture/review"
+    },
+    {
+      "id": "HIDE-V2-C2S-021",
+      "type": "EVIDENCE",
+      "statement": "FIRST FIND wrong recall enters an explicit relearn exposure before MEANING; answer re-exposure is assisted RELEARN_EXPOSURE and never objective recall.",
+      "destination": "learning/first-find"
     }
   ],
   "coverage": {
