@@ -217,3 +217,24 @@ Each committed mission item carries a mission role:
 - REVIEW: the same lexical/sense item already exists in prior mission history.
 
 The role is inferred from learner history unless explicitly preserved from a trusted source. Current real-world patterns such as 12 NEW + 24 REVIEW are valid mission instances, not hard-coded universal counts.
+
+
+### Current recurring test-sheet layout
+For the learner's current photographed vocabulary test sheet:
+- left physical vocabulary block: 12 items = NEW
+- remaining 24 items = REVIEW
+- this is a source-layout profile, not a universal vocabulary rule.
+
+Canonical layout profile:
+`WEEKDAY_VOCAB_LEFT12_NEW_REST_REVIEW`
+
+OCR must preserve physical provenance:
+- `sourceColumn`
+- `sourceRowIndex`
+- `sourceColumnIndex`
+
+Role assignment:
+- LEFT → NEW
+- non-LEFT → REVIEW
+
+The 12/24 positional fallback is allowed only when this exact source-layout profile has already been established. A generic 36-word sheet must not be silently classified by count alone.
