@@ -8,7 +8,8 @@ fail=[]
 def read(path):
     return (ROOT/path).read_text(encoding="utf-8")
 
-app=read("app.js")
+APP_MODULES=["app-core.js","app-shell-ui.js","app-learning-flow.js","app-memory-records.js","app-bootstrap.js"]
+app="\n".join(read(x) for x in APP_MODULES)
 if app.count("const $=(s,r=document)=>r.querySelector(s);") != 1:
     fail.append("SELECTOR_HELPER_SINGLE_DECLARATION")
 if app.count("const $$=(s,r=document)=>[...r.querySelectorAll(s)];") != 1:
@@ -29,6 +30,9 @@ bridge_css=read("hide-bridge.css")
 all_css=css+"\n"+runtime_css+"\n"+bridge_css
 manifest=read("manifest.json")
 index=read("index.html")
+for module in APP_MODULES:
+    if f'./{module}' not in index:
+        fail.append("APP_MODULE_NOT_LOADED:"+module)
 
 def function_body(source,name):
     marker="function "+name+"("
