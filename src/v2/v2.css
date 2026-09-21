@@ -1459,3 +1459,39 @@ body.v2-runtime{
     grid-template-columns:repeat(2,minmax(0,1fr));
   }
 }
+
+
+/* Mission map state filters */
+.v2-runtime .mission-find-tools{
+  display:grid;
+  gap:8px;
+  margin:12px 0;
+  padding:12px;
+  border:1px solid var(--v2-line);
+  border-radius:18px;
+  background:rgba(255,255,255,.62);
+}
+.v2-runtime .mission-filter-row{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:6px;
+}
+.v2-runtime .mission-filter-row .btn{
+  min-width:0;
+  min-height:42px;
+  padding:8px 6px;
+  font-size:12px;
+}
+.v2-runtime .mission-filter-row .btn.is-active{
+  background:rgba(214,234,201,.92);
+  border-color:rgba(81,118,86,.26);
+}
+.v2-runtime .mission-find-tools>small{
+  color:var(--v2-muted);
+  font-weight:800;
+}
+@media(max-width:390px){
+  .v2-runtime .mission-filter-row{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
