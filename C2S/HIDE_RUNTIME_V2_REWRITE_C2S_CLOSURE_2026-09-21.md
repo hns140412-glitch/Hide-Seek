@@ -228,7 +228,7 @@ FALSE_CONVERGENCE = 0: live deploy/device/real-provider claims remain OPEN.
 - Duplicate lexical OCR rows require explicit review merge; merged mission items preserve every source occurrence under `source.occurrences`.
 - Editing a merged row invalidates the grouping instead of silently carrying a stale merge.
 - Exact code HEAD `771e4888af4ff3121347d93ca4184f63768e94f1` passed V2 #196 and full Hide #654.
-- Locked reporting: PRODUCT ~68%, CODED ~84%, CI ~81%, Browser Runtime ~77%, Device 0%, Release 0%.
+- Locked reporting: PRODUCT ~69%, CODED ~85%, CI ~82%, Browser Runtime ~78%, Device 0%, Release 0%.
 
 
 ## 17. 2026-09-22 local-first OCR review-draft continuity
@@ -238,7 +238,7 @@ FALSE_CONVERGENCE = 0: live deploy/device/real-provider claims remain OPEN.
 - New capture/re-analysis clears stale reviewDraft before a new review begins.
 - Exact code HEAD `75dd5431625ac7b37b857df9aeb346487176c4ab` passed V2 #213 / full Hide #671.
 - Memory Ladder search/state filters and mission map status filters are also browser-verified; they reuse existing Memory Engine/mission status semantics and do not create new policy.
-- Locked reporting remains PRODUCT ~68%, CODED ~84%, CI ~81%, Browser Runtime ~77%, Device 0%, Release 0%.
+- Locked reporting remains PRODUCT ~69%, CODED ~85%, CI ~82%, Browser Runtime ~78%, Device 0%, Release 0%.
 
 
 ## 18. 2026-09-22 FIRST FIND miss recovery
@@ -246,4 +246,12 @@ FALSE_CONVERGENCE = 0: live deploy/device/real-provider claims remain OPEN.
 - Wrong retrieval evidence remains wrong retrieval evidence; seeing the answer afterward is stored separately as assisted exposure and cannot inflate recall.
 - `FIRST_FIND_RELEARN` is an internal recovery state mapped to the canonical FIRST FIND journey position.
 - Exact code HEAD `506029061ac9e2873595545758f1b737e9f1aa4e` passed V2 #220 / full Hide #678.
-- Locked reporting remains PRODUCT ~68%, CODED ~84%, CI ~81%, Browser Runtime ~77%, Device 0%, Release 0%.
+- Locked reporting remains PRODUCT ~69%, CODED ~85%, CI ~82%, Browser Runtime ~78%, Device 0%, Release 0%.
+
+
+## 2026-09-22 First Find explicit-failure delta
+- Exact code HEAD `9261d6c07dbd37df1e9132bf6d15799072338983` passed V2 #227 / full Hide #685.
+- FIRST FIND supports correct typed recall, objectively checked wrong typed recall, and explicit child `아직 안 떠올라` PASS.
+- UNSURE is a recall attempt but not an objectively verified answer: `objectiveRecall=true`, `objectiveVerified=false`.
+- Wrong/unsure both route into assisted non-recall relearn exposure before MEANING.
+- Current locked reporting: PRODUCT ~69%, CODED ~85%, CI ~82%, Browser Runtime ~78%, Device 0%, Release 0%.
