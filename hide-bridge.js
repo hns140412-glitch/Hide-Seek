@@ -3,7 +3,7 @@
 
   const BRIDGE_VERSION = '2026.09.21-b';
   const EVENT_LIMIT = 120;
-  const SHARED_PARAM_NAMES = ['session_id', 'goal_id', 'task_id', 'lap_id', 'return_target', 'snap_target', 'child_id', 'actor_role', 'crew_member_id', 'crew_member_name', 'crew_rules_version'];
+  const SHARED_PARAM_NAMES = ['session_id', 'goal_id', 'task_id', 'lap_id', 'return_target', 'snap_target', 'child_id', 'actor_role', 'crew_member_id', 'crew_member_name', 'crew_rules_version', 'learning_context'];
   const legacyTerms = [
     [/Word Detective Team/g, 'Hidden Word Trail'],
     [/사건 파일/g, '단어 탐험'],
@@ -29,8 +29,51 @@
     return incoming;
   }
 
+  function decodeLearningContext(raw) {
+    if (!raw || typeof raw !== 'string' || raw.length > 6000) return null;
+    try {
+      const normalized = raw.replace(/-/g, '+').replace(/_/g, '/');
+      const padded = normalized + '='.repeat((4 - normalized.length % 4) % 4);
+      const binary = atob(padded);
+      const bytes = Uint8Array.from(binary, ch => ch.charCodeAt(0));
+      const value = JSON.parse(new TextDecoder().decode(bytes));
+      if (!value || value.contract_version !== 'READY_LEARNING_CONTEXT_V1') return null;
+      const list = v => Array.isArray(v) ? v.filter(x => typeof x === 'string').slice(0, 12) : [];
+      return Object.freeze({
+        contract_version:'READY_LEARNING_CONTEXT_V1',
+        learning_unit_id:String(value.learning_unit_id || '').slice(0,120) || null,
+        analysis_id:String(value.analysis_id || '').slice(0,120) || null,
+        assignment_id:String(value.assignment_id || '').slice(0,120) || null,
+        subject:String(value.subject || '').slice(0,80) || null,
+        concept_skill_target:String(value.concept_skill_target || '').slice(0,180) || null,
+        activity_types:list(value.activity_types),
+        cognitive_load_profile:list(value.cognitive_load_profile),
+        divisible_boundary:String(value.divisible_boundary || '').slice(0,80) || null,
+        confidence:Number.isFinite(value.confidence) ? Math.max(0, Math.min(1, value.confidence)) : null,
+        unresolved_flags:list(value.unresolved_flags),
+        provenance:Object.freeze({
+          engine:String(value.provenance?.engine || '').slice(0,80) || null,
+          version:String(value.provenance?.version || '').slice(0,40) || null,
+          confirmation_state:String(value.provenance?.confirmation_state || '').slice(0,40) || null
+        })
+      });
+    } catch { return null; }
+  }
+
+  function encodeLearningContext(value) {
+    if (!value) return null;
+    const bytes = new TextEncoder().encode(JSON.stringify(value));
+    let binary = '';
+    bytes.forEach(byte => { binary += String.fromCharCode(byte); });
+    return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+  }
+
   function getContext() {
     return S.sharedLearningContext || {};
+  }
+
+  function getLearningContext() {
+    return S.readyLearningContext || null;
   }
 
   function persistBridgeState() {
@@ -246,6 +289,8 @@
       if (context.task_id) url.searchParams.set('task_id', context.task_id);
       if (context.lap_id) url.searchParams.set('lap_id', context.lap_id);
       if (context.return_target) url.searchParams.set('return_target', context.return_target);
+      const encodedLearningContext = encodeLearningContext(getLearningContext());
+      if (encodedLearningContext) url.searchParams.set('learning_context', encodedLearningContext);
       if (context.child_id) url.searchParams.set('child_id', context.child_id);
       if (event.payload.crewMemberId) url.searchParams.set('crew_member_id', event.payload.crewMemberId);
       if (event.payload.crewMemberName) url.searchParams.set('crew_member_name', event.payload.crewMemberName);
@@ -360,6 +405,9 @@
   function bootContext() {
     const incoming = readIncomingContext();
     if (Object.keys(incoming).length) {
+      const decodedLearningContext = decodeLearningContext(incoming.learning_context);
+      if (incoming.learning_context && !decodedLearningContext) delete incoming.learning_context;
+      if (decodedLearningContext) S.readyLearningContext = decodedLearningContext;
       S.sharedLearningContext = { ...(S.sharedLearningContext || {}), ...incoming, receivedAt: iso() };
       if (incoming.crew_member_id || incoming.crew_member_name) {
         S.crewMember = {
@@ -392,6 +440,7 @@
     window.HideSeekBridge = Object.freeze({
       version: BRIDGE_VERSION,
       context: () => ({ ...getContext() }),
+      learningContext: () => getLearningContext() ? structuredClone(getLearningContext()) : null,
       emit,
       returnToBase,
       sendToSnap,
