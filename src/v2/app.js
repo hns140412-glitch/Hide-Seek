@@ -5,6 +5,7 @@
   const childStageLabel=stage=>({
     MEMORIZE:'단어 만나기',
     FIRST_FIND:'첫 찾기',
+    FIRST_FIND_RELEARN:'다시 만나기',
     MEANING:'뜻 단서',
     DOMAIN_EXTENSION:'연결 길',
     FINAL_SEEK:'마지막 찾기',
@@ -15,6 +16,7 @@
   const childEvidenceLabel=e=>({
     MEMORIZE:'단어 만나기',
     FIRST_FIND:'첫 찾기',
+    FIRST_FIND_RELEARN:'첫 찾기 다시 보기',
     MEANING:'뜻 단서',
     RESPONSE_TRAIL:'표현 길',
     EVIDENCE_TRAIL:'근거 찾기',
@@ -54,7 +56,7 @@
     const steps=[
       ['MEMORIZE','01 만나기'],['FIRST_FIND','02 첫 찾기'],['MEANING','03 뜻 단서'],['DOMAIN_EXTENSION','04 연결 길'],['FINAL_SEEK','05 마지막 찾기'],['SEEK_AGAIN','06 다시 찾기']
     ];
-    const normalized=stage==='SEEK_AGAIN_RELEARN'?'SEEK_AGAIN':stage;
+    const normalized=stage==='SEEK_AGAIN_RELEARN'?'SEEK_AGAIN':stage==='FIRST_FIND_RELEARN'?'FIRST_FIND':stage;
     const activeIndex=Math.max(0,steps.findIndex(([key])=>key===normalized));
     return `<ol class="journey-path" aria-label="단어 탐험 길">${steps.map(([key,label],i)=>`<li class="${i<activeIndex?'is-done':''} ${i===activeIndex?'is-current':''}"><span aria-hidden="true">${i<activeIndex?'✓':i+1}</span><small>${esc(label)}</small></li>`).join('')}</ol>`;
   };
@@ -313,7 +315,13 @@
 
     if(session.stage==='FIRST_FIND'){
       view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}${journeyHtml(session.stage)}${crewHtml(w,session.stage)}<div class="learn-head"><span class="phase-chip">${childStageLabel('FIRST_FIND')}</span><b>${idx}/${total}</b></div><section class="card word-card"><p>뜻을 보고 단어를 기억에서 꺼내보세요.</p><div class="bigword">${esc(w.meaning)}</div><input id="v2Answer" class="input" aria-label="회상 답 입력" autocomplete="off" spellcheck="false"><button id="v2Check" class="btn primary full">기억 확인</button></section></section>`;
-      $('#v2Check').onclick=()=>{const r=HideV2Learning.checkFirstFind(session,m,$('#v2Answer').value);HideV2Session.update(r.session);setFlash(r.ok?'기억에서 찾았어요':'이번 회상은 틀렸어요. 뒤 단계에서 다시 확인할게요.');render()};
+      $('#v2Check').onclick=()=>{const r=HideV2Learning.checkFirstFind(session,m,$('#v2Answer').value);HideV2Session.update(r.session);setFlash(r.ok?'기억에서 찾았어요':'잠깐 다시 만나고 다음 단서로 이어가요.');render()};
+      return;
+    }
+
+    if(session.stage==='FIRST_FIND_RELEARN'){
+      view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}${journeyHtml(session.stage)}${crewHtml(w,session.stage)}<div class="learn-head"><span class="phase-chip">${childStageLabel('FIRST_FIND_RELEARN')}</span><b>${idx}/${total}</b></div><section class="card word-card first-find-relearn"><p>방금 놓친 단어를 잠깐 다시 만나봐요.</p><div class="bigword">${esc(w.token)}</div><h2 style="text-align:center">${esc(w.meaning)}</h2>${w.example?`<p class="example">${esc(w.example)}</p>`:''}<small>지금 보는 건 다시 익히는 시간이에요. 회상 성공으로 세지 않아요.</small><button id="v2FirstFindRehide" class="btn primary full">다시 숨기고 뜻 단서로</button></section></section>`;
+      $('#v2FirstFindRehide').onclick=()=>{HideV2Session.update(HideV2Learning.submitFirstFindRelearn(session,m).session);render()};
       return;
     }
 
