@@ -175,6 +175,17 @@ for needle in [
         fail.append("MEMORIZATION_FIRST_RECALL_CONTRACT:"+needle)
 
 for needle in [
+    "renderMockTestEntry",
+    "MORNING_MOCK_TEST",
+    "PARENT_CHILD",
+    "ASSISTED_CORRECT",
+    "RECOVERED_CORRECT",
+    "assessment",
+]:
+    if needle not in app:
+        fail.append("MORNING_MOCK_TEST_MEMORY_CONTRACT:"+needle)
+
+for needle in [
     "taskStateForStatus",
     "status === 'COMPLETED' || status === 'TEST_READY'",
     "trailMastery:",
