@@ -130,6 +130,10 @@ const oceanAdaptiveHtml=api.renderStarterExplorationHtml({eng:'ocean'},{encounte
 assert(!oceanAdaptiveHtml.includes('반복해서 확인된 단서'),'unsupported root preference must not leak into ocean');
 assert(api.clueApplicableToPlan(api.starterExploration({eng:'rainforest'},{}),'WORD_PART'),'compound should allow word-part clue');
 assert(!api.clueApplicableToPlan(api.starterExploration({eng:'ocean'},{}),'ROOT_ETYMOLOGY'),'semantic ocean should reject root clue');
+const mountainScene=api.renderStarterExplorationHtml({eng:'mountain'},{encounteredWords:[]},x=>String(x));
+assert(mountainScene.includes('평평한 땅')&&mountainScene.includes('위로 솟기')&&mountainScene.includes('높은 꼭대기'),'child-facing mountain scene labels');
+assert(!mountainScene.includes('>GROUND<')&&!mountainScene.includes('>RISE<')&&!mountainScene.includes('>PEAK<'),'internal scene ids must not leak as labels');
+assert(mountainScene.includes('data-scene-id="GROUND"'),'scene id should remain machine-stable');
 const inferenceHtml=api.renderStarterExplorationHtml({eng:'environment'},{encounteredWords:[]},x=>String(x));
 assert(inferenceHtml.includes('inference-prediction')&&inferenceHtml.includes('inference-confidence'),'first-seen inference controls');
 assert(inferenceHtml.includes('검증 어원')&&inferenceHtml.includes('environ'),'verified visual grammar');
