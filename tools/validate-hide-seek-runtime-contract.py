@@ -486,6 +486,33 @@ for needle in [
         fail.append("THINKING_FIRST_MEMORIZATION:"+needle)
 
 for needle in [
+    "FIRST_SEEN_PREDICTION",
+    "recallScoreImpact:false",
+    "transferSkillEvidence:true",
+    "inferenceRecordSummary",
+    "(S.sheets||[]).flatMap",
+    "inference-outcome-btn",
+    "맞았어",
+    "비슷했어",
+    "달랐어",
+    "skillProfile=inferenceRecordSummary()",
+]:
+    if needle not in app:
+        fail.append("TRANSFERABLE_INFERENCE_CONTRACT:"+needle)
+
+for needle in [
+    "summarizeInferenceSkill",
+    "CLUE_LABELS",
+    "clueLabel",
+    "scene-trail",
+    "prior-skill-cue",
+    "RECALIBRATE",
+]:
+    if needle not in language_model and needle not in css:
+        fail.append("TRANSFERABLE_LANGUAGE_MODEL:"+needle)
+
+
+for needle in [
     "globalThis.HideLanguageModel?.normalizeItem",
     "globalThis.HideLanguageModel?.hasVerifiedMeaningMap",
     "MEANING_MAP",
