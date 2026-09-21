@@ -342,3 +342,41 @@ When the user explicitly authorizes central TAKY application, promote this proje
 Do not infer central TAKY write authorization from this project-master update alone.
 
 END — HIDE & SEEK UI MASTER LOGIC REV_04
+
+
+## LANGUAGE MEMORY & MEANING CORE
+
+Hide & Seek is not an English-only vocabulary product. Its reusable core is a language memory/meaning engine.
+
+Common learner flow:
+`REAL SOURCE → REVIEWED ITEM → LEARNER MEMORIZES → RETRIEVAL → MEANING CONNECTION → IMAGERY → MEMORY LADDER → LATER RETRIEVAL`
+
+The common engine must not force every language into an English root model.
+
+- **ENGLISH**: prefix / root / suffix / meaning bridge / context.
+- **KOREAN**: etymology when verified / affix / Hanja-origin when relevant / semantic relation / context.
+- **HANJA**: radical / component / sound / meaning / compound context.
+
+A meaning map is a **memory support**, not an extra vocabulary list.
+It should explain the current item and reuse only already encountered concepts where possible.
+Related words are not automatically assigned as new memorization targets.
+
+### Dynamic meaning map rule
+A map may contain:
+- verified components,
+- the path by which the meaning is formed,
+- imagery/scene cue,
+- memory bridge,
+- previously encountered related nodes.
+
+It must remain dynamic and learner-history-aware. It is not a fixed poster.
+
+### Truth gate
+Etymology, roots, Hanja decomposition and word-history claims must never be guessed.
+The runtime may show a structured meaning map only when `verified=true` / `verificationState=VERIFIED`.
+Otherwise the system falls back to word/meaning/context without fabricated decomposition.
+
+### Memory Ladder integration
+`MEANING_MAP` is an adaptive cue in the Memory Ladder.
+It sits before stronger answer-revealing cues when a verified map exists.
+The trace must record that a verified language-model cue was used, without converting assisted recall into independent recall.
