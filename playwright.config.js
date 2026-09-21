@@ -5,13 +5,15 @@ module.exports=defineConfig({
   timeout:30000,
   use:{
     baseURL:'http://127.0.0.1:4174',
-    headless:true,
-    serviceWorkers:'block'
+    headless:true
   },
   webServer:{
     command:'python3 -m http.server 4174',
     port:4174,
     reuseExistingServer:true
   },
-  projects:[{name:'chromium',use:{browserName:'chromium',channel:'chrome'}}]
+  projects:[
+    {name:'chromium',testIgnore:/shared-runtime\.spec\.js/,use:{browserName:'chromium',channel:'chrome',serviceWorkers:'block'}},
+    {name:'shared-runtime',testMatch:/shared-runtime\.spec\.js/,use:{browserName:'chromium',channel:'chrome',serviceWorkers:'allow'}}
+  ]
 });
