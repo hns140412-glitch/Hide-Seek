@@ -19,6 +19,8 @@
         confidence:normalizeConfidence(row?.confidence),
         evidenceItemId:String(row?.evidence_item_id||'').trim()||null,
         warnings:Array.isArray(row?.warnings)?row.warnings.map(String):[],
+        missionRole:['NEW','REVIEW'].includes(String(row?.mission_role||row?.missionRole||'').toUpperCase())?String(row?.mission_role||row?.missionRole).toUpperCase():'',
+        missionRoleSource:String(row?.mission_role_source||row?.missionRoleSource||'').trim()||null,
         sourceColumn:['LEFT','RIGHT','CENTER','UNKNOWN'].includes(String(row?.source_column||'').toUpperCase())?String(row.source_column).toUpperCase():'UNKNOWN',
         sourceRowIndex:Number.isFinite(Number(row?.source_row_index))?Number(row.source_row_index):index,
         sourceColumnIndex:Number.isFinite(Number(row?.source_column_index))?Number(row.source_column_index):index
