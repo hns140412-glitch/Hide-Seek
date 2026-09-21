@@ -28,6 +28,17 @@
     READY:'준비됨',PARTIAL:'이어가기',COMPLETED:'완료',ARCHIVED:'보관됨'
   })[status]||'탐험 중';
   const languageLabel=domain=>({ENGLISH:'영어',KOREAN:'국어',HANJA:'한자'})[domain]||'언어';
+  const childMemoryReason=entry=>{
+    const sig=entry?.memorySignature||{};
+    if((sig.confusionPattern?.count||0)>0)return '비슷한 뜻이랑 헷갈린 흔적이 있어요. 한 번 더 스스로 찾아보면 좋아요.';
+    if((sig.semanticWeakness||0)>0)return '뜻을 꺼낼 때 조금 막혔어요. 뜻부터 다시 떠올려 봐요.';
+    if((sig.orthographicWeakness||0)>0)return '글자 모양이 아직 완전히 익숙하지 않아요. 눈으로 보고 다시 찾아봐요.';
+    if((sig.phonologicalWeakness||0)>0)return '소리 연결이 아직 약해요. 소리를 떠올리며 다시 찾아봐요.';
+    if((sig.hintDependent||0)>0)return '힌트 도움을 받은 흔적이 있어요. 다음엔 힌트 없이 찾아보는 게 목표예요.';
+    if((sig.slowRecall||0)>0)return '생각해내는 데 시간이 조금 걸렸어요. 한 번 더 꺼내면 더 빨라질 수 있어요.';
+    if((entry?.memoryStrength||0)>=80)return '지금은 꽤 안정적으로 기억하고 있어요. 다음 탐험에서도 그대로 떠오르는지 확인해요.';
+    return '아직 혼자서 바로 꺼낸 기록이 충분하지 않아요. 한 번 더 스스로 찾아봐요.';
+  };
   const crewHtml=(word,stage)=>{
     const crew=globalThis.HideV2Crew?.presentation?.({word,stage})||{displayName:'탐험대원',supportText:'필요할 때 짧은 단서를 함께 찾아봐요.',avatarText:'탐'};
     return `<aside class="crew-strip" aria-label="탐험대원"><span class="crew-strip__avatar">${esc(crew.avatarText)}</span><span class="crew-strip__copy"><b>${esc(crew.displayName)}</b><small class="crew-support-copy">${esc(crew.supportText)}</small></span><button class="btn ghost crew-support-btn" data-crew-support type="button">짧은 응원</button></aside>`;
