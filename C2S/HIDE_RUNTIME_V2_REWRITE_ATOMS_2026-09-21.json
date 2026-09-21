@@ -72,7 +72,7 @@
     {
       "id": "HIDE-V2-C2S-012",
       "type": "EVIDENCE",
-      "statement": "Locked last closed product estimate: Product 74, Coded 90, CI 87, Browser Runtime 83, Device 0, Release 0.",
+      "statement": "Locked last closed product estimate: Product 75, Coded 91, CI 88, Browser Runtime 84, Device 0, Release 0.",
       "destination": "status"
     },
     {
@@ -206,6 +206,24 @@
       "type": "DECISION",
       "statement": "Do not stack shape reconstruction after semantic FINAL SEEK support; if support was already used, fail closed to relearn before SEEK AGAIN.",
       "destination": "learning/assistance"
+    },
+    {
+      "id": "HIDE-V2-C2S-035",
+      "type": "EVIDENCE",
+      "statement": "Wrong Hanja SOUND FIND now records objective sound recall failure, then uses verified source-linked reading relearn exposure before SOUND-specific Hidden Words reinforcement.",
+      "destination": "language-memory/hanja-sound-recovery"
+    },
+    {
+      "id": "HIDE-V2-C2S-036",
+      "type": "CORRECTION",
+      "statement": "Verified sound relearn exposure is assisted/non-recall and must not be counted as SOUND recall success.",
+      "destination": "memory-evidence/hanja-sound"
+    },
+    {
+      "id": "HIDE-V2-C2S-037",
+      "type": "DECISION",
+      "statement": "Immediate Hanja sound recovery may carry a session-scoped activity override so a concrete phonological weakness is not masked by generic recovery; this does not alter Memory Engine scores or Ready review/scheduling ownership.",
+      "destination": "learning/hidden-words"
     }
   ],
   "coverage": {
