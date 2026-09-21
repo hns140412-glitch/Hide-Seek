@@ -162,7 +162,8 @@ const skill=api.summarizeInferenceSkill([
   {event:'FIRST_SEEN_PREDICTION',clueUsed:'WORD_PART',confidence:'LOW'}
 ]);
 assert(skill.attempts===4&&skill.assessed===3,'inference skill counts');
-assert(skill.successRate===67,'inference success rate');
+assert(skill.selfReportedFitRate===67&&skill.successRate===67,'inference self-reported fit rate');
+assert(skill.evidenceBasis==='LEARNER_SELF_REPORT'&&skill.calibrationEvidenceBasis==='LEARNER_SELF_REPORT','inference evidence basis');
 assert(skill.bestClue?.clue==='SCENE','best clue should derive from assessed outcomes');
 assert(skill.highConfidenceMisses===1,'confidence calibration evidence');
 assert(!skill.adaptiveClue&&skill.emergingClue?.clue==='ROOT_ETYMOLOGY'&&skill.evidenceLevel==='EMERGING','early repeated clue evidence should remain emerging');
@@ -177,5 +178,6 @@ const established=api.summarizeInferenceSkill([
   {event:'FIRST_SEEN_PREDICTION',clueUsed:'SCENE',confidence:'LOW',outcome:'NEAR'}
 ]);
 assert(established.evidenceLevel==='ESTABLISHED'&&established.adaptiveClue?.clue==='ROOT_ETYMOLOGY','adaptive preference requires established evidence');
+assert(established.adaptiveClue?.selfReportedFitRate>=60&&established.adaptiveClue?.evidenceBasis==='LEARNER_SELF_REPORT','adaptive clue must expose self-report basis');
 
 console.log('PASS: language memory model supports truth-gated etymology, inference and multilingual exploration');
