@@ -151,4 +151,9 @@ test('real NEW 12 + REVIEW 24 follows mission, recall and morning mock-test memo
   });
   expect(counts.NEW).toBe(12);
   expect(counts.REVIEW).toBe(24);
+
+  await page.getByRole('button',{name:'기록'}).click();
+  await expect(page.getByText('처음 보는 단어 풀이',{exact:true})).toBeVisible();
+  await expect(page.getByText('12/12',{exact:true})).toBeVisible();
+  await expect(page.getByText('67%',{exact:true})).toBeVisible();
 });
