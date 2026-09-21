@@ -48,6 +48,10 @@ if(!html.includes('id="sheetLibraryInput"'))fail.push('V2_LIBRARY_INPUT_MISSING'
 const store=fs.readFileSync(path.join(ROOT,'src/v2/app-store.js'),'utf8');
 if(!store.includes("const KEY='hide_seek_v2_state'"))fail.push('V2_STATE_OWNER_MISSING');
 const mission=fs.readFileSync(path.join(ROOT,'src/v2/mission-service.js'),'utf8');
+for(const token of ['listMissions','renameMission','archiveMission','deleteMission','ACTIVE_SESSION_MISSION_DELETE_BLOCKED']){
+  if(!mission.includes(token))fail.push('MISSION_LIFECYCLE_CONTRACT_MISSING:'+token);
+}
+
 if(!mission.includes('HideV2Store.transaction'))fail.push('MISSION_WRITE_MUST_USE_STORE');
 const memory=fs.readFileSync(path.join(ROOT,'src/v2/memory-engine.js'),'utf8');
 if(!memory.includes("authority:'SPECIALIST_MEMORY_ADVISORY_ONLY'"))fail.push('MEMORY_ADVISORY_AUTHORITY_MISSING');
@@ -56,6 +60,11 @@ if(!memory.includes("scheduleOwner:'READY_SET_PLANNER'"))fail.push('PLANNER_OWNE
 const migration=fs.readFileSync(path.join(ROOT,'src/v2/legacy-migration.js'),'utf8');
 if(migration.includes('removeItem(LEGACY_KEY)')||migration.includes("removeItem('hide_seek_state')"))fail.push('LEGACY_DATA_MUST_NOT_BE_DELETED');
 if(!migration.includes('legacyPreserved:true'))fail.push('NON_DESTRUCTIVE_MIGRATION_EVIDENCE_MISSING');
+
+const app=fs.readFileSync(path.join(ROOT,'src/v2/app.js'),'utf8');
+for(const token of ['OCR 단어','OCR 뜻','data-review-toggle','미션 관리','data-action="rename"','data-action="delete"']){
+  if(!app.includes(token))fail.push('V2_PRODUCT_MANAGEMENT_UI_MISSING:'+token);
+}
 
 const ready=fs.readFileSync(path.join(ROOT,'src/v2/ready-bridge.js'),'utf8');
 for(const token of ["EXPLICIT_READY_PLANNER_REVIEW_DIRECTIVE","reviewPolicyOwner:'READY_LEARNING_ENGINE'","scheduleOwner:'READY_SET_PLANNER'"]){
