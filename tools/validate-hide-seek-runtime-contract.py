@@ -569,7 +569,6 @@ for needle in [
     "inference-outcome-btn",
     "bindInferenceOutcomeButtons",
     "document.querySelectorAll('.inference-outcome-btn')",
-    "$('.inference-outcome-btn').forEach",
     "맞았어",
     "비슷했어",
     "달랐어",
