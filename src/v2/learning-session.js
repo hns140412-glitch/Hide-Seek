@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const STAGES=['MEMORIZE','FIRST_FIND','FIRST_FIND_RELEARN','MEANING','DOMAIN_EXTENSION','HIDDEN_WORDS','HIDDEN_WORDS_ASSIST','FINAL_SEEK','SEEK_AGAIN_RELEARN','SEEK_AGAIN','COMPLETE'];
+  const STAGES=['MEMORIZE','FIRST_FIND','FIRST_FIND_RELEARN','MEANING','DOMAIN_EXTENSION','HIDDEN_WORDS','HIDDEN_WORDS_ASSIST','FINAL_SEEK','FINAL_SEEK_RECONSTRUCT','SEEK_AGAIN_RELEARN','SEEK_AGAIN','COMPLETE'];
   const clone=x=>JSON.parse(JSON.stringify(x));
   const current=(session,mission)=>mission.items.find(x=>x.id===session.queue?.[session.index])||null;
   const initialStageFor=w=>String(w?.missionRole||'NEW').toUpperCase()==='REVIEW'?'FIRST_FIND':'MEMORIZE';
@@ -399,6 +399,13 @@
     return nextAfterDomain(session,mission);
   }
 
+  function finalReconstructionPlan(word){
+    if(String(word?.languageDomain||'').toUpperCase()!=='ENGLISH')return null;
+    const cue=englishShapeCue(word?.token);
+    if(!cue)return null;
+    return {type:'SHAPE',label:'글자 골격 재구성',cue};
+  }
+
   function useFinalSupport(session,mission,support={}){
     const w=current(session,mission);
     const next=clone(session);
@@ -443,8 +450,36 @@
     });
     if(ok&&!assisted)return {ok,assisted:false,session:nextItemOrComplete(attempt.session,mission)};
     const next=clone(attempt.session);
-    next.stage='SEEK_AGAIN_RELEARN';
-    return {ok,assisted,session:next};
+    const reconstruction=!assisted&&!ok?finalReconstructionPlan(w):null;
+    next.stage=reconstruction?'FINAL_SEEK_RECONSTRUCT':'SEEK_AGAIN_RELEARN';
+    return {ok,assisted,reconstruction,session:next};
+  }
+
+  function submitFinalReconstruction(session,mission,answer){
+    const w=current(session,mission);
+    const plan=finalReconstructionPlan(w);
+    if(!plan){
+      const next=clone(session);
+      next.stage='SEEK_AGAIN_RELEARN';
+      return {ok:false,unsupported:true,plan:null,session:next};
+    }
+    const a=String(answer||'').trim().normalize('NFKC').toLowerCase();
+    const target=String(w?.token||'').trim().normalize('NFKC').toLowerCase();
+    const ok=!!a&&a===target;
+    HideV2Memory.record(mission.id,w.id,{
+      stage:'FINAL_SEEK_RECONSTRUCT',
+      evidenceMode:'ASSISTED_RECONSTRUCTION',
+      axes:['FORM','RECALL','WRITE_OR_RECONSTRUCT'],
+      result:ok?'CORRECT':'WRONG',
+      objectiveVerified:true,
+      objectiveRecall:false,
+      recallScoreImpact:false,
+      assisted:true,
+      supportType:plan.type
+    });
+    const next=clone(session);
+    next.stage=ok?'SEEK_AGAIN':'SEEK_AGAIN_RELEARN';
+    return {ok,plan,session:next};
   }
 
   function submitSeekAgainRelearn(session,mission){
@@ -486,6 +521,6 @@
   }
 
   window.HideV2Learning=Object.freeze({
-    STAGES,create,current,advance,submitMemorize,checkFirstFind,markFirstFindUnsure,submitFirstFindRelearn,meaningChallenge,checkMeaningChoice,checkMeaning,hiddenWordsPlan,hiddenWordsSupportPlan,submitDomainExtension,submitHiddenWords,submitHiddenWordsAssist,submitHiddenWordsRelearn,useFinalSupport,checkFinalSeek,submitSeekAgainRelearn,checkSeekAgain
+    STAGES,create,current,advance,submitMemorize,checkFirstFind,markFirstFindUnsure,submitFirstFindRelearn,meaningChallenge,checkMeaningChoice,checkMeaning,hiddenWordsPlan,hiddenWordsSupportPlan,submitDomainExtension,submitHiddenWords,submitHiddenWordsAssist,submitHiddenWordsRelearn,finalReconstructionPlan,useFinalSupport,checkFinalSeek,submitFinalReconstruction,submitSeekAgainRelearn,checkSeekAgain
   });
 })();
