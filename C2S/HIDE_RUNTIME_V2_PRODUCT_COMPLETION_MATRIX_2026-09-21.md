@@ -26,7 +26,7 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 | OCR review persistence/resume | RUNTIME_VERIFIED | yes | provider-shaped fixture only | reload + editable review-draft persistence + warning/provenance + explicit duplicate-merge browser tests | real-provider calibration incomplete |
 | MEMORIZE | FUNCTIONAL | yes | fixture | V2 browser flow | richer exploration assistance not yet ported |
 | FIRST FIND | RUNTIME_VERIFIED | yes | fixture | correct/wrong/unsure + relearn-exposure browser flows | richer adaptive assistance still open |
-| MEANING recall | FUNCTIONAL | yes | fixture | V2 browser flow | recognition/contrast variants still partial; weakness now feeds conditional Hidden Words |
+| MEANING CLUE | RUNTIME_VERIFIED | yes | fixture | direct recall fallback + session-scoped bidirectional recognition + confusion handoff browser flow | broader representative confusion sets still open |
 | English CONNECTION | RUNTIME_VERIFIED | yes | fixture | Thinking Trail browser flow | adaptive clue personalization and broader representative vocabulary still pending |
 | Korean RESPONSE TRAIL | RUNTIME_VERIFIED | yes | fixture | V2 browser production-evidence flow | qualitative feedback not implemented |
 | Korean EVIDENCE TRAIL | RUNTIME_VERIFIED | yes when verified contextEvidence exists | verified-context fixture | browser evidence-selection truth-boundary flow | representative Korean source evidence still open |
@@ -48,10 +48,10 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 
 ## Claim levels
 
-- PRODUCT_COMPLETION: approximately 71%
-- CODED: approximately 87%
-- CI_VERIFIED: approximately 84%
-- BROWSER_RUNTIME_VERIFIED: approximately 80%
+- PRODUCT_COMPLETION: approximately 72%
+- CODED: approximately 88%
+- CI_VERIFIED: approximately 85%
+- BROWSER_RUNTIME_VERIFIED: approximately 81%
 - DEVICE_VERIFIED: 0%
 - RELEASE_VERIFIED: 0%
 
@@ -296,3 +296,22 @@ Head before matrix document: 63db5206a836050c3dfe5f2b9fd0238d6baeb464
 - No second weakness score is introduced; the Memory Engine remains the single selector.
 - Exact code HEAD `f19dcd84f650ca4e80d970f36a911b4694d9ecd5` passed V2 #243 / full Hide #701.
 - Conservative report moves one point for this newly runtime-proven adaptive child journey: PRODUCT ~71%, CODED ~87%, CI ~84%, Browser Runtime ~80%, Device 0%, Release 0%.
+
+
+### 2026-09-22 bidirectional Meaning Clue increment
+- MEANING CLUE now uses bidirectional recognition when the active learning session contains valid peers:
+  - even session index: token → meaning;
+  - odd session index: meaning → token.
+- Single-item or peerless sessions retain direct typed meaning recall.
+- Recognition is truth-separated from recall:
+  - `evidenceMode=RECOGNITION`;
+  - `objectiveVerified=true`;
+  - `objectiveRecall=false`;
+  - mismatch stores the confused token/meaning pair.
+- A MEANING mismatch feeds the existing Memory Engine confusion signal and therefore the reason-specific HIDDEN WORDS meaning reinforcement.
+- Ready Planner ownership is preserved: recognition peers are selected only from `session.queue`, never from unrelated mission items outside the directed lexical-id scope.
+- The first implementation exposed this scope regression; exact-head CI caught it, and the queue-scoped fix is now green.
+- Exact code HEAD `e15e86fdd7053903c1093251d13bdc31398a8bea` passed:
+  - Validate Hide Runtime V2 #251 — SUCCESS
+  - Validate Hide & Seek #709 — SUCCESS.
+- Conservative reporting rises one point for this newly runtime-proven child learning path: PRODUCT ~72%, CODED ~88%, CI ~85%, Browser Runtime ~81%, Device 0%, Release 0%.
