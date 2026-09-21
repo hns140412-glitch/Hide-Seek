@@ -87,14 +87,14 @@ for(const token of ['renderStarterExplorationHtml','bindThinkingTrail','inferenc
   if(!app.includes(token))fail.push('V2_THINKING_OR_MEMORY_DETAIL_MISSING:'+token);
 }
 if(!app.includes('HideV2Trail.missionSummary'))fail.push('V2_TRAIL_MASTERY_UI_INTEGRATION_MISSING');
-for(const token of ['기억 기록','단어장','우선 복습순','v2Records']){
+for(const token of ['기억 사다리','단어 기록','다시 볼 순서','v2Records']){
   if(!app.includes(token))fail.push('V2_MEMORY_SURFACE_MISSING:'+token);
 }
 
 for(const token of ['confidence','ocr-warning','v2RetryOcr','renderOcrFailure']){
   if(!app.includes(token))fail.push('V2_OCR_REVIEW_RESILIENCE_UI_MISSING:'+token);
 }
-for(const token of ['OCR 단어','OCR 뜻','data-review-toggle','미션 관리','data-action="rename"','data-action="delete"']){
+for(const token of ['OCR 단어','OCR 뜻','data-review-toggle','탐험 미션','data-action="rename"','data-action="delete"']){
   if(!app.includes(token))fail.push('V2_PRODUCT_MANAGEMENT_UI_MISSING:'+token);
 }
 
