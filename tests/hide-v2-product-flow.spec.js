@@ -152,3 +152,27 @@ test('Hide V2 obeys Ready Planner review directive and limits the session to dir
   expect(state.missions[0].items[1].evidence.length).toBeGreaterThan(0);
   expect(state.events.some(x=>x.event_type==='TASK_COMPLETED')).toBeTruthy();
 });
+
+test('Hide V2 resumes a persisted learning session after reload',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'재개 탐험가'},missions:[{
+        id:'m-resume',title:'재개 미션',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        items:[{id:'w-resume',lexicalId:'benefit::혜택',token:'benefit',meaning:'혜택',example:'',languageDomain:'ENGLISH',missionRole:'NEW',evidence:[],source:{}}],
+        sourceCount:0,provenance:{}
+      }],activeMissionId:'m-resume',activeSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'학습 시작'}).click();
+  await page.getByLabel('회상 답 입력').fill('benefit');
+  await page.getByRole('button',{name:'기억 확인'}).click();
+  await expect(page.getByText('MEANING',{exact:true})).toBeVisible();
+
+  await page.reload();
+  await expect(page.getByRole('button',{name:'학습 이어하기'})).toBeVisible();
+  await page.getByRole('button',{name:'학습 이어하기'}).click();
+  await expect(page.getByText('MEANING',{exact:true})).toBeVisible();
+  const stage=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')).activeSession.stage);
+  expect(stage).toBe('MEANING');
+});
