@@ -577,9 +577,6 @@ for needle in [
     "adaptiveClue",
     "evidenceLevel",
     "currentWordApplicable:true",
-    "calibrationEvidenceBasis:'LEARNER_SELF_REPORT'",
-    "evidenceBasis:'LEARNER_SELF_REPORT'",
-    "selfReportedFitRate",
     "inferenceWordDomain",
     "languageDomain:currentDomain",
     "inferenceRecordSummary(currentDomain)",
@@ -616,6 +613,14 @@ for needle in [
 ]:
     if needle not in language_model:
         fail.append("TRANSFERABLE_SCENE_MODEL:"+needle)
+
+for needle in [
+    "selfReportedFitRate",
+    "evidenceBasis:'LEARNER_SELF_REPORT'",
+    "calibrationEvidenceBasis:'LEARNER_SELF_REPORT'",
+]:
+    if needle not in language_model:
+        fail.append("TRANSFERABLE_INFERENCE_MODEL:"+needle)
 
 for needle in [
     "summarizeInferenceSkill",
