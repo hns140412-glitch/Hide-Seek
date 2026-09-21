@@ -115,7 +115,7 @@
 
   function evidenceRecords(){
     const pack=window.HideLanguageEvidence;
-    if(!pack||Number(pack.SCHEMA_VERSION||0)!==1)return {};
+    if(!pack||Number(pack.SCHEMA_VERSION||0)!==2)return {};
     if(Array.isArray(pack.invalidRecords)&&pack.invalidRecords.length)return {};
     return pack.records&&typeof pack.records==='object'?pack.records:{};
   }
