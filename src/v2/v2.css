@@ -427,3 +427,64 @@ body.v2-runtime{
   .v2-runtime .word-row{grid-template-columns:1fr}
   .v2-runtime .word-row__meter{text-align:left}
 }
+
+
+/* Exploration crew presentation: UI only. Personality and intervention grammar stay Snap & Pop-owned. */
+.v2-runtime .crew-strip{
+  display:grid;
+  grid-template-columns:46px minmax(0,1fr) auto;
+  gap:11px;
+  align-items:center;
+  margin:10px 0 14px;
+  padding:10px 12px;
+  border:1px solid var(--v2-line);
+  border-radius:18px;
+  background:linear-gradient(135deg,rgba(255,255,255,.94),rgba(238,247,225,.94));
+  box-shadow:0 7px 20px rgba(51,77,61,.055);
+}
+.v2-runtime .crew-strip__avatar{
+  width:46px;
+  height:46px;
+  display:grid;
+  place-items:center;
+  border-radius:15px;
+  background:rgba(207,230,191,.95);
+  color:var(--v2-ink);
+  font-size:20px;
+  font-weight:950;
+}
+.v2-runtime .crew-strip__copy{
+  min-width:0;
+  display:grid;
+  gap:3px;
+}
+.v2-runtime .crew-strip__copy b{
+  font-size:14px;
+  color:var(--v2-ink);
+}
+.v2-runtime .crew-strip__copy small{
+  overflow-wrap:anywhere;
+  color:var(--v2-muted);
+  font-size:12px;
+  line-height:1.38;
+  font-weight:700;
+}
+.v2-runtime .crew-support-btn{
+  min-height:44px;
+  padding-inline:12px;
+  white-space:nowrap;
+}
+@media(max-width:430px){
+  .v2-runtime .crew-strip{
+    grid-template-columns:42px minmax(0,1fr);
+  }
+  .v2-runtime .crew-strip__avatar{
+    width:42px;
+    height:42px;
+    border-radius:14px;
+  }
+  .v2-runtime .crew-support-btn{
+    grid-column:1/-1;
+    width:100%;
+  }
+}
