@@ -66,6 +66,7 @@
     if(r.name==='learn')learn();else home();
   }
   function boot(){
+    globalThis.HideV2LegacyMigration?.migrateIfNeeded?.();
     $('#settingsBtn').hidden=true;$('#backBtn').hidden=true;$('#partnerBar').hidden=true;$('#bottomNav').hidden=true;
     $('#sheetLibraryInput').addEventListener('change',e=>{const files=[...e.target.files];e.target.value='';if(files.length)onFiles(files)});
     HideV2Router.subscribe(render);HideV2Store.subscribe(()=>{});render();
