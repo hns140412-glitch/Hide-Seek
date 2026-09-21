@@ -657,11 +657,12 @@
         ocrEvidenceItemId: x.ocrEvidenceItemId || x.sourcePageId || null,
         ocrWarnings: Array.isArray(x.ocrWarnings) ? [...x.ocrWarnings] : []
       }));
-      items = items.map(x=>({
-        ...x,
-        missionRole:["NEW","REVIEW"].includes(x.missionRole)?x.missionRole:(typeof inferMissionRole==='function'?inferMissionRole(x,sheetId):''),
-        missionRoleSource:x.missionRoleSource||'LEARNER_HISTORY_INFERENCE'
-      }));
+      items = items.map(x=>{
+        const explicit=["NEW","REVIEW"].includes(x.missionRole);
+        const missionRole=explicit?x.missionRole:(typeof inferMissionRole==='function'?inferMissionRole(x,sheetId):'');
+        const missionRoleSource=x.missionRoleSource||(explicit?'EXPLICIT_SOURCE_ROLE':missionRole==='REVIEW'?'LEARNER_HISTORY_INFERENCE':'FIRST_ENCOUNTER_INFERENCE');
+        return {...x,missionRole,missionRoleSource};
+      });
       const newSheet = {
         sheetId,
         title: `${new Date().toLocaleDateString('ko-KR')} 숨은 단어`,
