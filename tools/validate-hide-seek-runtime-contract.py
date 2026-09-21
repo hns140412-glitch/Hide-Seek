@@ -488,7 +488,7 @@ for needle in [
 for needle in [
     "FIRST_SEEN_PREDICTION",
     "recallScoreImpact:false",
-    "transferSkillEvidence:true",
+    "transferSkillEvidence=true",
     "assessmentSource='LEARNER_SELF_REPORT'",
     "objectiveVerified=false",
     "자기판단 맞음+근접",
