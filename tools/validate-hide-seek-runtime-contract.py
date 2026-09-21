@@ -613,6 +613,15 @@ for needle in [
     if needle not in app:
         fail.append("THINKING_FIRST_MEMORIZATION:"+needle)
 
+if "inf.successRate" in app:
+    fail.append("RECORDS_SELF_REPORT_RATE_CONTRACT:legacy_successRate_display")
+for needle in [
+    "inf.selfReportedFitRate",
+    "자기판단 맞음+근접",
+]:
+    if needle not in app:
+        fail.append("RECORDS_SELF_REPORT_RATE_CONTRACT:"+needle)
+
 for needle in [
     "FIRST_SEEN_PREDICTION",
     "recallScoreImpact:false",
