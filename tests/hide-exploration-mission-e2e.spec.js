@@ -96,9 +96,13 @@ test('printed handout becomes Hide exploration mission and enters FIRST FIND',as
   expect(snapshot.latestOutbox?.payload?.validWordCount).toBe(2);
   expect(snapshot.latestOutbox?.payload?.memorySummary).toBeTruthy();
 
-  await page.getByRole('button',{name:'탐험 시작'}).click();
-  await expect(page.getByText('FIRST FIND')).toBeVisible();
+  await page.getByRole('button',{name:'외우기 시작'}).click();
+  await expect(page.getByText('새 단어 이해하고 외우기')).toBeVisible();
   await expect(page.getByText('benefit')).toBeVisible();
+  await page.getByRole('button',{name:'외웠어요 · 다음'}).click();
+  await page.getByRole('button',{name:'외우기 완료 · FIRST FIND'}).click();
+  await expect(page.getByText('FIRST FIND',{exact:true})).toBeVisible();
+  await expect(page.getByText('혜택')).toBeVisible();
 });
 
 
