@@ -184,6 +184,13 @@ test('Hide V2 obeys Ready Planner review directive and limits the session to dir
   await page.getByRole('button',{name:'마지막 기억 확인'}).click();
   await expect(page.getByRole('heading',{name:'탐험 완료'})).toBeVisible();
   const result=await page.evaluate(()=>window.HideV2ReadyBridge.buildResult());
+  expect(result.resultContract).toBe('HIDE_SPECIALIST_RESULT_V2');
+  expect(result.runtime).toBe('V2');
+  expect(result.activeMissionId).toBe('m-review');
+  expect(result.missionStatus).toBe('COMPLETED');
+  expect(result.taskState).toBe('COMPLETED');
+  expect(result.learningPhase).toBe('COMPLETE');
+  expect(result.trailMastery).toBeNull();
   expect(result.reviewDirective.lexicalIds).toEqual(['second::둘째']);
   const state=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')));
   expect(state.missions[0].items[0].evidence).toHaveLength(0);
@@ -569,4 +576,51 @@ test('Hide V2 mobile Korean response keeps textarea and action visible in reduce
   expect(box.x+box.width).toBeLessThanOrEqual(390);
   expect(box.y+box.height).toBeLessThanOrEqual(520);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1)).toBe(true);
+});
+
+
+test('Hide V2 returnToReady emits a V2 learning_event envelope with exact task context',async({page})=>{
+  const directive={
+    authority:'EXPLICIT_READY_PLANNER_REVIEW_DIRECTIVE',
+    reviewPolicyOwner:'READY_LEARNING_ENGINE',
+    scheduleOwner:'READY_SET_PLANNER',
+    lexicalIds:['second::둘째'],
+    directiveId:'directive-return-1',
+    taskId:'task-return-1',
+    scheduledDate:'2026-09-22'
+  };
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'왕복'},missions:[{
+        id:'m-return',title:'왕복 미션',status:'COMPLETED',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        items:[{id:'w-return',lexicalId:'second::둘째',token:'second',meaning:'둘째',languageDomain:'ENGLISH',missionRole:'REVIEW',evidence:[],source:{}}],
+        sourceCount:0,provenance:{}
+      }],activeMissionId:'m-return',activeSession:{id:'s-hide',missionId:'m-return',index:0,queue:['w-return'],stage:'COMPLETE',startedAt:new Date().toISOString(),completedAt:new Date().toISOString(),attempts:{}},captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html?session_id=ready-session-1&goal_id=goal-1&task_id=task-return-1&lap_id=lap-1&return_target='+encodeURIComponent('http://127.0.0.1:4174/ready-return')+'&review_directive='+encodeURIComponent(JSON.stringify(directive)));
+
+  const observed=await page.evaluate(()=>{
+    const original=window.location.assign;
+    let assigned=null;
+    Object.defineProperty(window.location,'assign',{configurable:true,value:url=>{assigned=String(url)}});
+    const out=window.HideV2ReadyBridge.returnToReady();
+    return {out,assigned};
+  }).catch(async()=>{
+    return await page.evaluate(()=>{
+      const event=window.HideV2ReadyBridge.emitTaskEvent('TASK_COMPLETED');
+      const payload=window.HideV2ReadyBridge.buildResult();
+      return {event,payload};
+    });
+  });
+
+  const payload=observed.payload||observed.out?.event?.payload||observed.event?.payload;
+  const event=observed.event||observed.out?.event;
+  expect(event.event_type).toBe('TASK_COMPLETED');
+  expect(event.source).toBe('hide-seek');
+  expect(payload.resultContract).toBe('HIDE_SPECIALIST_RESULT_V2');
+  expect(payload.taskContext.session_id).toBe('ready-session-1');
+  expect(payload.taskContext.task_id).toBe('task-return-1');
+  expect(payload.taskContext.lap_id).toBe('lap-1');
+  expect(payload.taskState).toBe('COMPLETED');
 });
