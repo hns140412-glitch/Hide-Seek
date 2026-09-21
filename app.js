@@ -24,7 +24,7 @@ const nowISO=()=>new Date().toISOString();
 const today=()=>nowISO().slice(0,10);
 const clone=x=>JSON.parse(JSON.stringify(x));
 function bindInferenceOutcomeButtons(w){
-  $('.inference-outcome-btn').forEach(b=>{b.onclick=()=>{const latest=traceList(w,'inference').at(-1);if(latest?.event==='FIRST_SEEN_PREDICTION'){latest.outcome=b.dataset.outcome;latest.outcomeAt=nowISO();latest.assessmentSource='LEARNER_SELF_REPORT';latest.objectiveVerified=false;latest.transferSkillEvidence=true;latest.recallScoreImpact=false}$('.inference-outcome-btn').forEach(x=>x.disabled=true);b.classList.add('selected');const next=$('#prepNext');if(next)next.disabled=false;save()}})
+  [...document.querySelectorAll('.inference-outcome-btn')].forEach(b=>{b.onclick=()=>{const latest=traceList(w,'inference').at(-1);if(latest?.event==='FIRST_SEEN_PREDICTION'){latest.outcome=b.dataset.outcome;latest.outcomeAt=nowISO();latest.assessmentSource='LEARNER_SELF_REPORT';latest.objectiveVerified=false;latest.transferSkillEvidence=true;latest.recallScoreImpact=false}[...document.querySelectorAll('.inference-outcome-btn')].forEach(x=>x.disabled=true);b.classList.add('selected');const next=$('#prepNext');if(next)next.disabled=false;save()}})
 }
 const DEFAULT_STATE={
  schemaVersion:SCHEMA_VERSION,appRevision:APP_REV,
