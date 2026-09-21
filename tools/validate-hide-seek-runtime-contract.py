@@ -9,6 +9,10 @@ def read(path):
     return (ROOT/path).read_text(encoding="utf-8")
 
 app=read("app.js")
+if app.count("const $=(s,r=document)=>r.querySelector(s);") != 1:
+    fail.append("SELECTOR_HELPER_SINGLE_DECLARATION")
+if app.count("const $=(s,r=document)=>[...r.querySelectorAll(s)];") != 1:
+    fail.append("SELECTOR_HELPER_PLURAL_DECLARATION")
 release=read("hide-release-v01.js")
 pwa_update=read("hide-pwa-update-v01.js")
 event_envelope=read("vendor/taky/event-envelope.js")
