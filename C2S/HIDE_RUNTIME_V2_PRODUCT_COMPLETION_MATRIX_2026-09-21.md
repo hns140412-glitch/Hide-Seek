@@ -31,7 +31,7 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 | Korean RESPONSE TRAIL | RUNTIME_VERIFIED | yes | fixture | V2 browser production-evidence flow | qualitative feedback not implemented |
 | Korean EVIDENCE TRAIL | RUNTIME_VERIFIED | yes when verified contextEvidence exists | verified-context fixture | browser evidence-selection truth-boundary flow | representative Korean source evidence still open |
 | Hanja SOUND FIND | RUNTIME_VERIFIED | yes when verified soundEvidence exists | verified-sound fixture | dedicated V2 browser sound-recall flow | representative Hanja source/device pronunciation workflow still open |
-| HIDDEN WORDS reinforcement | RUNTIME_VERIFIED | conditional | fixture | Memory Engine-gated browser flow + relearn truth-boundary | reason-specific confusion/orthographic/sound/recovery modes browser-verified; deeper multi-step ladder still partial |
+| HIDDEN WORDS reinforcement | RUNTIME_VERIFIED | conditional | fixture | Memory Engine-gated + reason-specific + staged-assistance browser flows | deeper multi-step ladder remains partial beyond one safe clue escalation |
 | FINAL SEEK | RUNTIME_VERIFIED | yes | fixture | browser flow + assisted→unassisted truth-boundary regression | richer reconstruction ladder remains partial |
 | Memory evidence recording | RUNTIME_VERIFIED | yes | fixture | V2 Memory Ladder browser flow | long-term calibration still needs representative history |
 | Memory advisory to Ready | PARTIAL | no current hosted V2 target | candidate-contract shaped | Hide V2 producer + Ready V2 consumer contract CI | hosted current-candidate roundtrip unverified |
@@ -48,10 +48,10 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 
 ## Claim levels
 
-- PRODUCT_COMPLETION: approximately 72%
-- CODED: approximately 88%
-- CI_VERIFIED: approximately 85%
-- BROWSER_RUNTIME_VERIFIED: approximately 81%
+- PRODUCT_COMPLETION: approximately 73%
+- CODED: approximately 89%
+- CI_VERIFIED: approximately 86%
+- BROWSER_RUNTIME_VERIFIED: approximately 82%
 - DEVICE_VERIFIED: 0%
 - RELEASE_VERIFIED: 0%
 
@@ -315,3 +315,22 @@ Head before matrix document: 63db5206a836050c3dfe5f2b9fd0238d6baeb464
   - Validate Hide Runtime V2 #251 — SUCCESS
   - Validate Hide & Seek #709 — SUCCESS.
 - Conservative reporting rises one point for this newly runtime-proven child learning path: PRODUCT ~72%, CODED ~88%, CI ~85%, Browser Runtime ~81%, Device 0%, Release 0%.
+
+
+### 2026-09-22 staged Hidden Words assistance increment
+- HIDDEN WORDS no longer reveals the full answer immediately after the first reinforcement miss when a safe minimal clue exists.
+- Current bounded ladder:
+  1. reason-specific reinforcement attempt;
+  2. one safe minimal clue when available;
+  3. assisted retry;
+  4. full relearn exposure only if the assisted retry also fails;
+  5. FINAL SEEK remains the unassisted verification point.
+- Safe clue sources are deliberately narrow:
+  - TOKEN recall → English shape scaffold when available;
+  - MEANING recall → existing example/context when available;
+  - SOUND and already-SHAPE-assisted paths do not invent a second clue and may fail closed to relearn.
+- Assisted retry evidence is `objectiveVerified=true`, `objectiveRecall=false`, `recallScoreImpact=false`, `assisted=true`.
+- A correct assisted retry still proceeds to FINAL SEEK for unassisted proof.
+- SHAPE reinforcement itself was also corrected: because a form cue is visible, even a correct response is assisted/non-recall; direct typed MEANING reinforcement remains real meaning recall.
+- Exact code HEAD `28a70fc7ff3e1f89d1bfaba6b59acf47af5f1557` passed V2 #261 / full Hide #719.
+- Conservative reporting rises one point for this newly reachable assistance ladder: PRODUCT ~73%, CODED ~89%, CI ~86%, Browser Runtime ~82%, Device 0%, Release 0%.
