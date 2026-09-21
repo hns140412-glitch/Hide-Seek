@@ -34,6 +34,7 @@
     const m=s.missions.find(x=>x.id===s.activeMissionId)||null;
     const activeSession=s.activeSession||null;
     const completed=m?.status==='COMPLETED'||activeSession?.stage==='COMPLETE';
+    const trail=m?HideV2Trail.missionSummary(m):null;
     return {
       resultContract:'HIDE_SPECIALIST_RESULT_V2',
       sourceApp:'hide-seek',
@@ -44,7 +45,8 @@
       missionStatus:m?.status||null,
       taskState:completed?'COMPLETED':'PARTIAL',
       learningPhase:activeSession?.stage|| (completed?'COMPLETE':null),
-      trailMastery:null,
+      trailMastery:trail?.trailMastery??null,
+      trailSummary:trail,
       memorySummary:m?HideV2Memory.missionSummary(m):null,
       reviewDirective:reviewDirective(),
       completedAt:new Date().toISOString()
