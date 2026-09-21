@@ -113,3 +113,9 @@ Memory advisory packet:
 - Hide may emit `reviewAdvisories` with memory-state evidence and advisory priority.
 - Do not add dates/TODO/carry-over/reschedule ownership to Hide.
 - Ready Learning Engine interprets; Ready & Set Planner schedules.
+
+
+Resolved context persistence:
+- Preserve only Ready-resolved semantic-light `learningContext` on normalized words.
+- Correlate memory advisory evidence through `learningContextRef`.
+- Never infer Hanja grade/range or scheduling inside Hide from that context.
