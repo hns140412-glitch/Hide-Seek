@@ -595,7 +595,6 @@ for needle in [
     "ROOT_PROGRESSIVE_REVEAL",
     "scene-step-next",
     "data-scene-link-step",
-    "data-next-scene",
     "SCENE_PROGRESSIVE_REVEAL",
     "supportType:plan?.type||null",
     "PARENT_CHILD",
@@ -609,6 +608,14 @@ for needle in [
 ]:
     if needle not in all_css:
         fail.append("TRANSFERABLE_SCENE_CSS:"+needle)
+
+for needle in [
+    "data-next-scene",
+    "data-scene-step",
+    "data-scene-link-step",
+]:
+    if needle not in language_model:
+        fail.append("TRANSFERABLE_SCENE_MODEL:"+needle)
 
 for needle in [
     "summarizeInferenceSkill",
