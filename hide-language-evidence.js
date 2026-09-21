@@ -5,7 +5,7 @@
   const SCHEMA_VERSION=2;
   const SOURCE_POLICY='VERIFIED_SOURCE_REQUIRED_FOR_HISTORICAL_CLAIM';
   const records={
-    rainforest:{supportType:'TRANSPARENT_COMPOUND',sourceType:'ETYMONLINE',sourceRef:'https://www.etymonline.com/word/rainforest',center:{label:'rain + forest',meaning:'비 + 숲'},nodes:[{role:'COMPOUND_PART',label:'rain',meaning:'비'},{role:'COMPOUND_PART',label:'forest',meaning:'숲'},{role:'HISTORICAL_NOTE',label:'rain forest',meaning:'현대 영어에서 투명한 합성어로 이해되며 역사적 용례는 별도 출처로 보존'}],bridge:'rain + forest → 비가 많이 오는 숲 → rainforest',scene:'굵은 비가 계속 내리는 빽빽한 숲',claimsHistoricalEtymology:false},
+    rainforest:{supportType:'TRANSPARENT_COMPOUND',sourceType:'ETYMONLINE',sourceRef:'https://www.etymonline.com/word/rain%20forest',center:{label:'rain + forest',meaning:'비 + 숲'},nodes:[{role:'COMPOUND_PART',label:'rain',meaning:'비'},{role:'COMPOUND_PART',label:'forest',meaning:'숲'},{role:'HISTORICAL_NOTE',label:'rain forest',meaning:'현대 영어에서 투명한 합성어로 이해되며 역사적 용례는 별도 출처로 보존'}],bridge:'rain + forest → 비가 많이 오는 숲 → rainforest',scene:'굵은 비가 계속 내리는 빽빽한 숲',claimsHistoricalEtymology:false},
     environment:{supportType:'VERIFIED_ETYMOLOGY',sourceType:'ETYMONLINE',sourceRef:'https://www.etymonline.com/word/environment',center:{label:'environ',meaning:'둘러싸다'},nodes:[{role:'HISTORICAL_BASE',label:'environ',meaning:'둘러싸다 / 에워싸다'},{role:'SUFFIX',label:'-ment',meaning:'동작의 결과·상태를 나타내는 명사형'}],bridge:'둘러싸인 상태 → 우리를 둘러싼 조건과 주변 환경',scene:'사람을 가운데 두고 공기·물·집·학교·나무가 둥글게 둘러싼 장면'},
     mountain:{supportType:'VERIFIED_ETYMOLOGY',sourceType:'ETYMONLINE',sourceRef:'https://www.etymonline.com/word/mountain',center:{label:'mons / montis',meaning:'산, 솟아 있는 것'},nodes:[{role:'LATIN_BASE',label:'mons / montis',meaning:'산'},{role:'PIE_ROOT',label:'*men-',meaning:'튀어나오다, 두드러지다'}],bridge:'튀어나옴 → 눈에 띄게 솟은 땅 → mountain',scene:'평지에서 땅이 크게 위로 솟아 꼭대기를 만드는 장면'},
     planet:{supportType:'VERIFIED_ETYMOLOGY',sourceType:'ETYMONLINE',sourceRef:'https://www.etymonline.com/word/planet',center:{label:'planētēs',meaning:'떠도는 것'},nodes:[{role:'GREEK_BASE',label:'planētēs',meaning:'떠도는 것, 방랑자'},{role:'HISTORICAL_MEANING',label:'wandering star',meaning:'고정별과 달리 움직여 보이는 별'},{role:'MODERN_MEANING',label:'planet',meaning:'별 주위를 도는 천체'}],bridge:'떠도는 별 → 움직여 보이는 천체 → planet',scene:'고정된 별들 사이에서 한 점이 자리를 바꾸며 움직이는 장면'},
@@ -22,7 +22,7 @@
   const SUPPORT_TYPES=new Set(['VERIFIED_ETYMOLOGY','VERIFIED_ROOT','TRANSPARENT_COMPOUND']);
   const SOURCE_TYPES=new Set(['ETYMONLINE']);
   function historicalClaim(record){return record.claimsHistoricalEtymology!==false&&['VERIFIED_ETYMOLOGY','VERIFIED_ROOT'].includes(record.supportType)}
-  function validSourceRef(ref){return /^https:\/\/www\.etymonline\.com\/word\/[a-z0-9-]+$/i.test(String(ref||''))}
+  function validSourceRef(ref){return /^https:\/\/www\.etymonline\.com\/word\/[a-z0-9-]+(?:%20[a-z0-9-]+)*$/i.test(String(ref||''))}
   function validNode(node){return !!node&&typeof node==='object'&&!!String(node.role||'').trim()&&!!String(node.label||'').trim()&&!!String(node.meaning||'').trim()}
   function validateRecord(word,record){
     if(!/^[a-z][a-z-]*$/.test(String(word||'')))return false;
