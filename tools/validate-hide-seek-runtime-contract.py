@@ -383,13 +383,6 @@ for needle in [
     if needle not in app:
         fail.append("TRACE_SEPARATION_CONTRACT:"+needle)
 
-if fail:
-    print("FAIL: Hide & Seek runtime contract")
-    for item in fail:
-        print(item)
-    raise SystemExit(1)
-
-print("PASS: Hide & Seek capture, review, shared-session, device, cache, migration and active-world contracts")
 
 
 for needle in [
@@ -417,3 +410,11 @@ for needle in [
 ]:
     if needle not in app:
         fail.append("LANGUAGE_MEMORY_LADDER_INTEGRATION:"+needle)
+
+if fail:
+    print("FAIL: Hide & Seek runtime contract")
+    for item in fail:
+        print(item)
+    raise SystemExit(1)
+
+print("PASS: Hide & Seek capture, review, shared-session, device, cache, migration and active-world contracts")
