@@ -43,6 +43,47 @@ test('Hide V2 boots without legacy app.js and completes a mission end-to-end',as
   expect(state.missions[0].memorySummary.authority).toBe('SPECIALIST_MEMORY_ADVISORY_ONLY');
 });
 
+test('Hide V2 First Find miss briefly relearns without recall inflation',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'첫찾기 복구'},missions:[{
+        id:'m-first-relearn',title:'첫 찾기 복구',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        sourceCount:0,provenance:{source:'TEST_FIXTURE'},
+        items:[{id:'w-first-relearn',lexicalId:'island::섬',token:'island',meaning:'섬',example:'The island is small.',languageDomain:'ENGLISH',missionRole:'NEW',evidence:[],source:{}}]
+      }],activeMissionId:'m-first-relearn',activeSession:null,captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'탐험 시작'}).click();
+  await page.getByRole('button',{name:'기억하고 찾아보기'}).click();
+  await expect(page.getByText('첫 찾기',{exact:true})).toBeVisible();
+
+  await page.getByLabel('회상 답 입력').fill('wrong');
+  await page.getByRole('button',{name:'기억 확인'}).click();
+  await expect(page.getByText('다시 만나기',{exact:true})).toBeVisible();
+  await expect(page.getByText('island',{exact:true})).toBeVisible();
+  await expect(page.getByText('섬',{exact:true})).toBeVisible();
+  expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')).activeSession.stage)).toBe('FIRST_FIND_RELEARN');
+
+  await page.getByRole('button',{name:'다시 숨기고 뜻 단서로'}).click();
+  await expect(page.getByText('뜻 단서',{exact:true})).toBeVisible();
+
+  const evidence=await page.evaluate(()=>{
+    const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
+    return s.missions[0].items[0].evidence;
+  });
+  const miss=evidence.find(x=>x.stage==='FIRST_FIND');
+  const relearn=evidence.find(x=>x.stage==='FIRST_FIND_RELEARN');
+  expect(miss.result).toBe('WRONG');
+  expect(miss.objectiveRecall).toBe(true);
+  expect(miss.assisted).toBe(false);
+  expect(relearn.evidenceMode).toBe('RELEARN_EXPOSURE');
+  expect(relearn.result).toBe('SEEN');
+  expect(relearn.objectiveRecall).toBe(false);
+  expect(relearn.recallScoreImpact).toBe(false);
+  expect(relearn.assisted).toBe(true);
+});
+
 test('Hide V2 Final Seek support cannot count as unassisted recall',async({page})=>{
   await page.addInitScript(()=>{
     localStorage.setItem('hide_seek_v2_state',JSON.stringify({
