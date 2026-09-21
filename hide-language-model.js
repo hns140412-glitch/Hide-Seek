@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION='2026.09.21-language-core-v11';
+  const VERSION='2026.09.21-language-core-v12';
 
   const MODELS={
     ENGLISH:{
@@ -236,7 +236,7 @@
     const plan=starterExploration(item,context);
     if(!plan)return '';
     const parts=plan.parts.length?'<div class="thinking-parts">'+plan.parts.map(p=>'<span><b>'+esc(p.label)+'</b><small>'+esc(p.meaning)+'</small></span>').join('')+'</div>':'';
-    const verifiedNodes=plan.nodes?.length?'<div class="root-orbit">'+plan.nodes.map(n=>'<span class="root-orbit-node"><b>'+esc(n.label)+'</b><small>'+esc(n.meaning)+'</small></span>').join('')+'</div>':'';
+    const verifiedNodes=plan.nodes?.length?'<div class="root-orbit" data-progressive-root>'+plan.nodes.map((n,i)=>'<span class="root-orbit-node" data-root-step="'+i+'" '+(i?'hidden':'')+'><b>'+esc(n.label)+'</b><small>'+esc(n.meaning)+'</small></span>').join('')+'</div>'+(plan.nodes.length>1?'<button class="btn secondary full root-step-next" type="button" data-next-step="1">다음 뜻의 흔적 보기</button>':''):'';
     const visualCenter=plan.center||{label:plan.word,meaning:plan.type==='TRANSPARENT_COMPOUND'?'조각을 합쳐 뜻 만들기':'장면에서 핵심 개념 잡기'};
     const rootCore='<div class="root-core"><small>'+(plan.verified?'핵심 흔적':'핵심 개념')+'</small><b>'+esc(visualCenter.label)+'</b><span>'+esc(visualCenter.meaning)+'</span></div>';
     const sceneTrail=plan.visual?.length?'<div class="scene-trail">'+plan.visual.map((x,i)=>'<span><small>'+esc(String(i+1))+'</small><b>'+esc(x)+'</b></span>').join('<i>→</i>')+'</div>':'';
