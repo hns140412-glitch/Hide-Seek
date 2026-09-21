@@ -28,14 +28,15 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 | FIRST FIND | FUNCTIONAL | yes | fixture | V2 browser flow | recovery/retry pedagogy still simplified |
 | MEANING recall | FUNCTIONAL | yes | fixture | V2 browser flow | recognition/contrast variants not yet ported |
 | English CONNECTION | RUNTIME_VERIFIED | yes | fixture | Thinking Trail browser flow | adaptive clue personalization and broader representative vocabulary still pending |
-| Korean RESPONSE TRAIL | FUNCTIONAL | yes | fixture | V2 browser evidence semantics | qualitative feedback not implemented |
-| Hanja SOUND FIND | PARTIAL | yes when verified soundEvidence exists | fixture | domain contract | dedicated V2 browser Hanja path still needed |
+| Korean RESPONSE TRAIL | RUNTIME_VERIFIED | yes | fixture | V2 browser production-evidence flow | qualitative feedback not implemented |
+| Korean EVIDENCE TRAIL | RUNTIME_VERIFIED | yes when verified contextEvidence exists | verified-context fixture | browser evidence-selection truth-boundary flow | representative Korean source evidence still open |
+| Hanja SOUND FIND | RUNTIME_VERIFIED | yes when verified soundEvidence exists | verified-sound fixture | dedicated V2 browser sound-recall flow | representative Hanja source/device pronunciation workflow still open |
 | FINAL SEEK | FUNCTIONAL | yes | fixture | V2 browser flow | richer reconstruction/hint ladder not ported |
 | Memory evidence recording | RUNTIME_VERIFIED | yes | fixture | V2 Memory Ladder browser flow | long-term calibration still needs representative history |
 | Memory advisory to Ready | PARTIAL | no current hosted V2 target | candidate-contract shaped | Hide V2 producer + Ready V2 consumer contract CI | hosted current-candidate roundtrip unverified |
 | Ready Planner directive intake | RUNTIME_VERIFIED | yes | fixture contract | browser directed lexical-id test | live current Ready runtime integration unverified |
 | Session reload/resume | RUNTIME_VERIFIED | yes | fixture | browser reload test | background/PWA lifecycle not verified |
-| Child-facing core UI/UX | RUNTIME_VERIFIED | yes | browser/mobile viewport | home/mission/learning/completion/Memory Ladder/OCR review-recovery + 390×844 flow tests | final art direction and physical-device visual QA pending |
+| Child-facing core UI/UX | RUNTIME_VERIFIED | yes | browser/mobile viewport | home/mission/learning/completion/Memory Ladder/OCR review-recovery + 390×844 + exploration art-direction checks | physical-device visual QA/final device polish pending |
 | Exploration crew presentation layer | RUNTIME_VERIFIED | yes | adapter/fallback browser fixture | answer-safe crew strip + home/completion/Memory Ladder presentation tests | live current Snap crew-provider roundtrip and final art direction remain open |
 | Mission management surface | RUNTIME_VERIFIED | yes | N/A | selection/rename/archive/delete browser flow | richer history/filtering/bulk actions pending |
 | Records / wordbook surfaces | RUNTIME_VERIFIED | yes | fixture/history-shaped | cumulative wordbook + weakness dashboard + evidence detail browser flow | filtering/search/export pending |
@@ -46,10 +47,10 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 
 ## Claim levels
 
-- PRODUCT_COMPLETION: approximately 66%
-- CODED: approximately 82%
-- CI_VERIFIED: approximately 79%
-- BROWSER_RUNTIME_VERIFIED: approximately 75%
+- PRODUCT_COMPLETION: approximately 67%
+- CODED: approximately 83%
+- CI_VERIFIED: approximately 80%
+- BROWSER_RUNTIME_VERIFIED: approximately 76%
 - DEVICE_VERIFIED: 0%
 - RELEASE_VERIFIED: 0%
 
@@ -207,3 +208,18 @@ Head before matrix document: 63db5206a836050c3dfe5f2b9fd0238d6baeb464
   - Validate Hide & Seek #627 — SUCCESS.
 - PRODUCT_COMPLETION remains approximately 66%; CODED approximately 82%; CI_VERIFIED approximately 79%; BROWSER_RUNTIME_VERIFIED approximately 75%; DEVICE_VERIFIED 0%; RELEASE_VERIFIED 0%.
 - No percentage increase is claimed for CSS/test/document volume. Remaining material blockers are representative live-provider OCR, physical-device verification, current frozen Ready↔Hide roundtrip, final visual art direction, and release/deploy source-ref proof.
+
+
+### 2026-09-22 language-domain runtime closure increment
+- A browser-verified exploration art-direction pass now visually connects home, mission map, learning journey, completion and Memory Ladder. This does not count as device visual QA.
+- Hanja SOUND FIND now has a dedicated Runtime V2 browser journey using verified source-linked `soundEvidence`; typed sound recall records `SOUND + RECALL` with objective recall and the verified sourceRef.
+- Korean verified EVIDENCE TRAIL is now implemented in Runtime V2:
+  - only canonical `normalizeContextEvidence` output can activate the path;
+  - the learner explicitly selects evidence from verified candidates;
+  - the event records `EVIDENCE + MEANING`, `EVIDENCE_SELECTION`, and `objectiveVerified=true`;
+  - it does **not** claim objective CONTEXT recall or recall-score impact;
+  - after evidence selection, the same DOMAIN_EXTENSION continues to RESPONSE TRAIL and then FINAL SEEK.
+- Exact pre-document code HEAD `3e63d5250d7f636046b50d2e164e028d925ffde9` passed:
+  - Validate Hide Runtime V2 #182 — SUCCESS
+  - Validate Hide & Seek #636 — SUCCESS.
+- The conservative product estimate rises only for the newly reachable Korean evidence-selection path plus newly runtime-proven Hanja sound path: PRODUCT_COMPLETION ~67%, CODED ~83%, CI_VERIFIED ~80%, BROWSER_RUNTIME_VERIFIED ~76%. DEVICE_VERIFIED and RELEASE_VERIFIED remain 0%.
