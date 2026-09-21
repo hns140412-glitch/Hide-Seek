@@ -640,3 +640,51 @@ test('Hide V2 child-facing shell uses exploration language and hides runtime jar
   expect(manifest.name).toBe('Hide & Seek');
   expect(manifest.description).not.toContain('V2');
 });
+
+
+test('Hide V2 wrong final seek enters relearn and seek-again before completing',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'다시찾기'},missions:[{
+        id:'m-seek-again',title:'다시 찾기 미션',status:'READY',
+        createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        items:[{id:'w1',lexicalId:'island::섬',token:'island',meaning:'섬',languageDomain:'ENGLISH',missionRole:'NEW',example:'The island is small.',evidence:[],source:{}}],
+        sourceCount:0,provenance:{}
+      }],activeMissionId:'m-seek-again',activeSession:null,captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'학습 시작'}).click();
+  await page.getByRole('button',{name:'기억하고 찾아보기'}).click();
+  await page.getByLabel('회상 답 입력').fill('island');
+  await page.getByRole('button',{name:'기억 확인'}).click();
+  await page.getByLabel('뜻 회상 입력').fill('섬');
+  await page.getByRole('button',{name:'뜻 확인'}).click();
+  await page.getByRole('button',{name:'다음'}).click();
+
+  await expect(page.getByText('마지막 찾기',{exact:true})).toBeVisible();
+  await page.getByLabel('최종 회상 답 입력').fill('wrong');
+  await page.getByRole('button',{name:'마지막 기억 확인'}).click();
+
+  await expect(page.getByText('다시 만나기',{exact:true})).toBeVisible();
+  await expect(page.getByText('island',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'다시 숨기기'}).click();
+
+  await expect(page.getByText('다시 찾기',{exact:true})).toBeVisible();
+  await page.getByLabel('다시 찾기 답 입력').fill('island');
+  await page.getByRole('button',{name:'다시 찾기'}).click();
+
+  await expect(page.getByRole('heading',{name:'탐험 완료'})).toBeVisible();
+  const state=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')));
+  const word=state.missions[0].items[0];
+  expect(word.evidence.some(x=>x.stage==='FINAL_SEEK'&&x.result==='WRONG')).toBeTruthy();
+  expect(word.evidence.some(x=>x.stage==='SEEK_AGAIN_RELEARN'&&x.evidenceMode==='RELEARN_EXPOSURE'&&x.objectiveRecall===false)).toBeTruthy();
+  expect(word.evidence.some(x=>x.stage==='SEEK_AGAIN'&&x.result==='CORRECT'&&x.objectiveRecall===true)).toBeTruthy();
+
+  const memory=await page.evaluate(()=>{
+    const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
+    return window.HideV2Memory.summary(s.missions[0].items[0]);
+  });
+  expect(memory.memorySignature.recoveryStatus).toBe('IMMEDIATE_ONLY');
+  expect(memory.needsUnassistedRecall).toBe(true);
+});
