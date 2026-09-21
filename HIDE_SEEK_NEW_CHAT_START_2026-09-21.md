@@ -177,3 +177,10 @@ Runtime V2 rewrite is now the active implementation direction.
 - Do not return to monolithic V1 feature growth except bounded reference/regression recovery.
 - Read `C2S/HIDE_RUNTIME_V2_REWRITE_2026-09-21.md` and `C2S/HIDE_RUNTIME_V2_PRODUCT_COMPLETION_MATRIX_2026-09-21.md` first.
 - Keep V2 completion separate from reusable V1/domain asset maturity.
+
+
+## Current frozen candidate
+- `frozen/hide-v2-candidate-2026-09-21-02`
+- SHA `42f7627b405d1026a0339fb5ed11b563d65d8003`
+- V2 #102 PASS / full Hide #556 PASS.
+- Candidate 01 is superseded.
