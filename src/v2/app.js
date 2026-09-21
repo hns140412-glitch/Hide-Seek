@@ -8,6 +8,55 @@
   function mission(){return HideV2Mission.activeMission()}
   function setFlash(x){flash=x;setTimeout(()=>{flash='';render()},1200)}
 
+  function bindThinkingTrail(missionId,w){
+    const card=$('.thinking-map-card');if(!card)return;
+    const submit=$('.inference-submit',card),reveal=$('.thinking-reveal',card);
+    if(submit){
+      submit.onclick=()=>{
+        const prediction=$('.inference-prediction',card)?.value.trim()||'';
+        const clue=$('.inference-clue',card)?.value||'OTHER';
+        const confidence=$('.inference-confidence',card)?.value||'MEDIUM';
+        if(!prediction){setFlash('정답 보기 전에 한 번 추측해보세요.');return}
+        HideV2Memory.record(missionId,w.id,{
+          stage:'THINKING_TRAIL',
+          evidenceMode:'INFERENCE_SELF_REPORT',
+          axes:['MEANING','CONTEXT'],
+          result:'SUBMITTED',
+          objectiveVerified:false,
+          objectiveRecall:false,
+          recallScoreImpact:false,
+          assisted:false,
+          prediction,clue,confidence
+        });
+        submit.disabled=true;
+        if(reveal)reveal.disabled=false;
+      };
+    }
+    if(reveal){
+      reveal.onclick=()=>{
+        const body=$('.thinking-reveal-body',card);if(body)body.hidden=false;
+        reveal.disabled=true;
+      };
+    }
+    const rootNext=$('.root-step-next',card);
+    if(rootNext)rootNext.onclick=()=>{
+      const hidden=[...card.querySelectorAll('[data-root-step][hidden]')];
+      if(hidden.length)hidden[0].hidden=false;
+      if(hidden.length<=1)rootNext.hidden=true;
+    };
+    const sceneNext=$('.scene-step-next',card);
+    if(sceneNext)sceneNext.onclick=()=>{
+      const hidden=[...card.querySelectorAll('[data-scene-step][hidden]')];
+      if(hidden.length){
+        const step=hidden[0].dataset.sceneStep;
+        const link=card.querySelector(`[data-scene-link-step="${step}"]`);
+        if(link)link.hidden=false;
+        hidden[0].hidden=false;
+      }
+      if(hidden.length<=1)sceneNext.hidden=true;
+    };
+  }
+
   function home(){
     const s=HideV2Store.snapshot(),m=mission();
     const resumable=globalThis.HideV2Session?.isResumable?.()===true;
@@ -62,11 +111,10 @@
     const w=HideV2Learning.current(session,m);const idx=session.index+1,total=session.queue?.length||m.items.length;
 
     if(session.stage==='MEMORIZE'){
-      const thinking=globalThis.HideLanguageModel?.starterExploration?.(
-        {eng:w.token,word:w.token,kor:w.meaning,languageDomain:w.languageDomain,meaningMap:w.meaningMap},
-        {encounteredWords:[]}
-      );
-      view().innerHTML=`<section class="learning-shell"><div class="learn-head"><span class="phase-chip">MEMORIZE</span><b>${idx}/${total}</b></div><section class="card word-card"><div class="bigword">${esc(w.token)}</div><h2 style="text-align:center">${esc(w.meaning)}</h2>${w.example?`<p class="example">${esc(w.example)}</p>`:''}${thinking?.prompt?`<div class="card tint-sky"><b>생각 단서</b><p>${esc(thinking.prompt)}</p></div>`:''}<button id="v2Memorized" class="btn primary full">기억하고 찾아보기</button></section></section>`;
+      const item={eng:w.token,word:w.token,kor:w.meaning,languageDomain:w.languageDomain,meaningMap:w.meaningMap};
+      const thinkingHtml=globalThis.HideLanguageModel?.renderStarterExplorationHtml?.(item,{encounteredWords:[]},esc)||'';
+      view().innerHTML=`<section class="learning-shell"><div class="learn-head"><span class="phase-chip">MEMORIZE</span><b>${idx}/${total}</b></div><section class="card word-card"><div class="bigword">${esc(w.token)}</div><h2 style="text-align:center">${esc(w.meaning)}</h2>${w.example?`<p class="example">${esc(w.example)}</p>`:''}</section>${thinkingHtml}<button id="v2Memorized" class="btn primary full">기억하고 찾아보기</button></section>`;
+      bindThinkingTrail(m.id,w);
       $('#v2Memorized').onclick=()=>{HideV2Session.update(HideV2Learning.submitMemorize(session,m).session);render()};
       return;
     }
@@ -141,14 +189,25 @@
 
   function records(){
     const book=HideV2Memory.wordbook(),dash=HideV2Memory.dashboard();
-    view().innerHTML=`<section class="card"><div class="section-title"><h2>기억 기록</h2><span>${dash.total}단어</span></div><div class="grid3"><div class="status-pill"><b>${dash.averageStrength}%</b><span>Memory</span></div><div class="status-pill"><b>${dash.needsRecall}</b><span>재회상</span></div><div class="status-pill"><b>${dash.stable}</b><span>안정</span></div></div><div class="metric"><span>뜻 혼동</span><b>${dash.confusion}</b></div><div class="metric"><span>글자 형태 취약</span><b>${dash.orthographic}</b></div><div class="metric"><span>소리 회상 취약</span><b>${dash.sound}</b></div><div class="metric"><span>느린 회상</span><b>${dash.slowRecall}</b></div><div class="metric"><span>힌트 의존</span><b>${dash.hintDependent}</b></div></section><section class="card"><div class="section-title"><h2>단어장</h2><span>우선 복습순</span></div>${book.length?book.map((x,i)=>`<article class="weak-item" data-wordbook-index="${i}"><div style="flex:1"><b>${esc(x.token)}</b><small style="display:block">${esc(x.meaning)} · ${esc(x.languageDomain)} · ${x.encounters}회</small><small style="display:block">${esc(x.primaryReason.label)}</small></div><div style="text-align:right"><b>${x.memoryStrength}%</b><small style="display:block">P${x.nextReviewPriority}</small></div></article>`).join(''):'<p>아직 기억 기록이 없어요.</p>'}<button class="btn secondary full" id="v2RecordsHome">홈으로</button></section>`;
+    view().innerHTML=`<section class="card"><div class="section-title"><h2>기억 기록</h2><span>${dash.total}단어</span></div><div class="grid3"><div class="status-pill"><b>${dash.averageStrength}%</b><span>Memory</span></div><div class="status-pill"><b>${dash.needsRecall}</b><span>재회상</span></div><div class="status-pill"><b>${dash.stable}</b><span>안정</span></div></div><div class="metric"><span>뜻 혼동</span><b>${dash.confusion}</b></div><div class="metric"><span>글자 형태 취약</span><b>${dash.orthographic}</b></div><div class="metric"><span>소리 회상 취약</span><b>${dash.sound}</b></div><div class="metric"><span>느린 회상</span><b>${dash.slowRecall}</b></div><div class="metric"><span>힌트 의존</span><b>${dash.hintDependent}</b></div></section><section class="card"><div class="section-title"><h2>단어장</h2><span>우선 복습순</span></div>${book.length?book.map((x,i)=>`<article class="weak-item" data-wordbook-index="${i}"><div style="flex:1"><b>${esc(x.token)}</b><small style="display:block">${esc(x.meaning)} · ${esc(x.languageDomain)} · ${x.encounters}회</small><small style="display:block">${esc(x.primaryReason.label)}</small></div><div style="text-align:right"><b>${x.memoryStrength}%</b><small style="display:block">P${x.nextReviewPriority}</small><button class="btn secondary" data-word-detail="${i}" type="button">상세</button></div></article>`).join(''):'<p>아직 기억 기록이 없어요.</p>'}<button class="btn secondary full" id="v2RecordsHome">홈으로</button></section>`;
     $('#v2RecordsHome').onclick=()=>HideV2Router.go('home');
+    view().querySelectorAll('[data-word-detail]').forEach(btn=>{
+      btn.onclick=()=>{const entry=book[Number(btn.dataset.wordDetail)];if(entry)HideV2Router.go('record-detail',{lexicalId:entry.lexicalId})};
+    });
+  }
+
+  function recordDetail(params={}){
+    const entry=HideV2Memory.wordbook().find(x=>x.lexicalId===params.lexicalId);
+    if(!entry){HideV2Router.go('records');return}
+    const sig=entry.memorySignature||{},events=(entry.evidence||[]).slice().reverse().slice(0,20);
+    view().innerHTML=`<section class="card"><div class="hero-kicker"><span>MEMORY DETAIL</span><span>${esc(entry.languageDomain)}</span></div><h2>${esc(entry.token)}</h2><p>${esc(entry.meaning)}</p><div class="grid3"><div class="status-pill"><b>${entry.memoryStrength}%</b><span>Memory</span></div><div class="status-pill"><b>P${entry.nextReviewPriority}</b><span>Priority</span></div><div class="status-pill"><b>${entry.encounters}</b><span>Encounters</span></div></div><div class="metric"><span>주요 이유</span><b>${esc(entry.primaryReason.label)}</b></div><div class="metric"><span>회복 상태</span><b>${esc(sig.recoveryStatus||'UNPROVEN')}</b></div><div class="metric"><span>뜻 취약</span><b>${sig.semanticWeakness||0}</b></div><div class="metric"><span>소리 취약</span><b>${sig.phonologicalWeakness||0}</b></div><div class="metric"><span>형태 취약</span><b>${sig.orthographicWeakness||0}</b></div><div class="metric"><span>혼동</span><b>${sig.confusionPattern?.count||0}</b></div></section><section class="card"><div class="section-title"><h2>Evidence Trail</h2><span>최근 ${events.length}</span></div>${events.length?events.map(e=>`<div class="weak-item"><div><b>${esc(e.stage||e.evidenceMode||'EVENT')}</b><small style="display:block">${esc(e.result||'')} · ${esc(e.evidenceMode||'')}</small></div><small>${esc(e.at||'')}</small></div>`).join(''):'<p>기록 없음</p>'}<button class="btn secondary full" id="v2RecordBack">기록으로</button></section>`;
+    $('#v2RecordBack').onclick=()=>HideV2Router.go('records');
   }
 
   function render(){
     if(flash){const t=$('#toast');if(t){t.textContent=flash;t.classList.add('show')}}
     const r=HideV2Router.current();
-    if(r.name==='learn')learn();else if(r.name==='missions')missions();else if(r.name==='records')records();else home();
+    if(r.name==='learn')learn();else if(r.name==='missions')missions();else if(r.name==='records')records();else if(r.name==='record-detail')recordDetail(r.params);else home();
   }
   function boot(){
     globalThis.HideV2LegacyMigration?.migrateIfNeeded?.();
