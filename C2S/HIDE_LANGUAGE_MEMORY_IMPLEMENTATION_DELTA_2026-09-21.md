@@ -263,3 +263,26 @@ Latest-head CI note must still be checked live. No Netlify / deploy / merge / us
   - browser product flows (all configured browser tests).
 - This establishes CI_VERIFIED for that exact SHA only.
 - No Netlify call, deployment, merge, or real-device verification is implied by this checkpoint.
+
+
+## Ready Learning Engine basis for Language Memory
+- Language Memory does not define an independent school-subject pedagogy stack.
+- Korean and Hanja memory behavior is grounded in the existing Ready & Set Learning Engine / Subject Master profiles.
+- Basis snapshot used by Hide:
+  - Ready Learning Master `0.5.1`
+  - Ready Subject Master `0.2.1`
+  - Ready Learning Reference `0.3.0`
+- New adapter: `hide-learning-basis-v01.js`.
+- Korean basis:
+  - subject = `국어`
+  - method = `READ_UNDERSTAND_EVIDENCE_RESPOND`
+  - Ready loop = `READ_OR_LISTEN -> UNDERSTAND -> FIND_EVIDENCE -> RESPOND_OR_EXPRESS -> REVIEW`
+  - Hide projection = form/context -> meaning -> evidence -> recall -> response -> review.
+- Hanja basis:
+  - subject = `한자`
+  - method = `FORM_SOUND_MEANING_RECALL`
+  - Ready loop = `ENCODE -> RECALL -> CHECK -> RETRY`
+  - Hide projection = form + sound + meaning encoding -> recall -> check -> retry/reconstruct.
+- English keeps the existing Hide word-structure / inference specialist path while referencing the Ready English learning profile for the higher-level learning loop.
+- Memory Ladder now reorders only existing assistance through the learning-basis profile; it does not invent assistance unavailable for the current word.
+- Ready and Hide remain sibling products. No user/family/org identity, role, or permission model is shared through this adapter.
