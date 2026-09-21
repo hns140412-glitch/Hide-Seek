@@ -1,8 +1,8 @@
 (() => {
   'use strict';
 
-  const VERSION='2026.09.21-evidence-v1';
-  const SCHEMA_VERSION=1;
+  const VERSION='2026.09.21-evidence-v2';
+  const SCHEMA_VERSION=2;
   const SOURCE_POLICY='VERIFIED_SOURCE_REQUIRED_FOR_HISTORICAL_CLAIM';
   const records={
     environment:{supportType:'VERIFIED_ETYMOLOGY',sourceType:'ETYMONLINE',sourceRef:'https://www.etymonline.com/word/environment',center:{label:'environ',meaning:'둘러싸다'},nodes:[{role:'HISTORICAL_BASE',label:'environ',meaning:'둘러싸다 / 에워싸다'},{role:'SUFFIX',label:'-ment',meaning:'동작의 결과·상태를 나타내는 명사형'}],bridge:'둘러싸인 상태 → 우리를 둘러싼 조건과 주변 환경',scene:'사람을 가운데 두고 공기·물·집·학교·나무가 둥글게 둘러싼 장면'},
@@ -15,13 +15,23 @@
     earthquake:{supportType:'TRANSPARENT_COMPOUND',sourceType:'ETYMONLINE',sourceRef:'https://www.etymonline.com/word/earthquake',center:{label:'earth + quake',meaning:'땅 + 흔들림'},nodes:[{role:'COMPOUND_PART',label:'earth',meaning:'땅'},{role:'COMPOUND_PART',label:'quake',meaning:'흔들림'}],bridge:'earth + quake → 땅의 흔들림 → earthquake',scene:'땅과 건물이 한꺼번에 흔들리는 장면',claimsHistoricalEtymology:false},
     climate:{supportType:'VERIFIED_ETYMOLOGY',sourceType:'ETYMONLINE',sourceRef:'https://www.etymonline.com/word/climate',center:{label:'klima',meaning:'기울기·경사'},nodes:[{role:'GREEK_BASE',label:'klima',meaning:'기울기, 경사'},{role:'SEMANTIC_SHIFT',label:'earth zone',meaning:'태양 각도와 위도에 따른 지구의 구역'},{role:'MODERN_MEANING',label:'climate',meaning:'한 지역의 장기적인 날씨 특징'}],bridge:'경사/기울기 → 지구의 구역 → 지역의 장기 날씨 특징',scene:'지구를 위도 띠로 나누고 각 띠의 계절·비·더위를 겹쳐 보는 장면'},
     harvest:{supportType:'VERIFIED_ETYMOLOGY',sourceType:'ETYMONLINE',sourceRef:'https://www.etymonline.com/word/harvest',center:{label:'gather / pluck',meaning:'거두다·따다'},nodes:[{role:'OLD_ENGLISH',label:'hærfest',meaning:'가을, 수확철'},{role:'ROOT',label:'*kerp-',meaning:'모으다·따다·수확하다'}],bridge:'거두는 계절 → 작물을 거두는 일 → harvest',scene:'가을 들판에서 익은 곡식과 과일을 한곳에 거두는 장면'}
-  };;
+  };
 
+  const SUPPORT_TYPES=new Set(['VERIFIED_ETYMOLOGY','VERIFIED_ROOT','TRANSPARENT_COMPOUND']);
+  const SOURCE_TYPES=new Set(['ETYMONLINE']);
+  function historicalClaim(record){return record.claimsHistoricalEtymology!==false&&['VERIFIED_ETYMOLOGY','VERIFIED_ROOT'].includes(record.supportType)}
+  function validSourceRef(ref){try{const u=new URL(String(ref||''));return u.protocol==='https:'&&u.hostname==='www.etymonline.com'&&u.pathname.startsWith('/word/')}catch{return false}}
+  function validNode(node){return !!node&&typeof node==='object'&&!!String(node.role||'').trim()&&!!String(node.label||'').trim()&&!!String(node.meaning||'').trim()}
   function validateRecord(word,record){
-    if(!word||!record||typeof record!=='object')return false;
-    if(!record.supportType||!record.sourceType)return false;
-    if(record.claimsHistoricalEtymology!==false&&!record.sourceRef)return false;
-    if(!record.center||!Array.isArray(record.nodes))return false;
+    if(!/^[a-z][a-z-]*$/.test(String(word||'')))return false;
+    if(!record||typeof record!=='object')return false;
+    if(!SUPPORT_TYPES.has(record.supportType)||!SOURCE_TYPES.has(record.sourceType))return false;
+    if(!validSourceRef(record.sourceRef))return false;
+    if(!record.center||!String(record.center.label||'').trim()||!String(record.center.meaning||'').trim())return false;
+    if(!Array.isArray(record.nodes)||!record.nodes.length||!record.nodes.every(validNode))return false;
+    if(!String(record.bridge||'').trim()||!String(record.scene||'').trim())return false;
+    if(record.supportType==='TRANSPARENT_COMPOUND'&&record.claimsHistoricalEtymology!==false)return false;
+    if(historicalClaim(record)&&!record.nodes.some(n=>['ROOT','PIE_ROOT','HISTORICAL_BASE','HISTORICAL_FORM','OLD_ENGLISH','LATIN_BASE','GREEK_BASE','FRENCH_BASE','HINDI_BASE','SANSKRIT_BASE','SEMANTIC_SHIFT','HISTORICAL_MEANING'].includes(String(n.role||'').toUpperCase())))return false;
     return true;
   }
 
