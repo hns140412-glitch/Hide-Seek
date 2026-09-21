@@ -67,6 +67,9 @@ test('Hide V2 presents one continuous child journey and a completion moment', as
   await expect(page.locator('.completion-achievement')).toContainText('끝까지');
   await expect(page.locator('.completion-next')).toBeVisible();
   await expect(page.getByText('오늘의 기록 보기', { exact: true })).toBeVisible();
+  expect(await page.locator('.completion-mark').evaluate(el=>getComputedStyle(el).animationName)).toContain('hide-v2-complete-pop');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  expect(await page.locator('.completion-mark').evaluate(el=>getComputedStyle(el).animationName)).toBe('none');
   await page.getByRole('button', { name: '기억 사다리 보기' }).click();
   await expect(page.getByRole('heading', { name: '기억 사다리' })).toBeVisible();
   await expect(page.locator('.ladder-board')).toBeVisible();
