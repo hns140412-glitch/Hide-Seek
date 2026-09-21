@@ -104,11 +104,30 @@
           const recovery = traceList(w,'recovery');
           lastRecovery = [...recovery].reverse().find(x=>x?.result==='UNASSISTED_RECALL') || null;
         } catch {}
+        let learningContextRef=null;
+        try {
+          const lc=globalThis.HideLanguageModel?.learningContextFor?.(w)||null;
+          if(lc) learningContextRef={
+            contextId:lc.contextId||null,
+            learningUnitId:lc.learningUnitId||null,
+            subject:lc.subject||null,
+            unitLabel:lc.unitLabel||null,
+            rangeLabel:lc.rangeLabel||null,
+            progressionContext:lc.progressionContext||null,
+            reviewContext:lc.reviewContext||null,
+            assignmentRef:lc.assignmentRef||null,
+            sourceRef:lc.sourceRef||null,
+            hanjaLevelLabel:lc.hanjaLevelLabel||null,
+            hanjaLevelSchemeRef:lc.hanjaLevelSchemeRef||null,
+            resolvedBy:lc.resolvedBy||'READY_LEARNING_ENGINE'
+          };
+        } catch {}
         priorities.push({
           lexicalId: w.lexicalId || senseKey(w),
           priority: Math.round(Number(view.priority)),
           nextReviewPriority: Math.round(Number(view.priority)),
           reason: key,
+          learningContextRef,
           advisoryOnly:true,
           evidenceBasis:'HIDE_MEMORY_EVIDENCE',
           memoryStrength:Number.isFinite(view?.strength)?Math.round(Number(view.strength)):null,
