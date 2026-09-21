@@ -503,6 +503,8 @@ for needle in [
     "TRANSFERABLE_INFERENCE_HISTORY",
     "adaptiveClue",
     "evidenceLevel",
+    "ESTABLISHED",
+    "EMERGING",
     "inferenceWordDomain",
     "languageDomain:currentDomain",
     "inferenceRecordSummary(currentDomain)",
@@ -533,7 +535,7 @@ for needle in [
     "검증 구조",
     "preferredAssistanceSteps",
     "prioritizeExistingAssistance",
-    "attempts>=2",
+    "attempts>=3",
     "evidenceLevel",
     "parent-explain-card",
 ]:
