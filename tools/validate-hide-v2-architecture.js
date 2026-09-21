@@ -24,6 +24,18 @@ if(html.includes('./app.js'))fail.push('V2_MUST_NOT_LOAD_LEGACY_APP_JS');
 if(html.includes('./hide-runtime.js'))fail.push('V2_MUST_NOT_LOAD_LEGACY_HIDE_RUNTIME');
 if(html.includes('./hide-bridge.js'))fail.push('V2_MUST_NOT_LOAD_LEGACY_HIDE_BRIDGE');
 
+const v2css=fs.readFileSync(path.join(ROOT,'src/v2/v2.css'),'utf8');
+if(!html.includes('./src/v2/v2.css'))fail.push('V2_LAYOUT_BOUNDARY_STYLESHEET_MISSING');
+if(!html.includes('class="v2-runtime"'))fail.push('V2_BODY_LAYOUT_BOUNDARY_MISSING');
+if(!v2css.includes('.v2-runtime .top-safe'))fail.push('V2_HEADER_HIT_AREA_OVERRIDE_MISSING');
+
+const learning=fs.readFileSync(path.join(ROOT,'src/v2/learning-session.js'),'utf8');
+for(const stage of ['MEMORIZE','FIRST_FIND','MEANING','DOMAIN_EXTENSION','FINAL_SEEK','COMPLETE']){
+  if(!learning.includes("'"+stage+"'"))fail.push('V2_LEARNING_STAGE_MISSING:'+stage);
+}
+if(!learning.includes('submitMemorize'))fail.push('V2_MEMORIZATION_EVIDENCE_MISSING');
+if(!learning.includes('checkFinalSeek'))fail.push('V2_FINAL_SEEK_EVIDENCE_MISSING');
+
 const store=fs.readFileSync(path.join(ROOT,'src/v2/app-store.js'),'utf8');
 if(!store.includes("const KEY='hide_seek_v2_state'"))fail.push('V2_STATE_OWNER_MISSING');
 const mission=fs.readFileSync(path.join(ROOT,'src/v2/mission-service.js'),'utf8');
