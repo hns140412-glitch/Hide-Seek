@@ -36,8 +36,40 @@
     };
   }
   function addMission(input){const mission=createMission(input);HideV2Store.transaction(s=>{s.missions.push(mission);s.activeMissionId=mission.id});return mission}
+  function listMissions(){
+    return HideV2Store.snapshot().missions
+      .slice()
+      .sort((a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||'')));
+  }
+  function renameMission(id,title){
+    const next=clean(title);
+    if(!next)throw new Error('MISSION_TITLE_REQUIRED');
+    updateMission(id,m=>{m.title=next});
+    return listMissions().find(x=>x.id===id)||null;
+  }
+  function archiveMission(id){
+    updateMission(id,m=>{m.status='ARCHIVED'});
+    HideV2Store.transaction(s=>{
+      if(s.activeMissionId===id){
+        const next=s.missions.find(x=>x.id!==id&&x.status!=='ARCHIVED');
+        s.activeMissionId=next?.id||null;
+      }
+      if(s.activeSession?.missionId===id)s.activeSession=null;
+    });
+  }
+  function deleteMission(id){
+    const s=HideV2Store.snapshot();
+    if(s.activeSession?.missionId===id)throw new Error('ACTIVE_SESSION_MISSION_DELETE_BLOCKED');
+    HideV2Store.transaction(state=>{
+      state.missions=state.missions.filter(x=>x.id!==id);
+      if(state.activeMissionId===id){
+        const next=state.missions.find(x=>x.status!=='ARCHIVED');
+        state.activeMissionId=next?.id||null;
+      }
+    });
+  }
   function activeMission(){const s=HideV2Store.snapshot();return s.missions.find(x=>x.id===s.activeMissionId)||null}
   function setActive(id){HideV2Store.transaction(s=>{if(s.missions.some(x=>x.id===id))s.activeMissionId=id})}
   function updateMission(id,updater){HideV2Store.transaction(s=>{const m=s.missions.find(x=>x.id===id);if(!m)return;updater(m);m.updatedAt=new Date().toISOString()})}
-  window.HideV2Mission=Object.freeze({normalizeItem,createMission,addMission,activeMission,setActive,updateMission});
+  window.HideV2Mission=Object.freeze({normalizeItem,createMission,addMission,listMissions,renameMission,archiveMission,deleteMission,activeMission,setActive,updateMission});
 })();
