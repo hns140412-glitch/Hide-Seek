@@ -427,6 +427,8 @@
           confidence,
           needsReview: confidence === 'low',
           manuallyEdited: false,
+          missionRole: x.missionRole || '',
+          missionRoleSource: x.missionRoleSource || (x.missionRole?'EXPLICIT_OCR_ROLE':''),
           sourceColumn: x.sourceColumn || 'UNKNOWN',
           sourceRowIndex: Number(x.sourceRowIndex ?? i),
           sourceColumnIndex: Number(x.sourceColumnIndex ?? i)
