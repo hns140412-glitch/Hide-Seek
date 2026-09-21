@@ -24,7 +24,7 @@ function extractFunction(name){
 }
 
 const names=[
-  'senseKey','normalizeWord','lexiconEntry','inferMissionRole','applyMissionRoles','traceList','addWordTrace','weakScore',
+  'senseKey','speechLanguageForWord','normalizeWord','lexiconEntry','inferMissionRole','applyMissionRoles','traceList','addWordTrace','weakScore',
   'memoryWeaknessProfile','memorySceneCue','memoryChunks','memoryShapeCue',
   'lastConfusionTrace','lastPersonalErrorTrace','hintCueCost',
   'deriveMemorySignature','applicableInferenceProfile','buildMemoryLadder','hiddenWordStrategy','hiddenWordPriority','hiddenWordActivityModel','memoryQualityModel','memoryReasonLabel','memoryStatusView','memoryRecordSummary','syncSheetToLexicon','recallSpacingEvidence','seekAgainResolved'
@@ -43,6 +43,10 @@ for(const n of names) vm.runInContext(extractFunction(n),sandbox);
 
 function assert(cond,msg){if(!cond)throw new Error(msg)}
 function same(a,b){return JSON.stringify(a)===JSON.stringify(b)}
+
+assert(sandbox.speechLanguageForWord('environment')==='en-US','English sound hint must use en-US');
+assert(sandbox.speechLanguageForWord('불가피')==='ko-KR','Korean sound hint must use ko-KR');
+assert(sandbox.speechLanguageForWord('學')==='ko-KR','Hanja sound hint must use Korean pronunciation locale');
 
 sandbox.HideLanguageModel={normalizeItem:(w)=>({...w,languageDomain:'KOREAN',meaningMap:null})};
 const rejectedWord=sandbox.normalizeWord({eng:'미검증',kor:'뜻',languageDomain:'KOREAN',meaningMap:{verified:true,sourceType:'CURATED'}},0);
