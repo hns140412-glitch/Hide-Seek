@@ -50,6 +50,14 @@ const hanja=api.normalizeItem({
   ],imageryCue:'배움을 익히는 장면'}
 });
 assert(hanja.meaningMap?.domain==='HANJA','hanja verified map');
+const koreanExplore=api.starterExploration(korean,{});
+assert(koreanExplore?.type==='VERIFIED_MEANING_MAP','korean verified map should enter thinking-first exploration');
+assert(koreanExplore?.claimsHistoricalEtymology===false,'generic verified map must not become fake historical etymology');
+const hanjaExplore=api.starterExploration(hanja,{});
+assert(hanjaExplore?.type==='VERIFIED_MEANING_MAP','hanja verified map should enter thinking-first exploration');
+const hanjaHtml=api.renderStarterExplorationHtml(hanja,{},x=>String(x));
+assert(hanjaHtml.includes('검증 의미 구조')&&hanjaHtml.includes('學'),'hanja verified meaning-map visual');
+
 
 const html=api.renderMeaningMapHtml(english,x=>String(x));
 assert(html.includes('건너서 나르다'),'memory bridge rendering');
