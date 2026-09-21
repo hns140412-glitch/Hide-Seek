@@ -9,6 +9,7 @@ def read(path):
     return (ROOT/path).read_text(encoding="utf-8")
 
 app=read("app.js")
+language_evidence=read("hide-language-evidence.js")
 language_model=read("hide-language-model.js")
 runtime=read("hide-runtime.js")
 bridge=read("hide-bridge.js")
@@ -337,8 +338,9 @@ for needle in [
 sw=read("sw.js")
 
 for needle in [
-    'const CACHE="hide-seek-capture-v11"',
+    'const CACHE="hide-seek-capture-v12"',
     '"./hide-family-ocr-adapter.js"',
+    '"./hide-language-evidence.js"',
     '"./hide-runtime.js"',
     '"./hide-runtime.css"',
     '"./hide-bridge.js"',
@@ -447,6 +449,15 @@ for needle in [
         fail.append("TRACE_SEPARATION_CONTRACT:"+needle)
 
 
+
+for needle in [
+    "SCHEMA_VERSION=1",
+    "SOURCE_POLICY='VERIFIED_SOURCE_REQUIRED_FOR_HISTORICAL_CLAIM'",
+    "invalidRecords",
+    "validateRecord",
+]:
+    if needle not in language_evidence:
+        fail.append("LANGUAGE_EVIDENCE_CONTRACT:"+needle)
 
 for needle in [
     "ENGLISH",
