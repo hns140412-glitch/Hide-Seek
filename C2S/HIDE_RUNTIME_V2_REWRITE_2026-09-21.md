@@ -99,3 +99,13 @@ No merge, deploy, Netlify, production or device verification has occurred.
 - Pre-doc code HEAD `a5b4734bc06c49d37eb80c05752b7f75ca7538d8`: V2 #68 PASS, full Hide #522 PASS.
 - Real provider OCR accuracy and physical-device camera/keyboard remain OPEN.
 - V2 PRODUCT_COMPLETION: ~56%; DEVICE_VERIFIED remains 0%.
+
+
+## Surgery increment — Ready ↔ Hide V2 contract correction
+- V2 result contract is explicit: `HIDE_SPECIALIST_RESULT_V2`.
+- V2 publishes activeMissionId/missionStatus rather than pretending to be a V1 sheet.
+- Ready consumes the V2 `learning_event` envelope and preserves null Trail Mastery honestly.
+- Ready no longer routes Planner review directives to the stale historical Hide URL when a current V2 target is unavailable; it fails closed with `HIDE_V2_TARGET_REQUIRED`.
+- Hide producer HEAD `4a9797a048a1c4a2c04023e90f35f97ee6d43d12`: V2 #73 PASS / full Hide #527 PASS.
+- Ready consumer pre-doc HEAD `84b68624612c745b5a30274cb0b5744199963a53`: roundtrip #13 PASS / Integration #278 PASS / Runtime E2E #445 PASS.
+- This is candidate-contract verification, not live hosted roundtrip verification. PRODUCT_COMPLETION stays ~56%.
