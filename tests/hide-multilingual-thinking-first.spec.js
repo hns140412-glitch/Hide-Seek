@@ -49,6 +49,7 @@ function seededState(){
         },
         {
           id:'hanja-1',eng:'學',kor:'배우다',languageDomain:'HANJA',missionRole:'NEW',
+          learningContext:{resolved:true,resolutionState:'RESOLVED',resolvedBy:'READY_LEARNING_ENGINE',contextId:'ctx-hanja',learningUnitId:'unit-hanja-7',subject:'한자',rangeLabel:'7급 범위',hanjaLevelLabel:'7급',hanjaLevelSchemeRef:'fixture://hanja-grade-scheme',actor_role:'PARENT',child_id:'child-hidden'},
           meaningMap:map('HANJA',[
             {role:'COMPONENT',label:'學',meaning:'배우다'}
           ],'배우다','글자 구성과 뜻을 연결해 기억한다'),
@@ -85,6 +86,14 @@ test('verified Korean and Hanja meaning maps use thinking-first without fake ety
   expect(seekKeys.hanja.keys.every(k=>!/^[A-Za-z]$/.test(k.ch))).toBe(true);
   expect(seekKeys.en.keys.filter(k=>!k.real).length).toBeGreaterThanOrEqual(3);
   expect(seekKeys.en.keys.filter(k=>!k.real).every(k=>/^[a-z]$/.test(k.ch))).toBe(true);
+
+  const hanjaContext=await page.evaluate(()=>{
+    const w=validWords().find(x=>x.id==='hanja-1');
+    return w?.learningContext||null;
+  });
+  expect(hanjaContext).toMatchObject({resolved:true,resolvedBy:'READY_LEARNING_ENGINE',contextId:'ctx-hanja',learningUnitId:'unit-hanja-7',subject:'한자',rangeLabel:'7급 범위',hanjaLevelLabel:'7급',hanjaLevelSchemeRef:'fixture://hanja-grade-scheme'});
+  expect(hanjaContext.actor_role).toBeUndefined();
+  expect(hanjaContext.child_id).toBeUndefined();
 
   await page.getByRole('button',{name:'학습'}).click();
   await page.getByRole('button',{name:'외우기 시작'}).click();
