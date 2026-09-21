@@ -421,6 +421,7 @@ test('Hide V2 registers its isolated service worker and can reopen cached shell 
 
 test('Hide V2 PWA safe point blocks update activation during active learning or OCR review',async({page})=>{
   await page.addInitScript(()=>{
+    if(localStorage.getItem('hide_seek_v2_state'))return;
     localStorage.setItem('hide_seek_v2_state',JSON.stringify({
       version:1,profile:{displayName:'PWA'},missions:[{
         id:'m-pwa',title:'PWA 미션',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
