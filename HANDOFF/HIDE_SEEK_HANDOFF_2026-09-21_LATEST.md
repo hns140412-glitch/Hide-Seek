@@ -24,10 +24,10 @@ Latest pre-document code checkpoint:
 - Validate Hide & Seek #627: SUCCESS
 
 Locked conservative reporting:
-- PRODUCT_COMPLETION ~66%
-- CODED ~82%
-- CI_VERIFIED ~79%
-- BROWSER_RUNTIME_VERIFIED ~75%
+- PRODUCT_COMPLETION ~67%
+- CODED ~83%
+- CI_VERIFIED ~80%
+- BROWSER_RUNTIME_VERIFIED ~76%
 - DEVICE_VERIFIED 0%
 - RELEASE_VERIFIED 0%
 
@@ -373,11 +373,11 @@ Current implementation direction:
 - First action in next chat: live-refresh exact HEAD and restore exact-head V2/full-Hide CI if not green.
 - Do not deploy/merge/Netlify until a deploy action can specify the exact frozen candidate source ref.
 
-Last locked product estimate:
-- PRODUCT_COMPLETION ~62%
-- CODED ~79%
-- CI_VERIFIED ~75%
-- Browser RUNTIME_VERIFIED ~70%
+Historical estimate superseded by CURRENT AUTHORITATIVE OVERRIDE. Current locked product estimate:
+- PRODUCT_COMPLETION ~67%
+- CODED ~83%
+- CI_VERIFIED ~80%
+- Browser RUNTIME_VERIFIED ~76%
 - DEVICE_VERIFIED 0%
 - RELEASE_VERIFIED 0%
 
@@ -411,3 +411,17 @@ Important current frontier:
 - Completion metrics remain available but subordinate to achievement/next-action.
 - Reduced-motion users receive no completion animation.
 - Do not claim physical-device, live-provider, hosted Ready↔Hide, release, or deployment verification.
+
+
+## 2026-09-22 language-domain Runtime V2 delta
+- Exact pre-document code HEAD `3e63d5250d7f636046b50d2e164e028d925ffde9` passed V2 #182 / full Hide #636.
+- Hanja SOUND FIND now has a dedicated V2 browser journey using verified source-linked soundEvidence.
+- Korean verified EVIDENCE TRAIL is implemented in V2:
+  - only verified canonical contextEvidence can activate it;
+  - explicit evidence selection earns EVIDENCE+MEANING objective verification;
+  - it never claims objective CONTEXT recall;
+  - RESPONSE TRAIL remains separate production evidence;
+  - the flow continues to FINAL SEEK.
+- Browser art-direction continuity is now verified at mobile width; do not relabel this as physical-device visual QA.
+- Current locked reporting: PRODUCT ~67%, CODED ~83%, CI ~80%, Browser Runtime ~76%, Device 0%, Release 0%.
+- Next code-first frontier should be chosen from remaining user-reachable gaps only; do not spend cycles on deployment/device claims until their gates are actually available.
