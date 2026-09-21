@@ -286,3 +286,13 @@ Hide exports `reviewAdvisories` as evidence, not a schedule. The packet may incl
 - 390×844 browser layout/touch target checks and reduced-height focus/keyboard simulation pass.
 - Pre-doc code HEAD `a5b4734bc06c49d37eb80c05752b7f75ca7538d8`: V2 #68 PASS, full Hide #522 PASS.
 - Truthful V2 PRODUCT_COMPLETION: ~56%; actual provider OCR and DEVICE_VERIFIED remain unproven.
+
+
+## Latest V2 surgery — Ready contract correction
+- Hide emits explicit `HIDE_SPECIALIST_RESULT_V2`; Ready PR #100 consumes it.
+- V2 mission fields are no longer mapped as legacy V1 sheet fields.
+- null Trail Mastery remains null.
+- Planner-directed Hide V2 launch fails closed unless a current V2 target is explicitly configured; the historical Netlify target does not count.
+- Hide producer HEAD `4a9797a048a1c4a2c04023e90f35f97ee6d43d12`: V2 #73 PASS / full Hide #527 PASS.
+- Ready consumer pre-doc HEAD `84b68624612c745b5a30274cb0b5744199963a53`: roundtrip #13 PASS / Integration #278 PASS / Runtime E2E #445 PASS.
+- Product completion remains ~56%; live current-candidate cross-app roundtrip is OPEN.
