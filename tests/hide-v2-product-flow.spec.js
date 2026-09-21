@@ -1176,7 +1176,7 @@ test('Hide V2 reuses only established inference clue preference as optional MEMO
   await page.getByRole('button',{name:'탐험 시작'}).click();
   await expect(page.locator('.prior-skill-cue')).toBeVisible();
   await expect(page.getByText('반복해서 확인된 단서',{exact:true})).toBeVisible();
-  await expect(page.getByText('단어 조각',{exact:true})).toBeVisible();
+  await expect(page.locator('.prior-skill-cue b')).toHaveText('단어 조각');
   await expect(page.getByText(/다른 단서를 골라도 돼/)).toBeVisible();
 
   const profile=await page.evaluate(()=>{
