@@ -261,6 +261,38 @@ test('Hide V2 OCR path uses the shared family adapter and commits reviewed rows'
   expect(committedSource.analysisVersion).toBe('HIDE_VOCABULARY_OCR_V1');
 });
 
+test('Hide V2 OCR review explicitly merges duplicate lexical rows and preserves every source occurrence',async({page})=>{
+  await page.route('**/api/capture/analyze',async route=>{
+    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
+      ok:true,provider:'FIXTURE_VISION',model:'v2-fixture',analysis_domain:'HIDE_VOCABULARY',
+      result:{analysis_domain:'HIDE_VOCABULARY',analysis_version:'HIDE_VOCABULARY_OCR_V1',
+        rows:[{eng:'island',kor:'섬',confidence:'high',warnings:[],mission_role:'NEW'}]}
+    })});
+  });
+  await page.goto('/v2.html');
+  await page.locator('#sheetLibraryInput').setInputFiles([
+    {name:'dup-1.jpg',mimeType:'image/jpeg',buffer:Buffer.from('duplicate-one')},
+    {name:'dup-2.jpg',mimeType:'image/jpeg',buffer:Buffer.from('duplicate-two')}
+  ]);
+  await expect(page.getByRole('heading',{name:'찾은 단어 확인하기'})).toBeVisible();
+  await expect(page.getByText('같은 단어 2곳',{exact:true}).first()).toBeVisible();
+  await page.getByRole('button',{name:'같은 단어 2곳 하나로 묶기'}).click();
+  await expect(page.getByText('묶음에 포함',{exact:true})).toBeVisible();
+  await expect(page.getByLabel('OCR 단어 2')).toBeDisabled();
+  await page.getByRole('button',{name:'이 단어로 탐험 만들기'}).click();
+
+  const state=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')));
+  expect(state.missions).toHaveLength(1);
+  expect(state.missions[0].items).toHaveLength(1);
+  const item=state.missions[0].items[0];
+  expect(item.token).toBe('island');
+  expect(Array.isArray(item.source.occurrences)).toBe(true);
+  expect(item.source.occurrences).toHaveLength(2);
+  expect(new Set(item.source.occurrences.map(x=>x.pageId)).size).toBe(2);
+  expect(item.source.occurrences.every(x=>x.provider==='FIXTURE_VISION')).toBe(true);
+  expect(item.source.provider).toBe('FIXTURE_VISION');
+});
+
 test('Hide V2 persists OCR review state across reload',async({page})=>{
   await page.route('**/api/capture/analyze',async route=>{
     await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
