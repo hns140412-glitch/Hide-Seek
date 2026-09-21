@@ -589,9 +589,7 @@ for needle in [
     "VERIFIED_MEANING_MAP",
     "supportStep",
     "ROOT_PROGRESSIVE_REVEAL",
-    ".scene-trail [data-scene-step][hidden]",
     "scene-step-next",
-    ".scene-link[hidden]",
     "data-scene-link-step",
     "data-next-scene",
     "SCENE_PROGRESSIVE_REVEAL",
@@ -600,6 +598,13 @@ for needle in [
 ]:
     if needle not in app:
         fail.append("TRANSFERABLE_INFERENCE_CONTRACT:"+needle)
+
+for needle in [
+    ".scene-trail [data-scene-step][hidden]",
+    ".scene-link[hidden]",
+]:
+    if needle not in all_css:
+        fail.append("TRANSFERABLE_SCENE_CSS:"+needle)
 
 for needle in [
     "summarizeInferenceSkill",
