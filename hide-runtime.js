@@ -441,6 +441,7 @@
         ocrModel: result.model || null,
         ocrAnalysisVersion: result.analysis_version || null,
         ocrAnalysisDomain: result.analysis_domain || 'HIDE_VOCABULARY',
+        ocrVisionIngestRequestId: result.vision_ingest_request_id || null,
         ocrEvidenceItemId: x.evidenceItemId || page.pageId,
         ocrWarnings: Array.isArray(x.warnings) ? [...x.warnings] : []
       };
