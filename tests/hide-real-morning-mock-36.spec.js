@@ -84,6 +84,9 @@ test('real NEW 12 + REVIEW 24 follows mission, recall and morning mock-test memo
     if(i===0){
       await expect(page.getByText('검증 어원',{exact:true})).toBeVisible();
       await expect(page.locator('.root-core b',{hasText:'environ'})).toBeVisible();
+      await expect(page.locator('[data-root-step="1"]')).toBeHidden();
+      await page.getByRole('button',{name:'다음 뜻의 흔적 보기'}).click();
+      await expect(page.locator('[data-root-step="1"]')).toBeVisible();
       await expect(page.getByText(/둘러싸인 상태/)).toBeVisible();
       await expect(page.getByText(/부모 설명 한 줄/)).toBeVisible();
     }
