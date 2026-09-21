@@ -19,8 +19,10 @@
     });
   }
 
-  function missionSummary(mission){
-    const items=Array.isArray(mission?.items)?mission.items:[];
+  function missionSummary(mission,options={}){
+    const allItems=Array.isArray(mission?.items)?mission.items:[];
+    const requested=Array.isArray(options.itemIds)?new Set(options.itemIds):null;
+    const items=requested?allItems.filter(x=>requested.has(x.id)):allItems;
     const rows=items.map(wordReadiness);
     const readyWordCount=rows.filter(x=>x.ready).length;
     const totalWordCount=rows.length;
@@ -28,11 +30,13 @@
     const trailMastery=totalWordCount?Math.round((readyWordCount/totalWordCount)*100):0;
     return Object.freeze({
       authority:'HIDE_CURRENT_MISSION_READINESS',
-      semantics:'CURRENT_MISSION_READINESS_NOT_LONG_TERM_MEMORY',
+      semantics:'CURRENT_SESSION_OR_MISSION_READINESS_NOT_LONG_TERM_MEMORY',
       trailMastery,
       readyWordCount,
       totalWordCount,
       recoveredTodayCount,
+      scopeItemIds:items.map(x=>x.id),
+      fullMissionScope:items.length===allItems.length,
       unstableLexicalIds:rows.filter(x=>!x.ready).map(x=>x.lexicalId).filter(Boolean)
     });
   }
