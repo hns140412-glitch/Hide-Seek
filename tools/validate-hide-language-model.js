@@ -55,4 +55,14 @@ const html=api.renderMeaningMapHtml(english,x=>String(x));
 assert(html.includes('건너서 나르다'),'memory bridge rendering');
 assert(html.includes('PREFIX')&&html.includes('ROOT'),'role rendering');
 
-console.log('PASS: language memory model supports English, Korean, Hanja and fails closed on unverified analysis');
+const starter=api.starterExploration({eng:'rainforest'},{encounteredWords:['jungle']});
+assert(starter?.type==='TRANSPARENT_COMPOUND','rainforest should use transparent compound support');
+assert(starter?.links.includes('jungle'),'encountered connection should appear');
+assert(starter?.claimsHistoricalEtymology===false,'starter support must not claim historical etymology');
+const opaque=api.starterExploration({eng:'island'},{encounteredWords:['ocean']});
+assert(opaque?.type==='SEMANTIC_SCENE','island must avoid fake structural split');
+assert(!opaque?.parts?.length,'island should not be split into fake parts');
+const thinkingHtml=api.renderStarterExplorationHtml({eng:'earthquake'},{encounteredWords:['environment']},x=>String(x));
+assert(thinkingHtml.includes('earth')&&thinkingHtml.includes('quake'),'earthquake compound pieces should render');
+assert(thinkingHtml.includes('environment'),'encountered link should render');
+console.log('PASS: language memory model supports multilingual verified maps and thinking-first starter exploration');
