@@ -47,6 +47,7 @@ jobs:
           node --check src/v2/memory-engine.js
           node --check src/v2/learning-session.js
           node --check src/v2/session-service.js
+          node --check src/v2/capture-store.js
           node --check src/v2/capture-controller.js
           node --check src/v2/router.js
           node --check src/v2/legacy-migration.js
