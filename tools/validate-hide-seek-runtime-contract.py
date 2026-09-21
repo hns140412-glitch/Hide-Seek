@@ -576,11 +576,11 @@ for needle in [
         fail.append("LANGUAGE_LEARNING_BASIS:"+needle)
 
 for needle in [
-    "HideLearningBasis?.resolve",
-    "learningProfile",
-    "projectLearningContext",
+    "function projectLearningContext",
+    "resolvedBy",
+    "READY_LEARNING_ENGINE",
 ]:
-    if needle not in learning_basis and needle != "learningProfile":
+    if needle not in learning_basis:
         fail.append("LANGUAGE_LEARNING_CONTEXT_OWNER:"+needle)
 
 for needle in [
