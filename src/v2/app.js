@@ -24,6 +24,14 @@
     SEEK_AGAIN:'다시 찾기',
     THINKING_TRAIL:'생각 길'
   })[e]||'기억 흔적';
+  const missionStatusLabel=status=>({
+    READY:'준비됨',PARTIAL:'이어가기',COMPLETED:'완료',ARCHIVED:'보관됨'
+  })[status]||'탐험 중';
+  const languageLabel=domain=>({ENGLISH:'영어',KOREAN:'국어',HANJA:'한자'})[domain]||'언어';
+  const progressHtml=(idx,total,label='탐험 진행')=>{
+    const pct=Math.max(0,Math.min(100,Math.round(((Math.max(1,idx)-1)/Math.max(1,total))*100)));
+    return `<div class="quest-progress" aria-label="${esc(label)}"><div class="quest-progress__meta"><span>${esc(label)}</span><b>${idx}/${total}</b></div><div class="quest-progress__track"><span style="width:${pct}%"></span></div></div>`;
+  };
   const view=()=>$('#view');
   let flash='';
 
@@ -84,7 +92,43 @@
     const resumable=globalThis.HideV2Session?.isResumable?.()===true;
     const capture=globalThis.HideV2Capture?.state?.();
     const reviewReady=globalThis.HideV2Capture?.hasResumableReview?.()===true;
-    view().innerHTML=`<section class="world-hero"><div class="hero-case"><div class="hero-kicker"><span>HIDE & SEEK</span><span>숨은 단어 탐험</span></div><h1>${m?esc(m.title):'새 단어 탐험을 시작해요'}</h1><p>${m?`${m.items.length}개의 숨은 단어가 기다리고 있어요.`:'프린트 사진을 보고 오늘의 숨은 단어를 찾아봐요.'}</p><div class="hero-actions"><button class="btn primary" id="v2Camera">카메라 촬영</button><button class="btn secondary" id="v2Library">사진 추가</button>${m?`<button class="btn secondary" id="v2Start">${resumable?'학습 이어하기':'학습 시작'}</button>`:''}</div></div></section><section class="card" style="display:grid;gap:8px"><button class="btn secondary full" id="v2MissionList">미션 관리</button><button class="btn secondary full" id="v2Records">기억 기록</button></section>${reviewReady?`<section class="card tint-sky"><div class="section-title"><h2>분석 결과가 남아 있어요</h2><span>${capture?.lastRows?.length||0}개</span></div><p>앱을 다시 열어도 검토 중인 OCR 결과를 이어갈 수 있어요.</p><button class="btn primary full" id="v2ResumeReview">분석 결과 이어보기</button></section>`:''}<section class="card"><div class="section-title"><h2>탐험 준비</h2><span>${m?'READY':'NEW'}</span></div><div class="metric"><span>탐험 미션</span><b>${s.missions.filter(x=>x.status!=='ARCHIVED').length}</b></div><div class="metric"><span>사진 확인</span><b>${capture?.status==='REVIEW'?'검토 필요':capture?.status==='CAPTURING'?'분석 중':'준비됨'}</b></div><div class="metric"><span>기억 기록</span><b>${HideV2Memory.dashboard().total}단어</b></div></section>`;
+    const memory=HideV2Memory.dashboard();
+    const activeCount=s.missions.filter(x=>x.status!=='ARCHIVED').length;
+    const missionAction=m?`<button class="btn primary quest-main-action" id="v2Start">${resumable?'탐험 이어가기':'탐험 시작'}</button>`:'';
+    view().innerHTML=`
+      <section class="quest-hero">
+        <div class="quest-hero__eyebrow">HIDE & SEEK · 숨은 단어 탐험</div>
+        <div class="quest-hero__body">
+          <div>
+            <p class="quest-overline">${m?'오늘의 탐험':'새 탐험 준비'}</p>
+            <h1>${m?esc(m.title):'프린트에서 숨은 단어를 찾아봐요'}</h1>
+            <p class="quest-subcopy">${m?`${m.items.length}개 단어 · ${missionStatusLabel(m.status)}`:'사진을 찍으면 단어를 확인하고 바로 탐험을 시작할 수 있어요.'}</p>
+          </div>
+          ${m?`<div class="quest-count"><b>${m.items.length}</b><span>숨은 단어</span></div>`:''}
+        </div>
+        <div class="quest-hero__actions">
+          ${missionAction}
+          <button class="btn secondary" id="v2Camera">카메라 촬영</button>
+          <button class="btn ghost" id="v2Library">사진에서 가져오기</button>
+        </div>
+      </section>
+
+      ${reviewReady?`<section class="quest-alert"><div><b>확인하던 단어가 남아 있어요</b><p>${capture?.lastRows?.length||0}개 단어를 이어서 확인할 수 있어요.</p></div><button class="btn primary" id="v2ResumeReview">이어서 확인</button></section>`:''}
+
+      <section class="quest-grid">
+        <button class="quest-tile" id="v2MissionList" type="button"><span class="quest-tile__icon">🧭</span><span><b>탐험 미션</b><small>${activeCount}개 미션</small></span><i>›</i></button>
+        <button class="quest-tile" id="v2Records" type="button"><span class="quest-tile__icon">🪜</span><span><b>기억 사다리</b><small>${memory.total}개 단어 기록</small></span><i>›</i></button>
+      </section>
+
+      <section class="quest-status">
+        <div class="section-title"><div><p class="quest-overline">MY TRAIL</p><h2>지금의 기억 상태</h2></div><span>${memory.total?'기록 중':'첫 탐험 전'}</span></div>
+        <div class="quest-stat-row">
+          <div class="quest-stat"><b>${memory.averageStrength||0}%</b><span>기억 힘</span></div>
+          <div class="quest-stat"><b>${memory.needsRecall||0}</b><span>다시 찾기</span></div>
+          <div class="quest-stat"><b>${memory.stable||0}</b><span>안정 단어</span></div>
+        </div>
+      </section>`;
+
     $('#v2Camera').onclick=()=>$('#sheetCameraInput').click();
     $('#v2MissionList').onclick=()=>HideV2Router.go('missions');
     $('#v2Records').onclick=()=>HideV2Router.go('records');
@@ -135,52 +179,52 @@
     if(session.stage==='MEMORIZE'){
       const item={eng:w.token,word:w.token,kor:w.meaning,languageDomain:w.languageDomain,meaningMap:w.meaningMap};
       const thinkingHtml=globalThis.HideLanguageModel?.renderStarterExplorationHtml?.(item,{encounteredWords:[]},esc)||'';
-      view().innerHTML=`<section class="learning-shell"><div class="learn-head"><span class="phase-chip">${childStageLabel('MEMORIZE')}</span><b>${idx}/${total}</b></div><section class="card word-card"><div class="bigword">${esc(w.token)}</div><h2 style="text-align:center">${esc(w.meaning)}</h2>${w.example?`<p class="example">${esc(w.example)}</p>`:''}</section>${thinkingHtml}<button id="v2Memorized" class="btn primary full">기억하고 찾아보기</button></section>`;
+      view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}<div class="learn-head"><span class="phase-chip">${childStageLabel('MEMORIZE')}</span><b>${idx}/${total}</b></div><section class="card word-card"><div class="bigword">${esc(w.token)}</div><h2 style="text-align:center">${esc(w.meaning)}</h2>${w.example?`<p class="example">${esc(w.example)}</p>`:''}</section>${thinkingHtml}<button id="v2Memorized" class="btn primary full">기억하고 찾아보기</button></section>`;
       bindThinkingTrail(m.id,w);
       $('#v2Memorized').onclick=()=>{HideV2Session.update(HideV2Learning.submitMemorize(session,m).session);render()};
       return;
     }
 
     if(session.stage==='FIRST_FIND'){
-      view().innerHTML=`<section class="learning-shell"><div class="learn-head"><span class="phase-chip">${childStageLabel('FIRST_FIND')}</span><b>${idx}/${total}</b></div><section class="card word-card"><p>뜻을 보고 단어를 기억에서 꺼내보세요.</p><div class="bigword">${esc(w.meaning)}</div><input id="v2Answer" class="input" aria-label="회상 답 입력" autocomplete="off" spellcheck="false"><button id="v2Check" class="btn primary full">기억 확인</button></section></section>`;
+      view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}<div class="learn-head"><span class="phase-chip">${childStageLabel('FIRST_FIND')}</span><b>${idx}/${total}</b></div><section class="card word-card"><p>뜻을 보고 단어를 기억에서 꺼내보세요.</p><div class="bigword">${esc(w.meaning)}</div><input id="v2Answer" class="input" aria-label="회상 답 입력" autocomplete="off" spellcheck="false"><button id="v2Check" class="btn primary full">기억 확인</button></section></section>`;
       $('#v2Check').onclick=()=>{const r=HideV2Learning.checkFirstFind(session,m,$('#v2Answer').value);HideV2Session.update(r.session);setFlash(r.ok?'기억에서 찾았어요':'이번 회상은 틀렸어요. 뒤 단계에서 다시 확인할게요.');render()};
       return;
     }
 
     if(session.stage==='MEANING'){
-      view().innerHTML=`<section class="learning-shell"><div class="learn-head"><span class="phase-chip">${childStageLabel('MEANING')}</span><b>${idx}/${total}</b></div><section class="card word-card"><div class="bigword">${esc(w.token)}</div><input id="v2Meaning" class="input" aria-label="뜻 회상 입력" autocomplete="off"><button id="v2MeaningCheck" class="btn primary full">뜻 확인</button></section></section>`;
+      view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}<div class="learn-head"><span class="phase-chip">${childStageLabel('MEANING')}</span><b>${idx}/${total}</b></div><section class="card word-card"><div class="bigword">${esc(w.token)}</div><input id="v2Meaning" class="input" aria-label="뜻 회상 입력" autocomplete="off"><button id="v2MeaningCheck" class="btn primary full">뜻 확인</button></section></section>`;
       $('#v2MeaningCheck').onclick=()=>{const r=HideV2Learning.checkMeaning(session,m,$('#v2Meaning').value);HideV2Session.update(r.session);setFlash(r.ok?'뜻도 기억했어요':'뜻 회상은 틀렸어요.');render()};
       return;
     }
 
     if(session.stage==='DOMAIN_EXTENSION'){
       if(w.languageDomain==='KOREAN'){
-        view().innerHTML=`<section class="learning-shell"><div class="learn-head"><span class="phase-chip">표현 길</span><b>${idx}/${total}</b></div><section class="card"><h2>내 문장으로 표현하기</h2><p>“${esc(w.token)}”을 넣어 짧은 문장을 만들어보세요.</p><textarea id="v2Response" class="input" rows="3" aria-label="국어 문장 표현"></textarea><button id="v2DomainDone" class="btn primary full">표현 남기기</button></section></section>`;
+        view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}<div class="learn-head"><span class="phase-chip">표현 길</span><b>${idx}/${total}</b></div><section class="card"><h2>내 문장으로 표현하기</h2><p>“${esc(w.token)}”을 넣어 짧은 문장을 만들어보세요.</p><textarea id="v2Response" class="input" rows="3" aria-label="국어 문장 표현"></textarea><button id="v2DomainDone" class="btn primary full">표현 남기기</button></section></section>`;
         $('#v2DomainDone').onclick=()=>{const text=$('#v2Response').value.trim();if(text.length<4){setFlash('짧은 문장으로 표현해 주세요.');return}HideV2Session.update(HideV2Learning.submitDomainExtension(session,m,{responseText:text}).session);render()};
       }else if(w.languageDomain==='HANJA'&&w.soundEvidence){
-        view().innerHTML=`<section class="learning-shell"><div class="learn-head"><span class="phase-chip">소리 찾기</span><b>${idx}/${total}</b></div><section class="card"><div class="bigword">${esc(w.token)}</div><input id="v2Sound" class="input" aria-label="한자 음 입력" autocomplete="off"><button id="v2DomainDone" class="btn primary full">음 기억 확인</button></section></section>`;
+        view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}<div class="learn-head"><span class="phase-chip">소리 찾기</span><b>${idx}/${total}</b></div><section class="card"><div class="bigword">${esc(w.token)}</div><input id="v2Sound" class="input" aria-label="한자 음 입력" autocomplete="off"><button id="v2DomainDone" class="btn primary full">음 기억 확인</button></section></section>`;
         $('#v2DomainDone').onclick=()=>{HideV2Session.update(HideV2Learning.submitDomainExtension(session,m,{sound:$('#v2Sound').value}).session);render()};
       }else{
-        view().innerHTML=`<section class="learning-shell"><div class="learn-head"><span class="phase-chip">연결 길</span><b>${idx}/${total}</b></div><section class="card">${globalThis.HideLanguageModel?.renderMeaningMapHtml?.({eng:w.token,word:w.token,languageDomain:w.languageDomain,meaningMap:w.meaningMap},esc)||`<p>${esc(w.example||w.meaning)}</p>`}<button id="v2DomainDone" class="btn primary full">다음</button></section></section>`;
+        view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}<div class="learn-head"><span class="phase-chip">연결 길</span><b>${idx}/${total}</b></div><section class="card">${globalThis.HideLanguageModel?.renderMeaningMapHtml?.({eng:w.token,word:w.token,languageDomain:w.languageDomain,meaningMap:w.meaningMap},esc)||`<p>${esc(w.example||w.meaning)}</p>`}<button id="v2DomainDone" class="btn primary full">다음</button></section></section>`;
         $('#v2DomainDone').onclick=()=>{HideV2Session.update(HideV2Learning.submitDomainExtension(session,m,{}).session);render()};
       }
       return;
     }
 
     if(session.stage==='FINAL_SEEK'){
-      view().innerHTML=`<section class="learning-shell"><div class="learn-head"><span class="phase-chip">${childStageLabel('FINAL_SEEK')}</span><b>${idx}/${total}</b></div><section class="card word-card"><p>마지막으로 힌트 없이 단어를 다시 꺼내보세요.</p><div class="bigword">${esc(w.meaning)}</div><input id="v2Final" class="input" aria-label="최종 회상 답 입력" autocomplete="off" spellcheck="false"><button id="v2FinalCheck" class="btn primary full">마지막 기억 확인</button></section></section>`;
+      view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}<div class="learn-head"><span class="phase-chip">${childStageLabel('FINAL_SEEK')}</span><b>${idx}/${total}</b></div><section class="card word-card"><p>마지막으로 힌트 없이 단어를 다시 꺼내보세요.</p><div class="bigword">${esc(w.meaning)}</div><input id="v2Final" class="input" aria-label="최종 회상 답 입력" autocomplete="off" spellcheck="false"><button id="v2FinalCheck" class="btn primary full">마지막 기억 확인</button></section></section>`;
       $('#v2FinalCheck').onclick=()=>{const r=HideV2Learning.checkFinalSeek(session,m,$('#v2Final').value);HideV2Session.update(r.session);setFlash(r.ok?'마지막 찾기 성공':'괜찮아요. 잠깐 다시 보고 한 번 더 찾아봐요.');render()};
       return;
     }
 
     if(session.stage==='SEEK_AGAIN_RELEARN'){
-      view().innerHTML=`<section class="learning-shell"><div class="learn-head"><span class="phase-chip">${childStageLabel('SEEK_AGAIN_RELEARN')}</span><b>${idx}/${total}</b></div><section class="card word-card"><p>놓친 단어를 잠깐 다시 만나봐요.</p><div class="bigword">${esc(w.token)}</div><h2 style="text-align:center">${esc(w.meaning)}</h2>${w.example?`<p class="example">${esc(w.example)}</p>`:''}<button id="v2Rehide" class="btn primary full">다시 숨기기</button></section></section>`;
+      view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}<div class="learn-head"><span class="phase-chip">${childStageLabel('SEEK_AGAIN_RELEARN')}</span><b>${idx}/${total}</b></div><section class="card word-card"><p>놓친 단어를 잠깐 다시 만나봐요.</p><div class="bigword">${esc(w.token)}</div><h2 style="text-align:center">${esc(w.meaning)}</h2>${w.example?`<p class="example">${esc(w.example)}</p>`:''}<button id="v2Rehide" class="btn primary full">다시 숨기기</button></section></section>`;
       $('#v2Rehide').onclick=()=>{HideV2Session.update(HideV2Learning.submitSeekAgainRelearn(session,m).session);render()};
       return;
     }
 
     if(session.stage==='SEEK_AGAIN'){
-      view().innerHTML=`<section class="learning-shell"><div class="learn-head"><span class="phase-chip">${childStageLabel('SEEK_AGAIN')}</span><b>${idx}/${total}</b></div><section class="card word-card"><p>이번에는 다시 찾을 수 있을까요?</p><div class="bigword">${esc(w.meaning)}</div><input id="v2SeekAgain" class="input" aria-label="다시 찾기 답 입력" autocomplete="off" spellcheck="false"><button id="v2SeekAgainCheck" class="btn primary full">다시 찾기</button></section></section>`;
+      view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}<div class="learn-head"><span class="phase-chip">${childStageLabel('SEEK_AGAIN')}</span><b>${idx}/${total}</b></div><section class="card word-card"><p>이번에는 다시 찾을 수 있을까요?</p><div class="bigword">${esc(w.meaning)}</div><input id="v2SeekAgain" class="input" aria-label="다시 찾기 답 입력" autocomplete="off" spellcheck="false"><button id="v2SeekAgainCheck" class="btn primary full">다시 찾기</button></section></section>`;
       $('#v2SeekAgainCheck').onclick=()=>{const r=HideV2Learning.checkSeekAgain(session,m,$('#v2SeekAgain').value);HideV2Session.update(r.session);setFlash(r.ok?'다시 찾았어요':'한 번 더 보고 다시 찾아봐요.');render()};
       return;
     }
@@ -221,7 +265,7 @@
 
   function missions(){
     const list=HideV2Mission.listMissions();
-    view().innerHTML=`<section class="card"><div class="section-title"><h2>탐험 미션</h2><span>${list.length}개</span></div>${list.length?list.map(m=>`<div class="weak-item" data-mission-id="${esc(m.id)}"><div style="flex:1"><b>${esc(m.title)}</b><small style="display:block">${m.items.length}개 · ${esc(m.status)}</small></div><div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><button class="btn secondary" data-action="open" data-id="${esc(m.id)}">선택</button><button class="btn secondary" data-action="rename" data-id="${esc(m.id)}">이름</button><button class="btn secondary" data-action="archive" data-id="${esc(m.id)}">보관</button><button class="btn secondary" data-action="delete" data-id="${esc(m.id)}">삭제</button></div></div>`).join(''):'<p>아직 저장된 미션이 없어요.</p>'}<button class="btn secondary full" id="v2MissionHome">홈으로</button></section>`;
+    view().innerHTML=`<section class="screen-head"><p class="quest-overline">MISSION MAP</p><h1>탐험 미션</h1><p>오늘 이어갈 미션을 고르거나 지난 탐험을 정리할 수 있어요.</p></section><section class="mission-list">${list.length?list.map(m=>`<article class="mission-card ${m.id===HideV2Store.snapshot().activeMissionId?'is-active':''}" data-mission-id="${esc(m.id)}"><div class="mission-card__main"><span class="mission-card__status">${missionStatusLabel(m.status)}</span><h2>${esc(m.title)}</h2><p>${m.items.length}개의 숨은 단어</p></div><div class="mission-card__actions"><button class="btn primary" data-action="open" data-id="${esc(m.id)}">이 미션 열기</button><button class="btn ghost" data-action="rename" data-id="${esc(m.id)}">이름 바꾸기</button><button class="btn ghost" data-action="archive" data-id="${esc(m.id)}">보관</button><button class="btn ghost danger-lite" data-action="delete" data-id="${esc(m.id)}">삭제</button></div></article>`).join(''):'<div class="empty-state"><b>아직 탐험 미션이 없어요</b><p>홈에서 프린트 사진을 추가하면 첫 미션을 만들 수 있어요.</p></div>'}</section><button class="btn secondary full" id="v2MissionHome">홈으로</button>`;
     $('#v2MissionHome').onclick=()=>HideV2Router.go('home');
     view().querySelectorAll('[data-action]').forEach(btn=>{
       btn.onclick=()=>{
@@ -239,7 +283,12 @@
 
   function records(){
     const book=HideV2Memory.wordbook(),dash=HideV2Memory.dashboard();
-    view().innerHTML=`<section class="card"><div class="section-title"><h2>기억 기록</h2><span>${dash.total}단어</span></div><div class="grid3"><div class="status-pill"><b>${dash.averageStrength}%</b><span>기억 힘</span></div><div class="status-pill"><b>${dash.needsRecall}</b><span>재회상</span></div><div class="status-pill"><b>${dash.stable}</b><span>안정</span></div></div><div class="metric"><span>뜻 혼동</span><b>${dash.confusion}</b></div><div class="metric"><span>글자 형태 취약</span><b>${dash.orthographic}</b></div><div class="metric"><span>소리 회상 취약</span><b>${dash.sound}</b></div><div class="metric"><span>느린 회상</span><b>${dash.slowRecall}</b></div><div class="metric"><span>힌트 의존</span><b>${dash.hintDependent}</b></div></section><section class="card"><div class="section-title"><h2>단어장</h2><span>우선 복습순</span></div>${book.length?book.map((x,i)=>`<article class="weak-item" data-wordbook-index="${i}"><div style="flex:1"><b>${esc(x.token)}</b><small style="display:block">${esc(x.meaning)} · ${esc(x.languageDomain)} · ${x.encounters}회</small><small style="display:block">${esc(x.primaryReason.label)}</small></div><div style="text-align:right"><b>${x.memoryStrength}%</b><small style="display:block">P${x.nextReviewPriority}</small><button class="btn secondary" data-word-detail="${i}" type="button">상세</button></div></article>`).join(''):'<p>아직 기억 기록이 없어요.</p>'}<button class="btn secondary full" id="v2RecordsHome">홈으로</button></section>`;
+    view().innerHTML=`
+      <section class="screen-head"><p class="quest-overline">MEMORY LADDER</p><h1>기억 사다리</h1><p>잘 기억되는 단어와 다시 찾아볼 단어를 한눈에 봐요.</p></section>
+      <section class="memory-summary"><div class="quest-stat"><b>${dash.averageStrength}%</b><span>전체 기억 힘</span></div><div class="quest-stat"><b>${dash.needsRecall}</b><span>다시 찾기</span></div><div class="quest-stat"><b>${dash.stable}</b><span>안정 단어</span></div></section>
+      <section class="memory-signals"><span>뜻 혼동 <b>${dash.confusion}</b></span><span>글자 형태 <b>${dash.orthographic}</b></span><span>소리 <b>${dash.sound}</b></span><span>느린 회상 <b>${dash.slowRecall}</b></span><span>힌트 의존 <b>${dash.hintDependent}</b></span></section>
+      <section class="wordbook"><div class="section-title"><div><p class="quest-overline">WORD TRAIL</p><h2>단어 기록</h2></div><span>다시 볼 순서</span></div>${book.length?book.map((x,i)=>`<article class="word-row" data-wordbook-index="${i}"><div class="word-row__body"><b>${esc(x.token)}</b><span>${esc(x.meaning)} · ${languageLabel(x.languageDomain)}</span><small>${esc(x.primaryReason.label)} · ${x.encounters}번 만남</small></div><div class="word-row__meter"><b>${x.memoryStrength}%</b><div class="mini-meter"><span style="width:${x.memoryStrength}%"></span></div><button class="btn ghost" data-word-detail="${i}" type="button">기억 보기</button></div></article>`).join(''):'<div class="empty-state"><b>아직 기억 기록이 없어요</b><p>단어 탐험을 마치면 이곳에 기억 사다리가 생겨요.</p></div>'}</section>
+      <button class="btn secondary full" id="v2RecordsHome">홈으로</button>`;
     $('#v2RecordsHome').onclick=()=>HideV2Router.go('home');
     view().querySelectorAll('[data-word-detail]').forEach(btn=>{
       btn.onclick=()=>{const entry=book[Number(btn.dataset.wordDetail)];if(entry)HideV2Router.go('record-detail',{lexicalId:entry.lexicalId})};
