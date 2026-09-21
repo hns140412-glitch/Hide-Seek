@@ -7,6 +7,7 @@
     const token=clean(normalized.eng||normalized.word||normalized.token);
     const meaning=clean(normalized.kor||normalized.meaning);
     if(!token&&!meaning)return null;
+    const nestedSource=raw?.source&&typeof raw.source==='object'&&!Array.isArray(raw.source)?raw.source:{};
     return {
       id:clean(raw?.id)||id('word'),
       lexicalId:clean(raw?.lexicalId)||`${token.toLowerCase()}::${meaning.replace(/\s+/g,' ')}`,
@@ -19,13 +20,13 @@
       missionRole:['NEW','REVIEW'].includes(clean(raw?.missionRole).toUpperCase())?clean(raw.missionRole).toUpperCase():'NEW',
       evidence:[],
       source:{
-        pageId:clean(raw?.sourcePageId),
-        rowIndex:Number(raw?.sourceRowIndex??index),
-        confidence:clean(raw?.confidence||'medium').toLowerCase(),
-        warnings:Array.isArray(raw?.warnings)?raw.warnings.map(String):[],
-        provider:clean(raw?.ocrProvider),
-        model:clean(raw?.ocrModel),
-        analysisVersion:clean(raw?.ocrAnalysisVersion)
+        pageId:clean(raw?.sourcePageId??nestedSource.pageId),
+        rowIndex:Number(raw?.sourceRowIndex??nestedSource.rowIndex??index),
+        confidence:clean(raw?.confidence??nestedSource.confidence??'medium').toLowerCase(),
+        warnings:(Array.isArray(raw?.warnings)?raw.warnings:Array.isArray(nestedSource.warnings)?nestedSource.warnings:[]).map(String),
+        provider:clean(raw?.ocrProvider??nestedSource.provider),
+        model:clean(raw?.ocrModel??nestedSource.model),
+        analysisVersion:clean(raw?.ocrAnalysisVersion??nestedSource.analysisVersion)
       }
     };
   }
