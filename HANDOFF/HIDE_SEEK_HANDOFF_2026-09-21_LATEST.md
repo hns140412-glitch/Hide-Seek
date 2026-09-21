@@ -189,3 +189,12 @@ Hide exports `reviewAdvisories` as evidence, not a schedule. The packet may incl
 - Word-meaning association is not source-text evidence selection.
 - EVIDENCE must remain unearned until a real evidence-selection/justification interaction exists.
 - Hide collects memory evidence only; Ready owns higher-level Korean learning policy and Planner owns scheduling.
+
+
+## Korean verified EVIDENCE TRAIL lock
+- Hide may earn Korean EVIDENCE only from explicit interaction with verified `contextEvidence`.
+- `contextEvidence` must fail closed unless source/context/evidence/candidates satisfy the canonical truth gate.
+- MEANING CLUE may hand off to EVIDENCE TRAIL for eligible Korean items.
+- Evidence selection records EVIDENCE + MEANING objective evidence.
+- Do not convert context exposure or evidence selection into objective CONTEXT recall.
+- Hide remains a memory-evidence specialist; this is not a full Korean reading-comprehension engine.
