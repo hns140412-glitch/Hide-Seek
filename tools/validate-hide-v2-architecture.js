@@ -113,6 +113,12 @@ for(const required of ['숨은 단어 탐험','탐험 준비','단어 만나기'
   if(!app.includes(required)&&!html.includes(required))fail.push('CHILD_FACING_EXPLORATION_COPY_MISSING:'+required);
 }
 
+for(const token of ['quest-hero','quest-grid','quest-status','mission-card','memory-summary','word-row','quest-progress']){
+  if(!v2css.includes(token))fail.push('V2_PRODUCT_UI_SYSTEM_MISSING:'+token);
+}
+for(const token of ['오늘의 탐험','기억 사다리','quest-main-action','progressHtml','missionStatusLabel']){
+  if(!app.includes(token))fail.push('V2_PRODUCT_UI_FLOW_MISSING:'+token);
+}
 for(const token of ['--v2-safe-bottom','max-width:390px','min-height:44px','overflow-wrap:anywhere']){
   if(!v2css.includes(token))fail.push('V2_MOBILE_CSS_GUARD_MISSING:'+token);
 }
