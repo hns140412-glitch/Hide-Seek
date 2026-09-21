@@ -161,6 +161,20 @@ for needle in [
         fail.append("MISSING_LEARNING_RESUME_OR_PROVENANCE:"+needle)
 
 for needle in [
+    "renderMemorizeStage",
+    "MEMORIZATION_EXPOSURE",
+    "FIRST_RECALL_CORRECT",
+    "FIRST_RECALL_WRONG",
+    "missionRole",
+    "inferMissionRole",
+    "applyMissionRoles",
+    "NEW",
+    "REVIEW",
+]:
+    if needle not in app:
+        fail.append("MEMORIZATION_FIRST_RECALL_CONTRACT:"+needle)
+
+for needle in [
     "taskStateForStatus",
     "status === 'COMPLETED' || status === 'TEST_READY'",
     "trailMastery:",
