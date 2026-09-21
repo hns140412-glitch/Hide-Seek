@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION='2026.09.21-language-core-v8';
+  const VERSION='2026.09.21-language-core-v9';
 
   const MODELS={
     ENGLISH:{
@@ -111,7 +111,7 @@
       </section>`;
   }
 
-  const SUPPORT_TYPES=new Set(['VERIFIED_ETYMOLOGY','VERIFIED_ROOT','TRANSPARENT_COMPOUND','SEMANTIC_SCENE','MNEMONIC_BRIDGE']);
+  const SUPPORT_TYPES=new Set(['VERIFIED_ETYMOLOGY','VERIFIED_ROOT','VERIFIED_MEANING_MAP','TRANSPARENT_COMPOUND','SEMANTIC_SCENE','MNEMONIC_BRIDGE']);
 
   const VERIFIED_LEXICAL_EVIDENCE={
     environment:{supportType:'VERIFIED_ETYMOLOGY',sourceType:'ETYMONLINE',sourceRef:'https://www.etymonline.com/word/environment',center:{label:'environ',meaning:'둘러싸다'},nodes:[{role:'HISTORICAL_BASE',label:'environ',meaning:'둘러싸다 / 에워싸다'},{role:'SUFFIX',label:'-ment',meaning:'동작의 결과·상태를 나타내는 명사형'}],bridge:'둘러싸인 상태 → 우리를 둘러싼 조건과 주변 환경',scene:'사람을 가운데 두고 공기·물·집·학교·나무가 둥글게 둘러싼 장면'},
@@ -157,9 +157,32 @@
   };
 
   function starterExploration(item={},context={}){
-    const word=String(item.eng||item.word||item.token||'').trim().toLowerCase();
+    const rawWord=String(item.eng||item.word||item.token||'').trim();
+    const word=rawWord.toLowerCase();
     const base=STARTER_EXPLORATION[word];
-    if(!base)return null;
+    if(!base){
+      const normalized=normalizeItem(item);
+      const map=normalized.meaningMap;
+      if(!map)return null;
+      const labels=map.nodes.map(x=>x.label).filter(Boolean);
+      const centerNode=map.nodes.find(x=>['ROOT','HANJA_ORIGIN','RADICAL','COMPONENT','ETYMOLOGY'].includes(x.role))||map.nodes[0]||null;
+      return {
+        word:rawWord,
+        type:'VERIFIED_MEANING_MAP',
+        question:`${rawWord}에서 어떤 글자·어근·구성 요소가 뜻의 단서가 될까?`,
+        scene:map.imageryCue||map.coreMeaning||'구성 요소와 핵심 뜻을 하나의 장면으로 연결해봐.',
+        why:map.memoryBridge||map.coreMeaning||'검증된 구성 요소를 따라 뜻을 연결해.',
+        parts:[],
+        visual:labels.slice(0,4),
+        links:[],
+        sourceType:map.sourceType,
+        sourceRef:map.sourceRef,
+        verified:true,
+        claimsHistoricalEtymology:false,
+        center:centerNode?{label:centerNode.label,meaning:centerNode.meaning}:null,
+        nodes:map.nodes
+      };
+    }
     const encountered=new Set((context.encounteredWords||[]).map(x=>String(x).toLowerCase()));
     const links=(base.connect||[]).filter(x=>encountered.has(x));
     const evidence=supportContract(item,base);
@@ -198,7 +221,7 @@
     const rootCore='<div class="root-core"><small>'+(plan.verified?'핵심 흔적':'핵심 개념')+'</small><b>'+esc(visualCenter.label)+'</b><span>'+esc(visualCenter.meaning)+'</span></div>';
     const sceneTrail=plan.visual?.length?'<div class="scene-trail">'+plan.visual.map((x,i)=>'<span><small>'+esc(String(i+1))+'</small><b>'+esc(x)+'</b></span>').join('<i>→</i>')+'</div>':'';
     const links=plan.links.length?'<div class="thinking-links"><b>전에 만난 연결</b>'+plan.links.map(x=>'<span>'+esc(x)+'</span>').join('')+'</div>':'';
-    const truthBadge=plan.verified?'검증 어원':'현대 구조/의미 단서';
+    const truthBadge=plan.verified?(plan.claimsHistoricalEtymology?'검증 어원':'검증 의미 구조'):'현대 구조/의미 단서';
     const priorSkill=context.skillProfile?.bestClue?'<div class="prior-skill-cue"><small>지난 탐험에서 잘 통했던 단서</small><b>'+esc(clueLabel(context.skillProfile.bestClue.clue))+'</b><span>참고만 하고, 이번 단어에서는 다른 단서를 골라도 돼.</span></div>':'';
     const parent= context.showParentExplanation?parentExplanation(item):null;
     const parentHtml=parent?'<div class="parent-explain-card"><small>부모 설명 한 줄 · '+esc(parent.mode)+'</small><b>'+esc(parent.text)+'</b></div>':'';
