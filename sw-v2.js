@@ -8,7 +8,7 @@ const CORE=[
   './hide-learning-basis-v01.js','./hide-language-evidence.js','./hide-language-model.js','./hide-family-ocr-adapter.js',
   './src/v2/release-v2.js','./src/v2/app-store.js','./src/v2/mission-service.js','./src/v2/memory-engine.js',
   './src/v2/learning-session.js','./src/v2/session-service.js','./src/v2/capture-store.js','./src/v2/capture-controller.js',
-  './src/v2/router.js','./src/v2/legacy-migration.js','./src/v2/ready-bridge.js','./src/v2/pwa-v2.js','./src/v2/app.js',
+  './src/v2/router.js','./src/v2/legacy-migration.js','./src/v2/ready-bridge.js','./src/v2/pwa-v2.js','./src/v2/mobile-shell.js','./src/v2/app.js',
   './assets/icons/icon-192x192.png','./assets/icons/icon-512x512.png'
 ];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE))));
