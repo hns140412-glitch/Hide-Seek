@@ -5,7 +5,7 @@ const ROOT=path.join(__dirname,'..');
 const modules=[
   'src/v2/app-store.js','src/v2/mission-service.js','src/v2/memory-engine.js',
   'src/v2/learning-session.js','src/v2/session-service.js','src/v2/capture-store.js','src/v2/capture-controller.js','src/v2/router.js',
-  'src/v2/legacy-migration.js','src/v2/ready-bridge.js','src/v2/app.js'
+  'src/v2/legacy-migration.js','src/v2/ready-bridge.js','src/v2/pwa-v2.js','src/v2/app.js'
 ];
 const fail=[];
 for(const file of modules){
@@ -44,9 +44,15 @@ for(const token of ['captureSession','analysisBatches','lastRows','markCommitted
 }
 if(!html.includes('id="sheetCameraInput"'))fail.push('V2_CAMERA_INPUT_MISSING');
 if(!html.includes('id="sheetLibraryInput"'))fail.push('V2_LIBRARY_INPUT_MISSING');
+if(!html.includes('./manifest-v2.json'))fail.push('V2_MANIFEST_LINK_MISSING');
+if(!html.includes('./src/v2/release-v2.js'))fail.push('V2_RELEASE_DESCRIPTOR_MISSING');
+if(!html.includes('./src/v2/pwa-v2.js'))fail.push('V2_PWA_OWNER_MISSING');
+
 
 const store=fs.readFileSync(path.join(ROOT,'src/v2/app-store.js'),'utf8');
 if(!store.includes("const KEY='hide_seek_v2_state'"))fail.push('V2_STATE_OWNER_MISSING');
+if(!store.includes("hide-v2-state-saved"))fail.push('V2_STATE_SAVE_SIGNAL_MISSING');
+
 const mission=fs.readFileSync(path.join(ROOT,'src/v2/mission-service.js'),'utf8');
 for(const token of ['listMissions','renameMission','archiveMission','deleteMission','ACTIVE_SESSION_MISSION_DELETE_BLOCKED']){
   if(!mission.includes(token))fail.push('MISSION_LIFECYCLE_CONTRACT_MISSING:'+token);
@@ -76,6 +82,16 @@ for(const token of ['기억 기록','단어장','우선 복습순','v2Records'])
 for(const token of ['OCR 단어','OCR 뜻','data-review-toggle','미션 관리','data-action="rename"','data-action="delete"']){
   if(!app.includes(token))fail.push('V2_PRODUCT_MANAGEMENT_UI_MISSING:'+token);
 }
+
+const pwa=fs.readFileSync(path.join(ROOT,'src/v2/pwa-v2.js'),'utf8');
+for(const token of ["register('./sw-v2.js'","safePoint","captureSession","activeSession","APPLY_UPDATE"]){
+  if(!pwa.includes(token))fail.push('V2_PWA_CONTRACT_MISSING:'+token);
+}
+const sw=fs.readFileSync(path.join(ROOT,'sw-v2.js'),'utf8');
+for(const token of ["./v2.html","./manifest-v2.json","hide-seek-v2:","caches.match('./v2.html')"]){
+  if(!sw.includes(token))fail.push('V2_SW_CONTRACT_MISSING:'+token);
+}
+if(sw.includes("'./index.html'")||sw.includes("'./app.js'")||sw.includes("'./hide-runtime.js'"))fail.push('V2_SW_MUST_NOT_CACHE_V1_RUNTIME');
 
 const ready=fs.readFileSync(path.join(ROOT,'src/v2/ready-bridge.js'),'utf8');
 for(const token of ["EXPLICIT_READY_PLANNER_REVIEW_DIRECTIVE","reviewPolicyOwner:'READY_LEARNING_ENGINE'","scheduleOwner:'READY_SET_PLANNER'"]){
