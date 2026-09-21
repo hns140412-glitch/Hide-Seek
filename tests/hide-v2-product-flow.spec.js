@@ -87,7 +87,7 @@ test('Hide V2 OCR path uses the shared family adapter and commits reviewed rows'
   await expect(page.getByRole('heading',{name:'분석 결과 확인'})).toBeVisible();
   await expect(page.getByLabel('OCR 단어 1')).toHaveValue('environment');
   await page.getByRole('button',{name:'미션으로 저장'}).click();
-  await expect(page.getByRole('heading',{name:'탐험 미션'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'오늘의 탐험 지도'})).toBeVisible();
   await expect(page.getByText('1개의 숨은 단어',{exact:true})).toBeVisible();
   const state=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')));
   expect(state.missions).toHaveLength(1);
@@ -239,6 +239,7 @@ test('Hide V2 mission lifecycle supports selection rename archive and blocks act
   await page.getByRole('button',{name:'탐험 미션'}).click();
   await expect(page.getByRole('heading',{name:'탐험 미션'})).toBeVisible();
 
+  await page.locator('[data-mission-id="m-b"] summary').click();
   page.once('dialog',async d=>{expect(d.type()).toBe('prompt');await d.accept('둘 미션 수정')});
   await page.locator('[data-action="rename"][data-id="m-b"]').click();
   await expect(page.getByText('둘 미션 수정',{exact:true})).toBeVisible();
@@ -247,6 +248,7 @@ test('Hide V2 mission lifecycle supports selection rename archive and blocks act
   await expect(page.getByRole('heading',{name:'둘 미션 수정'})).toBeVisible();
 
   await page.getByRole('button',{name:'탐험 미션'}).click();
+  await page.locator('[data-mission-id="m-a"] summary').click();
   page.once('dialog',async d=>{expect(d.type()).toBe('confirm');await d.accept()});
   await page.locator('[data-action="delete"][data-id="m-a"]').click();
   const state=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')));
