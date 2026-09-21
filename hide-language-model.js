@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION='2026.09.21-language-core-v1';
+  const VERSION='2026.09.21-language-core-v2';
 
   const MODELS={
     ENGLISH:{
@@ -111,6 +111,43 @@
       </section>`;
   }
 
+  const STARTER_EXPLORATION={
+    environment:{type:'SEMANTIC_SCENE',question:'네 주변에서 environment라고 부를 수 있는 것들은 무엇이 있을까?',scene:'집, 학교, 공기, 물, 나무처럼 우리를 둘러싼 모든 것을 한 장면에 모아봐.',why:'environment는 우리가 살아가는 주변 환경 전체를 가리켜.',connect:['climate','ocean','rainforest']},
+    rainforest:{type:'TRANSPARENT_COMPOUND',parts:[{label:'rain',meaning:'비'},{label:'forest',meaning:'숲'}],question:'비가 아주 많이 오는 숲을 머릿속에 그리면 어떤 모습일까?',scene:'굵은 비, 높은 나무, 축축한 초록빛 숲을 떠올려봐.',why:'rain + forest → 비가 많이 내리는 숲 → 열대우림',connect:['jungle','climate']},
+    mountain:{type:'SEMANTIC_SCENE',question:'멀리서 mountain을 봤을 때 가장 먼저 보이는 모양은 무엇일까?',scene:'땅에서 크게 솟아오른 높은 능선과 꼭대기를 떠올려봐.',why:'높게 솟은 큰 지형이라는 장면으로 뜻을 잡아.',connect:['glacier','climate']},
+    planet:{type:'SEMANTIC_SCENE',question:'지구처럼 우주에서 둥글게 떠 있는 큰 천체를 떠올려볼까?',scene:'검은 우주 속에서 별 주위를 도는 둥근 행성을 그려봐.',why:'Earth도 하나의 planet이라는 연결로 기억해.',connect:['environment','climate']},
+    desert:{type:'SEMANTIC_SCENE',question:'비가 거의 오지 않는 넓은 땅은 어떤 색과 느낌일까?',scene:'끝없이 이어지는 모래, 뜨거운 햇빛, 드문 식물을 떠올려봐.',why:'건조하고 비가 적은 넓은 지역이라는 장면으로 연결해.',connect:['climate']},
+    ocean:{type:'SEMANTIC_SCENE',question:'바다가 아주 넓어져서 끝이 잘 보이지 않는 장면을 떠올려볼까?',scene:'지평선까지 이어지는 거대한 푸른 바다를 상상해.',why:'매우 넓은 바다 = ocean.',connect:['island','climate','environment']},
+    island:{type:'SEMANTIC_SCENE',question:'사방이 물인데 가운데 땅 하나만 남아 있다면?',scene:'넓은 바다 한가운데 홀로 떠 있는 땅을 떠올려봐.',why:'물로 둘러싸인 땅이라는 장면으로 기억해.',connect:['ocean']},
+    jungle:{type:'SEMANTIC_SCENE',question:'나무와 덩굴이 아주 빽빽해서 길이 잘 안 보이는 곳은?',scene:'초록 덩굴과 나무가 겹쳐진 빽빽한 숲을 떠올려봐.',why:'빽빽하고 야생적인 숲의 장면으로 연결해.',connect:['rainforest']},
+    glacier:{type:'SEMANTIC_SCENE',question:'산이나 극지방에서 아주 큰 얼음 덩어리가 천천히 움직인다면?',scene:'산골짜기를 가득 채운 거대한 푸른 얼음 강을 떠올려봐.',why:'오랜 시간 쌓인 얼음이 거대한 덩어리가 된 모습 = glacier.',connect:['mountain','climate']},
+    earthquake:{type:'TRANSPARENT_COMPOUND',parts:[{label:'earth',meaning:'땅'},{label:'quake',meaning:'흔들림'}],question:'땅 자체가 갑자기 흔들리는 순간을 상상해볼까?',scene:'책상과 건물이 흔들리고 땅이 울리는 순간을 떠올려봐.',why:'earth + quake → 땅의 흔들림 → 지진',connect:['environment']},
+    climate:{type:'SEMANTIC_SCENE',question:'오늘 날씨 하나가 아니라, 어떤 지역의 오랜 날씨 특징을 생각해보면?',scene:'한 지역의 여러 계절과 비·눈·더위·추위가 한 장면에 이어지는 모습을 떠올려봐.',why:'오랜 기간 나타나는 지역의 날씨 특징 = climate.',connect:['desert','rainforest','glacier','ocean']},
+    harvest:{type:'SEMANTIC_SCENE',question:'오랫동안 기른 곡식과 과일을 한꺼번에 거두는 날은 어떤 모습일까?',scene:'잘 익은 곡식과 과일을 바구니에 가득 담는 장면을 떠올려봐.',why:'기른 작물을 거두는 장면 → 수확하다 / 수확.',connect:['environment','climate']}
+  };
+
+  function starterExploration(item={},context={}){
+    const word=String(item.eng||item.word||item.token||'').trim().toLowerCase();
+    const base=STARTER_EXPLORATION[word];
+    if(!base)return null;
+    const encountered=new Set((context.encounteredWords||[]).map(x=>String(x).toLowerCase()));
+    const links=(base.connect||[]).filter(x=>encountered.has(x));
+    return {word,type:base.type,question:base.question,scene:base.scene,why:base.why,parts:Array.isArray(base.parts)?base.parts:[],links,sourceType:'CURATED_SEMANTIC_SUPPORT',claimsHistoricalEtymology:false};
+  }
+
+  function renderStarterExplorationHtml(item,context={},esc=(x)=>String(x??'')){
+    const plan=starterExploration(item,context);
+    if(!plan)return '';
+    const parts=plan.parts.length?'<div class="thinking-parts">'+plan.parts.map(p=>'<span><b>'+esc(p.label)+'</b><small>'+esc(p.meaning)+'</small></span>').join('')+'</div>':'';
+    const links=plan.links.length?'<div class="thinking-links"><b>전에 만난 연결</b>'+plan.links.map(x=>'<span>'+esc(x)+'</span>').join('')+'</div>':'';
+    return '<section class="thinking-map-card" data-thinking-word="'+esc(plan.word)+'">'+
+      '<div class="hero-kicker"><span>THINKING TRAIL</span><span>'+esc(plan.type)+'</span></div>'+
+      '<h3>먼저 생각해보기</h3>'+
+      '<p class="thinking-question">'+esc(plan.question)+'</p>'+parts+
+      '<button class="btn secondary full thinking-reveal" type="button">장면 단서 보기</button>'+
+      '<div class="thinking-reveal-body" hidden><div class="thinking-scene"><b>머릿속 장면</b><span>'+esc(plan.scene)+'</span></div>'+
+      '<div class="thinking-why"><b>뜻 연결</b><span>'+esc(plan.why)+'</span></div>'+links+'</div></section>';
+  }
   window.HideLanguageModel={
     VERSION,
     MODELS,
@@ -118,6 +155,8 @@
     normalizeItem,
     hasVerifiedMeaningMap,
     cuePlan,
-    renderMeaningMapHtml
+    renderMeaningMapHtml,
+    starterExploration,
+    renderStarterExplorationHtml
   };
 })();
