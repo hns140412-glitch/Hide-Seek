@@ -491,3 +491,12 @@ Important current frontier:
 - TOKEN may use English shape scaffold; MEANING may use existing example/context. Do not invent unsupported SOUND or second SHAPE clues.
 - SHAPE reinforcement with a visible shape cue is assisted/non-recall.
 - Current locked reporting: PRODUCT ~73%, CODED ~89%, CI ~86%, Browser Runtime ~82%, Device 0%, Release 0%.
+
+
+## 2026-09-22 Final Seek reconstruction delta
+- Exact code HEAD `47cf0c0391c13311cb3faa3c33cf305a2c8e5c63` passed V2 #268 / full Hide #726.
+- FINAL SEEK starts unassisted.
+- Unassisted English miss may use one shape-based assisted reconstruction before full relearn.
+- Reconstruction success is not objective recall and must be followed by SEEK AGAIN unassisted verification.
+- If semantic FINAL SEEK support was already used, do not stack reconstruction; route to relearn.
+- Current locked reporting: PRODUCT ~74%, CODED ~90%, CI ~87%, Browser Runtime ~83%, Device 0%, Release 0%.
