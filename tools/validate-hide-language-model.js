@@ -10,9 +10,13 @@ vm.runInContext(code,sandbox);
 const api=sandbox.window.HideLanguageModel;
 assert(api,'language model missing');
 const evidence=sandbox.window.HideLanguageEvidence;
-assert(evidence?.SCHEMA_VERSION===1,'language evidence schema');
+assert(evidence?.SCHEMA_VERSION===2,'language evidence schema');
 assert(Array.isArray(evidence.invalidRecords)&&evidence.invalidRecords.length===0,'language evidence records must validate');
 assert(Object.keys(evidence.records||{}).length===10,'verified evidence record count');
+for(const [word,record] of Object.entries(evidence.records||{}))assert(evidence.validateRecord(word,record),'evidence record '+word);
+assert(evidence.validateRecord('earthquake',evidence.records.earthquake),'verified compound contract');
+assert(!evidence.validateRecord('bad',{supportType:'VERIFIED_ETYMOLOGY',sourceType:'ETYMONLINE',sourceRef:'http://example.com',center:{label:'x',meaning:'x'},nodes:[{role:'ROOT',label:'x',meaning:'x'}],bridge:'x',scene:'x'}),'invalid source must fail');
+assert(!evidence.validateRecord('bad',{supportType:'TRANSPARENT_COMPOUND',sourceType:'ETYMONLINE',sourceRef:'https://www.etymonline.com/word/bad',center:{label:'a+b',meaning:'x'},nodes:[{role:'COMPOUND_PART',label:'a',meaning:'x'}],bridge:'x',scene:'x'}),'compound historical flag must be explicitly false');
 
 assert(api.detectDomain({eng:'transport',kor:'운반하다'})==='ENGLISH','english detection');
 assert(api.detectDomain({word:'불가피'})==='KOREAN','korean detection');
