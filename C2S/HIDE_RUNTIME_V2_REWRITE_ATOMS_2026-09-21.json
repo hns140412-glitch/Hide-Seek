@@ -72,7 +72,7 @@
     {
       "id": "HIDE-V2-C2S-012",
       "type": "EVIDENCE",
-      "statement": "Locked last closed product estimate: Product 70, Coded 86, CI 83, Browser Runtime 79, Device 0, Release 0.",
+      "statement": "Locked last closed product estimate: Product 71, Coded 87, CI 84, Browser Runtime 80, Device 0, Release 0.",
       "destination": "status"
     },
     {
@@ -146,6 +146,12 @@
       "type": "CORRECTION",
       "statement": "Normal MEMORIZE/relearn exposure marked assisted must not be counted as hint dependency; hintDependency derives only from actual ASSISTANCE or positive hintLevel evidence.",
       "destination": "memory-engine/hint-dependency"
+    },
+    {
+      "id": "HIDE-V2-C2S-025",
+      "type": "EVIDENCE",
+      "statement": "HIDDEN WORDS maps Memory Engine primaryReason to bounded activity modes: confusion->meaning, orthographic->English shape scaffold, verified sound->sound recall, otherwise unassisted token recall.",
+      "destination": "learning/hidden-words"
     }
   ],
   "coverage": {
