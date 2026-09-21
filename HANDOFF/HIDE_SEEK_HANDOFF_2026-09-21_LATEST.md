@@ -55,7 +55,7 @@ Transparent morphology or mnemonic support must be labeled separately.
 
 ## Current implementation state
 Current branch HEAD at handoff refresh:
-`6c08a51812d13df6cc62aa2399c0282ceee3ff60`
+`88731750f3491422518e84959042e088b3b2cc78`
 
 Current implementation now includes:
 - verified language evidence extracted to `hide-language-evidence.js` with schema validation / fail-closed behavior,
@@ -134,3 +134,14 @@ Latest branch state must be checked live before work resumes. Do not reuse the o
 - Hide consumes resolved `learningContext` only.
 - Hide owns cumulative language-memory evidence and Memory Ladder adaptation.
 - Do not add independent Hanja-grade inference back into Hide.
+
+
+## Final handoff checkpoint
+- Exact HEAD: `88731750f3491422518e84959042e088b3b2cc78`
+- CI: Validate Hide & Seek #333 = SUCCESS.
+- Language Memory ownership is locked:
+  - Ready owns homework / Learning Unit / Hanja level.
+  - Hide consumes resolved `learningContext`.
+  - Hide owns cumulative memory evidence and Memory Ladder.
+- Do not reintroduce independent Hanja-grade inference into Hide.
+- Continue pre-deploy implementation only.
