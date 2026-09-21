@@ -781,6 +781,25 @@ for forbidden in [
         fail.append("LANGUAGE_NEUTRAL_LEARNING_UI:"+forbidden)
 
 for needle in [
+    "addLanguageMemoryEvidence",
+    "languageMemoryEvidenceSummary",
+    "TYPED_CHARACTER_RECALL",
+    "MEANING_RECOGNITION",
+    "CHARACTER_RECONSTRUCTION",
+    "WRITE_OR_RECONSTRUCT",
+    "EXPOSURE_ONLY",
+    "objectiveRecall:false",
+]:
+    if needle not in app:
+        fail.append("HANJA_MEMORY_EVIDENCE_AXES:"+needle)
+
+for needle in [
+    "languageMemoryEvidence",
+]:
+    if needle not in bridge:
+        fail.append("MEMORY_ADVISORY_LANGUAGE_EVIDENCE:"+needle)
+
+for needle in [
     "FIRST_SEEN_PREDICTION",
     "단어 → 뜻",
     "뜻 → 단어",
