@@ -2,6 +2,24 @@
   'use strict';
   const $=(s,r=document)=>r.querySelector(s);
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const childStageLabel=stage=>({
+    MEMORIZE:'단어 만나기',
+    FIRST_FIND:'첫 찾기',
+    MEANING:'뜻 단서',
+    DOMAIN_EXTENSION:'연결 길',
+    FINAL_SEEK:'마지막 찾기',
+    COMPLETE:'탐험 완료'
+  })[stage]||'단어 탐험';
+  const childEvidenceLabel=e=>({
+    MEMORIZE:'단어 만나기',
+    FIRST_FIND:'첫 찾기',
+    MEANING:'뜻 단서',
+    RESPONSE_TRAIL:'표현 길',
+    SOUND_FIND:'소리 찾기',
+    CONNECTION:'연결 길',
+    FINAL_SEEK:'마지막 찾기',
+    THINKING_TRAIL:'생각 길'
+  })[e]||'기억 흔적';
   const view=()=>$('#view');
   let flash='';
 
@@ -62,7 +80,7 @@
     const resumable=globalThis.HideV2Session?.isResumable?.()===true;
     const capture=globalThis.HideV2Capture?.state?.();
     const reviewReady=globalThis.HideV2Capture?.hasResumableReview?.()===true;
-    view().innerHTML=`<section class="world-hero"><div class="hero-case"><div class="hero-kicker"><span>HIDE V2</span><span>REWRITE</span></div><h1>${m?esc(m.title):'새 단어 탐험을 시작해요'}</h1><p>${m?`${m.items.length}개 단어 · 구조 분리형 런타임`:'프린트 사진을 분석하고 확인한 뒤 학습을 시작해요.'}</p><div class="hero-actions"><button class="btn primary" id="v2Camera">카메라 촬영</button><button class="btn secondary" id="v2Library">사진 추가</button>${m?`<button class="btn secondary" id="v2Start">${resumable?'학습 이어하기':'학습 시작'}</button>`:''}</div></div></section><section class="card" style="display:grid;gap:8px"><button class="btn secondary full" id="v2MissionList">미션 관리</button><button class="btn secondary full" id="v2Records">기억 기록</button></section>${reviewReady?`<section class="card tint-sky"><div class="section-title"><h2>분석 결과가 남아 있어요</h2><span>${capture?.lastRows?.length||0}개</span></div><p>앱을 다시 열어도 검토 중인 OCR 결과를 이어갈 수 있어요.</p><button class="btn primary full" id="v2ResumeReview">분석 결과 이어보기</button></section>`:''}<section class="card"><div class="section-title"><h2>V2 상태</h2><span>monolith-free</span></div><div class="metric"><span>미션</span><b>${s.missions.length}</b></div><div class="metric"><span>촬영 세션</span><b>${capture?.status||'없음'}</b></div><div class="metric"><span>저장</span><b>Local-first</b></div><div class="metric"><span>Domain</span><b>EN/KR/HANJA</b></div></section>`;
+    view().innerHTML=`<section class="world-hero"><div class="hero-case"><div class="hero-kicker"><span>HIDE & SEEK</span><span>숨은 단어 탐험</span></div><h1>${m?esc(m.title):'새 단어 탐험을 시작해요'}</h1><p>${m?`${m.items.length}개의 숨은 단어가 기다리고 있어요.`:'프린트 사진을 보고 오늘의 숨은 단어를 찾아봐요.'}</p><div class="hero-actions"><button class="btn primary" id="v2Camera">카메라 촬영</button><button class="btn secondary" id="v2Library">사진 추가</button>${m?`<button class="btn secondary" id="v2Start">${resumable?'학습 이어하기':'학습 시작'}</button>`:''}</div></div></section><section class="card" style="display:grid;gap:8px"><button class="btn secondary full" id="v2MissionList">미션 관리</button><button class="btn secondary full" id="v2Records">기억 기록</button></section>${reviewReady?`<section class="card tint-sky"><div class="section-title"><h2>분석 결과가 남아 있어요</h2><span>${capture?.lastRows?.length||0}개</span></div><p>앱을 다시 열어도 검토 중인 OCR 결과를 이어갈 수 있어요.</p><button class="btn primary full" id="v2ResumeReview">분석 결과 이어보기</button></section>`:''}<section class="card"><div class="section-title"><h2>탐험 준비</h2><span>${m?'READY':'NEW'}</span></div><div class="metric"><span>탐험 미션</span><b>${s.missions.filter(x=>x.status!=='ARCHIVED').length}</b></div><div class="metric"><span>사진 확인</span><b>${capture?.status==='REVIEW'?'검토 필요':capture?.status==='CAPTURING'?'분석 중':'준비됨'}</b></div><div class="metric"><span>기억 기록</span><b>${HideV2Memory.dashboard().total}단어</b></div></section>`;
     $('#v2Camera').onclick=()=>$('#sheetCameraInput').click();
     $('#v2MissionList').onclick=()=>HideV2Router.go('missions');
     $('#v2Records').onclick=()=>HideV2Router.go('records');
@@ -79,7 +97,7 @@
     const normalized=rows.map((r,i)=>HideV2Mission.normalizeItem(r,i)).filter(Boolean);
     const draft=normalized.map(x=>({...x,excluded:false}));
     const renderRows=()=>{
-      view().innerHTML=`<section class="card"><div class="hero-kicker"><span>OCR REVIEW</span><span>V2</span></div><h2>분석 결과 확인</h2><p>틀린 단어/뜻은 고치고, 필요 없는 행은 제외한 뒤 저장하세요.</p><div class="weak-list">${draft.map((w,i)=>`<div class="weak-item" data-review-row="${i}"><div style="display:grid;gap:6px;flex:1"><input class="input" data-review-token="${i}" aria-label="OCR 단어 ${i+1}" value="${esc(w.token)}"><input class="input" data-review-meaning="${i}" aria-label="OCR 뜻 ${i+1}" value="${esc(w.meaning)}"><small>${esc(w.languageDomain)} · ${esc(w.source?.pageId||'source')} · confidence ${esc(w.source?.confidence||'medium')}</small>${w.source?.warnings?.length?`<small class="ocr-warning">확인 필요 · ${esc(w.source.warnings.join(', '))}</small>`:''}</div><button class="btn secondary" data-review-toggle="${i}" type="button">${w.excluded?'복원':'제외'}</button></div>`).join('')}</div><button class="btn primary full" id="v2Commit" type="button">미션으로 저장</button></section>`;
+      view().innerHTML=`<section class="card"><div class="hero-kicker"><span>사진 확인</span><span>단어 탐험 준비</span></div><h2>분석 결과 확인</h2><p>틀린 단어/뜻은 고치고, 필요 없는 행은 제외한 뒤 저장하세요.</p><div class="weak-list">${draft.map((w,i)=>`<div class="weak-item" data-review-row="${i}"><div style="display:grid;gap:6px;flex:1"><input class="input" data-review-token="${i}" aria-label="OCR 단어 ${i+1}" value="${esc(w.token)}"><input class="input" data-review-meaning="${i}" aria-label="OCR 뜻 ${i+1}" value="${esc(w.meaning)}"><small>${esc(w.languageDomain)} · ${esc(w.source?.pageId||'source')} · confidence ${esc(w.source?.confidence||'medium')}</small>${w.source?.warnings?.length?`<small class="ocr-warning">확인 필요 · ${esc(w.source.warnings.join(', '))}</small>`:''}</div><button class="btn secondary" data-review-toggle="${i}" type="button">${w.excluded?'복원':'제외'}</button></div>`).join('')}</div><button class="btn primary full" id="v2Commit" type="button">미션으로 저장</button></section>`;
       draft.forEach((w,i)=>{
         const token=$(`[data-review-token="${i}"]`),meaning=$(`[data-review-meaning="${i}"]`),toggle=$(`[data-review-toggle="${i}"]`);
         token.disabled=w.excluded;meaning.disabled=w.excluded;
@@ -113,41 +131,41 @@
     if(session.stage==='MEMORIZE'){
       const item={eng:w.token,word:w.token,kor:w.meaning,languageDomain:w.languageDomain,meaningMap:w.meaningMap};
       const thinkingHtml=globalThis.HideLanguageModel?.renderStarterExplorationHtml?.(item,{encounteredWords:[]},esc)||'';
-      view().innerHTML=`<section class="learning-shell"><div class="learn-head"><span class="phase-chip">MEMORIZE</span><b>${idx}/${total}</b></div><section class="card word-card"><div class="bigword">${esc(w.token)}</div><h2 style="text-align:center">${esc(w.meaning)}</h2>${w.example?`<p class="example">${esc(w.example)}</p>`:''}</section>${thinkingHtml}<button id="v2Memorized" class="btn primary full">기억하고 찾아보기</button></section>`;
+      view().innerHTML=`<section class="learning-shell"><div class="learn-head"><span class="phase-chip">${childStageLabel('MEMORIZE')}</span><b>${idx}/${total}</b></div><section class="card word-card"><div class="bigword">${esc(w.token)}</div><h2 style="text-align:center">${esc(w.meaning)}</h2>${w.example?`<p class="example">${esc(w.example)}</p>`:''}</section>${thinkingHtml}<button id="v2Memorized" class="btn primary full">기억하고 찾아보기</button></section>`;
       bindThinkingTrail(m.id,w);
       $('#v2Memorized').onclick=()=>{HideV2Session.update(HideV2Learning.submitMemorize(session,m).session);render()};
       return;
     }
 
     if(session.stage==='FIRST_FIND'){
-      view().innerHTML=`<section class="learning-shell"><div class="learn-head"><span class="phase-chip">FIRST FIND</span><b>${idx}/${total}</b></div><section class="card word-card"><p>뜻을 보고 단어를 기억에서 꺼내보세요.</p><div class="bigword">${esc(w.meaning)}</div><input id="v2Answer" class="input" aria-label="회상 답 입력" autocomplete="off" spellcheck="false"><button id="v2Check" class="btn primary full">기억 확인</button></section></section>`;
+      view().innerHTML=`<section class="learning-shell"><div class="learn-head"><span class="phase-chip">${childStageLabel('FIRST_FIND')}</span><b>${idx}/${total}</b></div><section class="card word-card"><p>뜻을 보고 단어를 기억에서 꺼내보세요.</p><div class="bigword">${esc(w.meaning)}</div><input id="v2Answer" class="input" aria-label="회상 답 입력" autocomplete="off" spellcheck="false"><button id="v2Check" class="btn primary full">기억 확인</button></section></section>`;
       $('#v2Check').onclick=()=>{const r=HideV2Learning.checkFirstFind(session,m,$('#v2Answer').value);HideV2Session.update(r.session);setFlash(r.ok?'기억에서 찾았어요':'이번 회상은 틀렸어요. 뒤 단계에서 다시 확인할게요.');render()};
       return;
     }
 
     if(session.stage==='MEANING'){
-      view().innerHTML=`<section class="learning-shell"><div class="learn-head"><span class="phase-chip">MEANING</span><b>${idx}/${total}</b></div><section class="card word-card"><div class="bigword">${esc(w.token)}</div><input id="v2Meaning" class="input" aria-label="뜻 회상 입력" autocomplete="off"><button id="v2MeaningCheck" class="btn primary full">뜻 확인</button></section></section>`;
+      view().innerHTML=`<section class="learning-shell"><div class="learn-head"><span class="phase-chip">${childStageLabel('MEANING')}</span><b>${idx}/${total}</b></div><section class="card word-card"><div class="bigword">${esc(w.token)}</div><input id="v2Meaning" class="input" aria-label="뜻 회상 입력" autocomplete="off"><button id="v2MeaningCheck" class="btn primary full">뜻 확인</button></section></section>`;
       $('#v2MeaningCheck').onclick=()=>{const r=HideV2Learning.checkMeaning(session,m,$('#v2Meaning').value);HideV2Session.update(r.session);setFlash(r.ok?'뜻도 기억했어요':'뜻 회상은 틀렸어요.');render()};
       return;
     }
 
     if(session.stage==='DOMAIN_EXTENSION'){
       if(w.languageDomain==='KOREAN'){
-        view().innerHTML=`<section class="learning-shell"><div class="learn-head"><span class="phase-chip">RESPONSE TRAIL</span><b>${idx}/${total}</b></div><section class="card"><h2>내 문장으로 표현하기</h2><p>“${esc(w.token)}”을 넣어 짧은 문장을 만들어보세요.</p><textarea id="v2Response" class="input" rows="3" aria-label="국어 문장 표현"></textarea><button id="v2DomainDone" class="btn primary full">표현 남기기</button></section></section>`;
+        view().innerHTML=`<section class="learning-shell"><div class="learn-head"><span class="phase-chip">표현 길</span><b>${idx}/${total}</b></div><section class="card"><h2>내 문장으로 표현하기</h2><p>“${esc(w.token)}”을 넣어 짧은 문장을 만들어보세요.</p><textarea id="v2Response" class="input" rows="3" aria-label="국어 문장 표현"></textarea><button id="v2DomainDone" class="btn primary full">표현 남기기</button></section></section>`;
         $('#v2DomainDone').onclick=()=>{const text=$('#v2Response').value.trim();if(text.length<4){setFlash('짧은 문장으로 표현해 주세요.');return}HideV2Session.update(HideV2Learning.submitDomainExtension(session,m,{responseText:text}).session);render()};
       }else if(w.languageDomain==='HANJA'&&w.soundEvidence){
-        view().innerHTML=`<section class="learning-shell"><div class="learn-head"><span class="phase-chip">SOUND FIND</span><b>${idx}/${total}</b></div><section class="card"><div class="bigword">${esc(w.token)}</div><input id="v2Sound" class="input" aria-label="한자 음 입력" autocomplete="off"><button id="v2DomainDone" class="btn primary full">음 기억 확인</button></section></section>`;
+        view().innerHTML=`<section class="learning-shell"><div class="learn-head"><span class="phase-chip">소리 찾기</span><b>${idx}/${total}</b></div><section class="card"><div class="bigword">${esc(w.token)}</div><input id="v2Sound" class="input" aria-label="한자 음 입력" autocomplete="off"><button id="v2DomainDone" class="btn primary full">음 기억 확인</button></section></section>`;
         $('#v2DomainDone').onclick=()=>{HideV2Session.update(HideV2Learning.submitDomainExtension(session,m,{sound:$('#v2Sound').value}).session);render()};
       }else{
-        view().innerHTML=`<section class="learning-shell"><div class="learn-head"><span class="phase-chip">CONNECTION</span><b>${idx}/${total}</b></div><section class="card">${globalThis.HideLanguageModel?.renderMeaningMapHtml?.({eng:w.token,word:w.token,languageDomain:w.languageDomain,meaningMap:w.meaningMap},esc)||`<p>${esc(w.example||w.meaning)}</p>`}<button id="v2DomainDone" class="btn primary full">다음</button></section></section>`;
+        view().innerHTML=`<section class="learning-shell"><div class="learn-head"><span class="phase-chip">연결 길</span><b>${idx}/${total}</b></div><section class="card">${globalThis.HideLanguageModel?.renderMeaningMapHtml?.({eng:w.token,word:w.token,languageDomain:w.languageDomain,meaningMap:w.meaningMap},esc)||`<p>${esc(w.example||w.meaning)}</p>`}<button id="v2DomainDone" class="btn primary full">다음</button></section></section>`;
         $('#v2DomainDone').onclick=()=>{HideV2Session.update(HideV2Learning.submitDomainExtension(session,m,{}).session);render()};
       }
       return;
     }
 
     if(session.stage==='FINAL_SEEK'){
-      view().innerHTML=`<section class="learning-shell"><div class="learn-head"><span class="phase-chip">FINAL SEEK</span><b>${idx}/${total}</b></div><section class="card word-card"><p>마지막으로 힌트 없이 단어를 다시 꺼내보세요.</p><div class="bigword">${esc(w.meaning)}</div><input id="v2Final" class="input" aria-label="최종 회상 답 입력" autocomplete="off" spellcheck="false"><button id="v2FinalCheck" class="btn primary full">마지막 기억 확인</button></section></section>`;
-      $('#v2FinalCheck').onclick=()=>{const r=HideV2Learning.checkFinalSeek(session,m,$('#v2Final').value);HideV2Session.update(r.session);setFlash(r.ok?'FINAL SEEK 성공':'복습 필요 신호에 반영했어요.');render()};
+      view().innerHTML=`<section class="learning-shell"><div class="learn-head"><span class="phase-chip">${childStageLabel('FINAL_SEEK')}</span><b>${idx}/${total}</b></div><section class="card word-card"><p>마지막으로 힌트 없이 단어를 다시 꺼내보세요.</p><div class="bigword">${esc(w.meaning)}</div><input id="v2Final" class="input" aria-label="최종 회상 답 입력" autocomplete="off" spellcheck="false"><button id="v2FinalCheck" class="btn primary full">마지막 기억 확인</button></section></section>`;
+      $('#v2FinalCheck').onclick=()=>{const r=HideV2Learning.checkFinalSeek(session,m,$('#v2Final').value);HideV2Session.update(r.session);setFlash(r.ok?'마지막 찾기 성공':'복습 필요 신호에 반영했어요.');render()};
     }
   }
 
@@ -201,7 +219,7 @@
 
   function records(){
     const book=HideV2Memory.wordbook(),dash=HideV2Memory.dashboard();
-    view().innerHTML=`<section class="card"><div class="section-title"><h2>기억 기록</h2><span>${dash.total}단어</span></div><div class="grid3"><div class="status-pill"><b>${dash.averageStrength}%</b><span>Memory</span></div><div class="status-pill"><b>${dash.needsRecall}</b><span>재회상</span></div><div class="status-pill"><b>${dash.stable}</b><span>안정</span></div></div><div class="metric"><span>뜻 혼동</span><b>${dash.confusion}</b></div><div class="metric"><span>글자 형태 취약</span><b>${dash.orthographic}</b></div><div class="metric"><span>소리 회상 취약</span><b>${dash.sound}</b></div><div class="metric"><span>느린 회상</span><b>${dash.slowRecall}</b></div><div class="metric"><span>힌트 의존</span><b>${dash.hintDependent}</b></div></section><section class="card"><div class="section-title"><h2>단어장</h2><span>우선 복습순</span></div>${book.length?book.map((x,i)=>`<article class="weak-item" data-wordbook-index="${i}"><div style="flex:1"><b>${esc(x.token)}</b><small style="display:block">${esc(x.meaning)} · ${esc(x.languageDomain)} · ${x.encounters}회</small><small style="display:block">${esc(x.primaryReason.label)}</small></div><div style="text-align:right"><b>${x.memoryStrength}%</b><small style="display:block">P${x.nextReviewPriority}</small><button class="btn secondary" data-word-detail="${i}" type="button">상세</button></div></article>`).join(''):'<p>아직 기억 기록이 없어요.</p>'}<button class="btn secondary full" id="v2RecordsHome">홈으로</button></section>`;
+    view().innerHTML=`<section class="card"><div class="section-title"><h2>기억 기록</h2><span>${dash.total}단어</span></div><div class="grid3"><div class="status-pill"><b>${dash.averageStrength}%</b><span>기억 힘</span></div><div class="status-pill"><b>${dash.needsRecall}</b><span>재회상</span></div><div class="status-pill"><b>${dash.stable}</b><span>안정</span></div></div><div class="metric"><span>뜻 혼동</span><b>${dash.confusion}</b></div><div class="metric"><span>글자 형태 취약</span><b>${dash.orthographic}</b></div><div class="metric"><span>소리 회상 취약</span><b>${dash.sound}</b></div><div class="metric"><span>느린 회상</span><b>${dash.slowRecall}</b></div><div class="metric"><span>힌트 의존</span><b>${dash.hintDependent}</b></div></section><section class="card"><div class="section-title"><h2>단어장</h2><span>우선 복습순</span></div>${book.length?book.map((x,i)=>`<article class="weak-item" data-wordbook-index="${i}"><div style="flex:1"><b>${esc(x.token)}</b><small style="display:block">${esc(x.meaning)} · ${esc(x.languageDomain)} · ${x.encounters}회</small><small style="display:block">${esc(x.primaryReason.label)}</small></div><div style="text-align:right"><b>${x.memoryStrength}%</b><small style="display:block">P${x.nextReviewPriority}</small><button class="btn secondary" data-word-detail="${i}" type="button">상세</button></div></article>`).join(''):'<p>아직 기억 기록이 없어요.</p>'}<button class="btn secondary full" id="v2RecordsHome">홈으로</button></section>`;
     $('#v2RecordsHome').onclick=()=>HideV2Router.go('home');
     view().querySelectorAll('[data-word-detail]').forEach(btn=>{
       btn.onclick=()=>{const entry=book[Number(btn.dataset.wordDetail)];if(entry)HideV2Router.go('record-detail',{lexicalId:entry.lexicalId})};
@@ -212,7 +230,7 @@
     const entry=HideV2Memory.wordbook().find(x=>x.lexicalId===params.lexicalId);
     if(!entry){HideV2Router.go('records');return}
     const sig=entry.memorySignature||{},events=(entry.evidence||[]).slice().reverse().slice(0,20);
-    view().innerHTML=`<section class="card"><div class="hero-kicker"><span>MEMORY DETAIL</span><span>${esc(entry.languageDomain)}</span></div><h2>${esc(entry.token)}</h2><p>${esc(entry.meaning)}</p><div class="grid3"><div class="status-pill"><b>${entry.memoryStrength}%</b><span>Memory</span></div><div class="status-pill"><b>P${entry.nextReviewPriority}</b><span>Priority</span></div><div class="status-pill"><b>${entry.encounters}</b><span>Encounters</span></div></div><div class="metric"><span>주요 이유</span><b>${esc(entry.primaryReason.label)}</b></div><div class="metric"><span>회복 상태</span><b>${esc(sig.recoveryStatus||'UNPROVEN')}</b></div><div class="metric"><span>뜻 취약</span><b>${sig.semanticWeakness||0}</b></div><div class="metric"><span>소리 취약</span><b>${sig.phonologicalWeakness||0}</b></div><div class="metric"><span>형태 취약</span><b>${sig.orthographicWeakness||0}</b></div><div class="metric"><span>혼동</span><b>${sig.confusionPattern?.count||0}</b></div></section><section class="card"><div class="section-title"><h2>Evidence Trail</h2><span>최근 ${events.length}</span></div>${events.length?events.map(e=>`<div class="weak-item"><div><b>${esc(e.stage||e.evidenceMode||'EVENT')}</b><small style="display:block">${esc(e.result||'')} · ${esc(e.evidenceMode||'')}</small></div><small>${esc(e.at||'')}</small></div>`).join(''):'<p>기록 없음</p>'}<button class="btn secondary full" id="v2RecordBack">기록으로</button></section>`;
+    view().innerHTML=`<section class="card"><div class="hero-kicker"><span>기억 자세히</span><span>${esc(entry.languageDomain)}</span></div><h2>${esc(entry.token)}</h2><p>${esc(entry.meaning)}</p><div class="grid3"><div class="status-pill"><b>${entry.memoryStrength}%</b><span>Memory</span></div><div class="status-pill"><b>P${entry.nextReviewPriority}</b><span>다시 찾기</span></div><div class="status-pill"><b>${entry.encounters}</b><span>만난 횟수</span></div></div><div class="metric"><span>주요 이유</span><b>${esc(entry.primaryReason.label)}</b></div><div class="metric"><span>회복 상태</span><b>${esc(sig.recoveryStatus||'UNPROVEN')}</b></div><div class="metric"><span>뜻 취약</span><b>${sig.semanticWeakness||0}</b></div><div class="metric"><span>소리 취약</span><b>${sig.phonologicalWeakness||0}</b></div><div class="metric"><span>형태 취약</span><b>${sig.orthographicWeakness||0}</b></div><div class="metric"><span>혼동</span><b>${sig.confusionPattern?.count||0}</b></div></section><section class="card"><div class="section-title"><h2>기억 흔적</h2><span>최근 ${events.length}</span></div>${events.length?events.map(e=>`<div class="weak-item"><div><b>${esc(childEvidenceLabel(e.stage||e.evidenceMode))}</b><small style="display:block">${esc(e.result||'')} · ${esc(e.evidenceMode||'')}</small></div><small>${esc(e.at||'')}</small></div>`).join(''):'<p>기록 없음</p>'}<button class="btn secondary full" id="v2RecordBack">기록으로</button></section>`;
     $('#v2RecordBack').onclick=()=>HideV2Router.go('records');
   }
 
