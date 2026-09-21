@@ -532,12 +532,21 @@
       sourceColumnIndex: Number(row.sourceColumnIndex ?? i)
     }));
 
+    const layoutRole = row => {
+      if(session.sourceLayoutProfile!=='WEEKDAY_VOCAB_LEFT12_NEW_REST_REVIEW') return '';
+      if(row.sourceColumn && row.sourceColumn!=='UNKNOWN') return row.sourceColumn==='LEFT'?'NEW':'REVIEW';
+      const idx=data.indexOf(row); return idx>=0&&idx<12?'NEW':'REVIEW';
+    };
+    const roleCounts={NEW:data.filter(x=>layoutRole(x)==='NEW').length,REVIEW:data.filter(x=>layoutRole(x)==='REVIEW').length};
     const view = document.querySelector('#view');
     view.innerHTML = `
       <section class="card">
         <div class="hero-kicker"><span>REVIEW BEFORE COMMIT</span><span>${data.length}개</span></div>
         <h2>단어 결과 확인</h2>
         <p>낮은 신뢰 항목은 직접 수정하거나 ‘이대로 확인’을 눌러야 저장할 수 있어요.</p>
+        ${session.sourceLayoutProfile==='WEEKDAY_VOCAB_LEFT12_NEW_REST_REVIEW'
+          ?`<div class="card tint-leaf" style="margin-top:10px"><b>이번 시험지 구조</b><p style="margin:4px 0 0">좌측 12개 = NEW · 나머지 24개 = REVIEW</p><small>인식 결과 NEW ${roleCounts.NEW} · REVIEW ${roleCounts.REVIEW}</small></div>`
+          :''}
         <div id="hideBatchRows" class="table" style="margin-top:12px"></div>
         <div class="hide-review-actions">
           <button id="hideReviewMore" class="btn secondary" type="button">촬영 더하기</button>
@@ -561,6 +570,7 @@
           <input class="eng" value="${esc(w.eng)}" aria-label="${i + 1}번 영어 단어">
           <input class="kor" value="${esc(w.kor)}" aria-label="${i + 1}번 뜻">
           <span class="badge ${w.reviewResolved ? 'good' : 'weak'}">${w.reviewResolved ? '확인' : '확인 필요'}</span>
+          ${layoutRole(w)?`<span class="badge ${layoutRole(w)==='NEW'?'good':''}">${layoutRole(w)}</span>`:''}
           ${w.reviewResolved ? '' : `<button class="hide-confirm-row" data-confirm="${i}" type="button">이대로 확인</button>`}
           <button class="row-delete" data-del="${i}" type="button" aria-label="${i + 1}번 행 삭제">×</button>
         </div>`).join('');
