@@ -565,7 +565,7 @@ for needle in ["request","normalizeStatus","buildRequestInit"]:
         fail.append("TAKY_SHARED_HTTP_CONTRACT:"+needle)
 
 for needle in [
-    "2026.09.21-learning-basis-v1",
+    "2026.09.21-learning-basis-v2",
     "basis_subject:'국어'",
     "basis_subject:'한자'",
     "READ_UNDERSTAND_EVIDENCE_RESPOND",
@@ -578,9 +578,22 @@ for needle in [
 for needle in [
     "HideLearningBasis?.resolve",
     "learningProfile",
+    "projectLearningContext",
+]:
+    if needle not in learning_basis and needle != "learningProfile":
+        fail.append("LANGUAGE_LEARNING_CONTEXT_OWNER:"+needle)
+
+for needle in [
+    "HideLearningBasis?.resolve",
+    "learningProfile",
+    "HideLearningBasis?.projectLearningContext",
+    "learningContextFor",
 ]:
     if needle not in language_model:
         fail.append("LANGUAGE_MODEL_LEARNING_BASIS:"+needle)
+
+if "learningContext:item.learningContext||item.learning_context||null" in language_model:
+    fail.append("UNRESOLVED_LEARNING_CONTEXT_PASSTHROUGH")
 
 for needle in [
     "HideLearningBasis?.assistanceOrder",
