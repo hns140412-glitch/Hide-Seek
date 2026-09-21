@@ -190,9 +190,14 @@
   }
 
   function review(rows){
-    const normalized=rows.map((r,i)=>HideV2Mission.normalizeItem(r,i)).filter(Boolean);
     const clone=x=>JSON.parse(JSON.stringify(x));
-    const draft=normalized.map(x=>({...x,excluded:false,mergedInto:null,originalSource:clone(x.source||{})}));
+    const persisted=globalThis.HideV2Capture?.reviewDraft?.()||[];
+    const normalized=rows.map((r,i)=>HideV2Mission.normalizeItem(r,i)).filter(Boolean);
+    const draft=persisted.length
+      ?persisted.map(x=>clone(x))
+      :normalized.map(x=>({...x,excluded:false,mergedInto:null,originalSource:clone(x.source||{})}));
+    const persistDraft=()=>globalThis.HideV2Capture?.saveReviewDraft?.(draft);
+    if(!persisted.length&&draft.length)persistDraft();
     const activeGroup=(i)=>draft
       .map((x,j)=>({x,j}))
       .filter(({x})=>!x.excluded&&x.lexicalId===draft[i].lexicalId)
@@ -249,13 +254,27 @@
         const token=$(`[data-review-token="${i}"]`),meaning=$(`[data-review-meaning="${i}"]`),toggle=$(`[data-review-toggle="${i}"]`),merge=$(`[data-review-merge="${i}"]`);
         const locked=w.excluded||!!w.mergedInto;
         token.disabled=locked;meaning.disabled=locked;
-        token.oninput=()=>{draft[i].token=token.value.trim();draft[i].lexicalId=`${draft[i].token.toLowerCase()}::${draft[i].meaning.replace(/\s+/g,' ')}`};
-        meaning.oninput=()=>{draft[i].meaning=meaning.value.trim();draft[i].lexicalId=`${draft[i].token.toLowerCase()}::${draft[i].meaning.replace(/\s+/g,' ')}`};
-        token.onchange=()=>{if(resetRelated(i))renderRows()};
-        meaning.onchange=()=>{if(resetRelated(i))renderRows()};
-        if(toggle)toggle.onclick=()=>{resetRelated(i);draft[i].excluded=!draft[i].excluded;renderRows()};
+        token.oninput=()=>{
+          draft[i].token=token.value.trim();
+          draft[i].lexicalId=`${draft[i].token.toLowerCase()}::${draft[i].meaning.replace(/\s+/g,' ')}`;
+          persistDraft();
+        };
+        meaning.oninput=()=>{
+          draft[i].meaning=meaning.value.trim();
+          draft[i].lexicalId=`${draft[i].token.toLowerCase()}::${draft[i].meaning.replace(/\s+/g,' ')}`;
+          persistDraft();
+        };
+        token.onchange=()=>{if(resetRelated(i)){persistDraft();renderRows()}};
+        meaning.onchange=()=>{if(resetRelated(i)){persistDraft();renderRows()}};
+        if(toggle)toggle.onclick=()=>{
+          resetRelated(i);
+          draft[i].excluded=!draft[i].excluded;
+          persistDraft();
+          renderRows()
+        };
         if(merge)merge.onclick=()=>{
           if(draft.some(x=>x.mergedInto===w.id))resetGroup(w.id);else mergeGroup(i);
+          persistDraft();
           renderRows()
         };
       });
