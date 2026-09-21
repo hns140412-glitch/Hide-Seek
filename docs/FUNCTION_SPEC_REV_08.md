@@ -240,3 +240,27 @@ Role assignment authority:
 
 Mission metadata may preserve the current expected composition:
 `expectedNew=12 / expectedReview=24 / layoutIndependent=true`.
+
+
+## 20. MORNING MOCK TEST EVIDENCE
+
+A parent-child morning mock test is external learning evidence, not a source-print parser and not the same thing as Hide's internal retrieval test.
+
+Supported quick outcomes:
+- CORRECT
+- CONFUSED
+- WRONG
+- ASSISTED_CORRECT
+- RECOVERED_CORRECT
+
+Provenance:
+- source = MORNING_MOCK_TEST
+- actor = PARENT_CHILD
+
+Memory rules:
+- CORRECT is positive assessment evidence.
+- CONFUSED increases recall-latency/uncertainty evidence.
+- WRONG increases retrieval/orthographic weakness evidence but does not reset the Memory Ladder.
+- ASSISTED_CORRECT sets needsUnassistedRecall=true.
+- RECOVERED_CORRECT records unassisted recovery with spacedEvidence=false unless a real time gap is established.
+- External mock-test evidence must not be mislabeled as Hide internal FINAL SEEK evidence.
