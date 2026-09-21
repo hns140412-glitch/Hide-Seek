@@ -1121,3 +1121,33 @@ body.v2-runtime{
   overflow-wrap:anywhere;
   color:var(--v2-muted);
 }
+
+
+/* Gentle celebration motion; fully disabled for reduced-motion users */
+@keyframes hide-v2-complete-pop{
+  0%{transform:scale(.82);opacity:.35}
+  65%{transform:scale(1.08);opacity:1}
+  100%{transform:scale(1);opacity:1}
+}
+@keyframes hide-v2-complete-rise{
+  0%{transform:translateY(8px);opacity:.35}
+  100%{transform:translateY(0);opacity:1}
+}
+.v2-runtime .completion-card--story .completion-mark{
+  animation:hide-v2-complete-pop .46s ease-out both;
+}
+.v2-runtime .completion-card--story .completion-achievement,
+.v2-runtime .completion-card--story .completion-next{
+  animation:hide-v2-complete-rise .34s ease-out both;
+}
+.v2-runtime .completion-card--story .completion-next{
+  animation-delay:.08s;
+}
+@media(prefers-reduced-motion:reduce){
+  .v2-runtime .completion-card--story .completion-mark,
+  .v2-runtime .completion-card--story .completion-achievement,
+  .v2-runtime .completion-card--story .completion-next{
+    animation:none !important;
+    transform:none !important;
+  }
+}
