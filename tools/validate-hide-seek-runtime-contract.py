@@ -632,6 +632,17 @@ for needle in [
         fail.append("SOUND_HINT_LANGUAGE_DOMAIN_CONTRACT:"+needle)
 
 for needle in [
+    "distractorSource",
+    "distractorCount",
+    "ENGLISH_ALPHABET",
+    "SAME_LANGUAGE_ENCOUNTERS",
+    "languageDomain:attempt.languageDomain",
+    "distractorSource:attempt.distractorSource",
+]:
+    if needle not in app:
+        fail.append("FINAL_SEEK_DISTRACTOR_PROVENANCE:"+needle)
+
+for needle in [
     "finalSeekUnits",
     "finalSeekDistractorPool",
     "languageDomain:inferenceWordDomain(w)",
