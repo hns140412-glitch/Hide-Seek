@@ -264,3 +264,11 @@ FALSE_CONVERGENCE = 0: live deploy/device/real-provider claims remain OPEN.
 - Memory Engine correction: ordinary memorization/relearn exposure no longer contributes to `hintDependency`; only actual ASSISTANCE/hint-level evidence does.
 - Exact code HEAD `b2577641cbbc3703eb84e7ab583d6d741ff22eee` passed V2 #236 / full Hide #694.
 - Locked reporting: PRODUCT ~70%, CODED ~86%, CI ~83%, Browser Runtime ~79%, Device 0%, Release 0%.
+
+
+## 20. 2026-09-22 reason-specific HIDDEN WORDS
+- HIDDEN WORDS activity now follows the existing Memory Engine `primaryReason` rather than one generic retry.
+- Supported bounded modes: confusion→meaning, orthographic→English shape scaffold, verified sound→sound recall, otherwise unassisted token recall.
+- Stable words still bypass HIDDEN WORDS.
+- Exact code HEAD `f19dcd84f650ca4e80d970f36a911b4694d9ecd5` passed V2 #243 / full Hide #701.
+- Locked reporting: PRODUCT ~71%, CODED ~87%, CI ~84%, Browser Runtime ~80%, Device 0%, Release 0%.
