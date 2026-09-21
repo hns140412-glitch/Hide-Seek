@@ -3,7 +3,7 @@
 
   const BRIDGE_VERSION = '2026.09.21-c';
   const EVENT_LIMIT = 120;
-  const SHARED_PARAM_NAMES = ['session_id', 'goal_id', 'task_id', 'lap_id', 'return_target', 'snap_target', 'child_id', 'actor_role', 'crew_member_id', 'crew_member_name', 'crew_rules_version', 'review_directive'];
+  const SHARED_PARAM_NAMES = ['session_id', 'goal_id', 'task_id', 'lap_id', 'return_target', 'snap_target', 'child_id', 'actor_role', 'crew_member_id', 'crew_member_name', 'crew_rules_version', 'review_directive', 'learning_context'];
   const legacyTerms = [
     [/Word Detective Team/g, 'Hidden Word Trail'],
     [/사건 파일/g, '단어 탐험'],
@@ -31,6 +31,44 @@
 
   function getContext() {
     return S.sharedLearningContext || {};
+  }
+
+  function decodeLearningContext(raw) {
+    if (!raw || typeof raw !== 'string' || raw.length > 6000) return null;
+    try {
+      const normalized = raw.replace(/-/g, '+').replace(/_/g, '/');
+      const padded = normalized + '='.repeat((4 - normalized.length % 4) % 4);
+      const binary = atob(padded);
+      const bytes = Uint8Array.from(binary, ch => ch.charCodeAt(0));
+      const value = JSON.parse(new TextDecoder().decode(bytes));
+      if (!value || value.contract_version !== 'READY_LEARNING_CONTEXT_V1') return null;
+
+      const text = (v, max) => typeof v === 'string' ? v.trim().slice(0, max) || null : null;
+      const list = v => Array.isArray(v)
+        ? [...new Set(v.filter(x => typeof x === 'string').map(x => x.trim()).filter(Boolean))].slice(0, 16)
+        : [];
+      const requiredIds = ['learning_unit_id','analysis_id','assignment_id'];
+      if (requiredIds.some(key => !text(value[key], 120))) return null;
+
+      return Object.freeze({
+        contract_version: 'READY_LEARNING_CONTEXT_V1',
+        learning_unit_id: text(value.learning_unit_id, 120),
+        analysis_id: text(value.analysis_id, 120),
+        assignment_id: text(value.assignment_id, 120),
+        subject: text(value.subject, 80),
+        concept_skill_target: text(value.concept_skill_target, 180),
+        activity_types: Object.freeze(list(value.activity_types)),
+        cognitive_load_profile: Object.freeze(list(value.cognitive_load_profile)),
+        confidence: Number.isFinite(value.confidence) ? Math.max(0, Math.min(1, value.confidence)) : null,
+        unresolved_flags: Object.freeze(list(value.unresolved_flags))
+      });
+    } catch {
+      return null;
+    }
+  }
+
+  function learningContext() {
+    return decodeLearningContext(getContext().learning_context);
   }
 
   function reviewDirective() {
@@ -323,6 +361,7 @@
       if (context.task_id) url.searchParams.set('task_id', context.task_id);
       if (context.lap_id) url.searchParams.set('lap_id', context.lap_id);
       if (context.return_target) url.searchParams.set('return_target', context.return_target);
+      if (context.learning_context && learningContext()) url.searchParams.set('learning_context', context.learning_context);
       if (context.child_id) url.searchParams.set('child_id', context.child_id);
       if (event.payload.crewMemberId) url.searchParams.set('crew_member_id', event.payload.crewMemberId);
       if (event.payload.crewMemberName) url.searchParams.set('crew_member_name', event.payload.crewMemberName);
@@ -469,6 +508,7 @@
     window.HideSeekBridge = Object.freeze({
       version: BRIDGE_VERSION,
       context: () => ({ ...getContext() }),
+      learningContext,
       emit,
       returnToBase,
       sendToSnap,
