@@ -13,6 +13,7 @@ release=read("hide-release-v01.js")
 pwa_update=read("hide-pwa-update-v01.js")
 event_envelope=read("vendor/taky/event-envelope.js")
 vision_ingest=read("vendor/taky/vision-ingest.js")
+http_json=read("vendor/taky/http-json.js")
 language_evidence=read("hide-language-evidence.js")
 language_model=read("hide-language-model.js")
 runtime=read("hide-runtime.js")
@@ -308,6 +309,9 @@ for needle in [
     "VisionIngest.validateEvidence",
     "OCR_EVIDENCE_MISMATCH",
     "vision_ingest_request_id",
+    "TakyHttpJson",
+    "HttpJson.request",
+    "credentials:'same-origin'",
 ]:
     if needle not in family_ocr:
         fail.append("FAMILY_OCR_ADAPTER_CONTRACT:"+needle)
@@ -358,6 +362,7 @@ for needle in [
     "'./vendor/taky/pwa-update-state.js'",
     "'./vendor/taky/event-envelope.js'",
     "'./vendor/taky/vision-ingest.js'",
+    "'./vendor/taky/http-json.js'",
     "'./hide-pwa-update-v01.js'",
 ]:
     if needle not in sw:
@@ -492,6 +497,10 @@ for needle in ["CAP-PWA-UPDATE-001","navigator.serviceWorker.register('./sw.js')
 for needle in ["buildRequest","normalizeResult","validateEvidence"]:
     if needle not in vision_ingest:
         fail.append("TAKY_SHARED_VISION_CONTRACT:"+needle)
+
+for needle in ["request","normalizeStatus","buildRequestInit"]:
+    if needle not in http_json:
+        fail.append("TAKY_SHARED_HTTP_CONTRACT:"+needle)
 
 for needle in [
     "SCHEMA_VERSION=2",
