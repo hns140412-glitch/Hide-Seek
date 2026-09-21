@@ -103,7 +103,7 @@ function speakWord(word){if(!("speechSynthesis" in window))return toast("이 기
 function markStudy(xp=2){const d=today();if(S.lastStudy!==d){S.streak=S.lastStudy?S.streak+1:1;S.lastStudy=d;S.sessions.push({date:d,count:0})}const r=S.sessions.find(x=>x.date===d);if(r)r.count++;S.xp+=xp;save()}
 function lexiconEntry(w){return S.lexicon?.[w?.lexicalId||senseKey(w)]||null}
 function inferMissionRole(w,sheetId=""){if(["NEW","REVIEW"].includes(w?.missionRole))return w.missionRole;const entry=lexiconEntry(w),prior=(entry?.sourceRefs||[]).some(id=>id&&id!==sheetId);return prior?"REVIEW":"NEW"}
-function applyMissionRoles(items,sheetId=""){return (items||[]).map(w=>({...w,missionRole:inferMissionRole(w,sheetId)}))}
+function applyMissionRoles(items,sheetId=""){return (items||[]).map(w=>{const explicit=["NEW","REVIEW"].includes(w?.missionRole),missionRole=inferMissionRole(w,sheetId);return {...w,missionRole,missionRoleSource:w?.missionRoleSource||(explicit?'EXPLICIT_SOURCE_ROLE':missionRole==='REVIEW'?'LEARNER_HISTORY_INFERENCE':'FIRST_ENCOUNTER_INFERENCE')}})}
 function ensureMissionRoles(sh=sheet()){if(!sh)return;sh.items=applyMissionRoles(sh.items||[],sh.sheetId)}
 function missionRoleCounts(sh=sheet()){ensureMissionRoles(sh);const rows=(sh?.items||[]).filter(w=>w.eng&&w.kor&&!w.needsReview);return {NEW:rows.filter(w=>w.missionRole==="NEW").length,REVIEW:rows.filter(w=>w.missionRole==="REVIEW").length}}
 function memoryStrength(){const ws=validWords();if(!ws.length)return 0;const measured=ws.map(w=>lexiconEntry(w)?.memoryStrength).filter(v=>Number.isFinite(v));if(!measured.length)return 0;return Math.round(measured.reduce((a,v)=>a+v,0)/measured.length)}
