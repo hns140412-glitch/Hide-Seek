@@ -271,3 +271,70 @@ test('Hide V2 OCR review allows row correction and exclusion before commit',asyn
   expect(state.missions[0].items[0].token).toBe('environment');
   expect(state.missions[0].items[0].lexicalId.startsWith('environment::')).toBeTruthy();
 });
+
+
+test('Hide V2 Memory Ladder projects weakness reasons and wordbook from evidence',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'기억기록'},missions:[{
+        id:'m-memory',title:'기억 미션',status:'COMPLETED',createdAt:'2026-09-21T00:00:00.000Z',updatedAt:'2026-09-21T01:00:00.000Z',
+        items:[
+          {id:'w-weak',lexicalId:'benefit::혜택',token:'benefit',meaning:'혜택',languageDomain:'ENGLISH',missionRole:'REVIEW',source:{},evidence:[
+            {stage:'FIRST_FIND',evidenceMode:'RECALL',axes:['FORM','RECALL'],result:'WRONG',objectiveVerified:true,objectiveRecall:true,assisted:false},
+            {stage:'MEANING',evidenceMode:'RECALL',axes:['MEANING','RECALL'],result:'WRONG',objectiveVerified:true,objectiveRecall:true,assisted:false}
+          ]},
+          {id:'w-stable',lexicalId:'island::섬',token:'island',meaning:'섬',languageDomain:'ENGLISH',missionRole:'REVIEW',source:{},evidence:[
+            {stage:'FIRST_FIND',evidenceMode:'RECALL',axes:['FORM','RECALL'],result:'CORRECT',objectiveVerified:true,objectiveRecall:true,assisted:false,spacedEvidence:true},
+            {stage:'FINAL_SEEK',evidenceMode:'RECONSTRUCTION',axes:['FORM','RECALL','WRITE_OR_RECONSTRUCT'],result:'CORRECT',objectiveVerified:true,objectiveRecall:true,assisted:false,spacedEvidence:true}
+          ]}
+        ],sourceCount:0,provenance:{}
+      }],activeMissionId:'m-memory',activeSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'기억 기록'}).click();
+  await expect(page.getByRole('heading',{name:'기억 기록'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'단어장'})).toBeVisible();
+  await expect(page.getByText('benefit',{exact:true})).toBeVisible();
+  await expect(page.getByText('island',{exact:true})).toBeVisible();
+  await expect(page.getByText('무힌트 재회상 필요',{exact:true})).toBeVisible();
+
+  const projected=await page.evaluate(()=>({
+    book:window.HideV2Memory.wordbook(),
+    dash:window.HideV2Memory.dashboard()
+  }));
+  const weak=projected.book.find(x=>x.token==='benefit');
+  const stable=projected.book.find(x=>x.token==='island');
+  expect(weak.memoryStrength).toBeLessThan(stable.memoryStrength);
+  expect(weak.nextReviewPriority).toBeGreaterThan(stable.nextReviewPriority);
+  expect(weak.memorySignature.semanticWeakness).toBeGreaterThan(0);
+  expect(weak.memorySignature.recoveryStatus).toBe('NEEDS_UNASSISTED_RECALL');
+  expect(stable.memorySignature.recoveryStatus).toBe('SPACED_RECOVERED');
+  expect(projected.dash.total).toBe(2);
+});
+
+test('Hide V2 wordbook merges repeated lexical encounters across missions',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'누적기억'},missions:[
+        {id:'m1',title:'첫날',status:'COMPLETED',createdAt:'2026-09-20T00:00:00.000Z',updatedAt:'2026-09-20T01:00:00.000Z',items:[
+          {id:'w1',lexicalId:'planet::행성',token:'planet',meaning:'행성',languageDomain:'ENGLISH',missionRole:'NEW',source:{},evidence:[
+            {stage:'FIRST_FIND',evidenceMode:'RECALL',axes:['FORM','RECALL'],result:'WRONG',objectiveVerified:true,objectiveRecall:true,assisted:false}
+          ]}
+        ],sourceCount:0,provenance:{}},
+        {id:'m2',title:'둘째날',status:'COMPLETED',createdAt:'2026-09-21T00:00:00.000Z',updatedAt:'2026-09-21T01:00:00.000Z',items:[
+          {id:'w2',lexicalId:'planet::행성',token:'planet',meaning:'행성',languageDomain:'ENGLISH',missionRole:'REVIEW',source:{},evidence:[
+            {stage:'FINAL_SEEK',evidenceMode:'RECONSTRUCTION',axes:['FORM','RECALL'],result:'CORRECT',objectiveVerified:true,objectiveRecall:true,assisted:false,spacedEvidence:true}
+          ]}
+        ],sourceCount:0,provenance:{}}
+      ],activeMissionId:'m2',activeSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'기억 기록'}).click();
+  const planet=await page.evaluate(()=>window.HideV2Memory.wordbook().find(x=>x.token==='planet'));
+  expect(planet.encounters).toBe(2);
+  expect(planet.missions).toHaveLength(2);
+  expect(planet.memorySignature.traceCounts.spaced).toBe(1);
+  expect(planet.memorySignature.recoveryStatus).toBe('SPACED_RECOVERED');
+});
