@@ -136,6 +136,114 @@ test('Hide V2 First Find unsure can recover with assisted clue without recall in
   expect(evidence.some(x=>x.stage==='FIRST_FIND_RELEARN')).toBe(false);
 });
 
+test('Hide V2 Korean First Find uses only verified meaning-map clue and keeps it assisted',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'국어 구조 단서'},missions:[{
+        id:'m-ko-first',title:'국어 구조 단서',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        sourceCount:0,provenance:{source:'TEST_FIXTURE'},
+        items:[{
+          id:'w-ko-first',lexicalId:'책임::맡은 일을 다함',token:'책임',meaning:'맡은 일을 다함',languageDomain:'KOREAN',missionRole:'NEW',evidence:[],source:{},
+          meaningMap:{
+            verified:true,sourceType:'VERIFIED_KOREAN_MEANING_MAP',sourceRef:'fixture:korean:책임',
+            coreMeaning:'맡은 일을 다하는 것',
+            nodes:[{role:'HANJA_ORIGIN',label:'責任',meaning:'맡을 책 · 맡길 임'}],
+            bridges:[]
+          }
+        }]
+      }],activeMissionId:'m-ko-first',activeSession:null,captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'탐험 시작'}).click();
+  await page.getByRole('button',{name:'기억하고 찾아보기'}).click();
+  await page.getByLabel('회상 답 입력').fill('오답');
+  await page.getByRole('button',{name:'기억 확인'}).click();
+
+  await expect(page.getByText('단서로 다시 찾기',{exact:true})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'뜻의 구조 단서'})).toBeVisible();
+  await expect(page.getByText(/責任/)).toBeVisible();
+  await expect(page.getByText(/fixture:korean:책임/)).toBeVisible();
+
+  await page.getByLabel('첫 찾기 도움 답 입력').fill('책임');
+  await page.getByRole('button',{name:'단서로 다시 확인'}).click();
+  await expect(page.getByText('뜻 단서',{exact:true})).toBeVisible();
+
+  const assist=await page.evaluate(()=>{
+    const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
+    return s.missions[0].items[0].evidence.find(x=>x.stage==='FIRST_FIND_ASSIST');
+  });
+  expect(assist.result).toBe('CORRECT');
+  expect(assist.supportType).toBe('MEANING_MAP');
+  expect(assist.source).toBe('fixture:korean:책임');
+  expect(assist.objectiveRecall).toBe(false);
+  expect(assist.recallScoreImpact).toBe(false);
+  expect(assist.assisted).toBe(true);
+});
+
+test('Hide V2 Hanja First Find uses only verified sound clue and keeps it assisted',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'한자 음 단서'},missions:[{
+        id:'m-hanja-first',title:'한자 음 단서',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        sourceCount:0,provenance:{source:'TEST_FIXTURE'},
+        items:[{
+          id:'w-hanja-first',lexicalId:'山::산',token:'山',meaning:'산',languageDomain:'HANJA',missionRole:'NEW',evidence:[],source:{},
+          soundEvidence:{verified:true,sourceType:'VERIFIED_HANJA_SOUND',sourceRef:'fixture:hanja:山',reading:'산'}
+        }]
+      }],activeMissionId:'m-hanja-first',activeSession:null,captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'탐험 시작'}).click();
+  await page.getByRole('button',{name:'기억하고 찾아보기'}).click();
+  await page.getByLabel('회상 답 입력').fill('川');
+  await page.getByRole('button',{name:'기억 확인'}).click();
+
+  await expect(page.getByText('단서로 다시 찾기',{exact:true})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'검증된 음 단서'})).toBeVisible();
+  await expect(page.getByText('산',{exact:true})).toBeVisible();
+  await expect(page.getByText(/fixture:hanja:山/)).toBeVisible();
+
+  await page.getByLabel('첫 찾기 도움 답 입력').fill('山');
+  await page.getByRole('button',{name:'단서로 다시 확인'}).click();
+  await expect(page.getByText('뜻 단서',{exact:true})).toBeVisible();
+
+  const assist=await page.evaluate(()=>{
+    const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
+    return s.missions[0].items[0].evidence.find(x=>x.stage==='FIRST_FIND_ASSIST');
+  });
+  expect(assist.result).toBe('CORRECT');
+  expect(assist.supportType).toBe('SOUND');
+  expect(assist.source).toBe('fixture:hanja:山');
+  expect(assist.objectiveRecall).toBe(false);
+  expect(assist.recallScoreImpact).toBe(false);
+  expect(assist.assisted).toBe(true);
+});
+
+test('Hide V2 multilingual First Find fails closed when support is unverified',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'검증 없는 단서'},missions:[{
+        id:'m-ko-unverified',title:'검증 없는 단서',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        sourceCount:0,provenance:{source:'TEST_FIXTURE'},
+        items:[{
+          id:'w-ko-unverified',lexicalId:'책임::맡은 일을 다함',token:'책임',meaning:'맡은 일을 다함',languageDomain:'KOREAN',missionRole:'NEW',evidence:[],source:{},
+          meaningMap:{verified:false,sourceType:'UNVERIFIED',sourceRef:'',coreMeaning:'',nodes:[{role:'HANJA_ORIGIN',label:'責任',meaning:'임시'}]}
+        }]
+      }],activeMissionId:'m-ko-unverified',activeSession:null,captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'탐험 시작'}).click();
+  await page.getByRole('button',{name:'기억하고 찾아보기'}).click();
+  await page.getByRole('button',{name:'아직 안 떠올라'}).click();
+
+  await expect(page.getByText('다시 만나기',{exact:true})).toBeVisible();
+  expect(await page.getByText('뜻의 구조 단서',{exact:true}).count()).toBe(0);
+  expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')).activeSession.stage)).toBe('FIRST_FIND_RELEARN');
+});
+
 test('Hide V2 normal memorization exposure does not create hint dependency',async({page})=>{
   await page.addInitScript(()=>{
     localStorage.setItem('hide_seek_v2_state',JSON.stringify({
