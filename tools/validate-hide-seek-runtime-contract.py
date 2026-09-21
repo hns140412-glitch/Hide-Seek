@@ -314,6 +314,7 @@ for needle in [
     "needsUnassistedRecallCount",
     "topReviewPriorities",
     "reviewAdvisories",
+    "nextReviewPriority",
     "advisoryOnly:true",
     "evidenceBasis:'HIDE_MEMORY_EVIDENCE'",
     "semanticWeakness",
