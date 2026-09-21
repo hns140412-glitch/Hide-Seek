@@ -466,3 +466,19 @@ Latest-head CI note must still be checked live. No Netlify / deploy / merge / us
 - Context/Sound exposure remains non-objective exposure.
 - `languageMemoryEvidenceSummary()` now reports both `objectiveVerifiedCounts` and `objectiveRecallCounts`, plus `evidenceModes`.
 - This prevents recognition/association/evidence-selection success from inflating memory recall claims.
+
+
+## Hanja SOUND recall + Korean sentence RESPONSE implementation
+- Hanja SOUND is no longer limited to replay exposure when verified sound evidence is available.
+- New fail-closed `soundEvidence` contract is accepted only for HANJA when:
+  - `verified = true`,
+  - `sourceRef` exists,
+  - and a non-empty verified reading is supplied.
+- Eligible Hanja items enter `SOUND FIND` after FIRST FIND and require typed sound recall before continuing.
+- SOUND FIND records SOUND + RECALL with `TYPED_SOUND_RECALL`, `evidenceMode=RECALL`, and objective recall evidence.
+- Sound replay remains EXPOSURE only and does not count as recall.
+- Korean FIRST FIND no longer claims EXPRESSION; it records lexical MEANING + RECALL only.
+- Korean `RESPONSE TRAIL` now asks the learner to produce a short sentence containing the target word.
+- Sentence production records EXPRESSION + CONTEXT with `LEARNER_SENTENCE_RESPONSE` and `evidenceMode=PRODUCTION`.
+- Hide records the learner-produced sentence but does not auto-claim semantic correctness; `objectiveVerified=false`, `objectiveRecall=false`, `recallScoreImpact=false`.
+- This preserves the Ready Korean `READ_UNDERSTAND_EVIDENCE_RESPOND` basis without turning Hide into a general Korean assessment engine.
