@@ -932,3 +932,41 @@ body.v2-runtime{
 .v2-runtime .completion-details .grid3{
   margin-top:8px;
 }
+
+
+/* Memory ladder: child recall path first, analysis second */
+.v2-runtime .memory-route-intro{
+  display:grid;
+  gap:5px;
+  margin:10px 0 14px;
+  padding:14px;
+  border:1px solid var(--v2-line);
+  border-radius:18px;
+  background:rgba(255,255,255,.76);
+}
+.v2-runtime .memory-route-intro>b{
+  font-size:17px;
+}
+.v2-runtime .memory-route-intro>span{
+  font-weight:900;
+}
+.v2-runtime .memory-route-intro>small{
+  color:var(--v2-muted);
+  line-height:1.4;
+}
+.v2-runtime .memory-record-details{
+  margin-top:14px;
+}
+.v2-runtime .memory-record-details>summary{
+  min-height:44px;
+  display:flex;
+  align-items:center;
+  cursor:pointer;
+  font-weight:800;
+  color:var(--v2-muted);
+}
+.v2-runtime .memory-record-details .memory-summary,
+.v2-runtime .memory-record-details .memory-signals,
+.v2-runtime .memory-record-details .wordbook{
+  margin-top:10px;
+}
