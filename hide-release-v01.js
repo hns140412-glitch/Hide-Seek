@@ -8,6 +8,6 @@
     contract_version:1,
     release_id:'hide-seek-rev09-r1',
     master_revision:'REV_09',
-    shared_runtime_basis:'TAKY@79e62baf73313278d1b77c93139a9a7a2bebd608'
+    shared_runtime_basis:'TAKY@fdee8e3cada89974f039f8cb4e2b8e6084b38600'
   });
 })(typeof globalThis!=='undefined'?globalThis:this);
