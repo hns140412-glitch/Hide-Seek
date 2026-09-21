@@ -119,6 +119,62 @@ test('Hide V2 Hanja SOUND FIND records only verified source-linked sound recall'
   await expect(page.getByRole('heading',{name:'탐험 완료'})).toBeVisible();
 });
 
+test('Hide V2 Korean verified EVIDENCE TRAIL records evidence without claiming context recall',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'국어 근거 V2'},missions:[{
+        id:'m-ko-evidence',title:'국어 근거 미션',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        items:[{
+          id:'ko-e1',lexicalId:'불가피::피할 수 없음',token:'불가피',meaning:'피할 수 없음',languageDomain:'KOREAN',
+          learningContext:null,meaningMap:null,soundEvidence:null,
+          contextEvidence:{
+            verified:true,sourceType:'VERIFIED_CONTEXT_EVIDENCE',sourceRef:'fixture:korean:1',
+            contextText:'폭우 때문에 경기 일정 변경이 불가피했다.',
+            evidenceText:'일정 변경이 불가피했다',
+            candidates:['일정 변경이 불가피했다','폭우 때문에 경기']
+          },
+          missionRole:'NEW',evidence:[],source:{pageId:'fixture',rowIndex:0}
+        }],
+        sourceCount:0,provenance:{source:'TEST_FIXTURE'}
+      }],activeMissionId:'m-ko-evidence',events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'탐험 시작'}).click();
+  await page.getByRole('button',{name:'기억하고 찾아보기'}).click();
+  await page.getByLabel('회상 답 입력').fill('불가피');
+  await page.getByRole('button',{name:'기억 확인'}).click();
+  await page.getByLabel('뜻 회상 입력').fill('피할 수 없음');
+  await page.getByRole('button',{name:'뜻 확인'}).click();
+
+  await expect(page.getByText('근거 찾기',{exact:true})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'문맥에서 뜻의 근거 찾기'})).toBeVisible();
+  await page.getByRole('button',{name:'일정 변경이 불가피했다'}).click();
+
+  await expect(page.getByText('표현 길',{exact:true})).toBeVisible();
+  await page.getByLabel('국어 문장 표현').fill('계획 변경이 불가피했다.');
+  await page.getByRole('button',{name:'표현 남기기'}).click();
+  await expect(page.getByText('마지막 찾기',{exact:true})).toBeVisible();
+
+  const evidence=await page.evaluate(()=>{
+    const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
+    return s.missions[0].items[0].evidence;
+  });
+  const trail=evidence.find(x=>x.stage==='EVIDENCE_TRAIL');
+  const response=evidence.find(x=>x.stage==='RESPONSE_TRAIL');
+  expect(trail.evidenceMode).toBe('EVIDENCE_SELECTION');
+  expect(trail.axes).toEqual(['EVIDENCE','MEANING']);
+  expect(trail.result).toBe('CORRECT');
+  expect(trail.objectiveVerified).toBe(true);
+  expect(trail.objectiveRecall).toBe(false);
+  expect(trail.recallScoreImpact).toBe(false);
+  expect(trail.source).toBe('fixture:korean:1');
+  expect(response.evidenceMode).toBe('PRODUCTION');
+  expect(response.objectiveVerified).toBe(false);
+  expect(response.objectiveRecall).toBe(false);
+  expect(evidence.some(x=>Array.isArray(x.axes)&&x.axes.includes('CONTEXT')&&x.objectiveRecall===true)).toBe(false);
+});
+
 test('Hide V2 OCR path uses the shared family adapter and commits reviewed rows',async({page})=>{
   await page.route('**/api/capture/analyze',async route=>{
     await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
