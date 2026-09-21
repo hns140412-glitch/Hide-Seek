@@ -9,6 +9,10 @@ def read(path):
     return (ROOT/path).read_text(encoding="utf-8")
 
 app=read("app.js")
+release=read("hide-release-v01.js")
+pwa_update=read("hide-pwa-update-v01.js")
+event_envelope=read("vendor/taky/event-envelope.js")
+vision_ingest=read("vendor/taky/vision-ingest.js")
 language_evidence=read("hide-language-evidence.js")
 language_model=read("hide-language-model.js")
 runtime=read("hide-runtime.js")
@@ -300,6 +304,10 @@ for needle in [
     "FAMILY_CAPTURE_OCR_TRANSPORT",
     "/api/capture/analyze",
     "HIDE_VOCABULARY_RESULT_UNSUPPORTED",
+    "TakyVisionIngest",
+    "VisionIngest.validateEvidence",
+    "OCR_EVIDENCE_MISMATCH",
+    "vision_ingest_request_id",
 ]:
     if needle not in family_ocr:
         fail.append("FAMILY_OCR_ADAPTER_CONTRACT:"+needle)
@@ -338,13 +346,19 @@ for needle in [
 sw=read("sw.js")
 
 for needle in [
-    'const CACHE="hide-seek-capture-v12"',
-    '"./hide-family-ocr-adapter.js"',
-    '"./hide-language-evidence.js"',
-    '"./hide-runtime.js"',
-    '"./hide-runtime.css"',
-    '"./hide-bridge.js"',
-    '"./hide-bridge.css"',
+    "importScripts('./hide-release-v01.js')",
+    "const CACHE='hide-seek:'+RELEASE.release_id",
+    "'./hide-family-ocr-adapter.js'",
+    "'./hide-language-evidence.js'",
+    "'./hide-runtime.js'",
+    "'./hide-runtime.css'",
+    "'./hide-bridge.js'",
+    "'./hide-bridge.css'",
+    "'./vendor/taky/release-contract.js'",
+    "'./vendor/taky/pwa-update-state.js'",
+    "'./vendor/taky/event-envelope.js'",
+    "'./vendor/taky/vision-ingest.js'",
+    "'./hide-pwa-update-v01.js'",
 ]:
     if needle not in sw:
         fail.append("SERVICE_WORKER_CACHE_CONTRACT:"+needle)
@@ -360,11 +374,21 @@ for needle in [
 
 
 for needle in [
-    'const APP_REV="REV_09"',
-    'const SCHEMA_VERSION=9',
+    "globalThis.HideSeekReleaseDescriptor",
+    "TakyReleaseContract",
+    "const APP_REV=RELEASE.app_version",
+    "const SCHEMA_VERSION=RELEASE.data_schema_version",
 ]:
     if needle not in app:
-        fail.append("APP_SCHEMA_REVISION_CONTRACT:"+needle)
+        fail.append("APP_RELEASE_CONTRACT:"+needle)
+
+for needle in [
+    "app_version:'REV_09'",
+    "data_schema_version:9",
+    "release_id:'hide-seek-rev09-r1'",
+]:
+    if needle not in release:
+        fail.append("RELEASE_DESCRIPTOR_CONTRACT:"+needle)
 
 for needle in [
     "const HIDE_RUNTIME_VERSION = '2026.09.21-c'",
@@ -449,6 +473,25 @@ for needle in [
         fail.append("TRACE_SEPARATION_CONTRACT:"+needle)
 
 
+
+for needle in [
+    "EventEnvelope.create",
+    "globalThis.HideSeekPwaSafePoint=isSafeUpdatePoint",
+]:
+    if needle not in bridge:
+        fail.append("TAKY_SHARED_BRIDGE_CONTRACT:"+needle)
+
+for forbidden in ["const id = prefix =>","applyWaitingUpdate(","watchSafeUpdates("]:
+    if forbidden in bridge:
+        fail.append("DUPLICATE_SHARED_RUNTIME_OWNER:"+forbidden)
+
+for needle in ["CAP-PWA-UPDATE-001","navigator.serviceWorker.register('./sw.js')"]:
+    if needle not in pwa_update:
+        fail.append("TAKY_SHARED_PWA_CONTRACT:"+needle)
+
+for needle in ["buildRequest","normalizeResult","validateEvidence"]:
+    if needle not in vision_ingest:
+        fail.append("TAKY_SHARED_VISION_CONTRACT:"+needle)
 
 for needle in [
     "SCHEMA_VERSION=2",
