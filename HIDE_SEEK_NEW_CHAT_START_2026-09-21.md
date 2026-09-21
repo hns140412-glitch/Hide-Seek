@@ -119,3 +119,9 @@ Resolved context persistence:
 - Preserve only Ready-resolved semantic-light `learningContext` on normalized words.
 - Correlate memory advisory evidence through `learningContextRef`.
 - Never infer Hanja grade/range or scheduling inside Hide from that context.
+
+
+Hanja memory evidence:
+- Keep FORM / SOUND / MEANING / RECALL / WRITE_OR_RECONSTRUCT evidence separate.
+- Do not count SOUND_REPLAY as successful sound recall; it is EXPOSURE_ONLY.
+- Continue using Ready-resolved learningContext only.
