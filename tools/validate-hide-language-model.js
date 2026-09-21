@@ -162,6 +162,7 @@ assert(koreanAdaptive[0]==='MEANING_MAP','korean Hanja-origin clue should priori
 assert(adaptive.at(-2)==='FRAGMENT'&&adaptive.at(-1)==='MINIMUM_REVEAL','strong reveal cues must remain terminal');
 const noInvent=api.prioritizeExistingAssistance(['SOUND','SHAPE','FRAGMENT','MINIMUM_REVEAL'],{adaptiveClue:{clue:'ROOT_ETYMOLOGY'}});
 assert(!noInvent.includes('MEANING_MAP')&&!noInvent.includes('THINKING_SCENE'),'adaptive ordering must not invent unavailable help');
+assert(api.clueApplicableToPlan(null,'ROOT_ETYMOLOGY')===false,'adaptive clue must fail safe when current word has no exploration plan');
 const parentVerified=api.parentExplanation({eng:'mountain'});
 assert(parentVerified?.mode==='VERIFIED_ETYMOLOGY_OR_ROOT'&&parentVerified?.text.includes('mons / montis'),'parent verified explanation');
 const parentSemantic=api.parentExplanation({eng:'ocean'});
