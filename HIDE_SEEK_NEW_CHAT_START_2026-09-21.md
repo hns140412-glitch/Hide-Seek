@@ -107,3 +107,9 @@ Planner-owned review activation:
 - Do not let Hide autonomously choose a prior word and decide to review it now.
 - A prior-memory review must come from an explicit `review_directive` owned by `READY_LEARNING_ENGINE` + `READY_SET_PLANNER`, with explicit lexical IDs.
 - Hide performs the retrieval and emits new memory evidence; Ready/Planner own policy and timing.
+
+
+Memory advisory packet:
+- Hide may emit `reviewAdvisories` with memory-state evidence and advisory priority.
+- Do not add dates/TODO/carry-over/reschedule ownership to Hide.
+- Ready Learning Engine interprets; Ready & Set Planner schedules.
