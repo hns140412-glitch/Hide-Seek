@@ -457,3 +457,11 @@ Important current frontier:
 - UNSURE is a recall attempt but not an objectively verified answer: `objectiveRecall=true`, `objectiveVerified=false`.
 - Wrong/unsure both route into assisted non-recall relearn exposure before MEANING.
 - Current locked reporting: PRODUCT ~69%, CODED ~85%, CI ~82%, Browser Runtime ~78%, Device 0%, Release 0%.
+
+
+## 2026-09-22 Hidden Words / Memory Engine delta
+- Exact code HEAD `b2577641cbbc3703eb84e7ab583d6d741ff22eee` passed V2 #236 / full Hide #694.
+- HIDDEN WORDS now activates only for a non-stable engine `primaryReason`; stable words go straight to FINAL SEEK.
+- HIDDEN WORDS relearn exposure must remain assisted and non-recall.
+- Do not restore the bug where all `assisted=true` exposure becomes hint dependency. Hint dependency is actual ASSISTANCE/hint evidence only.
+- Current locked reporting: PRODUCT ~70%, CODED ~86%, CI ~83%, Browser Runtime ~79%, Device 0%, Release 0%.
