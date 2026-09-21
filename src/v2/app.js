@@ -12,6 +12,7 @@
     HIDDEN_WORDS_ASSIST:'단서로 다시 찾기',
     HIDDEN_WORDS_RELEARN:'다시 만나기',
     FINAL_SEEK:'마지막 찾기',
+    FINAL_SEEK_RECONSTRUCT:'글자 조립',
     SEEK_AGAIN_RELEARN:'다시 만나기',
     SEEK_AGAIN:'다시 찾기',
     COMPLETE:'탐험 완료'
@@ -29,6 +30,7 @@
     HIDDEN_WORDS_ASSIST:'보강 단서',
     HIDDEN_WORDS_RELEARN:'보강 다시 보기',
     FINAL_SEEK:'마지막 찾기',
+    FINAL_SEEK_RECONSTRUCT:'마지막 찾기 글자 조립',
     SEEK_AGAIN_RELEARN:'다시 만나기',
     SEEK_AGAIN:'다시 찾기',
     THINKING_TRAIL:'생각 길'
@@ -62,7 +64,7 @@
     const steps=[
       ['MEMORIZE','01 만나기'],['FIRST_FIND','02 첫 찾기'],['MEANING','03 뜻 단서'],['DOMAIN_EXTENSION','04 연결 길'],['FINAL_SEEK','05 마지막 찾기'],['SEEK_AGAIN','06 다시 찾기']
     ];
-    const normalized=stage==='SEEK_AGAIN_RELEARN'?'SEEK_AGAIN':stage==='FIRST_FIND_RELEARN'?'FIRST_FIND':(stage==='HIDDEN_WORDS'||stage==='HIDDEN_WORDS_ASSIST'||stage==='HIDDEN_WORDS_RELEARN')?'DOMAIN_EXTENSION':stage;
+    const normalized=stage==='FINAL_SEEK_RECONSTRUCT'?'FINAL_SEEK':stage==='SEEK_AGAIN_RELEARN'?'SEEK_AGAIN':stage==='FIRST_FIND_RELEARN'?'FIRST_FIND':(stage==='HIDDEN_WORDS'||stage==='HIDDEN_WORDS_ASSIST'||stage==='HIDDEN_WORDS_RELEARN')?'DOMAIN_EXTENSION':stage;
     const activeIndex=Math.max(0,steps.findIndex(([key])=>key===normalized));
     return `<ol class="journey-path" aria-label="단어 탐험 길">${steps.map(([key,label],i)=>`<li class="${i<activeIndex?'is-done':''} ${i===activeIndex?'is-current':''}"><span aria-hidden="true">${i<activeIndex?'✓':i+1}</span><small>${esc(label)}</small></li>`).join('')}</ol>`;
   };
@@ -456,7 +458,26 @@
         const live=HideV2Session.current()?.session||session;
         const r=HideV2Learning.checkFinalSeek(live,m,$('#v2Final').value);
         HideV2Session.update(r.session);
-        setFlash(r.ok?(r.assisted?'도움을 썼으니 한 번 더 무힌트로 찾아봐요.':'마지막 찾기 성공'):'괜찮아요. 잠깐 다시 보고 한 번 더 찾아봐요.');
+        setFlash(r.ok?(r.assisted?'도움을 썼으니 한 번 더 무힌트로 찾아봐요.':'마지막 찾기 성공'):(r.reconstruction?'글자 골격으로 한 번 더 조립해볼게요.':'괜찮아요. 잠깐 다시 보고 한 번 더 찾아봐요.'));
+        render()
+      };
+      return;
+    }
+
+    if(session.stage==='FINAL_SEEK_RECONSTRUCT'){
+      const plan=HideV2Learning.finalReconstructionPlan(w);
+      if(!plan){
+        HideV2Session.update({...session,stage:'SEEK_AGAIN_RELEARN'});
+        render();
+        return;
+      }
+      view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}${journeyHtml(session.stage)}${crewHtml(w,session.stage)}<div class="learn-head"><span class="phase-chip">${childStageLabel('FINAL_SEEK_RECONSTRUCT')}</span><b>${idx}/${total}</b></div><section class="card word-card final-reconstruct-card"><p class="quest-overline">RECONSTRUCT</p><h2>글자 골격으로 다시 조립하기</h2><p>전체 정답 대신 글자 골격만 보고 단어를 다시 만들어봐요.</p><div class="memory-trace"><b>${esc(plan.label)}</b><span>${esc(plan.cue)}</span></div><small>이 단계는 도움을 받은 재구성이에요. 성공해도 바로 무힌트 회상으로 세지 않고, 다음 다시 찾기에서 확인해요.</small><input id="v2FinalReconstruct" class="input" aria-label="재구성 답 입력" autocomplete="off" spellcheck="false"><button id="v2FinalReconstructCheck" class="btn primary full" type="button">조립 기억 확인</button></section></section>`;
+      $('#v2FinalReconstructCheck').onclick=()=>{
+        const answer=$('#v2FinalReconstruct').value.trim();
+        if(!answer){setFlash('글자 골격을 보고 떠올린 단어를 입력해 주세요.');return}
+        const r=HideV2Learning.submitFinalReconstruction(session,m,answer);
+        HideV2Session.update(r.session);
+        setFlash(r.ok?'조립했어요. 이제 힌트 없이 다시 찾아봐요.':'이번엔 단어를 잠깐 다시 보고 다시 찾아볼게요.');
         render()
       };
       return;
