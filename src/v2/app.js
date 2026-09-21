@@ -28,6 +28,11 @@
     READY:'준비됨',PARTIAL:'이어가기',COMPLETED:'완료',ARCHIVED:'보관됨'
   })[status]||'탐험 중';
   const languageLabel=domain=>({ENGLISH:'영어',KOREAN:'국어',HANJA:'한자'})[domain]||'언어';
+  const memoryPathState=entry=>{
+    if(entry?.needsUnassistedRecall||Number(entry?.memoryStrength||0)<60)return {key:'SEEK_AGAIN',label:'다시 찾기',action:'다시 만나기'};
+    if(entry?.primaryReason?.key==='stable')return {key:'STABLE',label:'안정',action:'지금 안정'};
+    return {key:'CLIMBING',label:'올라가기',action:'기억 길 잇기'};
+  };
   const childMemoryReason=entry=>{
     const key=entry?.primaryReason?.key||'stable';
     if(key==='recovery')return '바로 다시 찾은 기록만 있어요. 다음에는 힌트 없이 스스로 떠올리는 게 목표예요.';
@@ -337,7 +342,7 @@
 
   function records(){
     const book=HideV2Memory.wordbook(),dash=HideV2Memory.dashboard();
-    const ladderBand=x=>(x.needsUnassistedRecall||x.memoryStrength<60)?'SEEK_AGAIN':x.primaryReason?.key==='stable'?'STABLE':'CLIMBING';
+    const ladderBand=x=>memoryPathState(x).key;
     const bandLabel={SEEK_AGAIN:'다시 찾을 단어',CLIMBING:'올라가는 단어',STABLE:'안정된 단어'};
     const bands=['SEEK_AGAIN','CLIMBING','STABLE'].map(key=>({key,items:book.filter(x=>ladderBand(x)===key)}));
     view().innerHTML=`
@@ -364,8 +369,8 @@
   function recordDetail(params={}){
     const entry=HideV2Memory.wordbook().find(x=>x.lexicalId===params.lexicalId);
     if(!entry){HideV2Router.go('records');return}
-    const sig=entry.memorySignature||{},events=(entry.evidence||[]).slice().reverse().slice(0,20);
-    view().innerHTML=`<section class="card"><div class="hero-kicker"><span>기억 자세히</span><span>${esc(entry.languageDomain)}</span></div><h2>${esc(entry.token)}</h2><p>${esc(entry.meaning)}</p><div class="grid3"><div class="status-pill"><b>${entry.memoryStrength}%</b><span>Memory</span></div><div class="status-pill"><b>P${entry.nextReviewPriority}</b><span>다시 찾기</span></div><div class="status-pill"><b>${entry.encounters}</b><span>만난 횟수</span></div></div><div class="metric"><span>주요 이유</span><b>${esc(entry.primaryReason.label)}</b></div><div class="metric"><span>회복 상태</span><b>${esc(sig.recoveryStatus||'UNPROVEN')}</b></div><div class="metric"><span>뜻 취약</span><b>${sig.semanticWeakness||0}</b></div><div class="metric"><span>소리 취약</span><b>${sig.phonologicalWeakness||0}</b></div><div class="metric"><span>형태 취약</span><b>${sig.orthographicWeakness||0}</b></div><div class="metric"><span>혼동</span><b>${sig.confusionPattern?.count||0}</b></div></section><section class="card"><div class="section-title"><h2>기억 흔적</h2><span>최근 ${events.length}</span></div>${events.length?events.map(e=>`<div class="weak-item"><div><b>${esc(childEvidenceLabel(e.stage||e.evidenceMode))}</b><small style="display:block">${esc(e.result||'')} · ${esc(e.evidenceMode||'')}</small></div><small>${esc(e.at||'')}</small></div>`).join(''):'<p>기록 없음</p>'}<button class="btn secondary full" id="v2RecordBack">기록으로</button></section>`;
+    const sig=entry.memorySignature||{},events=(entry.evidence||[]).slice().reverse().slice(0,20),path=memoryPathState(entry);
+    view().innerHTML=`<section class="card memory-detail-story"><div class="hero-kicker"><span>기억 길 보기</span><span>${esc(languageLabel(entry.languageDomain))}</span></div><h2>${esc(entry.token)}</h2><p class="memory-detail-meaning">${esc(entry.meaning)}</p><div class="memory-detail-path"><span>지금 위치</span><b>${esc(path.label)}</b><small>${esc(childMemoryReason(entry))}</small></div><div class="memory-detail-next"><span>다음 행동</span><b>${esc(path.action)}</b><small>복습 날짜는 Ready & Set이 정하고, Hide는 기억 흔적만 보여줘요.</small></div><details class="memory-tech-details"><summary>기억 기록 자세히 보기</summary><div class="grid3"><div class="status-pill"><b>${entry.memoryStrength}%</b><span>Memory</span></div><div class="status-pill"><b>P${entry.nextReviewPriority}</b><span>우선 신호</span></div><div class="status-pill"><b>${entry.encounters}</b><span>만난 횟수</span></div></div><div class="metric"><span>주요 이유</span><b>${esc(entry.primaryReason.label)}</b></div><div class="metric"><span>회복 상태</span><b>${esc(sig.recoveryStatus||'UNPROVEN')}</b></div><div class="metric"><span>뜻 취약</span><b>${sig.semanticWeakness||0}</b></div><div class="metric"><span>소리 취약</span><b>${sig.phonologicalWeakness||0}</b></div><div class="metric"><span>형태 취약</span><b>${sig.orthographicWeakness||0}</b></div><div class="metric"><span>혼동</span><b>${sig.confusionPattern?.count||0}</b></div></details></section><section class="card"><div class="section-title"><h2>기억 흔적</h2><span>최근 ${events.length}</span></div>${events.length?events.map(e=>`<div class="weak-item"><div><b>${esc(childEvidenceLabel(e.stage||e.evidenceMode))}</b><small style="display:block">${esc(e.result||'')} · ${esc(e.evidenceMode||'')}</small></div><small>${esc(e.at||'')}</small></div>`).join(''):'<p>기록 없음</p>'}<button class="btn secondary full" id="v2RecordBack">기록으로</button></section>`;
     $('#v2RecordBack').onclick=()=>HideV2Router.go('records');
   }
 
