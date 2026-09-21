@@ -3,7 +3,7 @@
 
   const BRIDGE_VERSION = '2026.09.21-c';
   const EVENT_LIMIT = 120;
-  const SHARED_PARAM_NAMES = ['session_id', 'goal_id', 'task_id', 'lap_id', 'return_target', 'snap_target', 'child_id', 'actor_role', 'crew_member_id', 'crew_member_name', 'crew_rules_version', 'review_directive'];
+  const SHARED_PARAM_NAMES = ['session_id', 'goal_id', 'task_id', 'lap_id', 'return_target', 'snap_target', 'child_id', 'actor_role', 'crew_member_id', 'crew_member_name', 'crew_rules_version', 'review_directive', 'learning_context'];
   const legacyTerms = [
     [/Word Detective Team/g, 'Hidden Word Trail'],
     [/사건 파일/g, '단어 탐험'],
@@ -31,6 +31,42 @@
 
   function getContext() {
     return S.sharedLearningContext || {};
+  }
+
+  function decodeLearningContext(raw) {
+    if (!raw || typeof raw !== 'string' || raw.length > 6000) return null;
+    try {
+      const normalized = raw.replace(/-/g, '+').replace(/_/g, '/');
+      const padded = normalized + '='.repeat((4 - normalized.length % 4) % 4);
+      const binary = atob(padded);
+      const bytes = Uint8Array.from(binary, ch => ch.charCodeAt(0));
+      const value = JSON.parse(new TextDecoder().decode(bytes));
+      if (!value || value.contract_version !== 'READY_LEARNING_CONTEXT_V1') return null;
+      const list = v => Array.isArray(v) ? v.filter(x => typeof x === 'string').slice(0, 12) : [];
+      return Object.freeze({
+        contract_version: 'READY_LEARNING_CONTEXT_V1',
+        learning_unit_id: String(value.learning_unit_id || '').slice(0, 120) || null,
+        analysis_id: String(value.analysis_id || '').slice(0, 120) || null,
+        assignment_id: String(value.assignment_id || '').slice(0, 120) || null,
+        subject: String(value.subject || '').slice(0, 80) || null,
+        concept_skill_target: String(value.concept_skill_target || '').slice(0, 180) || null,
+        activity_types: list(value.activity_types),
+        cognitive_load_profile: list(value.cognitive_load_profile),
+        confidence: Number.isFinite(value.confidence) ? Math.max(0, Math.min(1, value.confidence)) : null,
+        unresolved_flags: list(value.unresolved_flags),
+        provenance: Object.freeze({
+          engine: String(value.provenance?.engine || '').slice(0, 80) || null,
+          version: String(value.provenance?.version || '').slice(0, 40) || null,
+          confirmation_state: String(value.provenance?.confirmation_state || '').slice(0, 40) || null
+        })
+      });
+    } catch {
+      return null;
+    }
+  }
+
+  function learningContext() {
+    return decodeLearningContext(getContext().learning_context);
   }
 
   function reviewDirective() {
@@ -469,6 +505,7 @@
     window.HideSeekBridge = Object.freeze({
       version: BRIDGE_VERSION,
       context: () => ({ ...getContext() }),
+      learningContext,
       emit,
       returnToBase,
       sendToSnap,
