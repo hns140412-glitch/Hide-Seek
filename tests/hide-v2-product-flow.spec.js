@@ -253,6 +253,12 @@ test('Hide V2 OCR path uses the shared family adapter and commits reviewed rows'
   const state=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')));
   expect(state.missions).toHaveLength(1);
   expect(state.missions[0].items[0].token).toBe('environment');
+  const committedSource=state.missions[0].items[0].source;
+  expect(committedSource.pageId).toBeTruthy();
+  expect(committedSource.confidence).toBe('high');
+  expect(committedSource.provider).toBe('FIXTURE_VISION');
+  expect(committedSource.model).toBe('v2-fixture');
+  expect(committedSource.analysisVersion).toBe('HIDE_VOCABULARY_OCR_V1');
 });
 
 test('Hide V2 persists OCR review state across reload',async({page})=>{
