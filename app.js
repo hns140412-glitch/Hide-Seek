@@ -1,7 +1,9 @@
 const $=(s,r=document)=>r.querySelector(s);
-const $$=(s,r=document)=>[...r.querySelectorAll(s)];
-const APP_REV="REV_09";
-const SCHEMA_VERSION=9;
+const $=(s,r=document)=>[...r.querySelectorAll(s)];
+const RELEASE=globalThis.HideSeekReleaseDescriptor;
+if(!globalThis.TakyReleaseContract?.validateDescriptor?.(RELEASE)?.ok)throw new Error('INVALID_HIDE_RELEASE_DESCRIPTOR');
+const APP_REV=RELEASE.app_version;
+const SCHEMA_VERSION=RELEASE.data_schema_version;
 const STORAGE_KEY="hide_seek_state";
 const ASSET_DB_NAME="hide-seek-assets";
 const DEFAULT_WORDS=[
@@ -77,7 +79,7 @@ function persistMissionRuntime(){
  const sh=sheet();if(!sh)return;
  sh.runtimeState={learning:clone(S.learning),codeRed:clone(S.codeRed),savedAt:nowISO()}
 }
-function save(){persistMissionRuntime();S.schemaVersion=SCHEMA_VERSION;S.appRevision=APP_REV;localStorage.setItem(STORAGE_KEY,JSON.stringify(S))}
+function save(){persistMissionRuntime();S.schemaVersion=SCHEMA_VERSION;S.appRevision=APP_REV;localStorage.setItem(STORAGE_KEY,JSON.stringify(S));const safe=globalThis.HideSeekPwaSafePoint?.()===true;window.dispatchEvent(new CustomEvent('hide-seek-state-saved',{detail:{pwa_safe_point:safe}}));if(safe)window.dispatchEvent(new CustomEvent('hide-seek-safe-point'))}
 function activateMission(sheetId,{reset=false}={}){
  const current=sheet();if(current)current.runtimeState={learning:clone(S.learning),codeRed:clone(S.codeRed),savedAt:nowISO()};
  const target=S.sheets.find(x=>x.sheetId===sheetId);if(!target)return false;
@@ -511,4 +513,4 @@ function renderRecords(){const sh=sheet(),m=memoryRecordSummary(),inf=inferenceR
 function exportData(){const copy=clone(S);const blob=new Blob([JSON.stringify(copy,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`HIDE_SEEK_DATA_${today()}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
 async function importData(file){try{const data=JSON.parse(await file.text()),m=migrate(data);if(!Array.isArray(m.sheets)||!m.sheets.length)throw new Error('탐험 미션 데이터가 없어요.');S=m;save();window.HideCaptureRuntime?.migrateLegacyState?.();toast('데이터를 불러왔어요.');$('#modalRoot').innerHTML='';render()}catch(e){toast(`불러오기 실패: ${e.message||'파일을 확인해 주세요.'}`)}}
 function openSettings(){$('#modalRoot').innerHTML=`<div class="modal-back"><section class="modal"><div class="section-title"><h2>설정</h2><button class="circle-btn" id="closeSettings" type="button">닫기</button></div><div class="setting"><div><label>탐험대원 음성</label><small>영어 단어 발음보다 우선하지 않습니다.</small></div><button class="switch ${S.settings.partnerVoice?'on':''}" data-toggle="partnerVoice" type="button"><i></i></button></div><div class="setting"><div><label>Reduced Motion</label><small>과한 움직임을 줄입니다.</small></div><button class="switch ${S.settings.reducedMotion?'on':''}" data-toggle="reducedMotion" type="button"><i></i></button></div><div class="setting"><div><label>긴장 연출 줄이기</label><small>FINAL SEEK 시간을 조금 넉넉하게 제공합니다.</small></div><button class="switch ${S.settings.pressureReduced?'on':''}" data-toggle="pressureReduced" type="button"><i></i></button></div><div class="btn-row" style="margin-top:13px"><button class="btn secondary" id="exportData" type="button">데이터 내보내기</button><button class="btn secondary" id="importData" type="button">데이터 불러오기</button></div><button class="btn primary full" id="saveSettings" style="margin-top:8px" type="button">설정 저장</button><button class="btn secondary full" id="restartOnboarding" style="margin-top:8px" type="button">프로필 다시 설정</button><p style="margin-top:10px">Build ${APP_REV} · Schema ${SCHEMA_VERSION}</p></section></div>`;$('#closeSettings').onclick=()=>$('#modalRoot').innerHTML='';$$('[data-toggle]').forEach(b=>b.onclick=()=>{const k=b.dataset.toggle;S.settings[k]=!S.settings[k];b.classList.toggle('on',S.settings[k]);save()});$('#saveSettings').onclick=()=>{$('#modalRoot').innerHTML='';save();toast('설정을 저장했어요.')};$('#restartOnboarding').onclick=()=>{S.onboardingDone=false;S.onboardingStep=0;save();$('#modalRoot').innerHTML='';render()};$('#exportData').onclick=exportData;$('#importData').onclick=()=>$('#importDataInput').click()}
-$('#settingsBtn').onclick=openSettings;$('#backBtn').onclick=goBack;$('#partnerVoiceBtn').onclick=()=>partnerSpeak();$('#profileCameraInput').addEventListener('change',e=>profilePicked(e.target.files[0]));$('#profileLibraryInput').addEventListener('change',e=>profilePicked(e.target.files[0]));$('#importDataInput').addEventListener('change',e=>importData(e.target.files[0]));$$('.nav-btn').forEach(b=>b.onclick=()=>{viewStack=[];stopCodeTimer();currentTab=b.dataset.tab;render()});if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));save();render();
+$('#settingsBtn').onclick=openSettings;$('#backBtn').onclick=goBack;$('#partnerVoiceBtn').onclick=()=>partnerSpeak();$('#profileCameraInput').addEventListener('change',e=>profilePicked(e.target.files[0]));$('#profileLibraryInput').addEventListener('change',e=>profilePicked(e.target.files[0]));$('#importDataInput').addEventListener('change',e=>importData(e.target.files[0]));$$('.nav-btn').forEach(b=>b.onclick=()=>{viewStack=[];stopCodeTimer();currentTab=b.dataset.tab;render()});save();render();
