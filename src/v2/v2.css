@@ -970,3 +970,51 @@ body.v2-runtime{
 .v2-runtime .memory-record-details .wordbook{
   margin-top:10px;
 }
+
+
+/* Memory detail: child path first, diagnostics second */
+.v2-runtime .memory-detail-story{
+  display:grid;
+  gap:12px;
+}
+.v2-runtime .memory-detail-meaning{
+  margin:0;
+  font-size:16px;
+  font-weight:800;
+  color:var(--v2-muted);
+}
+.v2-runtime .memory-detail-path,
+.v2-runtime .memory-detail-next{
+  display:grid;
+  gap:5px;
+  padding:14px;
+  border:1px solid var(--v2-line);
+  border-radius:18px;
+  background:rgba(255,255,255,.76);
+}
+.v2-runtime .memory-detail-path>span,
+.v2-runtime .memory-detail-next>span{
+  font-size:12px;
+  font-weight:900;
+  color:var(--v2-muted);
+}
+.v2-runtime .memory-detail-path>b,
+.v2-runtime .memory-detail-next>b{
+  font-size:18px;
+}
+.v2-runtime .memory-detail-path>small,
+.v2-runtime .memory-detail-next>small{
+  line-height:1.45;
+  color:var(--v2-muted);
+}
+.v2-runtime .memory-tech-details>summary{
+  min-height:44px;
+  display:flex;
+  align-items:center;
+  cursor:pointer;
+  font-weight:800;
+  color:var(--v2-muted);
+}
+.v2-runtime .memory-tech-details .grid3{
+  margin-top:8px;
+}
