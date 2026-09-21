@@ -198,3 +198,10 @@ Hide exports `reviewAdvisories` as evidence, not a schedule. The packet may incl
 - Evidence selection records EVIDENCE + MEANING objective evidence.
 - Do not convert context exposure or evidence selection into objective CONTEXT recall.
 - Hide remains a memory-evidence specialist; this is not a full Korean reading-comprehension engine.
+
+
+## Ready OCR reuse lock
+- Ready owns the shared family capture/OCR transport foundation.
+- Hide reuses the same `/api/capture/analyze` + TAKY vision-ingest boundary and must not duplicate the OCR engine.
+- Hide adds only HIDE_VOCABULARY domain semantics and vocabulary review/evidence normalization.
+- Implementation reporting must separate shared OCR foundation implementation from live-provider and device verification.
