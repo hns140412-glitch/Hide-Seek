@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION='2026.09.21-language-core-v12';
+  const VERSION='2026.09.21-language-core-v13';
 
   const MODELS={
     ENGLISH:{
@@ -168,6 +168,7 @@
       const centerNode=map.nodes.find(x=>['ROOT','HANJA_ORIGIN','RADICAL','COMPONENT','ETYMOLOGY'].includes(x.role))||map.nodes[0]||null;
       return {
         word:rawWord,
+        domain:normalized.languageDomain,
         type:'VERIFIED_MEANING_MAP',
         question:`${rawWord}에서 어떤 글자·어근·구성 요소가 뜻의 단서가 될까?`,
         scene:map.imageryCue||map.coreMeaning||'구성 요소와 핵심 뜻을 하나의 장면으로 연결해봐.',
@@ -186,16 +187,26 @@
     const encountered=new Set((context.encounteredWords||[]).map(x=>String(x).toLowerCase()));
     const links=(base.connect||[]).filter(x=>encountered.has(x));
     const evidence=supportContract(item,base);
-    return {word,type:evidence?.supportType||base.type,question:base.question,scene:evidence?.scene||base.scene,why:evidence?.bridge||base.why,parts:Array.isArray(base.parts)?base.parts:[],visual:Array.isArray(base.visual)?base.visual:[],links,sourceType:evidence?.sourceType||'CURATED_SEMANTIC_SUPPORT',sourceRef:evidence?.sourceRef||null,verified:!!evidence?.verified,claimsHistoricalEtymology:!!evidence?.claimsHistoricalEtymology,center:evidence?.center||null,nodes:evidence?.nodes||[]};
+    return {word,domain:detectDomain(item),type:evidence?.supportType||base.type,question:base.question,scene:evidence?.scene||base.scene,why:evidence?.bridge||base.why,parts:Array.isArray(base.parts)?base.parts:[],visual:Array.isArray(base.visual)?base.visual:[],links,sourceType:evidence?.sourceType||'CURATED_SEMANTIC_SUPPORT',sourceRef:evidence?.sourceRef||null,verified:!!evidence?.verified,claimsHistoricalEtymology:!!evidence?.claimsHistoricalEtymology,center:evidence?.center||null,nodes:evidence?.nodes||[]};
   }
 
-  const CLUE_LABELS={WORD_PART:'단어 조각',ROOT_ETYMOLOGY:'어근·어원',SCENE:'장면',PRIOR_WORD:'전에 본 단어',OTHER:'기타'};
+  const CLUE_LABELS={WORD_PART:'단어 조각',ROOT_ETYMOLOGY:'어근·어원',AFFIX:'접사·말조각',HANJA_ORIGIN:'한자어 구성',ETYMOLOGY:'어원',COMPONENT:'글자 구성',RADICAL:'부수',SOUND:'소리',SCENE:'장면',PRIOR_WORD:'전에 본 단어',OTHER:'기타'};
   function clueLabel(key){return CLUE_LABELS[String(key||'OTHER')]||CLUE_LABELS.OTHER}
+  function clueOptions(domain='ENGLISH'){
+    const d=String(domain||'ENGLISH').toUpperCase();
+    const keys=d==='KOREAN'
+      ?['AFFIX','HANJA_ORIGIN','ETYMOLOGY','SCENE','PRIOR_WORD','OTHER']
+      :d==='HANJA'
+        ?['COMPONENT','RADICAL','SOUND','SCENE','PRIOR_WORD','OTHER']
+        :['WORD_PART','ROOT_ETYMOLOGY','SCENE','PRIOR_WORD','OTHER'];
+    return keys.map(value=>({value,label:clueLabel(value)}));
+  }
 
   function preferredAssistanceSteps(skillProfile={}){
     const clue=String(skillProfile?.adaptiveClue?.clue||'');
-    if(clue==='ROOT_ETYMOLOGY')return ['MEANING_MAP','THINKING_SCENE'];
-    if(clue==='WORD_PART')return ['THINKING_SCENE','SHAPE'];
+    if(['ROOT_ETYMOLOGY','HANJA_ORIGIN','ETYMOLOGY','COMPONENT','RADICAL'].includes(clue))return ['MEANING_MAP','THINKING_SCENE'];
+    if(['WORD_PART','AFFIX'].includes(clue))return ['THINKING_SCENE','SHAPE'];
+    if(clue==='SOUND')return ['SOUND'];
     if(clue==='SCENE')return ['SCENE','THINKING_SCENE'];
     if(clue==='PRIOR_WORD')return ['THINKING_SCENE','CONFUSION_TRACE'];
     return [];
@@ -248,7 +259,7 @@
     return '<section class="thinking-map-card" data-thinking-word="'+esc(plan.word)+'" data-support-type="'+esc(plan.type)+'">'+
       '<div class="hero-kicker"><span>THINKING TRAIL</span><span>'+esc(truthBadge)+'</span></div>'+
       '<h3>처음 본 단어처럼 추론해보기</h3>'+priorSkill+'<p class="thinking-question">'+esc(plan.question)+'</p>'+parts+
-      '<div class="inference-box"><label>내가 예상한 뜻/개념<input class="input inference-prediction" maxlength="80" placeholder="정답 보기 전에 한 번 추측해봐"></label><div class="inference-row"><label>쓴 단서<select class="input inference-clue"><option value="WORD_PART">단어 조각</option><option value="ROOT_ETYMOLOGY">어근·어원</option><option value="SCENE">장면</option><option value="PRIOR_WORD">전에 본 단어</option><option value="OTHER">기타</option></select></label><label>확신<select class="input inference-confidence"><option value="LOW">낮음</option><option value="MEDIUM" selected>보통</option><option value="HIGH">높음</option></select></label></div><button class="btn primary full inference-submit" type="button">내 추론 남기기</button></div>'+
+      '<div class="inference-box"><label>내가 예상한 뜻/개념<input class="input inference-prediction" maxlength="80" placeholder="정답 보기 전에 한 번 추측해봐"></label><div class="inference-row"><label>쓴 단서<select class="input inference-clue">'+clueOptions(plan.domain||'ENGLISH').map(x=>'<option value="'+esc(x.value)+'">'+esc(x.label)+'</option>').join('')+'</select></label><label>확신<select class="input inference-confidence"><option value="LOW">낮음</option><option value="MEDIUM" selected>보통</option><option value="HIGH">높음</option></select></label></div><button class="btn primary full inference-submit" type="button">내 추론 남기기</button></div>'+
       '<button class="btn secondary full thinking-reveal" type="button" disabled>구조·장면 단서 보기</button><div class="thinking-reveal-body" hidden>'+rootCore+verifiedNodes+sceneTrail+'<div class="thinking-scene"><b>머릿속 장면</b><span>'+esc(plan.scene)+'</span></div><div class="thinking-why"><b>뜻이 이어지는 길</b><span>'+esc(plan.why)+'</span></div>'+links+parentHtml+(plan.sourceRef?'<small class="truth-source">출처 확인됨 · '+esc(plan.sourceType)+'</small>':'')+'</div></section>';
   }
   window.HideLanguageModel={
@@ -262,6 +273,7 @@
     verifiedEvidence,
     supportContract,
     clueLabel,
+    clueOptions,
     preferredAssistanceSteps,
     prioritizeExistingAssistance,
     parentExplanation,
