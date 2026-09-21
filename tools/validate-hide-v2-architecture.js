@@ -3,7 +3,7 @@ const fs=require('fs');
 const path=require('path');
 const ROOT=path.join(__dirname,'..');
 const modules=[
-  'src/v2/app-store.js','src/v2/mission-service.js','src/v2/memory-engine.js',
+  'src/v2/app-store.js','src/v2/mission-service.js','src/v2/memory-engine.js','src/v2/trail-engine.js',
   'src/v2/learning-session.js','src/v2/session-service.js','src/v2/capture-store.js','src/v2/capture-controller.js','src/v2/router.js',
   'src/v2/legacy-migration.js','src/v2/ready-bridge.js','src/v2/pwa-v2.js','src/v2/mobile-shell.js','src/v2/app.js'
 ];
@@ -67,6 +67,10 @@ for(const token of ['listMissions','renameMission','archiveMission','deleteMissi
 }
 
 if(!mission.includes('HideV2Store.transaction'))fail.push('MISSION_WRITE_MUST_USE_STORE');
+const trail=fs.readFileSync(path.join(ROOT,'src/v2/trail-engine.js'),'utf8');
+for(const token of ['HIDE_CURRENT_MISSION_READINESS','CURRENT_SESSION_OR_MISSION_READINESS_NOT_LONG_TERM_MEMORY','trailMastery','fullMissionScope','scopeItemIds']){
+  if(!trail.includes(token))fail.push('V2_TRAIL_MASTERY_CONTRACT_MISSING:'+token);
+}
 const memory=fs.readFileSync(path.join(ROOT,'src/v2/memory-engine.js'),'utf8');
 for(const token of ['signature','memoryStrength','nextReviewPriority','recoveryStatus','wordbook','dashboard']){
   if(!memory.includes(token))fail.push('V2_MEMORY_LADDER_CONTRACT_MISSING:'+token);
@@ -82,6 +86,7 @@ if(!migration.includes('legacyPreserved:true'))fail.push('NON_DESTRUCTIVE_MIGRAT
 for(const token of ['renderStarterExplorationHtml','bindThinkingTrail','inference-submit','thinking-reveal','기억 흔적','record-detail','v2RecordBack']){
   if(!app.includes(token))fail.push('V2_THINKING_OR_MEMORY_DETAIL_MISSING:'+token);
 }
+if(!app.includes('HideV2Trail.missionSummary'))fail.push('V2_TRAIL_MASTERY_UI_INTEGRATION_MISSING');
 for(const token of ['기억 기록','단어장','우선 복습순','v2Records']){
   if(!app.includes(token))fail.push('V2_MEMORY_SURFACE_MISSING:'+token);
 }
