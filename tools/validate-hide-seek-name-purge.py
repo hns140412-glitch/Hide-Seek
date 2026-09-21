@@ -12,7 +12,8 @@ for p in ROOT.rglob("*"):
     if re.search(r"zpd",s,re.I):
         fail.append(f"SUPERSEDED_NAME:{p.relative_to(ROOT)}")
 
-app=(ROOT/"app.js").read_text(encoding="utf-8")
+APP_MODULES=["app-core.js","app-shell-ui.js","app-learning-flow.js","app-memory-records.js","app-bootstrap.js"]
+app="\n".join((ROOT/x).read_text(encoding="utf-8") for x in APP_MODULES)
 ocr=(ROOT/"hide-family-ocr-adapter.js").read_text(encoding="utf-8")
 for needle in [
     'const STORAGE_KEY="hide_seek_state";',
