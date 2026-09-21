@@ -24,7 +24,7 @@ function extractFunction(name){
 }
 
 const names=[
-  'senseKey','lexiconEntry','inferMissionRole','applyMissionRoles','traceList','addWordTrace','weakScore',
+  'senseKey','normalizeWord','lexiconEntry','inferMissionRole','applyMissionRoles','traceList','addWordTrace','weakScore',
   'memoryWeaknessProfile','memorySceneCue','memoryChunks','memoryShapeCue',
   'lastConfusionTrace','lastPersonalErrorTrace','hintCueCost',
   'deriveMemorySignature','applicableInferenceProfile','buildMemoryLadder','hiddenWordStrategy','hiddenWordPriority','hiddenWordActivityModel','memoryQualityModel','memoryReasonLabel','memoryStatusView','memoryRecordSummary','syncSheetToLexicon','recallSpacingEvidence','seekAgainResolved'
@@ -43,6 +43,11 @@ for(const n of names) vm.runInContext(extractFunction(n),sandbox);
 
 function assert(cond,msg){if(!cond)throw new Error(msg)}
 function same(a,b){return JSON.stringify(a)===JSON.stringify(b)}
+
+sandbox.HideLanguageModel={normalizeItem:(w)=>({...w,languageDomain:'KOREAN',meaningMap:null})};
+const rejectedWord=sandbox.normalizeWord({eng:'미검증',kor:'뜻',languageDomain:'KOREAN',meaningMap:{verified:true,sourceType:'CURATED'}},0);
+assert(rejectedWord.meaningMap===null,'invalid raw meaning map must stay null after normalization');
+sandbox.HideLanguageModel=null;
 
 sandbox.S.lexicon={
   'known::알다':{sourceRefs:['older-sheet']}
