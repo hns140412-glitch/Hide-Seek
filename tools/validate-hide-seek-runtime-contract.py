@@ -451,9 +451,14 @@ for needle in [
 
 
 for needle in [
-    "SCHEMA_VERSION=1",
+    "SCHEMA_VERSION=2",
     "SOURCE_POLICY='VERIFIED_SOURCE_REQUIRED_FOR_HISTORICAL_CLAIM'",
     "invalidRecords",
+    "SUPPORT_TYPES",
+    "SOURCE_TYPES",
+    "validSourceRef",
+    "validNode",
+    "historicalClaim",
     "validateRecord",
 ]:
     if needle not in language_evidence:
