@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION='2026.09.21-language-core-v3';
+  const VERSION='2026.09.21-language-core-v4';
 
   const MODELS={
     ENGLISH:{
@@ -160,12 +160,25 @@
     return {word,type:evidence?.supportType||base.type,question:base.question,scene:evidence?.scene||base.scene,why:evidence?.bridge||base.why,parts:Array.isArray(base.parts)?base.parts:[],links,sourceType:evidence?.sourceType||'CURATED_SEMANTIC_SUPPORT',sourceRef:evidence?.sourceRef||null,verified:!!evidence?.verified,claimsHistoricalEtymology:!!evidence?.claimsHistoricalEtymology,center:evidence?.center||null,nodes:evidence?.nodes||[]};
   }
 
+  function summarizeInferenceSkill(events=[]){
+    const rows=(Array.isArray(events)?events:[]).filter(x=>x?.event==='FIRST_SEEN_PREDICTION');
+    const outcomeRows=rows.filter(x=>['MATCH','NEAR','MISS'].includes(String(x.outcome||'')));
+    const success=outcomeRows.filter(x=>['MATCH','NEAR'].includes(x.outcome)).length;
+    const byClue={};
+    for(const x of outcomeRows){const key=String(x.clueUsed||'OTHER');const r=byClue[key]||(byClue[key]={attempts:0,success:0,match:0,near:0,miss:0});r.attempts++;r[x.outcome.toLowerCase()]++;if(x.outcome!=='MISS')r.success++}
+    const ranked=Object.entries(byClue).map(([clue,v])=>({clue,...v,successRate:v.attempts?Math.round(v.success/v.attempts*100):0})).sort((a,b)=>b.successRate-a.successRate||b.attempts-a.attempts);
+    const high=outcomeRows.filter(x=>x.confidence==='HIGH');
+    const highMiss=high.filter(x=>x.outcome==='MISS').length;
+    return {attempts:rows.length,assessed:outcomeRows.length,success,successRate:outcomeRows.length?Math.round(success/outcomeRows.length*100):0,bestClue:ranked[0]||null,byClue:ranked,highConfidenceMisses:highMiss,calibrationFlag:high.length&&highMiss/high.length>=.5?'RECALIBRATE':'OK'};
+  }
+
   function renderStarterExplorationHtml(item,context={},esc=(x)=>String(x??'')){
     const plan=starterExploration(item,context);
     if(!plan)return '';
     const parts=plan.parts.length?'<div class="thinking-parts">'+plan.parts.map(p=>'<span><b>'+esc(p.label)+'</b><small>'+esc(p.meaning)+'</small></span>').join('')+'</div>':'';
     const verifiedNodes=plan.nodes?.length?'<div class="root-orbit">'+plan.nodes.map(n=>'<span class="root-orbit-node"><b>'+esc(n.label)+'</b><small>'+esc(n.meaning)+'</small></span>').join('')+'</div>':'';
-    const rootCore=plan.center?'<div class="root-core"><small>핵심 흔적</small><b>'+esc(plan.center.label)+'</b><span>'+esc(plan.center.meaning)+'</span></div>':'';
+    const visualCenter=plan.center||{label:plan.word,meaning:plan.type==='TRANSPARENT_COMPOUND'?'조각을 합쳐 뜻 만들기':'장면에서 핵심 개념 잡기'};
+    const rootCore='<div class="root-core"><small>'+(plan.verified?'핵심 흔적':'핵심 개념')+'</small><b>'+esc(visualCenter.label)+'</b><span>'+esc(visualCenter.meaning)+'</span></div>';
     const links=plan.links.length?'<div class="thinking-links"><b>전에 만난 연결</b>'+plan.links.map(x=>'<span>'+esc(x)+'</span>').join('')+'</div>':'';
     const truthBadge=plan.verified?'검증 어원':'현대 구조/의미 단서';
     return '<section class="thinking-map-card" data-thinking-word="'+esc(plan.word)+'" data-support-type="'+esc(plan.type)+'">'+
@@ -184,6 +197,7 @@
     renderMeaningMapHtml,
     verifiedEvidence,
     supportContract,
+    summarizeInferenceSkill,
     starterExploration,
     renderStarterExplorationHtml
   };
