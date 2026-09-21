@@ -239,6 +239,58 @@ test('Hide V2 Hidden Words specializes activity from Memory Engine primary reaso
   expect(plans['w-recovery'].mode).toBe('TOKEN');
 });
 
+test('Hide V2 Hidden Words shape cue is assisted while typed meaning stays recall',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'보강 truth'},missions:[{
+        id:'m-hidden-truth',title:'보강 truth',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        sourceCount:0,provenance:{source:'TEST_FIXTURE'},
+        items:[
+          {id:'w-shape',lexicalId:'environment::환경',token:'environment',meaning:'환경',languageDomain:'ENGLISH',missionRole:'REVIEW',source:{},evidence:[
+            {stage:'FORM_CHECK',evidenceMode:'RECOGNITION',axes:['FORM'],result:'WRONG',objectiveVerified:true,objectiveRecall:false,assisted:false}
+          ]},
+          {id:'w-meaning',lexicalId:'benefit::혜택',token:'benefit',meaning:'혜택',languageDomain:'ENGLISH',missionRole:'REVIEW',source:{},evidence:[
+            {stage:'CONNECTION',evidenceMode:'ASSOCIATION',axes:['MEANING'],result:'MISMATCH',objectiveVerified:true,objectiveRecall:false,assisted:false}
+          ]}
+        ]
+      }],activeMissionId:'m-hidden-truth',activeSession:null,captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+
+  const result=await page.evaluate(()=>{
+    const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
+    const mission=s.missions[0];
+    const shapeSession={id:'shape',missionId:mission.id,index:0,queue:['w-shape'],stage:'HIDDEN_WORDS',attempts:{}};
+    const meaningSession={id:'meaning',missionId:mission.id,index:0,queue:['w-meaning'],stage:'HIDDEN_WORDS',attempts:{}};
+    const shapePlan=window.HideV2Learning.hiddenWordsPlan(mission.items[0]);
+    const meaningPlan=window.HideV2Learning.hiddenWordsPlan(mission.items[1]);
+    window.HideV2Learning.submitHiddenWords(shapeSession,mission,{answer:'environment'});
+    window.HideV2Learning.submitHiddenWords(meaningSession,mission,{answer:'혜택'});
+    const fresh=JSON.parse(localStorage.getItem('hide_seek_v2_state')).missions[0];
+    return {
+      shapePlan,
+      meaningPlan,
+      shape:fresh.items.find(x=>x.id==='w-shape').evidence.filter(x=>x.stage==='HIDDEN_WORDS').at(-1),
+      meaning:fresh.items.find(x=>x.id==='w-meaning').evidence.filter(x=>x.stage==='HIDDEN_WORDS').at(-1)
+    };
+  });
+
+  expect(result.shapePlan.mode).toBe('SHAPE');
+  expect(result.shape.evidenceMode).toBe('ASSISTED_RECONSTRUCTION');
+  expect(result.shape.result).toBe('CORRECT');
+  expect(result.shape.objectiveVerified).toBe(true);
+  expect(result.shape.objectiveRecall).toBe(false);
+  expect(result.shape.recallScoreImpact).toBe(false);
+  expect(result.shape.assisted).toBe(true);
+
+  expect(result.meaningPlan.mode).toBe('MEANING');
+  expect(result.meaning.evidenceMode).toBe('REINFORCEMENT_RECALL');
+  expect(result.meaning.result).toBe('CORRECT');
+  expect(result.meaning.objectiveRecall).toBe(true);
+  expect(result.meaning.assisted).toBe(false);
+});
+
 test('Hide V2 Hidden Words appears only for engine-detected weakness and keeps relearn separate from recall',async({page})=>{
   await page.addInitScript(()=>{
     localStorage.setItem('hide_seek_v2_state',JSON.stringify({
