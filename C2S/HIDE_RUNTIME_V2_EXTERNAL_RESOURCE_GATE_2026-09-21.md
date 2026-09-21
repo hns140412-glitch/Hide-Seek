@@ -69,7 +69,7 @@ Resolved authoritative existing site binding:
 - current production deploy id: `6aa262eef7e52f00093aac72`
 - current production commit: `49fa106ff20f7c497d7f18bd903be34479ec28c3`
 - current production branch: `main`
-- Netlify historical commit URL uses repository name `ZPD-Word`, but the same commit is present in current `hns140412-glitch/Hide-Seek`; this is a repository rename lineage, not a separate source.
+- Netlify historical commit URL uses the pre-rename repository alias, but the same commit is present in current `hns140412-glitch/Hide-Seek`; this is repository rename lineage, not a separate source.
 
 ## External execution blocker refined
 
