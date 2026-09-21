@@ -134,6 +134,14 @@
         <button class="quest-tile" id="v2Records" type="button"><span class="quest-tile__icon">🪜</span><span><b>기억 사다리</b><small>${memory.total}개 단어 기록</small></span><i>›</i></button>
       </section>
 
+      <section class="trail-bridge" aria-label="탐험과 기억의 연결">
+        <div class="trail-bridge__step"><span>1</span><b>미션 고르기</b><small>오늘 찾을 단어</small></div>
+        <i aria-hidden="true">→</i>
+        <div class="trail-bridge__step"><span>2</span><b>단어 찾기</b><small>생각하고 꺼내기</small></div>
+        <i aria-hidden="true">→</i>
+        <div class="trail-bridge__step"><span>3</span><b>기억 사다리</b><small>다음 탐험 준비</small></div>
+      </section>
+
       <section class="quest-status">
         <div class="section-title"><div><p class="quest-overline">MY TRAIL</p><h2>지금의 기억 상태</h2></div><span>${memory.total?'기록 중':'첫 탐험 전'}</span></div>
         <div class="quest-stat-row">
@@ -253,8 +261,9 @@
     const readyContext=globalThis.HideV2ReadyBridge?.context?.()||{};
     const returnButton=readyContext.return_target?'<button id="v2ReturnReady" class="btn primary full" style="margin-top:8px">Ready & Set으로 돌아가기</button>':'';
     const crew=globalThis.HideV2Crew?.presentation?.({screen:'COMPLETE',mission:m})||{displayName:'탐험대원',avatarText:'탐'};
-    view().innerHTML=`<section class="card tint-leaf completion-card" style="text-align:center"><div class="completion-mark" aria-hidden="true">✦</div><p class="quest-overline">MISSION COMPLETE</p><h1>탐험 완료</h1><p>오늘 찾은 정도와 오래 기억할 정도를 따로 기록했어요.</p><div class="completion-crew"><span class="completion-crew__avatar">${esc(crew.avatarText||'탐')}</span><span><b>${esc(crew.displayName||'탐험대원')}</b><small>오늘 길을 끝까지 함께 왔어요.</small></span></div><div class="grid3"><div class="status-pill"><b>${trail.trailMastery}%</b><span>길 익힘</span></div><div class="status-pill"><b>${summary.averageMemoryStrength}%</b><span>기억 힘</span></div><div class="status-pill"><b>${trail.recoveredTodayCount}</b><span>다시 찾음</span></div></div><div class="metric"><span>다음에 다시 볼 단어</span><b>${summary.reviewAdvisories.length}</b></div><button id="v2Home" class="btn secondary full">홈으로</button>${returnButton}</section>`;
+    view().innerHTML=`<section class="card tint-leaf completion-card" style="text-align:center"><div class="completion-mark" aria-hidden="true">✦</div><p class="quest-overline">MISSION COMPLETE</p><h1>탐험 완료</h1><p>오늘 찾은 정도와 오래 기억할 정도를 따로 기록했어요.</p><div class="completion-crew"><span class="completion-crew__avatar">${esc(crew.avatarText||'탐')}</span><span><b>${esc(crew.displayName||'탐험대원')}</b><small>오늘 길을 끝까지 함께 왔어요.</small></span></div><div class="grid3"><div class="status-pill"><b>${trail.trailMastery}%</b><span>길 익힘</span></div><div class="status-pill"><b>${summary.averageMemoryStrength}%</b><span>기억 힘</span></div><div class="status-pill"><b>${trail.recoveredTodayCount}</b><span>다시 찾음</span></div></div><div class="metric"><span>다음에 다시 볼 단어</span><b>${summary.reviewAdvisories.length}</b></div><button id="v2MemoryLadder" class="btn primary full">기억 사다리 보기</button><button id="v2Home" class="btn secondary full">홈으로</button>${returnButton}</section>`;
     globalThis.HideV2ReadyBridge?.emitTaskEvent?.('TASK_COMPLETED');
+    $('#v2MemoryLadder').onclick=()=>{HideV2Session.clear();HideV2Router.go('records')};
     $('#v2Home').onclick=()=>{HideV2Session.clear();HideV2Router.go('home')};
     if($('#v2ReturnReady'))$('#v2ReturnReady').onclick=()=>globalThis.HideV2ReadyBridge?.returnToReady?.();
   }
