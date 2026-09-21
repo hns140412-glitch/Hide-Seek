@@ -272,3 +272,14 @@ FALSE_CONVERGENCE = 0: live deploy/device/real-provider claims remain OPEN.
 - Stable words still bypass HIDDEN WORDS.
 - Exact code HEAD `f19dcd84f650ca4e80d970f36a911b4694d9ecd5` passed V2 #243 / full Hide #701.
 - Locked reporting: PRODUCT ~71%, CODED ~87%, CI ~84%, Browser Runtime ~80%, Device 0%, Release 0%.
+
+
+## 21. 2026-09-22 bidirectional MEANING CLUE
+- MEANING CLUE now supports session-scoped bidirectional recognition while retaining direct typed recall for peerless sessions.
+- Recognition evidence is objectively checkable but is not recall evidence.
+- Wrong recognition is recorded as `MISMATCH` with the confused token/meaning pair and feeds Memory Engine confusion.
+- Confusion can therefore route into the existing HIDDEN WORDS meaning reinforcement without introducing a separate confusion policy.
+- Ready review scope is preserved: comparison peers are selected only from the active `session.queue`.
+- Initial implementation incorrectly considered unrelated mission items outside a Ready-directed queue; exact-head CI caught the regression and the queue-scoped correction is now green.
+- Exact code HEAD `e15e86fdd7053903c1093251d13bdc31398a8bea` passed V2 #251 / full Hide #709.
+- Locked reporting: PRODUCT ~72%, CODED ~88%, CI ~85%, Browser Runtime ~81%, Device 0%, Release 0%.
