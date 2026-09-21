@@ -115,7 +115,7 @@ test('real NEW 12 + REVIEW 24 follows mission, recall and morning mock-test memo
       await expect(page.getByText(/부모 설명 한 줄/)).toBeVisible();
     }
     await page.getByRole('button',{name:'뜻 확인하기'}).click();
-    await expect(page.getByText(expected.kor,{exact:true})).toBeVisible();
+    await expect(page.locator('#newMeaningAnswer .kor')).toHaveText(expected.kor);
     await expect(page.getByRole('button',{name:'외웠어요 · 다음'})).toBeDisabled();
     await page.getByRole('button',{name:i%3===0?'맞았어':i%3===1?'비슷했어':'달랐어'}).click();
     await page.getByRole('button',{name:'외웠어요 · 다음'}).click();
