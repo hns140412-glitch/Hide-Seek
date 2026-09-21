@@ -79,6 +79,7 @@ test('printed handout becomes Hide exploration mission and enters FIRST FIND',as
       analysisDomain:mission.recognitionMeta?.analysisDomain,
       providers:mission.recognitionMeta?.providers,
       evidenceItemIds:mission.recognitionMeta?.evidenceItemIds,
+      missionComposition:mission.recognitionMeta?.missionComposition,
       validCount:mission.items.filter(x=>x.eng&&x.kor&&!x.needsReview).length,
       latestOutbox:(raw.takyLearningOutbox||[]).at(-1)||null
     };
@@ -89,6 +90,11 @@ test('printed handout becomes Hide exploration mission and enters FIRST FIND',as
   expect(snapshot.providers).toContain('FIXTURE_VISION');
   expect(snapshot.evidenceItemIds.length).toBeGreaterThan(0);
   expect(snapshot.validCount).toBe(2);
+  expect(snapshot.missionComposition.observedNew+snapshot.missionComposition.observedReview).toBe(2);
+  expect(snapshot.missionComposition.classificationSource).toBe('ROLE_CONFIRMATION_OR_HISTORY');
+  expect(snapshot.missionComposition.layoutIndependent).toBe(true);
+  expect(snapshot.missionComposition.expectedNew).toBeUndefined();
+  expect(snapshot.missionComposition.expectedReview).toBeUndefined();
   expect(snapshot.latestOutbox?.app).toBe('hide-seek');
   expect(snapshot.latestOutbox?.actor_role).toBe('CHILD');
   expect(snapshot.latestOutbox?.payload?.explorationMissionId).toBe(snapshot.activeSheetId);
