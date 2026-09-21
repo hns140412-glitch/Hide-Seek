@@ -79,7 +79,7 @@ test('verified Korean and Hanja meaning maps use thinking-first without fake ety
   await page.locator('.inference-confidence').selectOption('MEDIUM');
   await page.getByRole('button',{name:'내 추론 남기기'}).click();
   await page.getByRole('button',{name:'구조·장면 단서 보기'}).click();
-  await expect(page.getByText(/부모 설명 한 줄/)).toBeVisible();
+  await expect(page.getByText(/부모 설명 한 줄 · VERIFIED_MEANING_STRUCTURE/)).toBeVisible();
   const koAssist=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_state')).sheets[1].items[0].learningStats?.assistanceTrace?.at(-1));
   expect(koAssist).toMatchObject({step:'VERIFIED_MEANING_MAP',languageDomain:'KOREAN',historicalEtymologyClaim:false});
   await page.getByRole('button',{name:'다음 뜻의 흔적 보기'}).click();
@@ -101,6 +101,7 @@ test('verified Korean and Hanja meaning maps use thinking-first without fake ety
   await page.locator('.inference-clue').selectOption('COMPONENT');
   await page.getByRole('button',{name:'내 추론 남기기'}).click();
   await page.getByRole('button',{name:'구조·장면 단서 보기'}).click();
+  await expect(page.getByText(/부모 설명 한 줄 · VERIFIED_CHARACTER_STRUCTURE/)).toBeVisible();
 
   const evidence=await page.evaluate(()=>{
     const s=JSON.parse(localStorage.getItem('hide_seek_state'));
