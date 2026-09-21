@@ -72,7 +72,7 @@
     {
       "id": "HIDE-V2-C2S-012",
       "type": "EVIDENCE",
-      "statement": "Locked last closed product estimate: Product 67, Coded 83, CI 80, Browser Runtime 76, Device 0, Release 0.",
+      "statement": "Locked last closed product estimate: Product 68, Coded 84, CI 81, Browser Runtime 77, Device 0, Release 0.",
       "destination": "status"
     },
     {
@@ -98,6 +98,24 @@
       "type": "EVIDENCE",
       "statement": "Browser exploration art-direction continuity is verified across child-facing surfaces; physical-device visual QA remains open.",
       "destination": "ui-ux"
+    },
+    {
+      "id": "HIDE-V2-C2S-017",
+      "type": "CORRECTION",
+      "statement": "A correct FINAL SEEK answer after explicit support is assisted and must not count as objective recall; same-day unassisted Seek Again recovery remains IMMEDIATE_ONLY until spaced evidence exists.",
+      "destination": "memory-evidence/final-seek"
+    },
+    {
+      "id": "HIDE-V2-C2S-018",
+      "type": "EVIDENCE",
+      "statement": "OCR review-to-mission commit preserves nested OCR page/row/confidence/provider/model/analysisVersion provenance.",
+      "destination": "capture/provenance"
+    },
+    {
+      "id": "HIDE-V2-C2S-019",
+      "type": "DECISION",
+      "statement": "Duplicate OCR lexical rows are merged only by explicit review action; the resulting mission item preserves every source occurrence under source.occurrences.",
+      "destination": "capture/review"
     }
   ],
   "coverage": {
