@@ -30,11 +30,15 @@ if(!html.includes('class="v2-runtime"'))fail.push('V2_BODY_LAYOUT_BOUNDARY_MISSI
 if(!v2css.includes('.v2-runtime .top-safe'))fail.push('V2_HEADER_HIT_AREA_OVERRIDE_MISSING');
 
 const learning=fs.readFileSync(path.join(ROOT,'src/v2/learning-session.js'),'utf8');
-for(const stage of ['MEMORIZE','FIRST_FIND','MEANING','DOMAIN_EXTENSION','FINAL_SEEK','COMPLETE']){
+for(const stage of ['MEMORIZE','FIRST_FIND','MEANING','DOMAIN_EXTENSION','FINAL_SEEK','SEEK_AGAIN_RELEARN','SEEK_AGAIN','COMPLETE']){
   if(!learning.includes("'"+stage+"'"))fail.push('V2_LEARNING_STAGE_MISSING:'+stage);
 }
 if(!learning.includes('submitMemorize'))fail.push('V2_MEMORIZATION_EVIDENCE_MISSING');
 if(!learning.includes('checkFinalSeek'))fail.push('V2_FINAL_SEEK_EVIDENCE_MISSING');
+if(!learning.includes('submitSeekAgainRelearn'))fail.push('V2_SEEK_AGAIN_RELEARN_MISSING');
+if(!learning.includes('checkSeekAgain'))fail.push('V2_SEEK_AGAIN_RECALL_MISSING');
+if(!app.includes("childStageLabel('SEEK_AGAIN_RELEARN')"))fail.push('V2_SEEK_AGAIN_RELEARN_UI_MISSING');
+if(!app.includes("childStageLabel('SEEK_AGAIN')"))fail.push('V2_SEEK_AGAIN_UI_MISSING');
 
 const captureStore=fs.readFileSync(path.join(ROOT,'src/v2/capture-store.js'),'utf8');
 if(!captureStore.includes("const DB_NAME='hide-seek-v2-assets'"))fail.push('V2_CAPTURE_ASSET_STORE_MISSING');
