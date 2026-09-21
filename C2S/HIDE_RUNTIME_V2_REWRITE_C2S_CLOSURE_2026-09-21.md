@@ -304,3 +304,12 @@ FALSE_CONVERGENCE = 0: live deploy/device/real-provider claims remain OPEN.
 - If semantic FINAL SEEK support was already used, do not stack reconstruction support; fail closed to relearn.
 - Exact code HEAD `47cf0c0391c13311cb3faa3c33cf305a2c8e5c63` passed V2 #268 / full Hide #726.
 - Locked reporting: PRODUCT ~74%, CODED ~90%, CI ~87%, Browser Runtime ~83%, Device 0%, Release 0%.
+
+
+## 24. 2026-09-22 Hanja SOUND miss recovery
+- Hanja SOUND FIND now has an explicit miss-recovery path using only verified source-linked `soundEvidence`.
+- Wrong SOUND recall → assisted/non-recall reading re-exposure → re-hide → SOUND-specific HIDDEN WORDS reinforcement.
+- Immediate activity specificity is preserved even when generic Memory Engine recovery is the top summary reason; the session handoff changes only the current reinforcement activity, not Memory Engine scores or Ready review/scheduling ownership.
+- First implementation exposed an omitted public action export; exact-head browser CI caught it and the export was repaired.
+- Exact code HEAD `ad8872a9305a121b783142f00e4a8d2c22e6ad1c` passed V2 #284 / full Hide #742.
+- Locked reporting: PRODUCT ~75%, CODED ~91%, CI ~88%, Browser Runtime ~84%, Device 0%, Release 0%.
