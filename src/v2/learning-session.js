@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const STAGES=['MEMORIZE','FIRST_FIND','FIRST_FIND_RELEARN','MEANING','DOMAIN_EXTENSION','HIDDEN_WORDS','HIDDEN_WORDS_ASSIST','FINAL_SEEK','FINAL_SEEK_RECONSTRUCT','SEEK_AGAIN_RELEARN','SEEK_AGAIN','COMPLETE'];
+  const STAGES=['MEMORIZE','FIRST_FIND','FIRST_FIND_RELEARN','MEANING','DOMAIN_EXTENSION','SOUND_FIND_RELEARN','HIDDEN_WORDS','HIDDEN_WORDS_ASSIST','FINAL_SEEK','FINAL_SEEK_RECONSTRUCT','SEEK_AGAIN_RELEARN','SEEK_AGAIN','COMPLETE'];
   const clone=x=>JSON.parse(JSON.stringify(x));
   const current=(session,mission)=>mission.items.find(x=>x.id===session.queue?.[session.index])||null;
   const initialStageFor=w=>String(w?.missionRole||'NEW').toUpperCase()==='REVIEW'?'FIRST_FIND':'MEMORIZE';
@@ -388,16 +388,22 @@
     }else if(domain==='HANJA'&&w?.soundEvidence){
       const a=String(payload.sound||'').trim().normalize('NFKC');
       const target=String(w.soundEvidence.reading||'').trim().normalize('NFKC');
+      const ok=!!a&&a===target;
       HideV2Memory.record(mission.id,w.id,{
         stage:'SOUND_FIND',
         evidenceMode:'RECALL',
         axes:['SOUND','RECALL'],
-        result:a===target?'CORRECT':'WRONG',
+        result:ok?'CORRECT':'WRONG',
         objectiveVerified:true,
         objectiveRecall:true,
         assisted:false,
         source:w.soundEvidence.sourceRef
       });
+      if(!ok){
+        const next=clone(session);
+        next.stage='SOUND_FIND_RELEARN';
+        return {ok:false,session:next,soundEvidence:w.soundEvidence};
+      }
     }else{
       HideV2Memory.record(mission.id,w.id,{
         stage:'CONNECTION',
@@ -410,6 +416,27 @@
         assisted:false
       });
     }
+    return nextAfterDomain(session,mission);
+  }
+
+  function submitSoundRelearn(session,mission){
+    const w=current(session,mission);
+    if(!w?.soundEvidence?.verified||!w.soundEvidence.reading){
+      const next=clone(session);
+      next.stage='FINAL_SEEK';
+      return {unsupported:true,session:next};
+    }
+    HideV2Memory.record(mission.id,w.id,{
+      stage:'SOUND_FIND_RELEARN',
+      evidenceMode:'RELEARN_EXPOSURE',
+      axes:['SOUND','FORM'],
+      result:'SEEN',
+      objectiveVerified:false,
+      objectiveRecall:false,
+      recallScoreImpact:false,
+      assisted:true,
+      source:w.soundEvidence.sourceRef
+    });
     return nextAfterDomain(session,mission);
   }
 
