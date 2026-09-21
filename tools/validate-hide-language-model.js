@@ -68,6 +68,25 @@ const englishContextEvidence=api.normalizeItem({
   contextEvidence:{verified:true,sourceRef:'fixture://en-context',contextText:'evidence appears here',evidenceText:'evidence',candidates:['evidence','here']}
 });
 assert(englishContextEvidence.contextEvidence===null,'context evidence contract is Korean-only');
+
+const hanjaSoundEvidence=api.normalizeItem({
+  word:'學',
+  languageDomain:'HANJA',
+  soundEvidence:{verified:true,sourceType:'TEST_FIXTURE',sourceRef:'fixture://hanja-sound',reading:'학'}
+});
+assert(hanjaSoundEvidence.soundEvidence?.reading==='학','verified Hanja sound evidence must survive');
+const invalidHanjaSound=api.normalizeItem({
+  word:'學',
+  languageDomain:'HANJA',
+  soundEvidence:{verified:true,reading:'학'}
+});
+assert(invalidHanjaSound.soundEvidence===null,'Hanja sound evidence without sourceRef must fail closed');
+const koreanSoundEvidence=api.normalizeItem({
+  word:'학',
+  languageDomain:'KOREAN',
+  soundEvidence:{verified:true,sourceRef:'fixture://ko-sound',reading:'학'}
+});
+assert(koreanSoundEvidence.soundEvidence===null,'sound evidence contract is Hanja-only');
 const koParent=api.parentExplanation({word:'불가피',languageDomain:'KOREAN',meaningMap:{verified:true,sourceType:'TEST_FIXTURE',sourceRef:'fixture://ko-meaning-map',title:'불가피',coreMeaning:'피할 수 없음',imageryCue:'피할 수 없는 길',memoryBridge:'不(아닐 불)+避(피할 피) → 피할 수 없음',nodes:[{role:'HANJA_ORIGIN',label:'不',meaning:'아니다'},{role:'HANJA_ORIGIN',label:'避',meaning:'피하다'}],bridges:[]}});
 assert(koParent?.mode==='VERIFIED_MEANING_STRUCTURE'&&koParent.text.includes('구성 요소'),'korean parent explanation must use meaning structure');
 const hanjaParent=api.parentExplanation({word:'學',languageDomain:'HANJA',meaningMap:{verified:true,sourceType:'TEST_FIXTURE',sourceRef:'fixture://hanja-meaning-map',title:'學',coreMeaning:'배우다',imageryCue:'배우는 장면',memoryBridge:'구성을 보고 뜻을 연결',nodes:[{role:'COMPONENT',label:'學',meaning:'배우다'}],bridges:[]}});
