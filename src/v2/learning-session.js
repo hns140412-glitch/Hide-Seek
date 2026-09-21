@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const STAGES=['MEMORIZE','FIRST_FIND','FIRST_FIND_RELEARN','MEANING','DOMAIN_EXTENSION','FINAL_SEEK','SEEK_AGAIN_RELEARN','SEEK_AGAIN','COMPLETE'];
+  const STAGES=['MEMORIZE','FIRST_FIND','FIRST_FIND_RELEARN','MEANING','DOMAIN_EXTENSION','HIDDEN_WORDS','FINAL_SEEK','SEEK_AGAIN_RELEARN','SEEK_AGAIN','COMPLETE'];
   const clone=x=>JSON.parse(JSON.stringify(x));
   const current=(session,mission)=>mission.items.find(x=>x.id===session.queue?.[session.index])||null;
   const initialStageFor=w=>String(w?.missionRole||'NEW').toUpperCase()==='REVIEW'?'FIRST_FIND':'MEMORIZE';
@@ -43,6 +43,7 @@
     if(next.stage==='FIRST_FIND_RELEARN'){next.stage='MEANING';return next}
     if(next.stage==='MEANING'){next.stage='DOMAIN_EXTENSION';return next}
     if(next.stage==='DOMAIN_EXTENSION'){next.stage='FINAL_SEEK';return next}
+    if(next.stage==='HIDDEN_WORDS'){next.stage='FINAL_SEEK';return next}
     if(next.stage==='SEEK_AGAIN_RELEARN'){next.stage='SEEK_AGAIN';return next}
     if(next.stage==='SEEK_AGAIN')return nextItemOrComplete(next,mission);
     if(next.stage==='FINAL_SEEK')return nextItemOrComplete(next,mission);
@@ -147,6 +148,76 @@
     return {ok,session:advance(attempt.session,mission)};
   }
 
+  function hiddenWordsPlan(word){
+    const mem=HideV2Memory.summary(word);
+    const primaryReason=HideV2Memory.reason(mem);
+    const key=primaryReason?.key||'stable';
+    const labels={
+      recovery:'힌트 없이 다시 꺼내기',
+      confusion:'뜻 헷갈림 다시 구분하기',
+      orthographic:'글자 모양 다시 붙잡기',
+      sound:'소리에서 다시 찾기',
+      latency:'조금 더 빠르게 꺼내기',
+      hint:'힌트 없이 다시 꺼내기',
+      decay:'기억 길 다시 깨우기',
+      stable:'지금은 보강 없이 통과'
+    };
+    return {key,label:labels[key]||labels.stable,primaryReason,memory:mem};
+  }
+
+  function nextAfterDomain(session,mission){
+    const next=clone(session);
+    const w=current(next,mission);
+    const plan=hiddenWordsPlan(w);
+    next.stage=plan.key==='stable'?'FINAL_SEEK':'HIDDEN_WORDS';
+    return {session:next,plan};
+  }
+
+  function submitHiddenWords(session,mission,payload={}){
+    const w=current(session,mission);
+    const plan=hiddenWordsPlan(w);
+    const typed=String(payload.answer||'').trim().normalize('NFKC');
+    const mode=plan.key==='sound'&&w?.soundEvidence?.reading?'SOUND':'TOKEN';
+    const target=mode==='SOUND'
+      ?String(w.soundEvidence.reading||'').trim().normalize('NFKC')
+      :String(w.token||'').trim().normalize('NFKC').toLowerCase();
+    const answer=mode==='SOUND'?typed:typed.toLowerCase();
+    const ok=!!answer&&answer===target;
+    HideV2Memory.record(mission.id,w.id,{
+      stage:'HIDDEN_WORDS',
+      evidenceMode:mode==='SOUND'?'RECALL':'REINFORCEMENT_RECALL',
+      axes:mode==='SOUND'?['SOUND','RECALL']:['FORM','RECALL'],
+      result:ok?'CORRECT':'WRONG',
+      objectiveVerified:true,
+      objectiveRecall:true,
+      assisted:false,
+      reinforcementReason:plan.key,
+      source:mode==='SOUND'?(w.soundEvidence?.sourceRef||null):null
+    });
+    const next=clone(session);
+    next.stage=ok?'FINAL_SEEK':'HIDDEN_WORDS_RELEARN';
+    return {ok,plan,session:next};
+  }
+
+  function submitHiddenWordsRelearn(session,mission){
+    const w=current(session,mission);
+    const plan=hiddenWordsPlan(w);
+    HideV2Memory.record(mission.id,w.id,{
+      stage:'HIDDEN_WORDS_RELEARN',
+      evidenceMode:'RELEARN_EXPOSURE',
+      axes:['FORM','MEANING'],
+      result:'SEEN',
+      objectiveVerified:false,
+      objectiveRecall:false,
+      recallScoreImpact:false,
+      assisted:true,
+      reinforcementReason:plan.key
+    });
+    const next=clone(session);
+    next.stage='FINAL_SEEK';
+    return {plan,session:next};
+  }
+
   function submitDomainExtension(session,mission,payload={}){
     const w=current(session,mission);
     const domain=w?.languageDomain||'ENGLISH';
@@ -210,7 +281,7 @@
         assisted:false
       });
     }
-    return {session:advance(session,mission)};
+    return nextAfterDomain(session,mission);
   }
 
   function useFinalSupport(session,mission,support={}){
@@ -300,6 +371,6 @@
   }
 
   window.HideV2Learning=Object.freeze({
-    STAGES,create,current,advance,submitMemorize,checkFirstFind,markFirstFindUnsure,submitFirstFindRelearn,checkMeaning,submitDomainExtension,useFinalSupport,checkFinalSeek,submitSeekAgainRelearn,checkSeekAgain
+    STAGES,create,current,advance,submitMemorize,checkFirstFind,markFirstFindUnsure,submitFirstFindRelearn,checkMeaning,hiddenWordsPlan,submitDomainExtension,submitHiddenWords,submitHiddenWordsRelearn,useFinalSupport,checkFinalSeek,submitSeekAgainRelearn,checkSeekAgain
   });
 })();
