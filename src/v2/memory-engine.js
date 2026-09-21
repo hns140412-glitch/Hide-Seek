@@ -35,6 +35,15 @@
     const hintCount=assisted.length+rows.filter(x=>Number(x.hintLevel||0)>0).length;
     const timeoutCount=rows.filter(x=>x.result==='TIMEOUT').length;
     const slowCount=rows.filter(x=>Number(x.elapsedMs||0)>=8000).length;
+    const recallDirections={};
+    for(const row of rows.filter(x=>x.objectiveRecall===true&&x.recallDirection)){
+      const key=String(row.recallDirection);
+      const bucket=recallDirections[key]||(recallDirections[key]={attempts:0,correct:0,wrong:0,assisted:0});
+      bucket.attempts++;
+      if(row.result==='CORRECT')bucket.correct++;
+      else if(['WRONG','MISMATCH','TIMEOUT','PASS'].includes(row.result))bucket.wrong++;
+      if(row.assisted===true)bucket.assisted++;
+    }
 
     const recoveryAssist=rows.filter(x=>x.assisted===true&&['FINAL_SEEK_SUPPORT','FINAL_SEEK','SEEK_AGAIN','FIRST_FIND'].includes(x.stage));
     let recoveryStatus='UNPROVEN';
@@ -54,6 +63,7 @@
       timeoutRisk:clamp(timeoutCount*30),
       hintDependency:clamp(hintCount*18),
       recoveryStatus,
+      recallDirections,
       longTermDecay:spaced.length?0:(immediateRecovery.length?18:(wrongRecall.length?32:10)),
       traceCounts:{
         total:rows.length,
@@ -128,6 +138,7 @@
         timeoutRisk:x.memorySignature.timeoutRisk,
         hintDependency:x.memorySignature.hintDependency,
         recoveryStatus:x.memorySignature.recoveryStatus,
+        recallDirections:x.memorySignature.recallDirections,
         longTermDecay:x.memorySignature.longTermDecay,
         advisoryOnly:true,
         evidenceBasis:'HIDE_MEMORY_EVIDENCE',
