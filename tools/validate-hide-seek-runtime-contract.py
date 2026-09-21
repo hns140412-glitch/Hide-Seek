@@ -623,6 +623,22 @@ for needle in [
         fail.append("RECORDS_SELF_REPORT_RATE_CONTRACT:"+needle)
 
 for needle in [
+    "finalSeekUnits",
+    "finalSeekDistractorPool",
+    "languageDomain:inferenceWordDomain(w)",
+    "codeSession.units",
+    "글자 열쇠",
+]:
+    if needle not in app:
+        fail.append("FINAL_SEEK_LANGUAGE_DOMAIN_CONTRACT:"+needle)
+for forbidden in [
+    "codeSession.word.eng[codeSession.blankIdx[slot]].toLowerCase()",
+    "codeSession.word.eng[i].toLowerCase()",
+]:
+    if forbidden in app:
+        fail.append("FINAL_SEEK_ENGLISH_ONLY_PATH:"+forbidden)
+
+for needle in [
     "FIRST_SEEN_PREDICTION",
     "recallScoreImpact:false",
     "transferSkillEvidence=true",
