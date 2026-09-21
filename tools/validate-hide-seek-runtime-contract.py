@@ -380,6 +380,8 @@ for needle in [
     "classificationSource:'ROLE_CONFIRMATION_OR_HISTORY'",
     "layoutIndependent:true",
     "MISSION_REVIEW_CONFIRMATION",
+    "FIRST_ENCOUNTER_INFERENCE",
+    "EXPLICIT_SOURCE_ROLE",
     "LEARNER_HISTORY_INFERENCE",
     "hide-role-toggle",
 ]:
