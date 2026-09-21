@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION='2026.09.21-learning-basis-v1';
+  const VERSION='2026.09.21-learning-basis-v2';
   const BASIS=Object.freeze({
     source_app:'Ready-Set',
     learning_master:{file:'ready-learning-master-v01.js',version:'0.5.1',sha:'a851d781f673742afdafe74e0e81fc4b1f3e9034'},
@@ -66,5 +66,29 @@
     return ordered;
   }
 
-  window.HideLearningBasis=Object.freeze({VERSION,BASIS,PROFILES,resolve,assistanceOrder});
+  function projectLearningContext(domain,raw){
+    if(!raw||typeof raw!=='object'||Array.isArray(raw))return null;
+    const state=String(raw.resolutionState||raw.resolution_state||'').trim().toUpperCase();
+    if(raw.resolved!==true&&state!=='RESOLVED')return null;
+    const resolvedBy=String(raw.resolvedBy||raw.resolved_by||'READY_LEARNING_ENGINE').trim();
+    if(!/READY/i.test(resolvedBy))return null;
+    const key=cleanDomain(domain);
+    const text=(...vals)=>{for(const v of vals){const s=String(v??'').trim();if(s)return s}return ''};
+    return Object.freeze({
+      resolutionState:'RESOLVED',resolved:true,resolvedBy,languageDomain:key,
+      contextId:text(raw.contextId,raw.context_id),
+      learningUnitId:text(raw.learningUnitId,raw.learning_unit_id),
+      subject:text(raw.subject,raw.subjectLabel,raw.subject_label),
+      unitLabel:text(raw.unitLabel,raw.unit_label),
+      rangeLabel:text(raw.rangeLabel,raw.range_label),
+      progressionContext:text(raw.progressionContext,raw.progression_context),
+      reviewContext:text(raw.reviewContext,raw.review_context),
+      assignmentRef:text(raw.assignmentRef,raw.assignment_ref),
+      sourceRef:text(raw.sourceRef,raw.source_ref),
+      hanjaLevelLabel:key==='HANJA'?text(raw.hanjaLevelLabel,raw.hanja_level_label,raw.gradeLabel,raw.grade_label):'',
+      hanjaLevelSchemeRef:key==='HANJA'?text(raw.hanjaLevelSchemeRef,raw.hanja_level_scheme_ref,raw.gradeSchemeRef,raw.grade_scheme_ref):''
+    });
+  }
+
+  window.HideLearningBasis=Object.freeze({VERSION,BASIS,PROFILES,resolve,assistanceOrder,projectLearningContext});
 })();
