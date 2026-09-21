@@ -72,7 +72,7 @@
     {
       "id": "HIDE-V2-C2S-012",
       "type": "EVIDENCE",
-      "statement": "Locked last closed product estimate: Product 71, Coded 87, CI 84, Browser Runtime 80, Device 0, Release 0.",
+      "statement": "Locked last closed product estimate: Product 72, Coded 88, CI 85, Browser Runtime 81, Device 0, Release 0.",
       "destination": "status"
     },
     {
@@ -152,6 +152,24 @@
       "type": "EVIDENCE",
       "statement": "HIDDEN WORDS maps Memory Engine primaryReason to bounded activity modes: confusion->meaning, orthographic->English shape scaffold, verified sound->sound recall, otherwise unassisted token recall.",
       "destination": "learning/hidden-words"
+    },
+    {
+      "id": "HIDE-V2-C2S-026",
+      "type": "EVIDENCE",
+      "statement": "MEANING CLUE uses session-scoped bidirectional recognition when valid peers exist; peerless sessions retain direct typed meaning recall.",
+      "destination": "learning/meaning"
+    },
+    {
+      "id": "HIDE-V2-C2S-027",
+      "type": "CORRECTION",
+      "statement": "MEANING recognition peers must come only from the active session.queue so Ready-directed lexical-id scope is not broadened by unrelated mission items.",
+      "destination": "ready-ownership/session-scope"
+    },
+    {
+      "id": "HIDE-V2-C2S-028",
+      "type": "EVIDENCE",
+      "statement": "MEANING recognition MISMATCH stores the confused token/meaning pair as objective recognition evidence without claiming recall, feeding Memory Engine confusion and Hidden Words meaning reinforcement.",
+      "destination": "memory-evidence/meaning-confusion"
     }
   ],
   "coverage": {
