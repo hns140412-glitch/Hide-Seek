@@ -338,3 +338,62 @@ test('Hide V2 wordbook merges repeated lexical encounters across missions',async
   expect(planet.memorySignature.traceCounts.spaced).toBe(1);
   expect(planet.memorySignature.recoveryStatus).toBe('SPACED_RECOVERED');
 });
+
+
+test('Hide V2 English memorization uses thinking trail before reveal without recall inflation',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'영어추론'},missions:[{
+        id:'m-think',title:'영어 구조 탐험',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        items:[{id:'w-think',lexicalId:'earthquake::지진',token:'earthquake',meaning:'지진',example:'An earthquake shook the city.',languageDomain:'ENGLISH',missionRole:'NEW',evidence:[],source:{},meaningMap:null}],
+        sourceCount:0,provenance:{}
+      }],activeMissionId:'m-think',activeSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'학습 시작'}).click();
+  await expect(page.getByText('THINKING TRAIL',{exact:true})).toBeVisible();
+  await expect(page.getByRole('button',{name:'구조·장면 단서 보기'})).toBeDisabled();
+  await page.locator('.inference-prediction').fill('땅이 흔들리는 것');
+  await page.locator('.inference-clue').selectOption('WORD_PART');
+  await page.locator('.inference-confidence').selectOption('HIGH');
+  await page.getByRole('button',{name:'내 추론 남기기'}).click();
+  await expect(page.getByRole('button',{name:'구조·장면 단서 보기'})).toBeEnabled();
+  await page.getByRole('button',{name:'구조·장면 단서 보기'}).click();
+  await expect(page.getByText(/earth \+ quake|땅의 흔들림/)).toBeVisible();
+
+  const ev=await page.evaluate(()=>{
+    const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
+    return s.missions[0].items[0].evidence.find(x=>x.stage==='THINKING_TRAIL');
+  });
+  expect(ev.evidenceMode).toBe('INFERENCE_SELF_REPORT');
+  expect(ev.objectiveVerified).toBe(false);
+  expect(ev.objectiveRecall).toBe(false);
+  expect(ev.confidence).toBe('HIGH');
+});
+
+test('Hide V2 memory detail exposes evidence trail behind strength and priority',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'상세기록'},missions:[{
+        id:'m-detail',title:'상세 기록 미션',status:'COMPLETED',createdAt:'2026-09-21T00:00:00.000Z',updatedAt:'2026-09-21T01:00:00.000Z',
+        items:[{id:'w-detail',lexicalId:'planet::행성',token:'planet',meaning:'행성',languageDomain:'ENGLISH',missionRole:'REVIEW',source:{},evidence:[
+          {at:'2026-09-21T01:00:00.000Z',stage:'FIRST_FIND',evidenceMode:'RECALL',axes:['FORM','RECALL'],result:'WRONG',objectiveVerified:true,objectiveRecall:true,assisted:false},
+          {at:'2026-09-21T01:05:00.000Z',stage:'FINAL_SEEK',evidenceMode:'RECONSTRUCTION',axes:['FORM','RECALL'],result:'CORRECT',objectiveVerified:true,objectiveRecall:true,assisted:false,spacedEvidence:false}
+        ]}],
+        sourceCount:0,provenance:{}
+      }],activeMissionId:'m-detail',activeSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'기억 기록'}).click();
+  await page.locator('[data-word-detail]').click();
+  await expect(page.getByText('MEMORY DETAIL',{exact:true})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'planet'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Evidence Trail'})).toBeVisible();
+  await expect(page.getByText('FIRST_FIND',{exact:true})).toBeVisible();
+  await expect(page.getByText('FINAL_SEEK',{exact:true})).toBeVisible();
+  await expect(page.getByText('IMMEDIATE_ONLY',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'기록으로'}).click();
+  await expect(page.getByRole('heading',{name:'기억 기록'})).toBeVisible();
+});
