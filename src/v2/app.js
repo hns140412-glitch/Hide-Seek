@@ -371,10 +371,15 @@
 
     if(session.stage==='HIDDEN_WORDS'){
       const plan=HideV2Learning.hiddenWordsPlan(w);
-      const soundMode=plan.key==='sound'&&w?.soundEvidence?.reading;
-      const prompt=soundMode?'이 글자의 음을 기억에서 다시 꺼내보세요.':'뜻을 보고 단어를 힌트 없이 다시 꺼내보세요.';
-      const cue=soundMode?w.token:w.meaning;
-      const aria=soundMode?'숨은 단어 음 답 입력':'숨은 단어 보강 답 입력';
+      const prompt=plan.mode==='SOUND'
+        ?'이 글자의 음을 기억에서 다시 꺼내보세요.'
+        :plan.mode==='MEANING'
+          ?'단어를 보고 뜻을 다시 구분해보세요.'
+          :plan.mode==='SHAPE'
+            ?'글자 골격을 보고 전체 단어를 다시 꺼내보세요.'
+            :'뜻을 보고 단어를 힌트 없이 다시 꺼내보세요.';
+      const cue=plan.prompt||w.meaning;
+      const aria=plan.mode==='SOUND'?'숨은 단어 음 답 입력':plan.mode==='MEANING'?'숨은 단어 뜻 답 입력':'숨은 단어 보강 답 입력';
       view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}${journeyHtml(session.stage)}${crewHtml(w,session.stage)}<div class="learn-head"><span class="phase-chip">${childStageLabel('HIDDEN_WORDS')}</span><b>${idx}/${total}</b></div><section class="card word-card hidden-words-card"><p class="quest-overline">HIDDEN WORDS</p><h2>${esc(plan.label)}</h2><p>${esc(prompt)}</p><div class="bigword">${esc(cue)}</div><small>보강 이유 · ${esc(plan.primaryReason?.label||'기억 흔적')}</small><input id="v2HiddenAnswer" class="input" aria-label="${esc(aria)}" autocomplete="off" spellcheck="false"><button id="v2HiddenCheck" class="btn primary full" type="button">보강 기억 확인</button></section></section>`;
       $('#v2HiddenCheck').onclick=()=>{
         const answer=$('#v2HiddenAnswer').value.trim();
