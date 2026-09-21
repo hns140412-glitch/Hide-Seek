@@ -32,7 +32,7 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 | Korean EVIDENCE TRAIL | RUNTIME_VERIFIED | yes when verified contextEvidence exists | verified-context fixture | browser evidence-selection truth-boundary flow | representative Korean source evidence still open |
 | Hanja SOUND FIND | RUNTIME_VERIFIED | yes when verified soundEvidence exists | verified-sound fixture | dedicated V2 browser sound-recall flow | representative Hanja source/device pronunciation workflow still open |
 | HIDDEN WORDS reinforcement | RUNTIME_VERIFIED | conditional | fixture | Memory Engine-gated + reason-specific + staged-assistance browser flows | deeper multi-step ladder remains partial beyond one safe clue escalation |
-| FINAL SEEK | RUNTIME_VERIFIED | yes | fixture | browser flow + assisted→unassisted truth-boundary regression | richer reconstruction ladder remains partial |
+| FINAL SEEK | RUNTIME_VERIFIED | yes | fixture | unassisted recall + optional support + failed-recall shape reconstruction + Seek Again browser regressions | full letter-key reconstruction game remains reference-only |
 | Memory evidence recording | RUNTIME_VERIFIED | yes | fixture | V2 Memory Ladder browser flow | long-term calibration still needs representative history |
 | Memory advisory to Ready | PARTIAL | no current hosted V2 target | candidate-contract shaped | Hide V2 producer + Ready V2 consumer contract CI | hosted current-candidate roundtrip unverified |
 | Ready Planner directive intake | RUNTIME_VERIFIED | yes | fixture contract | browser directed lexical-id test | live current Ready runtime integration unverified |
@@ -48,10 +48,10 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 
 ## Claim levels
 
-- PRODUCT_COMPLETION: approximately 73%
-- CODED: approximately 89%
-- CI_VERIFIED: approximately 86%
-- BROWSER_RUNTIME_VERIFIED: approximately 82%
+- PRODUCT_COMPLETION: approximately 74%
+- CODED: approximately 90%
+- CI_VERIFIED: approximately 87%
+- BROWSER_RUNTIME_VERIFIED: approximately 83%
 - DEVICE_VERIFIED: 0%
 - RELEASE_VERIFIED: 0%
 
@@ -334,3 +334,14 @@ Head before matrix document: 63db5206a836050c3dfe5f2b9fd0238d6baeb464
 - SHAPE reinforcement itself was also corrected: because a form cue is visible, even a correct response is assisted/non-recall; direct typed MEANING reinforcement remains real meaning recall.
 - Exact code HEAD `28a70fc7ff3e1f89d1bfaba6b59acf47af5f1557` passed V2 #261 / full Hide #719.
 - Conservative reporting rises one point for this newly reachable assistance ladder: PRODUCT ~73%, CODED ~89%, CI ~86%, Browser Runtime ~82%, Device 0%, Release 0%.
+
+
+### 2026-09-22 Final Seek reconstruction recovery increment
+- FINAL SEEK keeps the first verification attempt unassisted.
+- An unassisted English FINAL SEEK miss may enter one form-reconstruction recovery using the existing shape scaffold before any full answer exposure.
+- Reconstruction evidence is `ASSISTED_RECONSTRUCTION`, objectively checkable but never objective recall.
+- Reconstruction success routes directly to SEEK AGAIN, where the learner must retrieve the word without the reconstruction cue.
+- Reconstruction failure routes to the existing relearn exposure and then SEEK AGAIN.
+- If the learner already used the optional semantic memory-scene support during FINAL SEEK, a second reconstruction clue is not stacked; the flow fails closed to relearn.
+- Exact code HEAD `47cf0c0391c13311cb3faa3c33cf305a2c8e5c63` passed V2 #268 / full Hide #726.
+- Conservative reporting rises one point for this newly runtime-proven reconstruction/recovery journey: PRODUCT ~74%, CODED ~90%, CI ~87%, Browser Runtime ~83%, Device 0%, Release 0%.
