@@ -44,7 +44,7 @@ assert(!unverified.meaningMap,'unverified meaning map must fail closed');
 const english=api.normalizeItem({
   eng:'transport',kor:'운반하다',
   meaningMap:{
-    verified:true,sourceType:'CURATED',
+    verified:true,sourceType:'TEST_FIXTURE',sourceRef:'fixture://transport-map',
     title:'transport',
     coreMeaning:'운반하다',
     imageryCue:'한 곳에서 다른 곳으로 물건을 옮기는 장면',
@@ -62,7 +62,7 @@ assert(api.cuePlan(english)?.type==='MEANING_MAP','english cue plan');
 
 const korean=api.normalizeItem({
   word:'불가피',kor:'피할 수 없음',languageDomain:'KOREAN',
-  meaningMap:{verificationState:'VERIFIED',nodes:[
+  meaningMap:{verificationState:'VERIFIED',sourceType:'TEST_FIXTURE',sourceRef:'fixture://korean-map',coreMeaning:'피할 수 없음',nodes:[
     {role:'HANJA_ORIGIN',label:'不',meaning:'아니다'},
     {role:'HANJA_ORIGIN',label:'避',meaning:'피하다'}
   ],memoryBridge:'피하는 것이 가능하지 않다 → 피할 수 없다'}
@@ -71,7 +71,7 @@ assert(korean.meaningMap?.domain==='KOREAN','korean verified map');
 
 const hanja=api.normalizeItem({
   word:'學',languageDomain:'HANJA',
-  meaningMap:{verified:true,nodes:[
+  meaningMap:{verified:true,sourceType:'TEST_FIXTURE',sourceRef:'fixture://hanja-map',coreMeaning:'배우다',nodes:[
     {role:'COMPONENT',label:'學',meaning:'배우다'}
   ],imageryCue:'배움을 익히는 장면'}
 });
