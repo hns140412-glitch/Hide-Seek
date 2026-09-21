@@ -108,6 +108,11 @@ assert(inferenceHtml.includes('inference-prediction')&&inferenceHtml.includes('i
 assert(inferenceHtml.includes('검증 어원')&&inferenceHtml.includes('environ'),'verified visual grammar');
 
 
+const adaptive=api.prioritizeExistingAssistance(['SOUND','THINKING_SCENE','SHAPE','FRAGMENT','MINIMUM_REVEAL'],{bestClue:{clue:'WORD_PART'}});
+assert(adaptive[0]==='THINKING_SCENE'&&adaptive[1]==='SHAPE','word-part skill should reorder existing weak cues');
+assert(adaptive.at(-2)==='FRAGMENT'&&adaptive.at(-1)==='MINIMUM_REVEAL','strong reveal cues must remain terminal');
+const noInvent=api.prioritizeExistingAssistance(['SOUND','SHAPE','FRAGMENT','MINIMUM_REVEAL'],{bestClue:{clue:'ROOT_ETYMOLOGY'}});
+assert(!noInvent.includes('MEANING_MAP')&&!noInvent.includes('THINKING_SCENE'),'adaptive ordering must not invent unavailable help');
 const parentVerified=api.parentExplanation({eng:'mountain'});
 assert(parentVerified?.mode==='VERIFIED'&&parentVerified?.text.includes('mons / montis'),'parent verified explanation');
 const parentSemantic=api.parentExplanation({eng:'ocean'});
