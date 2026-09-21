@@ -510,6 +510,7 @@ for needle in [
     "hintPlanSource",
     "planSource:codeSession.hintPlanSource",
     "showParentExplanation",
+    "supplementalMapHtml=role==='NEW'&&thinkingHtml?'':mapHtml",
     "PARENT_CHILD",
 ]:
     if needle not in app:
