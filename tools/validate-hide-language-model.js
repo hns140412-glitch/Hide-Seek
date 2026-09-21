@@ -152,7 +152,7 @@ assert(adaptive.at(-2)==='FRAGMENT'&&adaptive.at(-1)==='MINIMUM_REVEAL','strong 
 const noInvent=api.prioritizeExistingAssistance(['SOUND','SHAPE','FRAGMENT','MINIMUM_REVEAL'],{adaptiveClue:{clue:'ROOT_ETYMOLOGY'}});
 assert(!noInvent.includes('MEANING_MAP')&&!noInvent.includes('THINKING_SCENE'),'adaptive ordering must not invent unavailable help');
 const parentVerified=api.parentExplanation({eng:'mountain'});
-assert(parentVerified?.mode==='VERIFIED'&&parentVerified?.text.includes('mons / montis'),'parent verified explanation');
+assert(parentVerified?.mode==='VERIFIED_ETYMOLOGY_OR_ROOT'&&parentVerified?.text.includes('mons / montis'),'parent verified explanation');
 const parentSemantic=api.parentExplanation({eng:'ocean'});
 assert(parentSemantic?.mode==='SEMANTIC_SCENE'&&parentSemantic?.text.includes('억지로 어원을 나누지 않고'),'parent semantic truth boundary');
 const skill=api.summarizeInferenceSkill([
