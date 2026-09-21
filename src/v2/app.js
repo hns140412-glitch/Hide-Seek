@@ -420,7 +420,7 @@
     }
 
     if(session.stage==='HIDDEN_WORDS'){
-      const plan=HideV2Learning.hiddenWordsPlan(w);
+      const plan=HideV2Learning.hiddenWordsPlan(w,session);
       const prompt=plan.mode==='SOUND'
         ?'이 글자의 음을 기억에서 다시 꺼내보세요.'
         :plan.mode==='MEANING'
