@@ -72,8 +72,32 @@
     {
       "id": "HIDE-V2-C2S-012",
       "type": "EVIDENCE",
-      "statement": "Locked last closed product estimate: Product 62, Coded 79, CI 75, Browser Runtime 70, Device 0, Release 0.",
+      "statement": "Locked last closed product estimate: Product 67, Coded 83, CI 80, Browser Runtime 76, Device 0, Release 0.",
       "destination": "status"
+    },
+    {
+      "id": "HIDE-V2-C2S-013",
+      "type": "EVIDENCE",
+      "statement": "Runtime V2 Hanja SOUND FIND has dedicated browser proof using verified source-linked soundEvidence; typed SOUND recall is objective recall and preserves sourceRef.",
+      "destination": "language-memory/hanja"
+    },
+    {
+      "id": "HIDE-V2-C2S-014",
+      "type": "EVIDENCE",
+      "statement": "Runtime V2 Korean verified EVIDENCE TRAIL is browser-verified: explicit verified context evidence selection earns EVIDENCE+MEANING objective verification without claiming CONTEXT recall.",
+      "destination": "language-memory/korean"
+    },
+    {
+      "id": "HIDE-V2-C2S-015",
+      "type": "CORRECTION",
+      "statement": "Korean context exposure or evidence selection must not be converted into objective CONTEXT recall; RESPONSE TRAIL remains production evidence.",
+      "destination": "evidence-truth-boundary"
+    },
+    {
+      "id": "HIDE-V2-C2S-016",
+      "type": "EVIDENCE",
+      "statement": "Browser exploration art-direction continuity is verified across child-facing surfaces; physical-device visual QA remains open.",
+      "destination": "ui-ux"
     }
   ],
   "coverage": {
