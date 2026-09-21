@@ -599,6 +599,67 @@ test('Hide V2 Hanja SOUND FIND records only verified source-linked sound recall'
   await expect(page.getByRole('heading',{name:'탐험 완료'})).toBeVisible();
 });
 
+test('Hide V2 Hanja SOUND miss relearns verified sound before unassisted sound reinforcement',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'한자 음 복구'},missions:[{
+        id:'m-hanja-relearn',title:'한자 음 복구',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        items:[{
+          id:'hanja-relearn',lexicalId:'山::산',token:'山',meaning:'산',languageDomain:'HANJA',
+          soundEvidence:{verified:true,sourceType:'VERIFIED_HANJA_SOUND',sourceRef:'fixture:hanja:山',reading:'산'},
+          missionRole:'NEW',evidence:[],source:{}
+        }],
+        sourceCount:0,provenance:{source:'TEST_FIXTURE'}
+      }],activeMissionId:'m-hanja-relearn',activeSession:null,captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'탐험 시작'}).click();
+  await page.getByRole('button',{name:'기억하고 찾아보기'}).click();
+  await page.getByLabel('회상 답 입력').fill('山');
+  await page.getByRole('button',{name:'기억 확인'}).click();
+  await page.getByLabel('뜻 회상 입력').fill('산');
+  await page.getByRole('button',{name:'뜻 확인'}).click();
+
+  await page.getByLabel('한자 음 입력').fill('강');
+  await page.getByRole('button',{name:'음 기억 확인'}).click();
+  await expect(page.getByText('소리 다시 만나기',{exact:true})).toBeVisible();
+  await expect(page.getByText('산',{exact:true})).toBeVisible();
+
+  await page.getByRole('button',{name:'다시 숨기고 소리 찾기'}).click();
+  await expect(page.getByText('숨은 단어 보강',{exact:true})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'소리에서 다시 찾기'})).toBeVisible();
+  await expect(page.getByLabel('숨은 단어 음 답 입력')).toBeVisible();
+
+  const evidence=await page.evaluate(()=>{
+    const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
+    return s.missions[0].items[0].evidence;
+  });
+  const miss=evidence.find(x=>x.stage==='SOUND_FIND');
+  const relearn=evidence.find(x=>x.stage==='SOUND_FIND_RELEARN');
+  expect(miss.result).toBe('WRONG');
+  expect(miss.objectiveRecall).toBe(true);
+  expect(miss.source).toBe('fixture:hanja:山');
+  expect(relearn.evidenceMode).toBe('RELEARN_EXPOSURE');
+  expect(relearn.objectiveRecall).toBe(false);
+  expect(relearn.recallScoreImpact).toBe(false);
+  expect(relearn.assisted).toBe(true);
+  expect(relearn.source).toBe('fixture:hanja:山');
+
+  await page.getByLabel('숨은 단어 음 답 입력').fill('산');
+  await page.getByRole('button',{name:'보강 기억 확인'}).click();
+  await expect(page.getByText('마지막 찾기',{exact:true})).toBeVisible();
+
+  const hidden=await page.evaluate(()=>{
+    const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
+    return s.missions[0].items[0].evidence.find(x=>x.stage==='HIDDEN_WORDS');
+  });
+  expect(hidden.reinforcementMode).toBe('SOUND');
+  expect(hidden.result).toBe('CORRECT');
+  expect(hidden.objectiveRecall).toBe(true);
+  expect(hidden.source).toBe('fixture:hanja:山');
+});
+
 test('Hide V2 Korean verified EVIDENCE TRAIL records evidence without claiming context recall',async({page})=>{
   await page.addInitScript(()=>{
     localStorage.setItem('hide_seek_v2_state',JSON.stringify({
