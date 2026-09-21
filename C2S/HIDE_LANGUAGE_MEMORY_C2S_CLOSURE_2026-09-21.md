@@ -366,7 +366,7 @@ DEPLOYED = NO
 ### Resume priority
 1. Continue pre-deploy implementation only.
 2. Keep Ready as owner of homework/Learning Unit/Hanja-level semantics.
-3. Keep Hide as owner of cumulative language-memory evidence and Memory Ladder behavior.
+3. Keep Hide as owner of cumulative language-memory evidence and within-session Memory Ladder behavior; Ready Learning Engine owns review-policy interpretation and Ready & Set Planner owns actual scheduling.
 4. Expand Korean/Hanja memory behavior through resolved learning context, not duplicated subject logic.
 5. Preserve current truth gates, self-report vs objective recall separation, and current-word applicability.
 6. Do not deploy, call Netlify, or merge until explicit approval.
