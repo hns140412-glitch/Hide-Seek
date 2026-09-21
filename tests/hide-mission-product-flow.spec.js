@@ -98,11 +98,18 @@ test('two-word mission follows the guided learning path through Final Seek',asyn
 
   await page.goto('/');
   await page.getByRole('button',{name:'학습'}).click();
-  await page.getByRole('button',{name:'탐험 시작'}).click();
+  await page.getByRole('button',{name:'외우기 시작'}).click();
+  await expect(page.getByText('새 단어 이해하고 외우기')).toBeVisible();
+  await page.getByRole('button',{name:'외웠어요 · 다음'}).click();
+  await page.getByRole('button',{name:'외우기 완료 · FIRST FIND'}).click();
   await expect(page.getByText('FIRST FIND',{exact:true})).toBeVisible();
 
-  await page.getByRole('button',{name:'다음 단어'}).click();
-  await page.getByRole('button',{name:'다음 단어'}).click();
+  for(const pair of [{eng:'benefit',kor:'혜택'},{eng:'essential',kor:'필수적인'}]){
+    await expect(page.getByText(pair.kor,{exact:true})).toBeVisible();
+    await page.getByLabel('떠올린 단어 입력').fill(pair.eng);
+    await page.getByRole('button',{name:'기억 확인'}).click();
+    await page.waitForTimeout(320);
+  }
   await expect(page.getByText('MEANING CLUE',{exact:true})).toBeVisible();
 
   for(let i=0;i<2;i++){
