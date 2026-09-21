@@ -5,7 +5,8 @@ function seededState(){
   const map=(domain,nodes,coreMeaning,memoryBridge)=>({
     verified:true,
     verificationState:'VERIFIED',
-    sourceType:'CURATED',
+    sourceType:'TEST_FIXTURE',
+    sourceRef:'fixture://verified-multilingual-map',
     coreMeaning,
     memoryBridge,
     imageryCue:coreMeaning,
