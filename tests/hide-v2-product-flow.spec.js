@@ -360,7 +360,8 @@ test('Hide V2 English memorization uses thinking trail before reveal without rec
   await page.getByRole('button',{name:'내 추론 남기기'}).click();
   await expect(page.getByRole('button',{name:'구조·장면 단서 보기'})).toBeEnabled();
   await page.getByRole('button',{name:'구조·장면 단서 보기'}).click();
-  await expect(page.getByText(/earth \+ quake|땅의 흔들림/)).toBeVisible();
+  await expect(page.getByText(/earth \+ quake/).first()).toBeVisible();
+  await expect(page.getByText(/땅의 흔들림/).first()).toBeVisible();
 
   const ev=await page.evaluate(()=>{
     const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
