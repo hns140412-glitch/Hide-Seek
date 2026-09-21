@@ -57,6 +57,11 @@ test('Hide V2 presents one continuous child journey and a completion moment', as
   await expect(page.locator('.completion-crew')).toBeVisible();
   await page.getByRole('button', { name: '기억 사다리 보기' }).click();
   await expect(page.getByRole('heading', { name: '기억 사다리' })).toBeVisible();
+  await expect(page.locator('.ladder-board')).toBeVisible();
+  await expect(page.locator('.ladder-rung')).toHaveCount(3);
+  await expect(page.getByText('다시 찾을 단어', { exact: true })).toBeVisible();
+  await expect(page.getByText('올라가는 단어', { exact: true })).toBeVisible();
+  await expect(page.getByText('안정된 단어', { exact: true })).toBeVisible();
 
   const metrics = await page.evaluate(() => ({
     width: window.innerWidth,
