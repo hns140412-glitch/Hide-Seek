@@ -530,11 +530,20 @@
       sourceColumnIndex: Number(row.sourceColumnIndex ?? i)
     }));
 
-    data=data.map(x=>({
-      ...x,
-      missionRole:["NEW","REVIEW"].includes(x.missionRole)?x.missionRole:(typeof inferMissionRole==='function'?inferMissionRole(x,session.editingSheetId||''):'')
-    }));
+    data=data.map(x=>{
+      const explicit=["NEW","REVIEW"].includes(x.missionRole);
+      const missionRole=explicit?x.missionRole:(typeof inferMissionRole==='function'?inferMissionRole(x,session.editingSheetId||''):'');
+      const missionRoleSource=x.missionRoleSource||(explicit?'EXPLICIT_SOURCE_ROLE':missionRole==='REVIEW'?'LEARNER_HISTORY_INFERENCE':'FIRST_ENCOUNTER_INFERENCE');
+      return {...x,missionRole,missionRoleSource};
+    });
     const roleCounts=()=>({NEW:data.filter(x=>x.missionRole==='NEW').length,REVIEW:data.filter(x=>x.missionRole==='REVIEW').length});
+    const roleSourceLabel=source=>({
+      EXPLICIT_OCR_ROLE:'원자료 표시',
+      EXPLICIT_SOURCE_ROLE:'명시 역할',
+      LEARNER_HISTORY_INFERENCE:'이전 학습 이력',
+      FIRST_ENCOUNTER_INFERENCE:'첫 등장',
+      MISSION_REVIEW_CONFIRMATION:'검토에서 확정'
+    })[String(source||'')]||'역할 근거 확인';
     const view = document.querySelector('#view');
     const counts=roleCounts();
     view.innerHTML = `
@@ -570,7 +579,7 @@
           <input class="eng" value="${esc(w.eng)}" aria-label="${i + 1}번 영어 단어">
           <input class="kor" value="${esc(w.kor)}" aria-label="${i + 1}번 뜻">
           <span class="badge ${w.reviewResolved ? 'good' : 'weak'}">${w.reviewResolved ? '확인' : '확인 필요'}</span>
-          <button class="badge hide-role-toggle ${w.missionRole==='NEW'?'good':''}" data-role-toggle="${i}" type="button">${w.missionRole||'미분류'}</button>
+          <div class="hide-role-review"><button class="badge hide-role-toggle ${w.missionRole==='NEW'?'good':''}" data-role-toggle="${i}" type="button">${w.missionRole||'미분류'}</button><small class="hide-role-source">${esc(roleSourceLabel(w.missionRoleSource))}</small></div>
           ${w.reviewResolved ? '' : `<button class="hide-confirm-row" data-confirm="${i}" type="button">이대로 확인</button>`}
           <button class="row-delete" data-del="${i}" type="button" aria-label="${i + 1}번 행 삭제">×</button>
         </div>`).join('');
