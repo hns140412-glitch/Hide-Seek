@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION='2026.09.21-language-core-v13';
+  const VERSION='2026.09.21-language-core-v14';
 
   const MODELS={
     ENGLISH:{
@@ -201,6 +201,22 @@
         :['WORD_PART','ROOT_ETYMOLOGY','SCENE','PRIOR_WORD','OTHER'];
     return keys.map(value=>({value,label:clueLabel(value)}));
   }
+  function clueApplicableToPlan(plan={},clue=''){
+    const key=String(clue||'');
+    const roles=new Set((plan.nodes||[]).map(x=>String(x.role||'').toUpperCase()));
+    if(key==='ROOT_ETYMOLOGY')return !!plan.claimsHistoricalEtymology||['VERIFIED_ETYMOLOGY','VERIFIED_ROOT'].includes(plan.type);
+    if(key==='WORD_PART')return !!plan.parts?.length||plan.type==='TRANSPARENT_COMPOUND';
+    if(key==='AFFIX')return roles.has('AFFIX')||roles.has('PREFIX')||roles.has('SUFFIX');
+    if(key==='HANJA_ORIGIN')return roles.has('HANJA_ORIGIN');
+    if(key==='ETYMOLOGY')return roles.has('ETYMOLOGY')||!!plan.claimsHistoricalEtymology;
+    if(key==='COMPONENT')return roles.has('COMPONENT');
+    if(key==='RADICAL')return roles.has('RADICAL');
+    if(key==='SOUND')return roles.has('SOUND')||String(plan.domain||'').toUpperCase()==='HANJA';
+    if(key==='SCENE')return !!plan.scene;
+    if(key==='PRIOR_WORD')return !!plan.links?.length;
+    if(key==='OTHER')return true;
+    return false;
+  }
 
   function preferredAssistanceSteps(skillProfile={}){
     const clue=String(skillProfile?.adaptiveClue?.clue||'');
@@ -253,7 +269,8 @@
     const sceneTrail=plan.visual?.length?'<div class="scene-trail">'+plan.visual.map((x,i)=>'<span><small>'+esc(String(i+1))+'</small><b>'+esc(x)+'</b></span>').join('<i>→</i>')+'</div>':'';
     const links=plan.links.length?'<div class="thinking-links"><b>전에 만난 연결</b>'+plan.links.map(x=>'<span>'+esc(x)+'</span>').join('')+'</div>':'';
     const truthBadge=plan.verified?(plan.claimsHistoricalEtymology?'검증 어원':'검증 의미 구조'):'현대 구조/의미 단서';
-    const priorSkill=context.skillProfile?.adaptiveClue?'<div class="prior-skill-cue"><small>여러 번 도움이 됐던 단서</small><b>'+esc(clueLabel(context.skillProfile.adaptiveClue.clue))+'</b><span>참고만 하고, 이번 단어에서는 다른 단서를 골라도 돼.</span></div>':'';
+    const adaptiveClue=context.skillProfile?.adaptiveClue?.clue||'';
+    const priorSkill=adaptiveClue&&clueApplicableToPlan(plan,adaptiveClue)?'<div class="prior-skill-cue"><small>여러 번 도움이 됐던 단서</small><b>'+esc(clueLabel(adaptiveClue))+'</b><span>이 단어에도 쓸 수 있는 단서야. 참고만 하고 다른 단서를 골라도 돼.</span></div>':'';
     const parent= context.showParentExplanation?parentExplanation(item):null;
     const parentHtml=parent?'<div class="parent-explain-card"><small>부모 설명 한 줄 · '+esc(parent.mode)+'</small><b>'+esc(parent.text)+'</b></div>':'';
     return '<section class="thinking-map-card" data-thinking-word="'+esc(plan.word)+'" data-support-type="'+esc(plan.type)+'">'+
@@ -274,6 +291,7 @@
     supportContract,
     clueLabel,
     clueOptions,
+    clueApplicableToPlan,
     preferredAssistanceSteps,
     prioritizeExistingAssistance,
     parentExplanation,
