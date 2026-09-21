@@ -151,6 +151,6 @@ Latest branch state must be checked live before work resumes. Do not reuse the o
 - Hide does **not** own review dates, long-term review cadence, or calendar allocation.
 - Hide owns memory evidence and advisory signals only, including memory strength, confusion, assisted/unassisted recall, spaced-recall evidence, recovery state, and next-review priority.
 - Ready Learning Engine interprets those signals into subject/review policy.
-- Ready Planner owns actual scheduling and rescheduling through dated TODOs, free-window allocation, carry-over, and planner constraints.
-- Canonical loop: `Hide memory evidence -> Ready learning/review policy -> Ready Planner schedule -> future Hide retrieval -> new memory evidence`.
+- Ready & Set Planner owns actual scheduling and rescheduling through dated TODOs, free-window allocation, carry-over, and planner constraints.
+- Canonical loop: `Hide memory evidence -> Ready learning/review policy -> Ready & Set Planner schedule -> future Hide retrieval -> new memory evidence`.
 - A Hide-side `nextReviewPriority` is a priority signal, never a date/time schedule.
