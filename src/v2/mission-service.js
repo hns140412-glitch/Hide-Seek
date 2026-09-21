@@ -19,15 +19,31 @@
       soundEvidence:normalized.soundEvidence||null,
       missionRole:['NEW','REVIEW'].includes(clean(raw?.missionRole).toUpperCase())?clean(raw.missionRole).toUpperCase():'NEW',
       evidence:[],
-      source:{
-        pageId:clean(raw?.sourcePageId??nestedSource.pageId),
-        rowIndex:Number(raw?.sourceRowIndex??nestedSource.rowIndex??index),
-        confidence:clean(raw?.confidence??nestedSource.confidence??'medium').toLowerCase(),
-        warnings:(Array.isArray(raw?.warnings)?raw.warnings:Array.isArray(nestedSource.warnings)?nestedSource.warnings:[]).map(String),
-        provider:clean(raw?.ocrProvider??nestedSource.provider),
-        model:clean(raw?.ocrModel??nestedSource.model),
-        analysisVersion:clean(raw?.ocrAnalysisVersion??nestedSource.analysisVersion)
-      }
+      source:(()=>{
+        const normalizeSource=(src={},fallbackIndex=index)=>({
+          pageId:clean(src.pageId??src.sourcePageId),
+          rowIndex:Number(src.rowIndex??src.sourceRowIndex??fallbackIndex),
+          confidence:clean(src.confidence??'medium').toLowerCase(),
+          warnings:Array.isArray(src.warnings)?src.warnings.map(String):[],
+          provider:clean(src.provider??src.ocrProvider),
+          model:clean(src.model??src.ocrModel),
+          analysisVersion:clean(src.analysisVersion??src.ocrAnalysisVersion)
+        });
+        const primary=normalizeSource({
+          pageId:raw?.sourcePageId??nestedSource.pageId,
+          rowIndex:raw?.sourceRowIndex??nestedSource.rowIndex,
+          confidence:raw?.confidence??nestedSource.confidence,
+          warnings:Array.isArray(raw?.warnings)?raw.warnings:nestedSource.warnings,
+          provider:raw?.ocrProvider??nestedSource.provider,
+          model:raw?.ocrModel??nestedSource.model,
+          analysisVersion:raw?.ocrAnalysisVersion??nestedSource.analysisVersion
+        },index);
+        const occurrences=Array.isArray(nestedSource.occurrences)
+          ?nestedSource.occurrences.map((x,i)=>normalizeSource(x,i))
+          :[];
+        if(occurrences.length)primary.occurrences=occurrences;
+        return primary;
+      })()
     };
   }
   function createMission(input={}){
