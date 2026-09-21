@@ -179,3 +179,16 @@ Latest-head CI note must still be checked live. No Netlify / deploy / merge / us
 - A branch-only two-parent base synchronization commit was created with the existing working-branch tree and latest main as parents. This did **not** merge PR #4 to main.
 - After that sync, compare state became `behind=0` and PR #4 became `mergeable=true`; Actions resumed with run #253.
 - Run #253 passed product identity and runtime-contract guards, then failed in the standalone Memory behavior fixture because that harness did not provide the newly required inference helper dependencies. The harness was updated; this was a fixture dependency failure, not evidence of a runtime product regression.
+
+
+## CI closure repair delta
+- GitHub Actions resumed for the branch and browser failures were reduced from 5 to 2, then isolated to two concrete causes.
+- OCR/capture browser fixtures were corrected to obey shared vision provenance instead of bypassing evidence validation.
+- Progressive root visibility is now enforced by CSS: hidden nodes remain hidden until explicitly revealed.
+- Inference outcome binding was refactored into `bindInferenceOutcomeButtons(w)` using native `document.querySelectorAll('.inference-outcome-btn')` to avoid single-element selector misuse and storage-time `$$` normalization.
+- The real NEW12 browser fixture now targets the actual thinking path container (`.thinking-why`) instead of a non-existent legacy class.
+- Current source cross-check confirms:
+  - native multi-button outcome binder present and called,
+  - progressive hidden-node gate present,
+  - thinking-path assertion aligned to rendered DOM.
+- Latest head still requires a matching Actions run before CI_VERIFIED can be claimed.
