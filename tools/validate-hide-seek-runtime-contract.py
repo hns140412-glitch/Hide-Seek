@@ -783,6 +783,12 @@ for forbidden in [
 for needle in [
     "addLanguageMemoryEvidence",
     "languageMemoryEvidenceSummary",
+    "CONTEXT",
+    "EVIDENCE",
+    "EXPRESSION",
+    "CONTEXT_EXPOSURE_ONLY",
+    "TYPED_WORD_RECALL",
+    "MEANING_ASSOCIATION",
     "TYPED_CHARACTER_RECALL",
     "MEANING_RECOGNITION",
     "CHARACTER_RECONSTRUCTION",
