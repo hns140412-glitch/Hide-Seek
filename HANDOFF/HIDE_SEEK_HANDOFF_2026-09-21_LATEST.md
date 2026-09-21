@@ -174,3 +174,10 @@ Hide exports `reviewAdvisories` as evidence, not a schedule. The packet may incl
 - Word-level normalized state now preserves the semantic-light Ready-resolved `learningContext`; the prior discard bug is fixed.
 - `reviewAdvisories[].learningContextRef` may correlate Hide memory evidence to Ready context IDs/unit/range and upstream-resolved Hanja level metadata.
 - This is correlation only. Hide must not infer grade/range, identity/role, review policy, or schedule from the context.
+
+
+## Hanja evidence separation lock
+- Hanja memory evidence is separated into FORM / SOUND / MEANING / RECALL / WRITE_OR_RECONSTRUCT.
+- FIRST FIND, MEANING CLUE and FINAL SEEK emit axis-specific evidence.
+- SOUND replay remains exposure evidence only unless an actual sound-recall interaction exists.
+- Ready Learning Engine may interpret these evidence axes; Hide does not infer grade/range or schedule review.
