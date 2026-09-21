@@ -14,7 +14,7 @@ test('Hide V2 boots without legacy app.js and completes a mission end-to-end',as
     }));
   });
   await page.goto('/v2.html');
-  await expect(page.getByText('숨은 단어 탐험')).toBeVisible();
+  await expect(page.locator('.brand-copy small')).toHaveText('숨은 단어 탐험');
   await expect(page.getByRole('heading',{name:'V2 영어 미션'})).toBeVisible();
   await page.getByRole('button',{name:'학습 시작'}).click();
   await expect(page.getByText('단어 만나기',{exact:true})).toBeVisible();
@@ -400,8 +400,8 @@ test('Hide V2 memory detail exposes evidence trail behind strength and priority'
   await expect(page.getByText('기억 자세히',{exact:true})).toBeVisible();
   await expect(page.getByRole('heading',{name:'planet'})).toBeVisible();
   await expect(page.getByRole('heading',{name:'기억 흔적'})).toBeVisible();
-  await expect(page.getByText('FIRST_FIND',{exact:true})).toBeVisible();
-  await expect(page.getByText('FINAL_SEEK',{exact:true})).toBeVisible();
+  await expect(page.getByText('첫 찾기',{exact:true}).first()).toBeVisible();
+  await expect(page.getByText('마지막 찾기',{exact:true}).first()).toBeVisible();
   await expect(page.getByText('IMMEDIATE_ONLY',{exact:true})).toBeVisible();
   await page.getByRole('button',{name:'기록으로'}).click();
   await expect(page.getByRole('heading',{name:'기억 기록'})).toBeVisible();
@@ -422,7 +422,7 @@ test('Hide V2 registers its isolated service worker and can reopen cached shell 
 
   await context.setOffline(true);
   await page.reload();
-  await expect(page.getByText('숨은 단어 탐험')).toBeVisible();
+  await expect(page.locator('.brand-copy small')).toHaveText('숨은 단어 탐험');
   await expect(page.getByRole('button',{name:'미션 관리'})).toBeVisible();
   await context.setOffline(false);
 });
@@ -629,7 +629,7 @@ test('Hide V2 returnToReady emits a V2 learning_event envelope with exact task c
 
 test('Hide V2 child-facing shell uses exploration language and hides runtime jargon',async({page})=>{
   await page.goto('/v2.html');
-  await expect(page.getByText('숨은 단어 탐험',{exact:true})).toBeVisible();
+  await expect(page.locator('.brand-copy small')).toHaveText('숨은 단어 탐험');
   await expect(page.getByText('탐험 준비',{exact:true})).toBeVisible();
   for(const forbidden of ['Runtime V2','HIDE V2','REWRITE','monolith-free','구조 분리형 런타임']){
     await expect(page.getByText(forbidden,{exact:true})).toHaveCount(0);
@@ -671,7 +671,7 @@ test('Hide V2 wrong final seek enters relearn and seek-again before completing',
   await expect(page.getByText('island',{exact:true})).toBeVisible();
   await page.getByRole('button',{name:'다시 숨기기'}).click();
 
-  await expect(page.getByText('다시 찾기',{exact:true})).toBeVisible();
+  await expect(page.locator('.phase-chip')).toHaveText('다시 찾기');
   await page.getByLabel('다시 찾기 답 입력').fill('island');
   await page.getByRole('button',{name:'다시 찾기'}).click();
 
