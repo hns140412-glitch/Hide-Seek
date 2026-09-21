@@ -32,13 +32,19 @@
   function buildResult(){
     const s=HideV2Store.snapshot();
     const m=s.missions.find(x=>x.id===s.activeMissionId)||null;
+    const activeSession=s.activeSession||null;
+    const completed=m?.status==='COMPLETED'||activeSession?.stage==='COMPLETE';
     return {
+      resultContract:'HIDE_SPECIALIST_RESULT_V2',
       sourceApp:'hide-seek',
       runtime:'V2',
       taskContext:context(),
       activeMissionId:m?.id||null,
       missionTitle:m?.title||null,
       missionStatus:m?.status||null,
+      taskState:completed?'COMPLETED':'PARTIAL',
+      learningPhase:activeSession?.stage|| (completed?'COMPLETE':null),
+      trailMastery:null,
       memorySummary:m?HideV2Memory.missionSummary(m):null,
       reviewDirective:reviewDirective(),
       completedAt:new Date().toISOString()
