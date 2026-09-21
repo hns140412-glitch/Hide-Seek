@@ -481,8 +481,9 @@ function memoryStatusView(w){
  const level=reason.severity>=70?'weak':reason.severity>0?'mid':'good';
  return {reason,strength,priority,level}
 }
-function inferenceRecordSummary(words=validWords()){
- const events=words.flatMap(w=>(w.learningStats?.inferenceTrace||[]));
+function inferenceRecordSummary(words=null){
+ const source=Array.isArray(words)?words:(S.sheets||[]).flatMap(sh=>Array.isArray(sh.items)?sh.items:[]);
+ const events=source.flatMap(w=>(w.learningStats?.inferenceTrace||[]));
  return globalThis.HideLanguageModel?.summarizeInferenceSkill?.(events)||{attempts:0,assessed:0,successRate:0,bestClue:null,highConfidenceMisses:0,calibrationFlag:'OK'}
 }
 function memoryRecordSummary(words=validWords()){
