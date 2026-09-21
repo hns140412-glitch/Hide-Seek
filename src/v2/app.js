@@ -314,8 +314,21 @@
     }
 
     if(session.stage==='FIRST_FIND'){
-      view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}${journeyHtml(session.stage)}${crewHtml(w,session.stage)}<div class="learn-head"><span class="phase-chip">${childStageLabel('FIRST_FIND')}</span><b>${idx}/${total}</b></div><section class="card word-card"><p>뜻을 보고 단어를 기억에서 꺼내보세요.</p><div class="bigword">${esc(w.meaning)}</div><input id="v2Answer" class="input" aria-label="회상 답 입력" autocomplete="off" spellcheck="false"><button id="v2Check" class="btn primary full">기억 확인</button></section></section>`;
-      $('#v2Check').onclick=()=>{const r=HideV2Learning.checkFirstFind(session,m,$('#v2Answer').value);HideV2Session.update(r.session);setFlash(r.ok?'기억에서 찾았어요':'잠깐 다시 만나고 다음 단서로 이어가요.');render()};
+      view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}${journeyHtml(session.stage)}${crewHtml(w,session.stage)}<div class="learn-head"><span class="phase-chip">${childStageLabel('FIRST_FIND')}</span><b>${idx}/${total}</b></div><section class="card word-card"><p>뜻을 보고 단어를 기억에서 꺼내보세요.</p><div class="bigword">${esc(w.meaning)}</div><input id="v2Answer" class="input" aria-label="회상 답 입력" autocomplete="off" spellcheck="false"><div class="btn-row first-find-actions"><button id="v2Unsure" class="btn secondary" type="button">아직 안 떠올라</button><button id="v2Check" class="btn primary" type="button">기억 확인</button></div></section></section>`;
+      $('#v2Check').onclick=()=>{
+        const answer=$('#v2Answer').value.trim();
+        if(!answer){setFlash('떠올린 단어를 입력하거나, 아직 안 떠오르면 알려주세요.');return}
+        const r=HideV2Learning.checkFirstFind(session,m,answer);
+        HideV2Session.update(r.session);
+        setFlash(r.ok?'기억에서 찾았어요':'잠깐 다시 만나고 다음 단서로 이어가요.');
+        render()
+      };
+      $('#v2Unsure').onclick=()=>{
+        const r=HideV2Learning.markFirstFindUnsure(session,m);
+        HideV2Session.update(r.session);
+        setFlash('괜찮아요. 잠깐 다시 만나고 이어가요.');
+        render()
+      };
       return;
     }
 
