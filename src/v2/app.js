@@ -162,24 +162,22 @@
     if($('#v2ReturnReady'))$('#v2ReturnReady').onclick=()=>globalThis.HideV2ReadyBridge?.returnToReady?.();
   }
 
+  function renderOcrFailure(result){
+    const retained=(result?.rows||[]).length;
+    view().innerHTML=`<section class="card"><h2>${result?.retryAttempt?'다시 분석하지 못했어요':'분석하지 못했어요'}</h2><p>${esc(result?.reason||'OCR_ANALYSIS_FAILED')}</p>${retained?`<p>${retained}개 결과는 보존되어 있어요.</p>`:''}${result?.retryable?'<button id="v2RetryOcr" class="btn primary full">실패한 페이지만 다시 분석</button>':''}<button id="v2Back" class="btn secondary full">돌아가기</button></section>`;
+    if($('#v2RetryOcr'))$('#v2RetryOcr').onclick=async()=>{
+      view().innerHTML='<section class="card"><h2>다시 분석 중</h2><p>성공한 페이지는 유지하고 실패한 페이지만 다시 확인해요.</p></section>';
+      const retry=await HideV2Capture.analyzePending();
+      if(retry.ok){review(retry.rows);return}
+      renderOcrFailure({...retry,retryAttempt:true});
+    };
+    $('#v2Back').onclick=()=>HideV2Router.go('home');
+  }
+
   async function onFiles(files){
     view().innerHTML='<section class="card"><h2>프린트 분석 중</h2><p>원본을 기준으로 단어와 뜻을 추출하고 있어요.</p></section>';
     const r=await HideV2Capture.analyzeFiles(files);
-    if(!r.ok){
-      const retained=(r.rows||[]).length;
-      view().innerHTML=`<section class="card"><h2>분석하지 못했어요</h2><p>${esc(r.reason)}</p>${retained?`<p>${retained}개 결과는 보존했고 실패한 페이지만 다시 분석할 수 있어요.</p>`:''}${r.retryable?'<button id="v2RetryOcr" class="btn primary full">실패한 페이지만 다시 분석</button>':''}<button id="v2Back" class="btn secondary full">돌아가기</button></section>`;
-      if($('#v2RetryOcr'))$('#v2RetryOcr').onclick=async()=>{
-        view().innerHTML='<section class="card"><h2>다시 분석 중</h2><p>성공한 페이지는 유지하고 실패한 페이지만 다시 확인해요.</p></section>';
-        const retry=await HideV2Capture.analyzePending();
-        if(retry.ok){review(retry.rows);return}
-        const retained=(retry.rows||[]).length;
-        view().innerHTML=`<section class="card"><h2>다시 분석하지 못했어요</h2><p>${esc(retry.reason)}</p>${retained?`<p>${retained}개 결과는 계속 보존되어 있어요.</p>`:''}<button id="v2RetryOcrAgain" class="btn primary full">다시 시도</button><button id="v2Back" class="btn secondary full">돌아가기</button></section>`;
-        $('#v2RetryOcrAgain').onclick=()=>$('#v2RetryOcr')?.click?.();
-        $('#v2Back').onclick=()=>HideV2Router.go('home');
-      };
-      $('#v2Back').onclick=()=>HideV2Router.go('home');
-      return;
-    }
+    if(!r.ok){renderOcrFailure(r);return}
     review(r.rows);
   }
 
