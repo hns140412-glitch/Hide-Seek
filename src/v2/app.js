@@ -215,8 +215,9 @@
     };
     const resetRelated=(i)=>{
       const w=draft[i];
-      if(w.mergedInto){resetGroup(w.mergedInto);return}
-      if(draft.some(x=>x.mergedInto===w.id))resetGroup(w.id);
+      if(w.mergedInto){resetGroup(w.mergedInto);return true}
+      if(draft.some(x=>x.mergedInto===w.id)){resetGroup(w.id);return true}
+      return false;
     };
     const mergeGroup=(i)=>{
       const group=activeGroup(i);
@@ -250,8 +251,8 @@
         token.disabled=locked;meaning.disabled=locked;
         token.oninput=()=>{draft[i].token=token.value.trim();draft[i].lexicalId=`${draft[i].token.toLowerCase()}::${draft[i].meaning.replace(/\s+/g,' ')}`};
         meaning.oninput=()=>{draft[i].meaning=meaning.value.trim();draft[i].lexicalId=`${draft[i].token.toLowerCase()}::${draft[i].meaning.replace(/\s+/g,' ')}`};
-        token.onchange=()=>{resetRelated(i);renderRows()};
-        meaning.onchange=()=>{resetRelated(i);renderRows()};
+        token.onchange=()=>{if(resetRelated(i))renderRows()};
+        meaning.onchange=()=>{if(resetRelated(i))renderRows()};
         if(toggle)toggle.onclick=()=>{resetRelated(i);draft[i].excluded=!draft[i].excluded;renderRows()};
         if(merge)merge.onclick=()=>{
           if(draft.some(x=>x.mergedInto===w.id))resetGroup(w.id);else mergeGroup(i);
