@@ -27,7 +27,7 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 | MEMORIZE | FUNCTIONAL | yes | fixture | V2 browser flow | richer exploration assistance not yet ported |
 | FIRST FIND | FUNCTIONAL | yes | fixture | V2 browser flow | recovery/retry pedagogy still simplified |
 | MEANING recall | FUNCTIONAL | yes | fixture | V2 browser flow | recognition/contrast variants not yet ported |
-| English CONNECTION | PARTIAL | yes | fixture | V2 browser flow | full thinking/structure imagery engine UI not fully ported |
+| English CONNECTION | RUNTIME_VERIFIED | yes | fixture | Thinking Trail browser flow | adaptive clue personalization and broader representative vocabulary still pending |
 | Korean RESPONSE TRAIL | FUNCTIONAL | yes | fixture | V2 browser evidence semantics | qualitative feedback not implemented |
 | Hanja SOUND FIND | PARTIAL | yes when verified soundEvidence exists | fixture | domain contract | dedicated V2 browser Hanja path still needed |
 | FINAL SEEK | FUNCTIONAL | yes | fixture | V2 browser flow | richer reconstruction/hint ladder not ported |
@@ -37,17 +37,17 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 | Session reload/resume | RUNTIME_VERIFIED | yes | fixture | browser reload test | background/PWA lifecycle not verified |
 | Exploration crew / child-facing polished UI | SKELETON | partial | no | minimal V2 shell | product UI redesign still required |
 | Mission management surface | RUNTIME_VERIFIED | yes | N/A | selection/rename/archive/delete browser flow | richer history/filtering/bulk actions pending |
-| Records / wordbook surfaces | RUNTIME_VERIFIED | yes | fixture/history-shaped | cumulative wordbook + weakness dashboard browser flow | filtering/search/detail drill-down pending |
+| Records / wordbook surfaces | RUNTIME_VERIFIED | yes | fixture/history-shaped | cumulative wordbook + weakness dashboard + evidence detail browser flow | filtering/search/export pending |
 | PWA install/offline/update | NOT_STARTED | no | no | none for V2 | V2 service-worker/release integration pending |
 | Physical device behavior | NOT_STARTED | no | no | DEVICE_VERIFIED=0 | camera/touch/keyboard/install all pending |
 | Production/release | NOT_STARTED | no | no | none | intentional hold |
 
 ## Claim levels
 
-- PRODUCT_COMPLETION: approximately 44%
-- CODED: approximately 61%
-- CI_VERIFIED: approximately 55%
-- BROWSER_RUNTIME_VERIFIED: approximately 46%
+- PRODUCT_COMPLETION: approximately 48%
+- CODED: approximately 65%
+- CI_VERIFIED: approximately 59%
+- BROWSER_RUNTIME_VERIFIED: approximately 51%
 - DEVICE_VERIFIED: 0%
 - RELEASE_VERIFIED: 0%
 
@@ -107,3 +107,16 @@ Head before matrix document: 63db5206a836050c3dfe5f2b9fd0238d6baeb464
 - Records screen exposes aggregate memory state and per-word review priority.
 - Exact pre-document code HEAD `065f9064c23b2198719573da559e5618109f940d` passed V2 #33 and full Hide #487.
 - Completion increase reflects the newly reachable Memory Ladder/wordbook product path only.
+
+
+### English Thinking Trail / memory detail surgery increment
+- V2 MEMORIZE now consumes the canonical HideLanguageModel thinking renderer instead of duplicating etymology/root/scene rules.
+- Learner inference is recorded before reveal as `INFERENCE_SELF_REPORT`; it never inflates objective recall.
+- Verified etymology/root/meaning structures remain truth-gated by the domain model.
+- Transparent compounds and semantic scenes remain distinct from historical etymology claims.
+- Progressive root/scene reveal interactions are wired in V2.
+- Wordbook entries now open a Memory Detail surface showing strength, priority, weakness signature, recovery status and recent Evidence Trail.
+- Exact pre-document code HEAD `ce0ad263af71a14d2c4939934f2c81cf5f7a3cad` passed:
+  - Validate Hide Runtime V2 #40 — SUCCESS
+  - Validate Hide & Seek #494 — SUCCESS
+- Completion increase reflects these reachable product capabilities only.
