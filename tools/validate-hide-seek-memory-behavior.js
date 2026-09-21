@@ -31,8 +31,11 @@ const names=[
 ];
 const sandbox={
   console,Date,Math,Set,Number,Object,Array,String,
-  S:{learning:{history:[]},codeRed:{history:[]},lexicon:{}},
+  S:{learning:{history:[]},codeRed:{history:[]},lexicon:{},sheets:[]},
   codeSession:null,
+  inferenceWordDomain:()=> 'ENGLISH',
+  inferenceRecordSummary:()=>({adaptiveClue:null,emergingClue:null,evidenceLevel:'LOW'}),
+  HideLanguageModel:null,
   nowISO:()=>new Date('2026-09-20T00:00:00Z').toISOString()
 };
 vm.createContext(sandbox);
