@@ -407,7 +407,12 @@
         render();
         return;
       }
-      view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}${journeyHtml(session.stage)}${crewHtml(w,session.stage)}<div class="learn-head"><span class="phase-chip">${childStageLabel('FIRST_FIND_ASSIST')}</span><b>${idx}/${total}</b></div><section class="card word-card first-find-assist"><p class="quest-overline">ONE SMALL CLUE</p><h2>${esc(support.label)}</h2><p>글자 골격을 보고 전체 단어를 다시 떠올려보세요.</p><div class="memory-trace"><b>${esc(support.label)}</b><span>${esc(support.cue)}</span></div><small>이 단서를 본 뒤 맞혀도 무힌트 회상 성공으로 세지 않아요.</small><input id="v2FirstFindAssistAnswer" class="input" aria-label="첫 찾기 도움 답 입력" autocomplete="off" spellcheck="false"><button id="v2FirstFindAssistCheck" class="btn primary full" type="button">단서로 다시 확인</button></section></section>`;
+      const supportPrompt=support.type==='SOUND'
+        ?'검증된 음을 단서로 글자를 다시 떠올려보세요.'
+        :support.type==='MEANING_MAP'
+          ?'검증된 뜻의 구조를 단서로 단어를 다시 떠올려보세요.'
+          :'글자 골격을 보고 전체 단어를 다시 떠올려보세요.';
+      view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}${journeyHtml(session.stage)}${crewHtml(w,session.stage)}<div class="learn-head"><span class="phase-chip">${childStageLabel('FIRST_FIND_ASSIST')}</span><b>${idx}/${total}</b></div><section class="card word-card first-find-assist"><p class="quest-overline">ONE SMALL CLUE</p><h2>${esc(support.label)}</h2><p>${esc(supportPrompt)}</p><div class="memory-trace"><b>${esc(support.label)}</b><span>${esc(support.cue)}</span></div>${support.sourceRef?`<small class="truth-source">출처 확인됨 · ${esc(support.sourceRef)}</small>`:''}<small>이 단서를 본 뒤 맞혀도 무힌트 회상 성공으로 세지 않아요.</small><input id="v2FirstFindAssistAnswer" class="input" aria-label="첫 찾기 도움 답 입력" autocomplete="off" spellcheck="false"><button id="v2FirstFindAssistCheck" class="btn primary full" type="button">단서로 다시 확인</button></section></section>`;
       $('#v2FirstFindAssistCheck').onclick=()=>{
         const answer=$('#v2FirstFindAssistAnswer').value.trim();
         if(!answer){setFlash('단서를 보고 떠올린 단어를 입력해 주세요.');return}
