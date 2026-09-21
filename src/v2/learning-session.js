@@ -132,7 +132,8 @@
   function meaningChallenge(session,mission){
     const w=current(session,mission);
     if(!w)return null;
-    const peers=(mission?.items||[]).filter(x=>x.id!==w.id&&x.languageDomain===w.languageDomain&&x.token&&x.meaning);
+    const queueSet=new Set(Array.isArray(session?.queue)?session.queue:[]);
+    const peers=(mission?.items||[]).filter(x=>queueSet.has(x.id)&&x.id!==w.id&&x.languageDomain===w.languageDomain&&x.token&&x.meaning);
     if(!peers.length)return null;
     const direction=Number(session?.index||0)%2===1?'MEANING_TO_TOKEN':'TOKEN_TO_MEANING';
     const selected=[w,...peers.slice(0,3)];
