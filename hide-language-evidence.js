@@ -20,7 +20,7 @@
   const SUPPORT_TYPES=new Set(['VERIFIED_ETYMOLOGY','VERIFIED_ROOT','TRANSPARENT_COMPOUND']);
   const SOURCE_TYPES=new Set(['ETYMONLINE']);
   function historicalClaim(record){return record.claimsHistoricalEtymology!==false&&['VERIFIED_ETYMOLOGY','VERIFIED_ROOT'].includes(record.supportType)}
-  function validSourceRef(ref){try{const u=new URL(String(ref||''));return u.protocol==='https:'&&u.hostname==='www.etymonline.com'&&u.pathname.startsWith('/word/')}catch{return false}}
+  function validSourceRef(ref){return /^https:\/\/www\.etymonline\.com\/word\/[a-z0-9-]+$/i.test(String(ref||''))}
   function validNode(node){return !!node&&typeof node==='object'&&!!String(node.role||'').trim()&&!!String(node.label||'').trim()&&!!String(node.meaning||'').trim()}
   function validateRecord(word,record){
     if(!/^[a-z][a-z-]*$/.test(String(word||'')))return false;
