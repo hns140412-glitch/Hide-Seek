@@ -29,6 +29,34 @@ all_css=css+"\n"+runtime_css+"\n"+bridge_css
 manifest=read("manifest.json")
 index=read("index.html")
 
+def function_body(source,name):
+    marker="function "+name+"("
+    start=source.find(marker)
+    if start<0:
+        return ""
+    brace=source.find("{",start)
+    if brace<0:
+        return ""
+    depth=0
+    for i in range(brace,len(source)):
+        if source[i]=="{": depth+=1
+        elif source[i]=="}":
+            depth-=1
+            if depth==0:
+                return source[start:i+1]
+    return ""
+
+role_body=function_body(app,"inferMissionRole")
+if not role_body:
+    fail.append("MISSION_ROLE_INFERENCE_MISSING")
+else:
+    for forbidden in ["sourceColumn","sourceRowIndex","sourceColumnIndex","LEFT","RIGHT","CENTER"]:
+        if forbidden in role_body:
+            fail.append("MISSION_ROLE_LAYOUT_INDEPENDENCE:"+forbidden)
+    for required in ["missionRole","lexiconEntry","sourceRefs"]:
+        if required not in role_body:
+            fail.append("MISSION_ROLE_HISTORY_CONTRACT:"+required)
+
 for token in ["길잡이","Guide Companion"]:
     if token.lower() in index.lower():
         fail.append("CHILD_FACING_LEGACY_CREW_TERM:"+token)
