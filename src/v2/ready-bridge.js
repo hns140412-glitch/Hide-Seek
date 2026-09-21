@@ -34,7 +34,7 @@
     const m=s.missions.find(x=>x.id===s.activeMissionId)||null;
     const activeSession=s.activeSession||null;
     const completed=m?.status==='COMPLETED'||activeSession?.stage==='COMPLETE';
-    const trail=m?HideV2Trail.missionSummary(m):null;
+    const trail=m?HideV2Trail.missionSummary(m,{itemIds:activeSession?.queue||null}):null;
     return {
       resultContract:'HIDE_SPECIALIST_RESULT_V2',
       sourceApp:'hide-seek',
