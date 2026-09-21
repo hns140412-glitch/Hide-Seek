@@ -52,7 +52,7 @@ test('real NEW 12 + REVIEW 24 follows mission, recall and morning mock-test memo
 
   for(let i=0;i<12;i++){
     const expected=fixture.items[i];
-    await expect(page.locator('.word-card > .eng').filter({hasText:new RegExp('^'+expected.eng+'
+    await expect(page.locator('.word-card > .eng')).toHaveText(expected.eng);
     await expect(page.getByText('처음 본 단어처럼 추론해보기',{exact:true})).toBeVisible();
     await expect(page.getByRole('button',{name:'외웠어요 · 다음'})).toBeDisabled();
     await page.locator('.inference-prediction').fill('내가 생각한 '+expected.kor);
