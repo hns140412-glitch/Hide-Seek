@@ -25,7 +25,7 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 | OCR shared adapter integration | RUNTIME_VERIFIED | yes | provider-shaped fixture only | multi-page partial-failure/retry browser flow | real varied prints/provider behavior unverified |
 | OCR review persistence/resume | RUNTIME_VERIFIED | yes | provider-shaped fixture only | reload + editable review-draft persistence + warning/provenance + explicit duplicate-merge browser tests | real-provider calibration incomplete |
 | MEMORIZE | FUNCTIONAL | yes | fixture | V2 browser flow | richer exploration assistance not yet ported |
-| FIRST FIND | FUNCTIONAL | yes | fixture | V2 browser flow | recovery/retry pedagogy still simplified |
+| FIRST FIND | RUNTIME_VERIFIED | yes | fixture | correct/wrong/unsure + relearn-exposure browser flows | richer adaptive assistance still open |
 | MEANING recall | FUNCTIONAL | yes | fixture | V2 browser flow | recognition/contrast variants not yet ported |
 | English CONNECTION | RUNTIME_VERIFIED | yes | fixture | Thinking Trail browser flow | adaptive clue personalization and broader representative vocabulary still pending |
 | Korean RESPONSE TRAIL | RUNTIME_VERIFIED | yes | fixture | V2 browser production-evidence flow | qualitative feedback not implemented |
@@ -47,10 +47,10 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 
 ## Claim levels
 
-- PRODUCT_COMPLETION: approximately 68%
-- CODED: approximately 84%
-- CI_VERIFIED: approximately 81%
-- BROWSER_RUNTIME_VERIFIED: approximately 77%
+- PRODUCT_COMPLETION: approximately 69%
+- CODED: approximately 85%
+- CI_VERIFIED: approximately 82%
+- BROWSER_RUNTIME_VERIFIED: approximately 78%
 - DEVICE_VERIFIED: 0%
 - RELEASE_VERIFIED: 0%
 
@@ -261,3 +261,15 @@ Head before matrix document: 63db5206a836050c3dfe5f2b9fd0238d6baeb464
 - The internal recovery stage remains visually anchored to the FIRST FIND step; it does not create a seventh canonical journey stage.
 - Exact code HEAD `506029061ac9e2873595545758f1b737e9f1aa4e` passed V2 #220 / full Hide #678.
 - Conservative completion percentages remain PRODUCT ~68%, CODED ~84%, CI ~81%, Browser Runtime ~77%, Device 0%, Release 0% pending broader learning-assistance closure.
+
+
+### 2026-09-22 First Find explicit-failure closure
+- FIRST FIND now supports an explicit child-facing `아직 안 떠올라` action.
+- An unsure action is stored as a real recall attempt with `result=PASS`, `objectiveRecall=true`, `objectiveVerified=false`, `assisted=false`; it is not fabricated as a typed wrong answer.
+- Wrong typed answers remain objectively checked WRONG retrieval.
+- Both wrong and unsure paths enter the same relearn exposure before MEANING.
+- The exposure remains assisted/non-recall and cannot inflate Memory Strength.
+- Exact code HEAD `9261d6c07dbd37df1e9132bf6d15799072338983` passed:
+  - Validate Hide Runtime V2 #227 — SUCCESS
+  - Validate Hide & Seek #685 — SUCCESS.
+- Combined with the newly verified local-first editable OCR review continuity since the prior locked estimate, the conservative product-level report moves by one point only: PRODUCT ~69%, CODED ~85%, CI ~82%, Browser Runtime ~78%, Device 0%, Release 0%.
