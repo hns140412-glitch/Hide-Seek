@@ -43,7 +43,7 @@ test('Hide V2 boots without legacy app.js and completes a mission end-to-end',as
   expect(state.missions[0].memorySummary.authority).toBe('SPECIALIST_MEMORY_ADVISORY_ONLY');
 });
 
-test('Hide V2 First Find miss briefly relearns without recall inflation',async({page})=>{
+test('Hide V2 First Find miss uses one safe clue before full relearn',async({page})=>{
   await page.addInitScript(()=>{
     localStorage.setItem('hide_seek_v2_state',JSON.stringify({
       version:1,profile:{displayName:'첫찾기 복구'},missions:[{
@@ -60,10 +60,15 @@ test('Hide V2 First Find miss briefly relearns without recall inflation',async({
 
   await page.getByLabel('회상 답 입력').fill('wrong');
   await page.getByRole('button',{name:'기억 확인'}).click();
+  await expect(page.getByText('단서로 다시 찾기',{exact:true})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'글자 골격 단서'})).toBeVisible();
+  expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')).activeSession.stage)).toBe('FIRST_FIND_ASSIST');
+
+  await page.getByLabel('첫 찾기 도움 답 입력').fill('wrong');
+  await page.getByRole('button',{name:'단서로 다시 확인'}).click();
   await expect(page.getByText('다시 만나기',{exact:true})).toBeVisible();
   await expect(page.getByText('island',{exact:true})).toBeVisible();
   await expect(page.getByText('섬',{exact:true})).toBeVisible();
-  expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')).activeSession.stage)).toBe('FIRST_FIND_RELEARN');
 
   await page.getByRole('button',{name:'다시 숨기고 뜻 단서로'}).click();
   await expect(page.getByText('뜻 단서',{exact:true})).toBeVisible();
@@ -73,10 +78,16 @@ test('Hide V2 First Find miss briefly relearns without recall inflation',async({
     return s.missions[0].items[0].evidence;
   });
   const miss=evidence.find(x=>x.stage==='FIRST_FIND');
+  const assist=evidence.find(x=>x.stage==='FIRST_FIND_ASSIST');
   const relearn=evidence.find(x=>x.stage==='FIRST_FIND_RELEARN');
   expect(miss.result).toBe('WRONG');
   expect(miss.objectiveRecall).toBe(true);
   expect(miss.assisted).toBe(false);
+  expect(assist.result).toBe('WRONG');
+  expect(assist.evidenceMode).toBe('ASSISTED_RECONSTRUCTION');
+  expect(assist.objectiveRecall).toBe(false);
+  expect(assist.recallScoreImpact).toBe(false);
+  expect(assist.assisted).toBe(true);
   expect(relearn.evidenceMode).toBe('RELEARN_EXPOSURE');
   expect(relearn.result).toBe('SEEN');
   expect(relearn.objectiveRecall).toBe(false);
@@ -84,7 +95,7 @@ test('Hide V2 First Find miss briefly relearns without recall inflation',async({
   expect(relearn.assisted).toBe(true);
 });
 
-test('Hide V2 First Find unsure is a pass recall attempt, not fabricated wrong answer',async({page})=>{
+test('Hide V2 First Find unsure can recover with assisted clue without recall inflation',async({page})=>{
   await page.addInitScript(()=>{
     localStorage.setItem('hide_seek_v2_state',JSON.stringify({
       version:1,profile:{displayName:'첫찾기 unsure'},missions:[{
@@ -100,20 +111,29 @@ test('Hide V2 First Find unsure is a pass recall attempt, not fabricated wrong a
   await expect(page.getByRole('button',{name:'아직 안 떠올라'})).toBeVisible();
   await page.getByRole('button',{name:'아직 안 떠올라'}).click();
 
-  await expect(page.getByText('다시 만나기',{exact:true})).toBeVisible();
-  await expect(page.getByText('benefit',{exact:true})).toBeVisible();
+  await expect(page.getByText('단서로 다시 찾기',{exact:true})).toBeVisible();
+  await page.getByLabel('첫 찾기 도움 답 입력').fill('benefit');
+  await page.getByRole('button',{name:'단서로 다시 확인'}).click();
+  await expect(page.getByText('뜻 단서',{exact:true})).toBeVisible();
 
   const evidence=await page.evaluate(()=>{
     const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
     return s.missions[0].items[0].evidence;
   });
   const pass=evidence.find(x=>x.stage==='FIRST_FIND');
+  const assist=evidence.find(x=>x.stage==='FIRST_FIND_ASSIST');
   expect(pass.result).toBe('PASS');
   expect(pass.reason).toBe('UNSURE_SELF_REPORT');
   expect(pass.objectiveVerified).toBe(false);
   expect(pass.objectiveRecall).toBe(true);
   expect(pass.assisted).toBe(false);
   expect(evidence.some(x=>x.stage==='FIRST_FIND'&&x.result==='WRONG')).toBe(false);
+  expect(assist.result).toBe('CORRECT');
+  expect(assist.objectiveVerified).toBe(true);
+  expect(assist.objectiveRecall).toBe(false);
+  expect(assist.recallScoreImpact).toBe(false);
+  expect(assist.assisted).toBe(true);
+  expect(evidence.some(x=>x.stage==='FIRST_FIND_RELEARN')).toBe(false);
 });
 
 test('Hide V2 normal memorization exposure does not create hint dependency',async({page})=>{
