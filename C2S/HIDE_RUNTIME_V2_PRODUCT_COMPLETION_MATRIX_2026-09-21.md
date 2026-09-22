@@ -18,7 +18,7 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 |---|---|---:|---:|---|---|
 | V2 app bootstrap/store/router | RUNTIME_VERIFIED | yes | N/A | V2 CI | no release/PWA cutover |
 | V1 non-destructive migration | RUNTIME_VERIFIED | yes | partial | browser migration fixture | broader legacy variants not yet sampled |
-| Mission create/active ownership | RUNTIME_VERIFIED | yes | partial | browser + store tests | bulk operations not implemented |
+| Mission create/active ownership | RUNTIME_VERIFIED | yes | partial | browser + store + atomic bulk archive/delete tests | large-history management still not representative-tested |
 | Camera input path | PARTIAL | yes | no | code/browser file input | physical camera permission/device not verified |
 | Album multi-image intake | RUNTIME_VERIFIED | yes | synthetic multi-page | browser multi-page + retry flow | large/odd real image sets not representative-tested |
 | Capture blob persistence | RUNTIME_VERIFIED | yes | fixture blob | IndexedDB + reload test | storage quota/recovery not verified |
@@ -40,7 +40,7 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 | Session reload/resume | RUNTIME_VERIFIED | yes | fixture | browser reload test | background/PWA lifecycle not verified |
 | Child-facing core UI/UX | RUNTIME_VERIFIED | yes | browser/mobile viewport | home/mission/learning/completion/Memory Ladder/OCR review-recovery + 390×844 + exploration art-direction checks | physical-device visual QA/final device polish pending |
 | Exploration crew presentation layer | RUNTIME_VERIFIED | yes | adapter/fallback browser fixture | answer-safe crew strip + home/completion/Memory Ladder presentation tests | live current Snap crew-provider roundtrip and final art direction remain open |
-| Mission management surface | RUNTIME_VERIFIED | yes | N/A | selection/rename/archive/delete browser flow | richer history/filtering/bulk actions pending |
+| Mission management surface | RUNTIME_VERIFIED | yes | N/A | selection/rename/archive/delete + search/filter + atomic bulk archive/delete browser flow | custom sorting/large-history polish remains open |
 | Records / wordbook surfaces | RUNTIME_VERIFIED | yes | fixture/history-shaped | cumulative wordbook + weakness dashboard + evidence detail + safe CSV/JSON export browser flow | representative long-history export size still open |
 | PWA install/offline/update | RUNTIME_VERIFIED | yes | browser | isolated V2 manifest/SW/offline shell/update safe-point tests | physical install/device lifecycle still unverified |
 | Mobile 390×844 browser layout | RUNTIME_VERIFIED | yes | browser viewport | overflow/touch target/focus reduced-height tests | physical keyboard/touch/device browser still unverified |
@@ -526,3 +526,14 @@ Head before matrix document: 63db5206a836050c3dfe5f2b9fd0238d6baeb464
 - Source-backed reconstruction records preserve the source reference.
 - Exact HEAD `a933c16efc013e076d9117aa0fa73f8594f895b7` passed V2 #368 / full Hide #826.
 - Conservative reporting rises one point for this newly runtime-proven multilingual recovery path: PRODUCT ~81%, CODED ~97%, CI ~94%, Browser Runtime ~90%, Device 0%, Release 0%.
+
+
+### 2026-09-22 atomic bulk mission management increment
+- Mission Map now supports explicit multi-select with bulk archive, bulk delete and clear-selection controls.
+- Bulk mutation is atomic with active-session protection:
+  - if the selected set includes the mission owning the active learning session, the entire bulk archive/delete action is blocked;
+  - no partial delete/archive is allowed in that case.
+- Bulk archive/delete reselects an active mission only from remaining non-archived missions when needed.
+- Mobile controls use 44px minimum targets and collapse the bulk toolbar to one column at 390px.
+- Exact HEAD `4292b6ed02d6b5d1aa253c2617a66aee4af3ccb7` passed V2 #383 / full Hide #841.
+- Completion percentages stay at the current locked level because this closes a secondary mission-management gap rather than a new core learning journey.
