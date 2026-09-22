@@ -39,7 +39,7 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 | Ready Planner directive intake | RUNTIME_VERIFIED | yes | fixture contract | browser directed lexical-id test | live current Ready runtime integration unverified |
 | Session reload/resume | RUNTIME_VERIFIED | yes | fixture | browser reload test | background/PWA lifecycle not verified |
 | Child-facing core UI/UX | RUNTIME_VERIFIED | yes | browser/mobile viewport | home/mission/learning/completion/Memory Ladder/OCR review-recovery + 390×844 + exploration art-direction checks | physical-device visual QA/final device polish pending |
-| Exploration crew presentation layer | RUNTIME_VERIFIED | yes | adapter/fallback browser fixture | answer-safe crew strip + home/completion/Memory Ladder presentation tests | live current Snap crew-provider roundtrip and final art direction remain open |
+| Exploration crew presentation layer | RUNTIME_VERIFIED | yes | adapter/fallback browser fixture | answer-safe crew strip + home/completion/Memory Ladder presentation tests + unified exploration art direction | live current Snap crew-provider roundtrip remains open |
 | Mission management surface | RUNTIME_VERIFIED | yes | N/A | selection/rename/archive/delete + search/filter + atomic bulk archive/delete browser flow | custom sorting/large-history polish remains open |
 | Records / wordbook surfaces | RUNTIME_VERIFIED | yes | fixture/history-shaped | cumulative wordbook + weakness dashboard + evidence detail + safe CSV/JSON export browser flow | representative long-history export size still open |
 | PWA install/offline/update | RUNTIME_VERIFIED | yes | browser | isolated V2 manifest/SW/offline shell/update safe-point tests | physical install/device lifecycle still unverified |
@@ -545,4 +545,15 @@ Head before matrix document: 63db5206a836050c3dfe5f2b9fd0238d6baeb464
 - The 390×844 child-journey browser test explicitly verifies both animated default behavior and reduced-motion suppression.
 - Unified exploration-world art direction is already present across home / mission map / learning / completion / Memory Ladder surfaces.
 - No completion-percentage increase is claimed; this update removes stale OPEN wording only.
+- Current locked reporting remains PRODUCT ~81%, CODED ~97%, CI ~94%, Browser Runtime ~90%, Device 0%, Release 0%.
+
+
+### 2026-09-22 remaining-gate classification
+- Internal core learning runtime is now materially closed for the current V2 scope; remaining major blockers are evidence/verification boundaries rather than missing child-journey code.
+- EXTERNAL / REPRESENTATIVE INPUT: representative real printed-sheet OCR and current provider calibration.
+- DEVICE: physical camera permission, touch/keyboard behavior, install/update lifecycle and visual QA.
+- CROSS-APP: frozen current Ready↔Hide browser roundtrip under exact source-ref proof.
+- LIVE PROVIDER: current Snap Exploration Crew provider roundtrip; Hide already consumes the adapter contract and neutral fallback.
+- RELEASE: production/deploy remains intentionally blocked by the external-resource exact-source gate.
+- Secondary polish still possible inside the branch: custom mission sorting, large-history UX/export stress, broader legacy-migration samples. These are not allowed to masquerade as the major product blockers above.
 - Current locked reporting remains PRODUCT ~81%, CODED ~97%, CI ~94%, Browser Runtime ~90%, Device 0%, Release 0%.
