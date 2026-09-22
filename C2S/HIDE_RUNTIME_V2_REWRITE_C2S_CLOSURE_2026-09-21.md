@@ -394,3 +394,11 @@ FALSE_CONVERGENCE = 0: live deploy/device/real-provider claims remain OPEN.
 - Same-day recovery remains `IMMEDIATE_ONLY`; no spacing/scheduling policy moves into Hide.
 - Exact HEAD `5f5f99e4272a4b6d30ab2284d5e1755c71607f5f` passed V2 #349 / full Hide #807.
 - Locked reporting: PRODUCT ~80%, CODED ~96%, CI ~93%, Browser Runtime ~89%, Device 0%, Release 0%.
+
+
+## 30. 2026-09-22 touch letter-chunk FINAL SEEK reconstruction
+- FINAL_SEEK_RECONSTRUCT now supports touch chunk assembly on the 390×844 child surface.
+- Letter chunks are presentation scaffolds only, never linguistic-root/etymology claims.
+- Correct chunk assembly remains assisted/non-recall and must flow into SEEK AGAIN for unassisted proof.
+- Exact HEAD `00a5d8c8ddd50444d0762aed34be880a3b2fff12` passed V2 #358 / full Hide #816.
+- Completion percentages unchanged: PRODUCT ~80%, CODED ~96%, CI ~93%, Browser Runtime ~89%, Device 0%, Release 0%.
