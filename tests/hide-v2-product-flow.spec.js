@@ -748,6 +748,94 @@ test('Hide V2 Final Seek support cannot count as unassisted recall',async({page}
   expect(memory.needsUnassistedRecall).toBe(true);
 });
 
+test('Hide V2 Seek Again miss uses one safe clue then requires unassisted recovery',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'다시 찾기 보강'},missions:[{
+        id:'m-seek-assist',title:'다시 찾기 보강',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        items:[{id:'w-seek-assist',lexicalId:'island::섬',token:'island',meaning:'섬',example:'The island is small.',languageDomain:'ENGLISH',missionRole:'NEW',evidence:[],source:{}}],
+        sourceCount:0,provenance:{source:'TEST_FIXTURE'}
+      }],
+      activeMissionId:'m-seek-assist',
+      activeSession:{id:'s-seek-assist',missionId:'m-seek-assist',index:0,queue:['w-seek-assist'],stage:'SEEK_AGAIN',startedAt:new Date().toISOString(),completedAt:null,attempts:{}},
+      captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'탐험 이어가기'}).click();
+  await expect(page.locator('.phase-chip')).toHaveText('다시 찾기');
+
+  await page.getByLabel('다시 찾기 답 입력').fill('wrong');
+  await page.getByRole('button',{name:'다시 찾기'}).click();
+  await expect(page.locator('.phase-chip')).toHaveText('단서로 다시 찾기');
+  await expect(page.getByRole('heading',{name:'글자 골격 단서'})).toBeVisible();
+
+  await page.getByLabel('다시 찾기 도움 답 입력').fill('island');
+  await page.getByRole('button',{name:'단서로 다시 확인'}).click();
+  await expect(page.locator('.phase-chip')).toHaveText('다시 찾기');
+
+  let state=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')));
+  expect(state.activeSession.stage).toBe('SEEK_AGAIN');
+  expect(state.activeSession.attempts['w-seek-assist:SEEK_AGAIN_ASSIST']).toBe(1);
+
+  await page.getByLabel('다시 찾기 답 입력').fill('island');
+  await page.getByRole('button',{name:'다시 찾기'}).click();
+  await expect(page.getByRole('heading',{name:'탐험 완료'})).toBeVisible();
+
+  state=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')));
+  const evidence=state.missions[0].items[0].evidence;
+  const wrong=evidence.find(x=>x.stage==='SEEK_AGAIN'&&x.result==='WRONG');
+  const assist=evidence.find(x=>x.stage==='SEEK_AGAIN_ASSIST');
+  const recovered=evidence.filter(x=>x.stage==='SEEK_AGAIN'&&x.result==='CORRECT').at(-1);
+  expect(wrong.objectiveRecall).toBe(true);
+  expect(wrong.assisted).toBe(false);
+  expect(assist.result).toBe('CORRECT');
+  expect(assist.evidenceMode).toBe('ASSISTED_RECONSTRUCTION');
+  expect(assist.objectiveVerified).toBe(true);
+  expect(assist.objectiveRecall).toBe(false);
+  expect(assist.recallScoreImpact).toBe(false);
+  expect(assist.assisted).toBe(true);
+  expect(assist.spacedEvidence).toBe(false);
+  expect(recovered.objectiveRecall).toBe(true);
+  expect(recovered.assisted).toBe(false);
+  expect(recovered.spacedEvidence).toBe(false);
+});
+
+test('Hide V2 Seek Again does not loop the safe clue after it has been used',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'다시 찾기 단서 제한'},missions:[{
+        id:'m-seek-once',title:'다시 찾기 단서 제한',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        items:[{id:'w-seek-once',lexicalId:'benefit::혜택',token:'benefit',meaning:'혜택',example:'A benefit helps.',languageDomain:'ENGLISH',missionRole:'NEW',evidence:[],source:{}}],
+        sourceCount:0,provenance:{source:'TEST_FIXTURE'}
+      }],
+      activeMissionId:'m-seek-once',
+      activeSession:{id:'s-seek-once',missionId:'m-seek-once',index:0,queue:['w-seek-once'],stage:'SEEK_AGAIN',startedAt:new Date().toISOString(),completedAt:null,attempts:{}},
+      captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'탐험 이어가기'}).click();
+
+  await page.getByLabel('다시 찾기 답 입력').fill('wrong');
+  await page.getByRole('button',{name:'다시 찾기'}).click();
+  await page.getByLabel('다시 찾기 도움 답 입력').fill('benefit');
+  await page.getByRole('button',{name:'단서로 다시 확인'}).click();
+  await expect(page.locator('.phase-chip')).toHaveText('다시 찾기');
+
+  await page.getByLabel('다시 찾기 답 입력').fill('wrong-again');
+  await page.getByRole('button',{name:'다시 찾기'}).click();
+  await expect(page.getByText('다시 만나기',{exact:true})).toBeVisible();
+  expect(await page.getByText('단서로 다시 찾기',{exact:true}).count()).toBe(0);
+
+  const state=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')));
+  expect(state.activeSession.stage).toBe('SEEK_AGAIN_RELEARN');
+  expect(state.activeSession.attempts['w-seek-once:SEEK_AGAIN_ASSIST']).toBe(1);
+  const assist=state.missions[0].items[0].evidence.find(x=>x.stage==='SEEK_AGAIN_ASSIST');
+  expect(assist.result).toBe('CORRECT');
+  expect(assist.objectiveRecall).toBe(false);
+});
+
 test('Hide V2 Korean response stays production evidence, not recall inflation',async({page})=>{
   await page.addInitScript(()=>{
     localStorage.setItem('hide_seek_v2_state',JSON.stringify({
