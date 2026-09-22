@@ -296,6 +296,18 @@
       "type": "DECISION",
       "statement": "Touch chunk reconstruction remains assisted/non-recall and must still be followed by unassisted Seek Again verification.",
       "destination": "memory-evidence/final-seek"
+    },
+    {
+      "id": "HIDE-V2-C2S-050",
+      "type": "EVIDENCE",
+      "statement": "Wordbook supports browser-verified JSON/CSV export of Hide-owned memory evidence while excluding Ready scheduling fields.",
+      "destination": "records/export"
+    },
+    {
+      "id": "HIDE-V2-C2S-051",
+      "type": "CORRECTION",
+      "statement": "CSV export neutralizes formula-leading OCR/user text (=,+,-,@) so opening the export in a spreadsheet cannot execute that text as a formula.",
+      "destination": "records/export-security"
     }
   ],
   "coverage": {
