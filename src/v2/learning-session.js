@@ -85,6 +85,7 @@
     HideV2Memory.record(mission.id,w.id,{
       stage:'FIRST_FIND',
       evidenceMode:'RECALL',
+      recallDirection:'MEANING_TO_FORM',
       axes:['FORM','RECALL'],
       result:ok?'CORRECT':'WRONG',
       objectiveVerified:true,
@@ -305,6 +306,7 @@
     HideV2Memory.record(mission.id,w.id,{
       stage:'MEANING',
       evidenceMode:'RECALL',
+      recallDirection:'FORM_TO_MEANING',
       axes:['MEANING','RECALL'],
       result:ok?'CORRECT':'WRONG',
       objectiveVerified:true,
@@ -731,6 +733,7 @@
     HideV2Memory.record(mission.id,w.id,{
       stage:'FINAL_SEEK',
       evidenceMode:'RECONSTRUCTION',
+      recallDirection:'MEANING_TO_FORM',
       axes:['FORM','RECALL','WRITE_OR_RECONSTRUCT'],
       result:ok?'CORRECT':'WRONG',
       objectiveVerified:true,
@@ -799,6 +802,7 @@
     HideV2Memory.record(mission.id,w.id,{
       stage:'SEEK_AGAIN',
       evidenceMode:'RECALL',
+      recallDirection:'MEANING_TO_FORM',
       axes:['FORM','RECALL'],
       result:ok?'CORRECT':'WRONG',
       objectiveVerified:true,
