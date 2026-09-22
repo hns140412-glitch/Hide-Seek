@@ -980,7 +980,7 @@
         <section class="memory-summary"><div class="quest-stat"><b>${dash.averageStrength}%</b><span>전체 기억 힘</span></div><div class="quest-stat"><b>${dash.needsRecall}</b><span>다시 찾기</span></div><div class="quest-stat"><b>${dash.stable}</b><span>안정 단어</span></div></section>
         <section class="memory-signals"><span>뜻 혼동 <b>${dash.confusion}</b></span><span>글자 형태 <b>${dash.orthographic}</b></span><span>소리 <b>${dash.sound}</b></span><span>느린 회상 <b>${dash.slowRecall}</b></span><span>힌트 의존 <b>${dash.hintDependent}</b></span></section>
         ${book.length?`<section class="memory-export-tools" aria-label="기억 기록 내보내기"><div><b>내 기억 기록 가져가기</b><small>Hide의 현재 기억 흔적만 내보내요. 복습 날짜나 Ready & Set 일정은 포함하지 않아요.</small></div><div class="btn-row"><button id="v2ExportMemoryCsv" class="btn ghost" type="button">CSV 내보내기</button><button id="v2ExportMemoryJson" class="btn ghost" type="button">JSON 내보내기</button></div></section>`:''}
-        <section class="wordbook"><div class="section-title"><div><p class="quest-overline">WORD TRAIL</p><h2>단어 기록</h2></div><span>다시 볼 순서</span></div>${book.length?book.map((x,i)=>`<article class="word-row" data-wordbook-index="${i}" data-memory-state="${ladderBand(x)}" data-memory-text="${esc((x.token+' '+x.meaning).toLowerCase())}"><div class="word-row__body"><b>${esc(x.token)}</b><span>${esc(x.meaning)} · ${languageLabel(x.languageDomain)}</span><small>${esc(x.primaryReason.label)} · ${x.encounters}번 만남</small></div><div class="word-row__meter"><b>${x.memoryStrength}%</b><div class="mini-meter"><span style="width:${x.memoryStrength}%"></span></div><button class="btn ghost" data-word-detail="${i}" type="button">기억 보기</button></div></article>`).join(''):'<div class="empty-state"><b>아직 기억 기록이 없어요</b><p>단어 탐험을 마치면 이곳에 기억 사다리가 생겨요.</p></div>'}</section>
+        <section class="wordbook"><div class="section-title"><div><p class="quest-overline">WORD TRAIL</p><h2>단어 기록</h2></div><span>다시 볼 순서</span></div><div id="v2WordbookRows"></div><button id="v2WordbookMore" class="btn ghost full" type="button" hidden>더 보기</button></section>
       </details>
       <button class="btn secondary full" id="v2RecordsHome">홈으로</button>`;
     $('#v2RecordsHome').onclick=()=>HideV2Router.go('home');
@@ -998,22 +998,52 @@
       downloadTextFile('hide-seek-memory.csv','text/csv;charset=utf-8',csv);
     };
     let activeMemoryFilter='ALL';
-    const applyMemoryFilter=()=>{
+    const WORD_WINDOW=60;
+    let wordWindow=WORD_WINDOW;
+    const filteredBook=()=>{
       const q=String($('#v2MemorySearch')?.value||'').trim().toLowerCase();
-      const rows=[...view().querySelectorAll('[data-memory-state][data-memory-text]')];
-      let visibleWordRows=0;
-      rows.forEach(el=>{
+      return book.filter(x=>{
+        const state=ladderBand(x);
+        const text=(x.token+' '+x.meaning).toLowerCase();
+        return (activeMemoryFilter==='ALL'||state===activeMemoryFilter)&&(!q||text.includes(q));
+      });
+    };
+    const bindWordDetails=()=>{
+      view().querySelectorAll('[data-word-detail]').forEach(btn=>{
+        btn.onclick=()=>{
+          const entry=book.find(x=>x.lexicalId===btn.dataset.wordDetail);
+          if(entry)HideV2Router.go('record-detail',{lexicalId:entry.lexicalId});
+        };
+      });
+    };
+    const renderWordbook=()=>{
+      const rows=filteredBook();
+      const shown=rows.slice(0,wordWindow);
+      const host=$('#v2WordbookRows');
+      if(host)host.innerHTML=shown.length?shown.map(x=>`<article class="word-row" data-memory-state="${ladderBand(x)}" data-memory-text="${esc((x.token+' '+x.meaning).toLowerCase())}"><div class="word-row__body"><b>${esc(x.token)}</b><span>${esc(x.meaning)} · ${languageLabel(x.languageDomain)}</span><small>${esc(x.primaryReason.label)} · ${x.encounters}번 만남</small></div><div class="word-row__meter"><b>${x.memoryStrength}%</b><div class="mini-meter"><span style="width:${x.memoryStrength}%"></span></div><button class="btn ghost" data-word-detail="${esc(x.lexicalId)}" type="button">기억 보기</button></div></article>`).join(''):'<div class="empty-state"><b>조건에 맞는 단어가 없어요</b><p>검색어나 기억 단계를 바꿔보세요.</p></div>';
+      const more=$('#v2WordbookMore');
+      if(more){
+        more.hidden=shown.length>=rows.length;
+        more.textContent=shown.length<rows.length?`더 보기 (${shown.length}/${rows.length})`:'더 보기';
+      }
+      const count=$('#v2MemoryFilterCount');
+      if(count)count.textContent=rows.length>wordWindow?`${shown.length}/${rows.length}개 단어 보기`:`${rows.length}개 단어 보기`;
+      bindWordDetails();
+    };
+    const applyMemoryFilter=()=>{
+      wordWindow=WORD_WINDOW;
+      renderWordbook();
+      const q=String($('#v2MemorySearch')?.value||'').trim().toLowerCase();
+      view().querySelectorAll('.ladder-rung [data-memory-state][data-memory-text]').forEach(el=>{
         const state=el.dataset.memoryState||'';
         const text=el.dataset.memoryText||'';
         const visible=(activeMemoryFilter==='ALL'||state===activeMemoryFilter)&&(!q||text.includes(q));
         el.hidden=!visible;
         el.style.display=visible?'':'none';
-        if(visible&&el.matches('.word-row'))visibleWordRows++;
       });
-      const count=$('#v2MemoryFilterCount');
-      if(count)count.textContent=`${visibleWordRows}개 단어 보기`;
     };
     if($('#v2MemorySearch'))$('#v2MemorySearch').oninput=applyMemoryFilter;
+    if($('#v2WordbookMore'))$('#v2WordbookMore').onclick=()=>{wordWindow+=WORD_WINDOW;renderWordbook()};
     view().querySelectorAll('[data-memory-filter]').forEach(btn=>{btn.onclick=()=>{
       activeMemoryFilter=btn.dataset.memoryFilter||'ALL';
       view().querySelectorAll('[data-memory-filter]').forEach(x=>x.classList.toggle('is-active',x===btn));
@@ -1021,9 +1051,7 @@
     }});
     view().querySelectorAll('[data-ladder-word]').forEach(btn=>{btn.onclick=()=>HideV2Router.go('record-detail',{lexicalId:btn.dataset.ladderWord})});
     view().querySelectorAll('[data-memory-support]').forEach(btn=>{btn.onclick=()=>{const entry=book.find(x=>x.lexicalId===btn.dataset.memorySupport);if(!entry)return;const support=globalThis.HideV2Crew?.supportFor?.({word:entry,stage:'MEMORY_LADDER'})||{text:'천천히 떠올려 봐요. 지금은 정답을 보여주지 않을게요.',revealsAnswer:false};if(support.revealsAnswer===true)return;const copy=btn.closest('.memory-crew-mini')?.querySelector('.memory-crew-copy');if(copy)copy.textContent=support.text}});
-    view().querySelectorAll('[data-word-detail]').forEach(btn=>{
-      btn.onclick=()=>{const entry=book[Number(btn.dataset.wordDetail)];if(entry)HideV2Router.go('record-detail',{lexicalId:entry.lexicalId})};
-    });
+    renderWordbook();
   }
 
   function recordDetail(params={}){
