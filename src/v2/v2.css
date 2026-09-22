@@ -1544,3 +1544,33 @@ body.v2-runtime{
     grid-template-columns:repeat(2,minmax(0,1fr));
   }
 }
+
+
+/* Memory export remains a subordinate ownership tool */
+.v2-runtime .memory-export-tools{
+  display:grid;
+  gap:10px;
+  margin:12px 0;
+  padding:12px 14px;
+  border:1px solid var(--v2-line);
+  border-radius:16px;
+  background:rgba(255,255,255,.58);
+}
+.v2-runtime .memory-export-tools>div:first-child{
+  display:grid;
+  gap:4px;
+}
+.v2-runtime .memory-export-tools small{
+  color:var(--v2-muted);
+  line-height:1.45;
+}
+.v2-runtime .memory-export-tools .btn-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+@media(max-width:390px){
+  .v2-runtime .memory-export-tools .btn-row{
+    grid-template-columns:1fr;
+  }
+}
