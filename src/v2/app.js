@@ -841,6 +841,45 @@
     });
   }
 
+  function safeCsvCell(value){
+    let s=String(value??'').replace(/\r?\n/g,' ');
+    if(/^[=+\-@]/.test(s))s="'"+s;
+    return '"'+s.replace(/"/g,'""')+'"';
+  }
+
+  function memoryExportSnapshot(book){
+    return {
+      schema:'HIDE_V2_MEMORY_EXPORT_V1',
+      exportedAt:new Date().toISOString(),
+      authority:'SPECIALIST_MEMORY_EVIDENCE_NOT_READY_SCHEDULE',
+      items:(book||[]).map(x=>({
+        lexicalId:x.lexicalId,
+        token:x.token,
+        meaning:x.meaning,
+        languageDomain:x.languageDomain,
+        memoryStrength:x.memoryStrength,
+        nextReviewPriority:x.nextReviewPriority,
+        encounters:x.encounters,
+        needsUnassistedRecall:x.needsUnassistedRecall===true,
+        primaryReason:x.primaryReason||null,
+        memorySignature:x.memorySignature||null
+      }))
+    };
+  }
+
+  function downloadTextFile(filename,mime,text){
+    const blob=new Blob([text],{type:mime});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=filename;
+    a.hidden=true;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),0);
+  }
+
   function records(){
     const book=HideV2Memory.wordbook(),dash=HideV2Memory.dashboard();
     const ladderBand=x=>memoryPathState(x).key;
@@ -857,10 +896,24 @@
       <details class="memory-record-details"><summary>기억 기록 자세히 보기</summary>
         <section class="memory-summary"><div class="quest-stat"><b>${dash.averageStrength}%</b><span>전체 기억 힘</span></div><div class="quest-stat"><b>${dash.needsRecall}</b><span>다시 찾기</span></div><div class="quest-stat"><b>${dash.stable}</b><span>안정 단어</span></div></section>
         <section class="memory-signals"><span>뜻 혼동 <b>${dash.confusion}</b></span><span>글자 형태 <b>${dash.orthographic}</b></span><span>소리 <b>${dash.sound}</b></span><span>느린 회상 <b>${dash.slowRecall}</b></span><span>힌트 의존 <b>${dash.hintDependent}</b></span></section>
+        ${book.length?`<section class="memory-export-tools" aria-label="기억 기록 내보내기"><div><b>내 기억 기록 가져가기</b><small>Hide의 현재 기억 흔적만 내보내요. 복습 날짜나 Ready & Set 일정은 포함하지 않아요.</small></div><div class="btn-row"><button id="v2ExportMemoryCsv" class="btn ghost" type="button">CSV 내보내기</button><button id="v2ExportMemoryJson" class="btn ghost" type="button">JSON 내보내기</button></div></section>`:''}
         <section class="wordbook"><div class="section-title"><div><p class="quest-overline">WORD TRAIL</p><h2>단어 기록</h2></div><span>다시 볼 순서</span></div>${book.length?book.map((x,i)=>`<article class="word-row" data-wordbook-index="${i}" data-memory-state="${ladderBand(x)}" data-memory-text="${esc((x.token+' '+x.meaning).toLowerCase())}"><div class="word-row__body"><b>${esc(x.token)}</b><span>${esc(x.meaning)} · ${languageLabel(x.languageDomain)}</span><small>${esc(x.primaryReason.label)} · ${x.encounters}번 만남</small></div><div class="word-row__meter"><b>${x.memoryStrength}%</b><div class="mini-meter"><span style="width:${x.memoryStrength}%"></span></div><button class="btn ghost" data-word-detail="${i}" type="button">기억 보기</button></div></article>`).join(''):'<div class="empty-state"><b>아직 기억 기록이 없어요</b><p>단어 탐험을 마치면 이곳에 기억 사다리가 생겨요.</p></div>'}</section>
       </details>
       <button class="btn secondary full" id="v2RecordsHome">홈으로</button>`;
     $('#v2RecordsHome').onclick=()=>HideV2Router.go('home');
+    if($('#v2ExportMemoryJson'))$('#v2ExportMemoryJson').onclick=()=>{
+      const snapshot=memoryExportSnapshot(book);
+      downloadTextFile('hide-seek-memory.json','application/json;charset=utf-8',JSON.stringify(snapshot,null,2));
+    };
+    if($('#v2ExportMemoryCsv'))$('#v2ExportMemoryCsv').onclick=()=>{
+      const header=['lexicalId','token','meaning','languageDomain','memoryStrength','nextReviewPriority','encounters','needsUnassistedRecall','primaryReason'];
+      const rows=book.map(x=>[
+        x.lexicalId,x.token,x.meaning,x.languageDomain,x.memoryStrength,x.nextReviewPriority,x.encounters,
+        x.needsUnassistedRecall===true?'true':'false',x.primaryReason?.key||''
+      ]);
+      const csv='\uFEFF'+[header,...rows].map(row=>row.map(safeCsvCell).join(',')).join('\r\n');
+      downloadTextFile('hide-seek-memory.csv','text/csv;charset=utf-8',csv);
+    };
     let activeMemoryFilter='ALL';
     const applyMemoryFilter=()=>{
       const q=String($('#v2MemorySearch')?.value||'').trim().toLowerCase();
