@@ -1574,3 +1574,15 @@ body.v2-runtime{
     grid-template-columns:1fr;
   }
 }
+
+
+/* Mission finder combines text search with status filters */
+.v2-runtime .mission-find-tools label{
+  display:grid;
+  gap:6px;
+}
+.v2-runtime .mission-find-tools label>span{
+  font-size:12px;
+  font-weight:900;
+  color:var(--v2-muted);
+}
