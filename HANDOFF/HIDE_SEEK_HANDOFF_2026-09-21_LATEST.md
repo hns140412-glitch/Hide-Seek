@@ -617,3 +617,31 @@ Important current frontier:
 - Keep branch-only. Do not call Netlify or merge main to manufacture release evidence.
 - Secondary polish may continue, but do not report it as closure of the external/device blockers.
 - Current locked reporting: PRODUCT ~81%, CODED ~97%, CI ~94%, Browser Runtime ~90%, Device 0%, Release 0%.
+
+
+## 2026-09-22 FINAL NEW-CHAT HANDOFF
+- Repository: `hns140412-glitch/Hide-Seek`
+- Branch: `rewrite/hide-runtime-v2-2026-09-21`
+- Verified pre-documentation checkpoint: `322c804ab7abe2ec43bc47f91d037774d7f254ed`
+- Validation at that checkpoint:
+  - V2 #392 SUCCESS
+  - full Hide #850 SUCCESS.
+- Locked conservative status:
+  - PRODUCT_COMPLETION ~81%
+  - CODED ~97%
+  - CI_VERIFIED ~94%
+  - BROWSER_RUNTIME_VERIFIED ~90%
+  - DEVICE_VERIFIED 0%
+  - RELEASE_VERIFIED 0%.
+- Read first in a new chat:
+  1. `C2S/HIDE_RUNTIME_V2_REWRITE_C2S_CLOSURE_2026-09-21.md`
+  2. `C2S/HIDE_RUNTIME_V2_REWRITE_ATOMS_2026-09-21.json`
+  3. `C2S/HIDE_RUNTIME_V2_PRODUCT_COMPLETION_MATRIX_2026-09-21.md`
+  4. `C2S/HIDE_RUNTIME_V2_EXTERNAL_RESOURCE_GATE_2026-09-21.md`
+  5. `HANDOFF/HIDE_SEEK_HANDOFF_2026-09-21_LATEST.md`
+  6. `Hide_Seek_UI_MASTER_LOGIC_REV_04.md`
+- First action in the new chat: live refresh branch HEAD and confirm exact-head V2/full-Hide CI. Do not assume the checkpoint is still HEAD.
+- If red: classify the new regression and make only the minimum fix before feature work.
+- If green: do not reopen already-closed child-journey slices unless new evidence shows a regression.
+- Main remaining gates are representative OCR/provider evidence, physical-device QA, frozen Ready↔Hide roundtrip, live Snap crew-provider roundtrip, and exact-source release proof.
+- No Netlify/siteId-only deploy, no main merge, no V1 monolith feature growth.
