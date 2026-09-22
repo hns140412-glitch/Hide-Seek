@@ -325,3 +325,42 @@ Do NOT produce final visual mockups until these are reflected:
 
 UNMAPPED_MATERIAL = 0 within this conversation scope.
 SILENT_LOSS = 0 within this conversation scope.
+
+
+## 17. Home clue-acquisition correction — 2026-09-22
+Home is the base-camp for acquiring and confirming today's learning clues before learning begins.
+
+Three home states:
+1. NO HOMEWORK / NO CONFIRMED SET
+   - primary CTA may use exploration wording such as 탐험 시작 / 단서 찾으러 가기;
+   - action opens capture/import flow;
+   - capture/import is framed as acquiring today's clues, not as a technical file-upload task.
+2. CLUE REVIEW
+   - OCR/source analysis is complete or partially complete;
+   - learner/parent reviews word/meaning/subject/new-review candidates;
+   - correction/exclusion/duplicate merge remain available;
+   - primary CTA: 단서 확인하기 / 오늘의 탐험 세트 확정.
+3. SET READY
+   - default child-facing home shows the confirmed English 12-word set when no Ready Planner target overrides it;
+   - show the actual 12 words on one screen using translucent vocabulary-note tiles;
+   - visual target: wordbook / collected clue slips, not dashboard cards;
+   - 3x4 tile study is the preferred starting layout for 390px portrait, subject to visual QA;
+   - main learning CTA transitions to TRACE / 흔적 after set confirmation.
+
+Ready Planner authority:
+- if Ready provides an explicit target/set, Hide presents that target instead of inventing another;
+- if there is no Ready target, Hide may show the default confirmed English 12-word set;
+- Hide does not independently create dated schedule policy.
+
+Home information hierarchy after SET READY:
+1. 오늘의 탐험 / Ready target context;
+2. actual learning set (default English 12 words);
+3. primary learning CTA;
+4. secondary actions: homework capture/additional source, pre-start share;
+5. compact CATCH/badge/history summary.
+
+Visual rule:
+- translucent tiles must preserve text contrast;
+- no glossy casino/game-card treatment;
+- world illustration may show through lightly;
+- tile collection should feel like a vocabulary notebook / found clue slips.
