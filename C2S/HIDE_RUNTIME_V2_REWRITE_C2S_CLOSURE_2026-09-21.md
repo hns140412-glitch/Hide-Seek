@@ -410,3 +410,11 @@ FALSE_CONVERGENCE = 0: live deploy/device/real-provider claims remain OPEN.
 - CSV formula-like leading characters are neutralized to prevent spreadsheet formula execution from OCR/user text.
 - Exact HEAD `f55acb54eaf88b3c3f60812aff6ac2b234b3020e` passed V2 #367 / full Hide #825.
 - Locked reporting remains PRODUCT ~80%, CODED ~96%, CI ~93%, Browser Runtime ~89%, Device 0%, Release 0%.
+
+
+## 31. 2026-09-22 multilingual FINAL SEEK reconstruction
+- Assisted reconstruction now supports English mechanical chunks, verified Korean meaning-map cues and verified Hanja sound cues.
+- Korean/Hanja support is truth-gated; missing/unverified evidence fails closed to relearn.
+- Reconstruction remains assisted/non-recall and SEEK AGAIN remains the required unassisted proof.
+- Exact HEAD `a933c16efc013e076d9117aa0fa73f8594f895b7` passed V2 #368 / full Hide #826.
+- Locked reporting: PRODUCT ~81%, CODED ~97%, CI ~94%, Browser Runtime ~90%, Device 0%, Release 0%.
