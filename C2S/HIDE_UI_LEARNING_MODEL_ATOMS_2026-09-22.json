@@ -1,0 +1,120 @@
+{
+  "schema": "TAKY_C2S_ATOMS_V1",
+  "product": "Hide & Seek",
+  "date": "2026-09-22",
+  "scope": "UI learning model",
+  "atoms": [
+    {
+      "id": "HUI-001",
+      "type": "DECISION",
+      "statement": "Learner-facing IA uses TRACE/LINK/PIECE/CATCH; Runtime V2 internal stages are not mandatory child-facing screens.",
+      "owner": "Hide UI",
+      "status": "LOCKED"
+    },
+    {
+      "id": "HUI-002",
+      "type": "DECISION",
+      "statement": "First TRACE pool contains NEW items only.",
+      "owner": "Hide Learning",
+      "status": "LOCKED"
+    },
+    {
+      "id": "HUI-003",
+      "type": "DECISION",
+      "statement": "TRACE review mode may mix prior and re-hidden items with current items.",
+      "owner": "Hide Learning",
+      "status": "LOCKED"
+    },
+    {
+      "id": "HUI-004",
+      "type": "REQUIREMENT",
+      "statement": "TRACE is rapid, think-first, low-input; tap/voice/small blanks are optional lightweight confirmations.",
+      "owner": "Hide UI",
+      "status": "LOCKED"
+    },
+    {
+      "id": "HUI-005",
+      "type": "REQUIREMENT",
+      "statement": "Exploration Crew uses character_id; walkie-talkie may deliver voice input and one short learning-safe hint.",
+      "owner": "Hide consumes / Snap owns crew grammar",
+      "status": "LOCKED"
+    },
+    {
+      "id": "HUI-006",
+      "type": "DECISION",
+      "statement": "LINK contains principle/verified relation, related-choice discrimination, and mixed connection test.",
+      "owner": "Hide Learning",
+      "status": "LOCKED"
+    },
+    {
+      "id": "HUI-007",
+      "type": "TRUTH_GATE",
+      "statement": "Etymology/root/Hanja/sound/decomposition claims require verified evidence; otherwise fail closed.",
+      "owner": "Learning Engine/Hide",
+      "status": "LOCKED"
+    },
+    {
+      "id": "HUI-008",
+      "type": "DECISION",
+      "statement": "PIECE is final spelling/form/critical-structure completion and generalizes beyond English.",
+      "owner": "Hide Learning",
+      "status": "LOCKED"
+    },
+    {
+      "id": "HUI-009",
+      "type": "DECISION",
+      "statement": "CATCH is the child-facing record/treasure space for found, missed, re-hidden, weakness and review entry.",
+      "owner": "Hide UI",
+      "status": "LOCKED"
+    },
+    {
+      "id": "HUI-010",
+      "type": "DECISION",
+      "statement": "Primary bottom-nav candidate is HOME/홈, EXPLORE/탐험, CATCH/보물함; Korean primary with small English above.",
+      "owner": "Hide UI",
+      "status": "LOCKED"
+    },
+    {
+      "id": "HUI-011",
+      "type": "DECISION",
+      "statement": "Memory Ladder is not a required bottom tab; access from Home/CATCH/completion.",
+      "owner": "Hide UI",
+      "status": "LOCKED"
+    },
+    {
+      "id": "HUI-012",
+      "type": "BOUNDARY",
+      "statement": "Ready owns goals, planner/dates and family completion sharing; Hide owns specialist activity, pre-start sharing and completion report.",
+      "owner": "Cross-app",
+      "status": "LOCKED"
+    },
+    {
+      "id": "HUI-013",
+      "type": "BOUNDARY",
+      "statement": "Hide emits evidence events to shared badge system; global badge policy/catalog stays shared/Snap-family-owned.",
+      "owner": "Cross-app",
+      "status": "LOCKED"
+    },
+    {
+      "id": "HUI-014",
+      "type": "REQUIREMENT",
+      "statement": "Badge system may include playful mistake/persistence badges but no shaming or ability labeling.",
+      "owner": "Badge system",
+      "status": "LOCKED"
+    },
+    {
+      "id": "HUI-015",
+      "type": "REQUIREMENT",
+      "statement": "UI avoids emoji, uses ultra-high-density illustration, character placeholders instantiated by character_id, and preserves calm one-action hierarchy.",
+      "owner": "Hide UI",
+      "status": "LOCKED"
+    },
+    {
+      "id": "HUI-016",
+      "type": "CORRECTION",
+      "statement": "Old FIRST FIND→...→SEEK AGAIN sequence is internal/runtime lineage, not mandatory learner-facing navigation.",
+      "owner": "Hide UI/Runtime",
+      "status": "LOCKED"
+    }
+  ]
+}
