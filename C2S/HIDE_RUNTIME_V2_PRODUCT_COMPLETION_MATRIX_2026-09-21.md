@@ -188,7 +188,7 @@ Head before matrix document: 63db5206a836050c3dfe5f2b9fd0238d6baeb464
   - Validate Hide Runtime V2 #116 — SUCCESS
   - Validate Hide & Seek #570 — SUCCESS
 - PRODUCT_COMPLETION increase reflects reachable child-facing product surfaces, not CSS volume or test count.
-- UI/UX is materially improved but not final: exploration crew presence, motion/celebration, final visual art direction and physical-device visual QA remain OPEN.
+- UI/UX is materially improved and browser-verified for exploration crew continuity, completion celebration motion, reduced-motion safety and unified exploration art direction. Remaining OPEN UI work is physical-device visual QA and final device-specific polish.
 
 
 ### 2026-09-22 child-facing continuity / truth-alignment increment
@@ -537,3 +537,12 @@ Head before matrix document: 63db5206a836050c3dfe5f2b9fd0238d6baeb464
 - Mobile controls use 44px minimum targets and collapse the bulk toolbar to one column at 390px.
 - Exact HEAD `4292b6ed02d6b5d1aa253c2617a66aee4af3ccb7` passed V2 #383 / full Hide #841.
 - Completion percentages stay at the current locked level because this closes a secondary mission-management gap rather than a new core learning journey.
+
+
+### 2026-09-22 completion motion / reduced-motion status alignment
+- The child completion surface already includes gentle completion motion for the completion mark and story panels.
+- prefers-reduced-motion: reduce disables those animations and transforms.
+- The 390×844 child-journey browser test explicitly verifies both animated default behavior and reduced-motion suppression.
+- Unified exploration-world art direction is already present across home / mission map / learning / completion / Memory Ladder surfaces.
+- No completion-percentage increase is claimed; this update removes stale OPEN wording only.
+- Current locked reporting remains PRODUCT ~81%, CODED ~97%, CI ~94%, Browser Runtime ~90%, Device 0%, Release 0%.
