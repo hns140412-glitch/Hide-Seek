@@ -8,6 +8,7 @@
     FIRST_FIND_ASSIST:'단서로 다시 찾기',
     FIRST_FIND_RELEARN:'다시 만나기',
     MEANING:'뜻 단서',
+    MEANING_CHOICE_REVIEW:'헷갈린 뜻 비교',
     MEANING_ASSIST:'뜻 단서로 다시 찾기',
     MEANING_RELEARN:'뜻 다시 만나기',
     DOMAIN_EXTENSION:'연결 길',
@@ -27,6 +28,7 @@
     FIRST_FIND_ASSIST:'첫 찾기 단서',
     FIRST_FIND_RELEARN:'첫 찾기 다시 보기',
     MEANING:'뜻 단서',
+    MEANING_CHOICE_REVIEW:'헷갈린 뜻 비교',
     MEANING_ASSIST:'뜻 단서 도움',
     MEANING_RELEARN:'뜻 다시 보기',
     RESPONSE_TRAIL:'표현 길',
@@ -72,7 +74,7 @@
     const steps=[
       ['MEMORIZE','01 만나기'],['FIRST_FIND','02 첫 찾기'],['MEANING','03 뜻 단서'],['DOMAIN_EXTENSION','04 연결 길'],['FINAL_SEEK','05 마지막 찾기'],['SEEK_AGAIN','06 다시 찾기']
     ];
-    const normalized=stage==='FINAL_SEEK_RECONSTRUCT'?'FINAL_SEEK':stage==='SEEK_AGAIN_RELEARN'?'SEEK_AGAIN':(stage==='FIRST_FIND_ASSIST'||stage==='FIRST_FIND_RELEARN')?'FIRST_FIND':(stage==='MEANING_ASSIST'||stage==='MEANING_RELEARN')?'MEANING':(stage==='SOUND_FIND_RELEARN'||stage==='HIDDEN_WORDS'||stage==='HIDDEN_WORDS_ASSIST'||stage==='HIDDEN_WORDS_RELEARN')?'DOMAIN_EXTENSION':stage;
+    const normalized=stage==='FINAL_SEEK_RECONSTRUCT'?'FINAL_SEEK':stage==='SEEK_AGAIN_RELEARN'?'SEEK_AGAIN':(stage==='FIRST_FIND_ASSIST'||stage==='FIRST_FIND_RELEARN')?'FIRST_FIND':(stage==='MEANING_CHOICE_REVIEW'||stage==='MEANING_ASSIST'||stage==='MEANING_RELEARN')?'MEANING':(stage==='SOUND_FIND_RELEARN'||stage==='HIDDEN_WORDS'||stage==='HIDDEN_WORDS_ASSIST'||stage==='HIDDEN_WORDS_RELEARN')?'DOMAIN_EXTENSION':stage;
     const activeIndex=Math.max(0,steps.findIndex(([key])=>key===normalized));
     return `<ol class="journey-path" aria-label="단어 탐험 길">${steps.map(([key,label],i)=>`<li class="${i<activeIndex?'is-done':''} ${i===activeIndex?'is-current':''}"><span aria-hidden="true">${i<activeIndex?'✓':i+1}</span><small>${esc(label)}</small></li>`).join('')}</ol>`;
   };
@@ -442,7 +444,7 @@
         view().querySelectorAll('[data-meaning-id]').forEach(btn=>{btn.onclick=()=>{
           const r=HideV2Learning.checkMeaningChoice(session,m,btn.dataset.meaningId||'');
           HideV2Session.update(r.session);
-          setFlash(r.ok?'뜻 연결을 찾았어요':'헷갈린 짝을 기록했어요. 뒤에서 다시 구분해볼게요.');
+          setFlash(r.ok?'뜻 연결을 찾았어요':'헷갈린 짝을 바로 비교해볼게요.');
           render()
         }});
       }else{
@@ -456,6 +458,30 @@
           render()
         };
       }
+      return;
+    }
+
+    if(session.stage==='MEANING_CHOICE_REVIEW'){
+      const mismatch=session.meaningMismatch;
+      if(!mismatch||mismatch.wordId!==w.id){
+        HideV2Session.update(HideV2Learning.submitMeaningChoiceReview(session,m).session);
+        render();
+        return;
+      }
+      const picked=mismatch.direction==='MEANING_TO_TOKEN'
+        ?mismatch.selectedToken
+        :mismatch.selectedMeaning;
+      const correct=mismatch.direction==='MEANING_TO_TOKEN'
+        ?mismatch.correctToken
+        :mismatch.correctMeaning;
+      const prompt=mismatch.direction==='MEANING_TO_TOKEN'
+        ?w.meaning
+        :w.token;
+      view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}${journeyHtml(session.stage)}${crewHtml(w,session.stage)}<div class="learn-head"><span class="phase-chip">${childStageLabel('MEANING_CHOICE_REVIEW')}</span><b>${idx}/${total}</b></div><section class="card word-card meaning-choice-review"><p class="quest-overline">COMPARE</p><h2>헷갈린 연결을 한 번 비교해봐요</h2><div class="bigword">${esc(prompt)}</div><div class="choice-compare-grid"><div><small>내가 고른 연결</small><b>${esc(picked||'—')}</b></div><div><small>실제 연결</small><b>${esc(correct||'—')}</b></div></div><small>이 비교는 정답을 다시 보는 시간이에요. 회상 성공으로 세지 않아요.</small><button id="v2MeaningCompareDone" class="btn primary full" type="button">비교하고 연결 길로</button></section></section>`;
+      $('#v2MeaningCompareDone').onclick=()=>{
+        HideV2Session.update(HideV2Learning.submitMeaningChoiceReview(session,m).session);
+        render()
+      };
       return;
     }
 
