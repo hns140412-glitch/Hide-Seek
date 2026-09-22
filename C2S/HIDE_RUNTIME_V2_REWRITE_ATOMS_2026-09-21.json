@@ -72,7 +72,7 @@
     {
       "id": "HIDE-V2-C2S-012",
       "type": "EVIDENCE",
-      "statement": "Locked last closed product estimate: Product 80, Coded 96, CI 93, Browser Runtime 89, Device 0, Release 0.",
+      "statement": "Locked last closed product estimate: Product 81, Coded 97, CI 94, Browser Runtime 90, Device 0, Release 0.",
       "destination": "status"
     },
     {
