@@ -1198,6 +1198,115 @@ test('Hide V2 migrates V1 mission and memory traces without deleting legacy stat
   expect(state.v2.events.some(x=>x.type==='V1_DATA_MIGRATED')).toBeTruthy();
 });
 
+test('Hide V2 legacy migration preserves explicit recall truth and fails closed on ambiguous V1 traces',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_state',JSON.stringify({
+      profile:{displayName:'레거시 진실 게이트'},
+      activeSheetId:'legacy-truth',
+      sheets:[{
+        sheetId:'legacy-truth',
+        title:'레거시 진실 게이트',
+        status:'COMPLETED',
+        createdAt:'2026-09-18T00:00:00.000Z',
+        items:[
+          {
+            id:'legacy-ambiguous',
+            eng:'benefit',
+            kor:'혜택',
+            missionRole:'REVIEW',
+            learningStats:{
+              retrievalTrace:[
+                {stage:'FIRST_FIND',result:'FIRST_RECALL_CORRECT',assisted:false},
+                {stage:'FINAL_SEEK',result:'CORRECT',spacedEvidence:true,cueCost:0,hintTypes:[]}
+              ],
+              recoveryTrace:[
+                {result:'UNASSISTED_RECALL',spacedEvidence:true}
+              ],
+              recognitionTrace:[
+                {result:'WRONG',elapsedMs:2100}
+              ],
+              associationTrace:[
+                {result:'MISMATCH',confusedWithEng:'profit'}
+              ]
+            }
+          },
+          {
+            id:'legacy-explicit',
+            eng:'責任',
+            kor:'책임',
+            languageDomain:'HANJA',
+            missionRole:'REVIEW',
+            learningStats:{
+              languageMemoryTrace:[
+                {
+                  stage:'FIRST_FIND',
+                  evidenceMode:'RECALL',
+                  axes:['FORM','MEANING','RECALL'],
+                  result:'CORRECT',
+                  objectiveVerified:true,
+                  objectiveRecall:true,
+                  assisted:false
+                },
+                {
+                  stage:'MEMORIZATION',
+                  evidenceMode:'EXPOSURE',
+                  axis:'SOUND',
+                  result:'SEEN',
+                  objectiveVerified:false,
+                  objectiveRecall:false,
+                  recallScoreImpact:false
+                }
+              ]
+            }
+          }
+        ]
+      }]
+    }));
+  });
+  await page.goto('/v2.html');
+
+  const result=await page.evaluate(()=>{
+    const state=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
+    const ambiguous=state.missions[0].items.find(x=>x.id==='legacy-ambiguous');
+    const explicit=state.missions[0].items.find(x=>x.id==='legacy-explicit');
+    const book=HideV2Memory.wordbook();
+    return {
+      ambiguousEvidence:ambiguous.evidence,
+      explicitEvidence:explicit.evidence,
+      ambiguousMemory:book.find(x=>x.lexicalId===ambiguous.lexicalId),
+      explicitMemory:book.find(x=>x.lexicalId===explicit.lexicalId)
+    };
+  });
+
+  const ambiguousRecall=result.ambiguousEvidence.filter(x=>['RETRIEVAL','RECOVERY'].includes(x.legacyTraceKind));
+  expect(ambiguousRecall.length).toBe(3);
+  expect(ambiguousRecall.every(x=>x.objectiveRecall===false)).toBe(true);
+  expect(ambiguousRecall.every(x=>x.objectiveVerified===false)).toBe(true);
+  expect(ambiguousRecall.every(x=>x.legacyTruthPolicy==='EXPLICIT_OBJECTIVE_FLAGS_ONLY')).toBe(true);
+  expect(result.ambiguousMemory.recallCount).toBe(0);
+  expect(result.ambiguousMemory.memorySignature.traceCounts.spaced).toBe(0);
+
+  const recognition=result.ambiguousEvidence.find(x=>x.legacyTraceKind==='RECOGNITION');
+  const association=result.ambiguousEvidence.find(x=>x.legacyTraceKind==='ASSOCIATION');
+  expect(recognition.evidenceMode).toBe('RECOGNITION');
+  expect(recognition.axes).toEqual(['MEANING']);
+  expect(association.evidenceMode).toBe('ASSOCIATION');
+  expect(association.axes).toEqual(['MEANING']);
+  expect(result.ambiguousMemory.memorySignature.semanticWeakness).toBeGreaterThan(0);
+  expect(result.ambiguousMemory.memorySignature.confusionPattern.count).toBeGreaterThan(0);
+
+  const explicitRecall=result.explicitEvidence.find(x=>x.objectiveRecall===true);
+  expect(explicitRecall.legacyTraceKind).toBe('LANGUAGE_MEMORY');
+  expect(explicitRecall.objectiveVerified).toBe(true);
+  expect(explicitRecall.recallScoreImpact).toBe(true);
+  expect(result.explicitMemory.recallCount).toBe(1);
+
+  const exposure=result.explicitEvidence.find(x=>x.evidenceMode==='EXPOSURE');
+  expect(exposure.axes).toEqual(['SOUND']);
+  expect(exposure.objectiveRecall).toBe(false);
+  expect(exposure.recallScoreImpact).toBe(false);
+});
+
 test('Hide V2 obeys Ready Planner review directive and limits the session to directed lexical ids',async({page})=>{
   const directive={
     authority:'EXPLICIT_READY_PLANNER_REVIEW_DIRECTIVE',
