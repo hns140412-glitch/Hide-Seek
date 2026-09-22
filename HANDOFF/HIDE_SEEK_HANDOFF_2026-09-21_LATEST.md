@@ -594,3 +594,11 @@ Important current frontier:
 - Export authority is Hide specialist memory evidence only; never emit Ready dates/schedules from Hide.
 - CSV cells with formula-leading characters are hardened before download.
 - Current locked reporting remains PRODUCT ~80%, CODED ~96%, CI ~93%, Browser Runtime ~89%, Device 0%, Release 0%.
+
+
+## 2026-09-22 multilingual Final Seek reconstruction delta
+- Exact HEAD `a933c16efc013e076d9117aa0fa73f8594f895b7` passed V2 #368 / full Hide #826.
+- English keeps touch mechanical chunks; Korean uses only verified meaning-map structure; Hanja uses only verified sound evidence.
+- Missing/unverified multilingual support fails closed to relearn.
+- Reconstruction success remains assisted/non-recall and must be followed by unassisted SEEK AGAIN.
+- Current locked reporting: PRODUCT ~81%, CODED ~97%, CI ~94%, Browser Runtime ~90%, Device 0%, Release 0%.
