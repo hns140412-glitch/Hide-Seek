@@ -72,7 +72,7 @@
     {
       "id": "HIDE-V2-C2S-012",
       "type": "EVIDENCE",
-      "statement": "Locked last closed product estimate: Product 81, Coded 97, CI 94, Browser Runtime 90, Device 0, Release 0.",
+      "statement": "Locked handoff product estimate: Product 81, Coded 97, CI 94, Browser Runtime 90, Device 0, Release 0.",
       "destination": "status"
     },
     {
@@ -308,6 +308,66 @@
       "type": "CORRECTION",
       "statement": "CSV export neutralizes formula-leading OCR/user text (=,+,-,@) so opening the export in a spreadsheet cannot execute that text as a formula.",
       "destination": "records/export-security"
+    },
+    {
+      "id": "HIDE-V2-C2S-052",
+      "type": "EVIDENCE",
+      "statement": "FIRST FIND bounded assistance supports English deterministic shape, verified Korean meaning-map structure, and verified Hanja sound cues; missing/unverified multilingual support fails closed to relearn.",
+      "destination": "learning/first-find"
+    },
+    {
+      "id": "HIDE-V2-C2S-053",
+      "type": "EVIDENCE",
+      "statement": "Direct MEANING wrong recall uses one safe masked-context assisted retry when available and otherwise full relearn; assisted recovery remains non-recall.",
+      "destination": "learning/meaning"
+    },
+    {
+      "id": "HIDE-V2-C2S-054",
+      "type": "EVIDENCE",
+      "statement": "Bidirectional MEANING mismatch now pauses for learner-selected versus correct connection comparison exposure before Domain Extension; original mismatch remains confusion evidence.",
+      "destination": "learning/meaning-confusion"
+    },
+    {
+      "id": "HIDE-V2-C2S-055",
+      "type": "EVIDENCE",
+      "statement": "FINAL SEEK assisted reconstruction is multilingual: English mechanical letter chunks, verified Korean meaning-map structure, verified Hanja sound; all success remains assisted/non-recall and requires SEEK AGAIN.",
+      "destination": "learning/final-seek"
+    },
+    {
+      "id": "HIDE-V2-C2S-056",
+      "type": "EVIDENCE",
+      "statement": "Mission Map supports atomic multi-select bulk archive/delete with active-session protection; blocked sets do not partially mutate missions.",
+      "destination": "mission-management"
+    },
+    {
+      "id": "HIDE-V2-C2S-057",
+      "type": "DECISION",
+      "statement": "Completion motion and unified browser art direction are internally verified, but must not be relabeled as physical-device visual QA.",
+      "destination": "ui-ux/evidence-boundary"
+    },
+    {
+      "id": "HIDE-V2-C2S-058",
+      "type": "OPEN",
+      "statement": "Major remaining gates are representative real printed-sheet OCR/provider calibration, physical-device QA, frozen current Ready↔Hide roundtrip, live Snap crew-provider roundtrip, and exact-source release proof.",
+      "destination": "runtime-v2/open-gates"
+    },
+    {
+      "id": "HIDE-V2-C2S-059",
+      "type": "DECISION",
+      "statement": "Secondary branch polish such as custom mission sorting, large-history UX/export stress, and broader legacy-migration samples must not masquerade as closure of external/device/release blockers.",
+      "destination": "runtime-v2/scope-control"
+    },
+    {
+      "id": "HIDE-V2-C2S-060",
+      "type": "EVIDENCE",
+      "statement": "Latest handoff checkpoint 322c804ab7abe2ec43bc47f91d037774d7f254ed passed Validate Hide Runtime V2 #392 and Validate Hide & Seek #850.",
+      "destination": "runtime-v2/handoff-checkpoint"
+    },
+    {
+      "id": "HIDE-V2-C2S-061",
+      "type": "DECISION",
+      "statement": "Locked handoff reporting remains PRODUCT ~81%, CODED ~97%, CI_VERIFIED ~94%, BROWSER_RUNTIME_VERIFIED ~90%, DEVICE_VERIFIED 0%, RELEASE_VERIFIED 0%.",
+      "destination": "runtime-v2/reporting"
     }
   ],
   "coverage": {
