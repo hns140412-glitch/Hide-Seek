@@ -609,3 +609,11 @@ Important current frontier:
 - Mission Map now has multi-select bulk archive/delete and clear selection.
 - If the selected set includes the mission owning the active session, the entire bulk mutation is blocked with no partial changes.
 - Keep this as a subordinate management tool; do not let bulk controls dominate the child journey.
+
+
+## 2026-09-22 remaining gate classification
+- Current internal browser-proven V2 scope is substantially closed.
+- Next major gates are not more child-journey feature coding: representative OCR/provider evidence, physical-device QA, frozen Ready↔Hide roundtrip, live Snap crew-provider roundtrip, and exact-source release proof.
+- Keep branch-only. Do not call Netlify or merge main to manufacture release evidence.
+- Secondary polish may continue, but do not report it as closure of the external/device blockers.
+- Current locked reporting: PRODUCT ~81%, CODED ~97%, CI ~94%, Browser Runtime ~90%, Device 0%, Release 0%.
