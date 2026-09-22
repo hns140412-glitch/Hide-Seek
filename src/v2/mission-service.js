@@ -93,8 +93,52 @@
       }
     });
   }
+  function normalizeMissionIds(ids){
+    return [...new Set((Array.isArray(ids)?ids:[]).map(clean).filter(Boolean))];
+  }
+  function assertBulkSafe(ids){
+    const selected=normalizeMissionIds(ids);
+    if(!selected.length)throw new Error('MISSION_SELECTION_REQUIRED');
+    const s=HideV2Store.snapshot();
+    const activeSessionMissionId=s.activeSession?.missionId||null;
+    if(activeSessionMissionId&&selected.includes(activeSessionMissionId))throw new Error('ACTIVE_SESSION_MISSION_BULK_BLOCKED');
+    const existing=new Set(s.missions.map(x=>x.id));
+    const valid=selected.filter(id=>existing.has(id));
+    if(!valid.length)throw new Error('MISSION_SELECTION_REQUIRED');
+    return valid;
+  }
+  function bulkArchiveMissions(ids){
+    const selected=assertBulkSafe(ids);
+    HideV2Store.transaction(s=>{
+      const set=new Set(selected);
+      s.missions.forEach(m=>{
+        if(set.has(m.id)){
+          m.status='ARCHIVED';
+          m.updatedAt=new Date().toISOString();
+        }
+      });
+      if(set.has(s.activeMissionId)){
+        const next=s.missions.find(x=>!set.has(x.id)&&x.status!=='ARCHIVED');
+        s.activeMissionId=next?.id||null;
+      }
+    });
+    return selected;
+  }
+  function bulkDeleteMissions(ids){
+    const selected=assertBulkSafe(ids);
+    HideV2Store.transaction(s=>{
+      const set=new Set(selected);
+      s.missions=s.missions.filter(x=>!set.has(x.id));
+      if(set.has(s.activeMissionId)){
+        const next=s.missions.find(x=>x.status!=='ARCHIVED');
+        s.activeMissionId=next?.id||null;
+      }
+    });
+    return selected;
+  }
+
   function activeMission(){const s=HideV2Store.snapshot();return s.missions.find(x=>x.id===s.activeMissionId)||null}
   function setActive(id){HideV2Store.transaction(s=>{if(s.missions.some(x=>x.id===id))s.activeMissionId=id})}
   function updateMission(id,updater){HideV2Store.transaction(s=>{const m=s.missions.find(x=>x.id===id);if(!m)return;updater(m);m.updatedAt=new Date().toISOString()})}
-  window.HideV2Mission=Object.freeze({normalizeItem,createMission,addMission,listMissions,renameMission,archiveMission,deleteMission,activeMission,setActive,updateMission});
+  window.HideV2Mission=Object.freeze({normalizeItem,createMission,addMission,listMissions,renameMission,archiveMission,deleteMission,bulkArchiveMissions,bulkDeleteMissions,activeMission,setActive,updateMission});
 })();
