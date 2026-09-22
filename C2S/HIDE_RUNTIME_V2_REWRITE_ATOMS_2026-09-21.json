@@ -284,6 +284,18 @@
       "type": "DECISION",
       "statement": "SEEK AGAIN assistance is one-shot; after the clue is consumed, another miss must fall through to relearn. Same-day recovery remains IMMEDIATE_ONLY and does not create spacing policy in Hide.",
       "destination": "memory-evidence/recovery"
+    },
+    {
+      "id": "HIDE-V2-C2S-048",
+      "type": "EVIDENCE",
+      "statement": "English Final Seek assisted reconstruction supports 390x844 touch letter-chunk assembly with undo/reset and >=44px targets; chunks are plain letter groups, not etymology claims.",
+      "destination": "learning/final-seek-ui"
+    },
+    {
+      "id": "HIDE-V2-C2S-049",
+      "type": "DECISION",
+      "statement": "Touch chunk reconstruction remains assisted/non-recall and must still be followed by unassisted Seek Again verification.",
+      "destination": "memory-evidence/final-seek"
     }
   ],
   "coverage": {
