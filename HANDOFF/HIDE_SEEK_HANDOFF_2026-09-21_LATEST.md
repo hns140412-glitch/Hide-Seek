@@ -556,3 +556,10 @@ Important current frontier:
 - Candidate fields preserve responseText/targetUsed while semanticCorrectnessClaimed=false and objectiveVerified=false.
 - Hide must not convert this into automatic Korean semantic scoring; human review remains external.
 - Current locked reporting: PRODUCT ~79%, CODED ~94%, CI ~92%, Browser Runtime ~88%, Device 0%, Release 0%.
+
+
+## 2026-09-22 bounded Meaning recovery delta
+- Exact HEAD `dbe3fcf7a41a8b2a0a7e831af63ee41139e18a28` passed V2 #334 / full Hide #792.
+- Single-item direct MEANING wrong recall now uses one masked safe context retry when available, otherwise full meaning relearn.
+- Assisted retry and meaning relearn are non-recall evidence.
+- Current locked reporting: PRODUCT ~78%, CODED ~94%, CI ~91%, Browser Runtime ~87%, Device 0%, Release 0%.
