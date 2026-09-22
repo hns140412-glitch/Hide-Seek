@@ -433,3 +433,22 @@ FALSE_CONVERGENCE = 0: live deploy/device/real-provider claims remain OPEN.
 - Current V2 branch already browser-verifies the child learning/recovery journey, multilingual bounded assistance, Memory Ladder, OCR preserve-first review/retry, mission management, exports, PWA safe points, completion motion/reduced-motion and unified exploration art direction.
 - Secondary branch polish is allowed only if it does not distract from the blocker classes above.
 - Locked reporting remains PRODUCT ~81%, CODED ~97%, CI ~94%, Browser Runtime ~90%, Device 0%, Release 0%.
+
+
+## 29. 2026-09-22 final C2S handoff checkpoint
+- Live branch: `rewrite/hide-runtime-v2-2026-09-21`.
+- Latest verified checkpoint before this C2S documentation pass: `322c804ab7abe2ec43bc47f91d037774d7f254ed`.
+- Exact-head verification at that checkpoint:
+  - Validate Hide Runtime V2 #392 — SUCCESS
+  - Validate Hide & Seek #850 — SUCCESS.
+- Current locked reporting: PRODUCT ~81%, CODED ~97%, CI ~94%, Browser Runtime ~90%, Device 0%, Release 0%.
+- C2S coverage after latest atomization: UNMAPPED_MATERIAL=0, SILENT_LOSS=0, FALSE_CONVERGENCE=0, C2S_COMPILE_CLOSED=true.
+- Internal core V2 child-learning/browser runtime is substantially closed for the current scope.
+- Major remaining gates are intentionally external/evidence-boundary work:
+  1. representative real printed-sheet OCR + current provider calibration;
+  2. physical-device camera/touch/keyboard/PWA lifecycle/visual QA;
+  3. frozen current Ready↔Hide roundtrip with exact source-ref evidence;
+  4. live Snap Exploration Crew provider roundtrip;
+  5. exact-source release proof and HUMAN APPROVAL.
+- Keep branch-only. Do not call Netlify, deploy, or merge main to manufacture evidence.
+- Secondary polish may continue only after live refresh + exact-head green and must not be reported as closure of device/external/release blockers.
