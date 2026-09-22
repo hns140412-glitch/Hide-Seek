@@ -492,3 +492,13 @@ Head before matrix document: 63db5206a836050c3dfe5f2b9fd0238d6baeb464
 - The assistance attempt is explicitly same-day and `spacedEvidence=false`; it does not change the existing IMMEDIATE_ONLY long-term memory rule or Ready scheduling ownership.
 - Exact HEAD `5f5f99e4272a4b6d30ab2284d5e1755c71607f5f` passed V2 #349 / full Hide #807.
 - Conservative reporting rises one point for this newly runtime-proven recovery loop: PRODUCT ~80%, CODED ~96%, CI ~93%, Browser Runtime ~89%, Device 0%, Release 0%.
+
+
+### 2026-09-22 touch letter-chunk Final Seek reconstruction UX increment
+- English FINAL_SEEK_RECONSTRUCT can now be completed by tapping letter chunks on the mobile surface instead of requiring keyboard-only entry.
+- Chunks are explicitly labeled as plain letter groups, **not** roots or etymological units.
+- Touch controls are browser-verified at 390×844 with no horizontal overflow and chunk targets >=44px.
+- Tapped chunks synchronize with the reconstruction input/preview and support undo/reset.
+- Successful chunk reconstruction remains `ASSISTED_RECONSTRUCTION`, `objectiveRecall=false`, `recallScoreImpact=false`; SEEK AGAIN still provides the unassisted proof.
+- Exact HEAD `00a5d8c8ddd50444d0762aed34be880a3b2fff12` passed V2 #358 / full Hide #816.
+- No percentage increase is claimed because this is UX completion inside the already-counted FINAL SEEK reconstruction capability.
