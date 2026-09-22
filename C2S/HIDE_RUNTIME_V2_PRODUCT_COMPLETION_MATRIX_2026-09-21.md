@@ -503,17 +503,3 @@ Head before matrix document: 63db5206a836050c3dfe5f2b9fd0238d6baeb464
 - Exact HEAD `00a5d8c8ddd50444d0762aed34be880a3b2fff12` passed V2 #358 / full Hide #816.
 - No percentage increase is claimed because this is UX completion inside the already-counted FINAL SEEK reconstruction capability.
 
-
-### 2026-09-22 touch letter-chunk Final Seek reconstruction increment
-- English FINAL_SEEK_RECONSTRUCT now provides an actual touch reconstruction interaction rather than only a shape cue + free-text retry.
-- The runtime mechanically splits the verified token into 2–3 character chunks based only on character positions; chunks are explicitly **not** claimed as roots, affixes or morphemes.
-- Child-facing reconstruction supports:
-  - shuffled/rotated letter-chunk tiles;
-  - live assembled preview;
-  - one-chunk undo;
-  - reset;
-  - direct text input fallback for keyboard/accessibility.
-- Touch targets are browser-verified at mobile 390×844 without horizontal overflow.
-- Reconstruction remains `ASSISTED_RECONSTRUCTION`, `objectiveRecall=false`, `recallScoreImpact=false`; successful assembly still requires subsequent unassisted SEEK AGAIN.
-- Exact HEAD `00a5d8c8ddd50444d0762aed34be880a3b2fff12` passed V2 #358 / full Hide #816.
-- Conservative reporting rises one point for this materially more complete child-facing reconstruction path: PRODUCT ~81%, CODED ~97%, CI ~94%, Browser Runtime ~90%, Device 0%, Release 0%.
