@@ -333,6 +333,125 @@ test('Hide V2 single-item Meaning Clue keeps direct recall fallback',async({page
   expect(await page.getByText('단어에서 뜻 찾기',{exact:true}).count()).toBe(0);
 });
 
+test('Hide V2 direct Meaning miss uses one context clue before full relearn',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'뜻 복구'},missions:[{
+        id:'m-meaning-recovery',title:'뜻 복구',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        sourceCount:0,provenance:{source:'TEST_FIXTURE'},
+        items:[{
+          id:'w-meaning-recovery',lexicalId:'benefit::혜택',token:'benefit',meaning:'혜택',
+          example:'A benefit helps people.',languageDomain:'ENGLISH',missionRole:'NEW',evidence:[],source:{}
+        }]
+      }],activeMissionId:'m-meaning-recovery',activeSession:null,captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'탐험 시작'}).click();
+  await page.getByRole('button',{name:'기억하고 찾아보기'}).click();
+  await page.getByLabel('회상 답 입력').fill('benefit');
+  await page.getByRole('button',{name:'기억 확인'}).click();
+
+  await page.getByLabel('뜻 회상 입력').fill('오답');
+  await page.getByRole('button',{name:'뜻 확인'}).click();
+  await expect(page.getByText('뜻 단서로 다시 찾기',{exact:true})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'문장 단서'})).toBeVisible();
+  await expect(page.getByText(/A ____ helps people/)).toBeVisible();
+
+  await page.getByLabel('뜻 도움 답 입력').fill('혜택');
+  await page.getByRole('button',{name:'단서로 뜻 다시 확인'}).click();
+  await expect(page.getByText('연결 길',{exact:true})).toBeVisible();
+
+  const evidence=await page.evaluate(()=>{
+    const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
+    return s.missions[0].items[0].evidence;
+  });
+  const miss=evidence.find(x=>x.stage==='MEANING'&&x.result==='WRONG');
+  const assist=evidence.find(x=>x.stage==='MEANING_ASSIST');
+  expect(miss.objectiveRecall).toBe(true);
+  expect(miss.assisted).toBe(false);
+  expect(assist.result).toBe('CORRECT');
+  expect(assist.evidenceMode).toBe('ASSISTED_RECALL');
+  expect(assist.objectiveVerified).toBe(true);
+  expect(assist.objectiveRecall).toBe(false);
+  expect(assist.recallScoreImpact).toBe(false);
+  expect(assist.assisted).toBe(true);
+  expect(evidence.some(x=>x.stage==='MEANING_RELEARN')).toBe(false);
+});
+
+test('Hide V2 direct Meaning miss fails closed to relearn when no context clue exists',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'뜻 재노출'},missions:[{
+        id:'m-meaning-no-context',title:'뜻 재노출',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        sourceCount:0,provenance:{source:'TEST_FIXTURE'},
+        items:[{
+          id:'w-meaning-no-context',lexicalId:'island::섬',token:'island',meaning:'섬',
+          example:'',languageDomain:'ENGLISH',missionRole:'NEW',evidence:[],source:{}
+        }]
+      }],activeMissionId:'m-meaning-no-context',activeSession:null,captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'탐험 시작'}).click();
+  await page.getByRole('button',{name:'기억하고 찾아보기'}).click();
+  await page.getByLabel('회상 답 입력').fill('island');
+  await page.getByRole('button',{name:'기억 확인'}).click();
+
+  await page.getByLabel('뜻 회상 입력').fill('오답');
+  await page.getByRole('button',{name:'뜻 확인'}).click();
+  await expect(page.getByText('뜻 다시 만나기',{exact:true})).toBeVisible();
+  expect(await page.getByText('문장 단서',{exact:true}).count()).toBe(0);
+
+  await page.getByRole('button',{name:'다시 숨기고 연결 길로'}).click();
+  await expect(page.getByText('연결 길',{exact:true})).toBeVisible();
+
+  const evidence=await page.evaluate(()=>{
+    const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
+    return s.missions[0].items[0].evidence;
+  });
+  const relearn=evidence.find(x=>x.stage==='MEANING_RELEARN');
+  expect(relearn.evidenceMode).toBe('RELEARN_EXPOSURE');
+  expect(relearn.objectiveRecall).toBe(false);
+  expect(relearn.recallScoreImpact).toBe(false);
+  expect(relearn.assisted).toBe(true);
+});
+
+test('Hide V2 Meaning assisted retry miss escalates to full relearn',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'뜻 보강 실패'},missions:[{
+        id:'m-meaning-assist-miss',title:'뜻 보강 실패',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        sourceCount:0,provenance:{source:'TEST_FIXTURE'},
+        items:[{
+          id:'w-meaning-assist-miss',lexicalId:'benefit::혜택',token:'benefit',meaning:'혜택',
+          example:'A benefit helps people.',languageDomain:'ENGLISH',missionRole:'NEW',evidence:[],source:{}
+        }]
+      }],activeMissionId:'m-meaning-assist-miss',activeSession:null,captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'탐험 시작'}).click();
+  await page.getByRole('button',{name:'기억하고 찾아보기'}).click();
+  await page.getByLabel('회상 답 입력').fill('benefit');
+  await page.getByRole('button',{name:'기억 확인'}).click();
+  await page.getByLabel('뜻 회상 입력').fill('오답');
+  await page.getByRole('button',{name:'뜻 확인'}).click();
+
+  await page.getByLabel('뜻 도움 답 입력').fill('또오답');
+  await page.getByRole('button',{name:'단서로 뜻 다시 확인'}).click();
+  await expect(page.getByText('뜻 다시 만나기',{exact:true})).toBeVisible();
+
+  const evidence=await page.evaluate(()=>{
+    const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
+    return s.missions[0].items[0].evidence;
+  });
+  const assist=evidence.find(x=>x.stage==='MEANING_ASSIST');
+  expect(assist.result).toBe('WRONG');
+  expect(assist.objectiveRecall).toBe(false);
+  expect(assist.assisted).toBe(true);
+});
+
 test('Hide V2 Hidden Words specializes activity from Memory Engine primary reason',async({page})=>{
   await page.addInitScript(()=>{
     localStorage.setItem('hide_seek_v2_state',JSON.stringify({
