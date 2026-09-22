@@ -1986,7 +1986,7 @@ test('Hide V2 wrong final seek enters relearn and seek-again before completing',
   await page.getByRole('button',{name:'마지막 기억 확인'}).click();
 
   await expect(page.getByText('글자 조립',{exact:true})).toBeVisible();
-  await expect(page.getByRole('heading',{name:'글자 골격으로 다시 조립하기'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'글자 조각으로 다시 조립하기'})).toBeVisible();
   await page.getByLabel('재구성 답 입력').fill('wrong');
   await page.getByRole('button',{name:'조립 기억 확인'}).click();
 
