@@ -385,3 +385,12 @@ FALSE_CONVERGENCE = 0: live deploy/device/real-provider claims remain OPEN.
 - Session-scoped mismatch payload preserves the correction step across resume.
 - Exact HEAD `289d3d490847d17f7d311fe9f9f6d7a23f9a1402` passed V2 #341 / full Hide #799.
 - Locked reporting: PRODUCT ~79%, CODED ~95%, CI ~92%, Browser Runtime ~88%, Device 0%, Release 0%.
+
+
+## 29. 2026-09-22 bounded SEEK AGAIN assistance
+- SEEK AGAIN wrong recall may use exactly one safe bounded clue before full relearn.
+- Assisted retry success is non-recall and must return to SEEK_AGAIN for unassisted confirmation.
+- After the one clue is consumed, another unassisted miss cannot loop assistance and must fall through to relearn.
+- Same-day recovery remains `IMMEDIATE_ONLY`; no spacing/scheduling policy moves into Hide.
+- Exact HEAD `5f5f99e4272a4b6d30ab2284d5e1755c71607f5f` passed V2 #349 / full Hide #807.
+- Locked reporting: PRODUCT ~80%, CODED ~96%, CI ~93%, Browser Runtime ~89%, Device 0%, Release 0%.
