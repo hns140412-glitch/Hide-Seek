@@ -466,3 +466,15 @@ Head before matrix document: 63db5206a836050c3dfe5f2b9fd0238d6baeb464
 - Relearn exposure is assisted/non-recall and cannot inflate Memory Strength.
 - Exact HEAD `dbe3fcf7a41a8b2a0a7e831af63ee41139e18a28` passed V2 #334 / full Hide #792.
 - Conservative reporting rises one point for this newly runtime-proven meaning-recovery path: PRODUCT ~78%, CODED ~94%, CI ~91%, Browser Runtime ~87%, Device 0%, Release 0%.
+
+
+### 2026-09-22 Meaning mismatch immediate comparison increment
+- Bidirectional MEANING recognition no longer jumps directly from a wrong choice to the connection path.
+- MISMATCH recovery now stores the selected wrong pair, then shows one explicit comparison:
+  - learner-selected connection;
+  - correct connection.
+- The comparison is `ERROR_COMPARISON_EXPOSURE`, assisted, non-recall, and cannot inflate Memory Strength.
+- After comparison, DOMAIN_EXTENSION continues and the original MISMATCH remains available to Memory Engine confusion → HIDDEN WORDS meaning reinforcement.
+- The mismatch payload is stored in the active session so reload/resume can preserve the immediate correction state.
+- Exact HEAD `289d3d490847d17f7d311fe9f9f6d7a23f9a1402` passed V2 #341 / full Hide #799.
+- Conservative reporting rises one point for this newly runtime-proven error-comparison loop: PRODUCT ~79%, CODED ~95%, CI ~92%, Browser Runtime ~88%, Device 0%, Release 0%.
