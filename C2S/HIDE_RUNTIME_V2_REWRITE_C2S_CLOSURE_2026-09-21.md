@@ -402,3 +402,11 @@ FALSE_CONVERGENCE = 0: live deploy/device/real-provider claims remain OPEN.
 - Correct chunk assembly remains assisted/non-recall and must flow into SEEK AGAIN for unassisted proof.
 - Exact HEAD `00a5d8c8ddd50444d0762aed34be880a3b2fff12` passed V2 #358 / full Hide #816.
 - Completion percentages unchanged: PRODUCT ~80%, CODED ~96%, CI ~93%, Browser Runtime ~89%, Device 0%, Release 0%.
+
+
+## 31. 2026-09-22 safe memory export
+- Wordbook now supports browser-verified JSON/CSV export of Hide-owned memory evidence.
+- Export does not claim or emit Ready scheduling ownership.
+- CSV formula-like leading characters are neutralized to prevent spreadsheet formula execution from OCR/user text.
+- Exact HEAD `f55acb54eaf88b3c3f60812aff6ac2b234b3020e` passed V2 #367 / full Hide #825.
+- Locked reporting remains PRODUCT ~80%, CODED ~96%, CI ~93%, Browser Runtime ~89%, Device 0%, Release 0%.
