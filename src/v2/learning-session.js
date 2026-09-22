@@ -650,9 +650,28 @@
 
   function finalReconstructionPlan(word){
     if(String(word?.languageDomain||'').toUpperCase()!=='ENGLISH')return null;
-    const cue=englishShapeCue(word?.token);
-    if(!cue)return null;
-    return {type:'SHAPE',label:'글자 골격 재구성',cue};
+    const token=String(word?.token||'').trim().toLowerCase();
+    const cue=englishShapeCue(token);
+    if(!cue||!/^[a-z]{4,}$/.test(token))return null;
+    const count=token.length>=9?3:2;
+    const base=Math.floor(token.length/count);
+    const extra=token.length%count;
+    const chunks=[];
+    let at=0;
+    for(let i=0;i<count;i++){
+      const size=base+(i<extra?1:0);
+      chunks.push(token.slice(at,at+size));
+      at+=size;
+    }
+    const tiles=chunks.length>1?[...chunks.slice(1),chunks[0]]:[...chunks];
+    return {
+      type:'CHUNK_ASSEMBLY',
+      label:'글자 조각 재구성',
+      cue,
+      chunks,
+      tiles,
+      semantics:'MECHANICAL_CHARACTER_CHUNKS_NOT_MORPHEMES'
+    };
   }
 
   function useFinalSupport(session,mission,support={}){
