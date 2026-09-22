@@ -1360,6 +1360,38 @@ test('Hide V2 mission map filters open completed and archived journeys without c
   });
 });
 
+test('Hide V2 mission map supports user sorting without mutating mission evidence or schedule authority',async({page})=>{
+  await page.addInitScript(()=>{
+    const item=(id,token)=>({id,lexicalId:token+'::뜻',token,meaning:'뜻',languageDomain:'ENGLISH',missionRole:'REVIEW',evidence:[],source:{}});
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'미션 정렬'},missions:[
+        {id:'m-active',title:'나중 미션',status:'READY',createdAt:'2026-09-18T00:00:00.000Z',updatedAt:'2026-09-18T01:00:00.000Z',items:[item('wa','active')],sourceCount:0,provenance:{}},
+        {id:'m-recent',title:'최근 미션',status:'READY',createdAt:'2026-09-20T00:00:00.000Z',updatedAt:'2026-09-22T03:00:00.000Z',items:[item('wr','recent')],sourceCount:0,provenance:{}},
+        {id:'m-alpha',title:'가나다 미션',status:'COMPLETED',createdAt:'2026-09-19T00:00:00.000Z',updatedAt:'2026-09-21T02:00:00.000Z',items:[item('w1','one'),item('w2','two'),item('w3','three')],sourceCount:0,provenance:{}},
+        {id:'m-archive',title:'보관 미션',status:'ARCHIVED',createdAt:'2026-09-17T00:00:00.000Z',updatedAt:'2026-09-22T04:00:00.000Z',items:[item('wx','archive')],sourceCount:0,provenance:{}}
+      ],activeMissionId:'m-active',activeSession:null,captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'탐험 미션'}).click();
+
+  const order=()=>page.locator('.mission-map-card').evaluateAll(nodes=>nodes.map(x=>x.dataset.missionId));
+  expect(await order()).toEqual(['m-active','m-recent','m-alpha','m-archive']);
+
+  await page.getByLabel('탐험 미션 정렬').selectOption('RECENT');
+  expect(await order()).toEqual(['m-archive','m-recent','m-alpha','m-active']);
+
+  await page.getByLabel('탐험 미션 정렬').selectOption('NAME');
+  expect(await order()).toEqual(['m-alpha','m-active','m-archive','m-recent']);
+
+  await page.getByLabel('탐험 미션 정렬').selectOption('SIZE');
+  expect((await order())[0]).toBe('m-alpha');
+
+  const state=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')));
+  expect(state.missions.find(x=>x.id==='m-active').updatedAt).toBe('2026-09-18T01:00:00.000Z');
+  expect(state.missions.some(x=>Object.prototype.hasOwnProperty.call(x,'nextReviewDate'))).toBe(false);
+});
+
 test('Hide V2 bulk mission archive updates selected missions atomically',async({page})=>{
   await page.addInitScript(()=>{
     const item=(id,token)=>({id,lexicalId:token+'::뜻',token,meaning:'뜻',languageDomain:'ENGLISH',missionRole:'REVIEW',evidence:[],source:{}});
