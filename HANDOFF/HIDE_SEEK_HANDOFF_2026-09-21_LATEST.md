@@ -570,3 +570,11 @@ Important current frontier:
 - Bidirectional MEANING MISMATCH now pauses for one learner-selected vs correct connection comparison before DOMAIN_EXTENSION.
 - The comparison is assisted/non-recall; keep the original MISMATCH as the confusion evidence for later HIDDEN WORDS reinforcement.
 - Current locked reporting: PRODUCT ~79%, CODED ~95%, CI ~92%, Browser Runtime ~88%, Device 0%, Release 0%.
+
+
+## 2026-09-22 bounded Seek Again assistance delta
+- Exact HEAD `5f5f99e4272a4b6d30ab2284d5e1755c71607f5f` passed V2 #349 / full Hide #807.
+- SEEK AGAIN wrong recall may consume one safe clue, but assisted success is non-recall and must be followed by unassisted SEEK AGAIN.
+- Do not allow repeated clue loops; after one assist, another miss goes to relearn.
+- Same-day recovery remains IMMEDIATE_ONLY and does not create spacing policy inside Hide.
+- Current locked reporting: PRODUCT ~80%, CODED ~96%, CI ~93%, Browser Runtime ~89%, Device 0%, Release 0%.
