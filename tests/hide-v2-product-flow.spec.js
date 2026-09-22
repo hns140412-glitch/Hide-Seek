@@ -2176,6 +2176,51 @@ test('Hide V2 learning surface shows progress hierarchy without crowding the tas
   expect(ui.overflow).toBeLessThanOrEqual(1);
 });
 
+test('Hide V2 memory exports user-owned evidence without Ready scheduling and CSV formula execution risk',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'내보내기'},missions:[{
+        id:'m-export',title:'내보내기 미션',status:'COMPLETED',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        items:[{
+          id:'w-export',lexicalId:'benefit::=2+2',token:'benefit',meaning:'=2+2',languageDomain:'ENGLISH',missionRole:'REVIEW',source:{},evidence:[
+            {stage:'FINAL_SEEK',evidenceMode:'RECONSTRUCTION',axes:['FORM','RECALL'],result:'CORRECT',objectiveVerified:true,objectiveRecall:true,assisted:false,spacedEvidence:true}
+          ]
+        }],sourceCount:0,provenance:{source:'TEST_FIXTURE'}
+      }],activeMissionId:'m-export',activeSession:null,captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'기억 사다리'}).click();
+  await page.getByText('기억 기록 자세히 보기',{exact:true}).click();
+  await expect(page.getByText('내 기억 기록 가져가기',{exact:true})).toBeVisible();
+
+  const jsonPromise=page.waitForEvent('download');
+  await page.getByRole('button',{name:'JSON 내보내기'}).click();
+  const jsonDownload=await jsonPromise;
+  expect(jsonDownload.suggestedFilename()).toBe('hide-seek-memory.json');
+  const jsonPath=await jsonDownload.path();
+  const fs=require('fs');
+  const json=JSON.parse(fs.readFileSync(jsonPath,'utf8'));
+  expect(json.schema).toBe('HIDE_V2_MEMORY_EXPORT_V1');
+  expect(json.authority).toBe('SPECIALIST_MEMORY_EVIDENCE_NOT_READY_SCHEDULE');
+  expect(json.items).toHaveLength(1);
+  expect(json.items[0].token).toBe('benefit');
+  expect(json.items[0].meaning).toBe('=2+2');
+  expect(json.items[0]).not.toHaveProperty('nextReviewDate');
+  expect(json.items[0]).not.toHaveProperty('scheduledAt');
+
+  const csvPromise=page.waitForEvent('download');
+  await page.getByRole('button',{name:'CSV 내보내기'}).click();
+  const csvDownload=await csvPromise;
+  expect(csvDownload.suggestedFilename()).toBe('hide-seek-memory.csv');
+  const csvPath=await csvDownload.path();
+  const csv=fs.readFileSync(csvPath,'utf8');
+  expect(csv).toContain('"benefit"');
+  expect(csv).toContain('"\'=2+2"');
+  expect(csv).not.toContain('"=2+2"');
+  expect(csv).not.toContain('nextReviewDate');
+});
+
 test('Hide V2 mission and memory surfaces use product cards instead of raw status tables',async({page})=>{
   await page.addInitScript(()=>{
     localStorage.setItem('hide_seek_v2_state',JSON.stringify({
