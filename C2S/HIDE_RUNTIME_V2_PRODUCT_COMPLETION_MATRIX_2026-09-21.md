@@ -33,6 +33,7 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 | Hanja SOUND FIND | RUNTIME_VERIFIED | yes when verified soundEvidence exists | verified-sound fixture | dedicated V2 browser sound-recall flow | representative Hanja source/device pronunciation workflow still open |
 | HIDDEN WORDS reinforcement | RUNTIME_VERIFIED | conditional | fixture | Memory Engine-gated + reason-specific + staged-assistance browser flows | deeper multi-step ladder remains partial beyond one safe clue escalation |
 | FINAL SEEK | RUNTIME_VERIFIED | yes | fixture | unassisted recall + optional support + failed-recall shape reconstruction + Seek Again browser regressions | full letter-key reconstruction game remains reference-only |
+| SEEK AGAIN recovery | RUNTIME_VERIFIED | yes | fixture | wrong → one safe clue → assisted retry → required unassisted retry; one-clue limit + relearn fallback browser flows | spaced/long-term follow-up remains Ready-owned and not claimed here |
 | Memory evidence recording | RUNTIME_VERIFIED | yes | fixture | V2 Memory Ladder browser flow | long-term calibration still needs representative history |
 | Memory advisory to Ready | PARTIAL | no current hosted V2 target | candidate-contract shaped | Hide V2 producer + Ready V2 consumer contract CI | hosted current-candidate roundtrip unverified |
 | Ready Planner directive intake | RUNTIME_VERIFIED | yes | fixture contract | browser directed lexical-id test | live current Ready runtime integration unverified |
@@ -478,3 +479,16 @@ Head before matrix document: 63db5206a836050c3dfe5f2b9fd0238d6baeb464
 - The mismatch payload is stored in the active session so reload/resume can preserve the immediate correction state.
 - Exact HEAD `289d3d490847d17f7d311fe9f9f6d7a23f9a1402` passed V2 #341 / full Hide #799.
 - Conservative reporting rises one point for this newly runtime-proven error-comparison loop: PRODUCT ~79%, CODED ~95%, CI ~92%, Browser Runtime ~88%, Device 0%, Release 0%.
+
+
+### 2026-09-22 bounded Seek Again assistance increment
+- Same-day SEEK AGAIN miss no longer jumps immediately to full answer exposure when one safe clue is available.
+- Recovery path is bounded:
+  1. wrong unassisted SEEK_AGAIN is stored as objective recall failure;
+  2. one safe FIRST_FIND-compatible clue may be used;
+  3. assisted retry is objectively checked but non-recall;
+  4. assisted success returns to SEEK_AGAIN for required unassisted proof;
+  5. a second unassisted miss cannot loop the clue and falls through to full relearn.
+- The assistance attempt is explicitly same-day and `spacedEvidence=false`; it does not change the existing IMMEDIATE_ONLY long-term memory rule or Ready scheduling ownership.
+- Exact HEAD `5f5f99e4272a4b6d30ab2284d5e1755c71607f5f` passed V2 #349 / full Hide #807.
+- Conservative reporting rises one point for this newly runtime-proven recovery loop: PRODUCT ~80%, CODED ~96%, CI ~93%, Browser Runtime ~89%, Device 0%, Release 0%.
