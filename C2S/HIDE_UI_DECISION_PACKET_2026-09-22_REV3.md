@@ -55,8 +55,9 @@ CATCH:
 - cumulative review source.
 
 ### Crew
-Snap owns crew identity/personality/intervention grammar.
-Hide consumes character_id / Explorer_ID continuity.
+TAKY shared Exploration Crew canonical owns family-wide crew identity/personality/intervention grammar.
+Snap remains source lineage and Beach-local projection owner.
+Hide consumes character_id / Explorer_ID continuity and owns only Jungle/Waterfall learning-safe projection.
 Slots:
 - pre-start;
 - walkie-talkie;
