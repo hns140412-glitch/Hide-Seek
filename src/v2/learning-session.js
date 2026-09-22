@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const STAGES=['MEMORIZE','FIRST_FIND','FIRST_FIND_ASSIST','FIRST_FIND_RELEARN','MEANING','MEANING_CHOICE_REVIEW','MEANING_ASSIST','MEANING_RELEARN','DOMAIN_EXTENSION','SOUND_FIND_RELEARN','HIDDEN_WORDS','HIDDEN_WORDS_ASSIST','FINAL_SEEK','FINAL_SEEK_RECONSTRUCT','SEEK_AGAIN_RELEARN','SEEK_AGAIN','COMPLETE'];
+  const STAGES=['MEMORIZE','FIRST_FIND','FIRST_FIND_ASSIST','FIRST_FIND_RELEARN','MEANING','MEANING_CHOICE_REVIEW','MEANING_ASSIST','MEANING_RELEARN','DOMAIN_EXTENSION','SOUND_FIND_RELEARN','HIDDEN_WORDS','HIDDEN_WORDS_ASSIST','FINAL_SEEK','FINAL_SEEK_RECONSTRUCT','SEEK_AGAIN_ASSIST','SEEK_AGAIN_RELEARN','SEEK_AGAIN','COMPLETE'];
   const clone=x=>JSON.parse(JSON.stringify(x));
   const current=(session,mission)=>mission.items.find(x=>x.id===session.queue?.[session.index])||null;
   const initialStageFor=w=>String(w?.missionRole||'NEW').toUpperCase()==='REVIEW'?'FIRST_FIND':'MEMORIZE';
@@ -765,11 +765,44 @@
     });
     if(ok)return {ok,session:nextItemOrComplete(attempt.session,mission)};
     const next=clone(attempt.session);
-    next.stage='SEEK_AGAIN_RELEARN';
-    return {ok,session:next};
+    const support=firstFindSupportPlan(w);
+    const assistUsed=Number(next.attempts?.[`${w.id}:SEEK_AGAIN_ASSIST`]||0)>0;
+    next.stage=support&&!assistUsed?'SEEK_AGAIN_ASSIST':'SEEK_AGAIN_RELEARN';
+    return {ok,support:assistUsed?null:support,session:next};
+  }
+
+  function submitSeekAgainAssist(session,mission,answer){
+    const w=current(session,mission);
+    const support=firstFindSupportPlan(w);
+    const attempt=recordAttempt(session,w.id,'SEEK_AGAIN_ASSIST');
+    if(!support){
+      const next=clone(attempt.session);
+      next.stage='SEEK_AGAIN_RELEARN';
+      return {ok:false,unsupported:true,support:null,session:next};
+    }
+    const a=String(answer||'').trim().normalize('NFKC').toLowerCase();
+    const target=String(w?.token||'').trim().normalize('NFKC').toLowerCase();
+    const ok=!!a&&a===target;
+    HideV2Memory.record(mission.id,w.id,{
+      stage:'SEEK_AGAIN_ASSIST',
+      evidenceMode:'ASSISTED_RECONSTRUCTION',
+      axes:['FORM','RECALL'],
+      result:ok?'CORRECT':'WRONG',
+      objectiveVerified:true,
+      objectiveRecall:false,
+      recallScoreImpact:false,
+      assisted:true,
+      supportType:support.type,
+      source:support.sourceRef||null,
+      attempt:attempt.count,
+      spacedEvidence:false
+    });
+    const next=clone(attempt.session);
+    next.stage=ok?'SEEK_AGAIN':'SEEK_AGAIN_RELEARN';
+    return {ok,support,session:next};
   }
 
   window.HideV2Learning=Object.freeze({
-    STAGES,create,current,advance,submitMemorize,checkFirstFind,firstFindSupportPlan,submitFirstFindAssist,markFirstFindUnsure,submitFirstFindRelearn,meaningChallenge,checkMeaningChoice,submitMeaningChoiceReview,meaningSupportPlan,checkMeaning,submitMeaningAssist,submitMeaningRelearn,hiddenWordsPlan,hiddenWordsSupportPlan,submitDomainExtension,submitSoundRelearn,submitHiddenWords,submitHiddenWordsAssist,submitHiddenWordsRelearn,finalReconstructionPlan,useFinalSupport,checkFinalSeek,submitFinalReconstruction,submitSeekAgainRelearn,checkSeekAgain
+    STAGES,create,current,advance,submitMemorize,checkFirstFind,firstFindSupportPlan,submitFirstFindAssist,markFirstFindUnsure,submitFirstFindRelearn,meaningChallenge,checkMeaningChoice,submitMeaningChoiceReview,meaningSupportPlan,checkMeaning,submitMeaningAssist,submitMeaningRelearn,hiddenWordsPlan,hiddenWordsSupportPlan,submitDomainExtension,submitSoundRelearn,submitHiddenWords,submitHiddenWordsAssist,submitHiddenWordsRelearn,finalReconstructionPlan,useFinalSupport,checkFinalSeek,submitFinalReconstruction,submitSeekAgainRelearn,checkSeekAgain,submitSeekAgainAssist
   });
 })();
