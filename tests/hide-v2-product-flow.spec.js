@@ -2065,6 +2065,55 @@ test('Hide V2 Final Seek reconstruction success is assisted and still requires S
   await expect(page.getByRole('heading',{name:'탐험 완료'})).toBeVisible();
 });
 
+test('Hide V2 Final Seek reconstruction can be completed by touch letter chunks without recall inflation',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'조각 재구성'},missions:[{
+        id:'m-chunk-reconstruct',title:'조각 재구성',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        items:[{id:'w-chunk',lexicalId:'island::섬',token:'island',meaning:'섬',languageDomain:'ENGLISH',missionRole:'NEW',example:'The island is small.',evidence:[],source:{}}],
+        sourceCount:0,provenance:{source:'TEST_FIXTURE'}
+      }],
+      activeMissionId:'m-chunk-reconstruct',
+      activeSession:{id:'s-chunk',missionId:'m-chunk-reconstruct',index:0,queue:['w-chunk'],stage:'FINAL_SEEK_RECONSTRUCT',startedAt:new Date().toISOString(),completedAt:null,attempts:{}},
+      captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'탐험 이어가기'}).click();
+  await expect(page.getByRole('heading',{name:'글자 조각으로 다시 조립하기'})).toBeVisible();
+  await expect(page.getByText(/어근이 아니라 단순한 글자 묶음/)).toBeVisible();
+
+  const tiles=await page.locator('.reconstruct-tile').allTextContents();
+  expect(tiles).toEqual(['and','isl']);
+  const metrics=await page.evaluate(()=>({
+    overflow:document.documentElement.scrollWidth-window.innerWidth,
+    heights:[...document.querySelectorAll('.reconstruct-tile')].map(x=>x.getBoundingClientRect().height)
+  }));
+  expect(metrics.overflow).toBeLessThanOrEqual(1);
+  expect(Math.min(...metrics.heights)).toBeGreaterThanOrEqual(44);
+
+  await page.getByRole('button',{name:'isl',exact:true}).click();
+  await expect(page.locator('#v2ReconstructPreview')).toHaveText('isl');
+  await page.getByRole('button',{name:'and',exact:true}).click();
+  await expect(page.locator('#v2ReconstructPreview')).toHaveText('island');
+  await expect(page.getByLabel('재구성 답 입력')).toHaveValue('island');
+
+  await page.getByRole('button',{name:'조립 기억 확인'}).click();
+  await expect(page.locator('.phase-chip')).toHaveText('다시 찾기');
+
+  const ev=await page.evaluate(()=>{
+    const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
+    return s.missions[0].items[0].evidence.find(x=>x.stage==='FINAL_SEEK_RECONSTRUCT');
+  });
+  expect(ev.result).toBe('CORRECT');
+  expect(ev.evidenceMode).toBe('ASSISTED_RECONSTRUCTION');
+  expect(ev.objectiveVerified).toBe(true);
+  expect(ev.objectiveRecall).toBe(false);
+  expect(ev.recallScoreImpact).toBe(false);
+  expect(ev.assisted).toBe(true);
+});
+
 test('Hide V2 product home prioritizes active mission and keeps secondary tools subordinate',async({page})=>{
   await page.setViewportSize({width:390,height:844});
   await page.addInitScript(()=>{
