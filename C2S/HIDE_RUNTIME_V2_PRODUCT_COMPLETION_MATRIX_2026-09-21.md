@@ -557,3 +557,11 @@ Head before matrix document: 63db5206a836050c3dfe5f2b9fd0238d6baeb464
 - RELEASE: production/deploy remains intentionally blocked by the external-resource exact-source gate.
 - Secondary polish still possible inside the branch: custom mission sorting, large-history UX/export stress, broader legacy-migration samples. These are not allowed to masquerade as the major product blockers above.
 - Current locked reporting remains PRODUCT ~81%, CODED ~97%, CI ~94%, Browser Runtime ~90%, Device 0%, Release 0%.
+
+
+### 2026-09-22 final C2S handoff status
+- Latest verified pre-documentation checkpoint: `322c804ab7abe2ec43bc47f91d037774d7f254ed`.
+- V2 #392 and full Hide #850 passed at that checkpoint.
+- Locked product reporting remains PRODUCT ~81%, CODED ~97%, CI ~94%, Browser Runtime ~90%, Device 0%, Release 0%.
+- Do not increase these numbers for documentation-only commits or secondary polish.
+- Next percentage movement requires material closure of representative OCR/provider, physical-device, current cross-app roundtrip, or release-evidence gates.
