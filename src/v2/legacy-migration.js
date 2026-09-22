@@ -7,11 +7,39 @@
     ['languageMemory','LANGUAGE_MEMORY'],['languageMemoryTrace','LANGUAGE_MEMORY']
   ];
   function clone(x){return JSON.parse(JSON.stringify(x))}
+  function normalizeLegacyEvidence(row,kind){
+    const raw=clone(row||{});
+    const explicitRecall=raw.objectiveRecall===true;
+    const explicitVerified=raw.objectiveVerified===true||explicitRecall;
+    const inferredMode={
+      ACQUISITION:'EXPOSURE',
+      RECOGNITION:'RECOGNITION',
+      ASSOCIATION:'ASSOCIATION',
+      RETRIEVAL:'LEGACY_RETRIEVAL',
+      RECOVERY:'LEGACY_RECOVERY',
+      ASSESSMENT:'LEGACY_ASSESSMENT',
+      LANGUAGE_MEMORY:String(raw.evidenceMode||raw.evidenceType||'LANGUAGE_MEMORY').toUpperCase()
+    }[kind]||'LEGACY';
+    const inferredAxes=Array.isArray(raw.axes)&&raw.axes.length
+      ?raw.axes.slice()
+      :(raw.axis?[raw.axis]:(kind==='RECOGNITION'||kind==='ASSOCIATION'?['MEANING']:[]));
+    return {
+      ...raw,
+      evidenceMode:String(raw.evidenceMode||inferredMode).toUpperCase(),
+      axes:inferredAxes,
+      objectiveVerified:explicitVerified,
+      objectiveRecall:explicitRecall,
+      recallScoreImpact:explicitRecall&&raw.recallScoreImpact!==false,
+      migratedFrom:'V1',
+      legacyTraceKind:kind,
+      legacyTruthPolicy:'EXPLICIT_OBJECTIVE_FLAGS_ONLY'
+    };
+  }
   function legacyEvidence(word){
     const stats=word?.learningStats||{},out=[];
     for(const [field,kind] of TRACE_FIELDS){
       const rows=Array.isArray(stats[field])?stats[field]:[];
-      for(const row of rows)out.push({...clone(row),migratedFrom:'V1',legacyTraceKind:kind});
+      for(const row of rows)out.push(normalizeLegacyEvidence(row,kind));
     }
     return out.slice(-120);
   }
@@ -64,5 +92,5 @@
     });
     return {migrated:true,missionCount:missions.length,legacyPreserved:true};
   }
-  window.HideV2LegacyMigration=Object.freeze({LEGACY_KEY,migrateIfNeeded,convertWord,convertMission});
+  window.HideV2LegacyMigration=Object.freeze({LEGACY_KEY,migrateIfNeeded,convertWord,convertMission,normalizeLegacyEvidence});
 })();
