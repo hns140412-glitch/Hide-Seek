@@ -1495,3 +1495,52 @@ body.v2-runtime{
     grid-template-columns:repeat(2,minmax(0,1fr));
   }
 }
+
+
+/* Final Seek mechanical letter-chunk reconstruction */
+.v2-runtime .reconstruct-builder{
+  display:grid;
+  gap:10px;
+  margin:14px 0;
+  padding:14px;
+  border:1px solid var(--v2-line);
+  border-radius:18px;
+  background:rgba(255,255,255,.66);
+}
+.v2-runtime .reconstruct-output{
+  display:grid;
+  gap:4px;
+  min-height:58px;
+  padding:10px 12px;
+  border-radius:14px;
+  background:rgba(232,242,222,.72);
+}
+.v2-runtime .reconstruct-output small{
+  color:var(--v2-muted);
+  font-weight:900;
+}
+.v2-runtime .reconstruct-output b{
+  font-size:20px;
+  letter-spacing:.04em;
+  overflow-wrap:anywhere;
+}
+.v2-runtime .reconstruct-tiles{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+}
+.v2-runtime .reconstruct-tile{
+  min-width:0;
+  min-height:48px;
+  padding:10px 8px;
+  font-size:16px;
+  font-weight:900;
+}
+.v2-runtime .reconstruct-tools .btn{
+  min-height:42px;
+}
+@media(max-width:390px){
+  .v2-runtime .reconstruct-tiles{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
