@@ -369,3 +369,11 @@ FALSE_CONVERGENCE = 0: live deploy/device/real-provider claims remain OPEN.
 - Completion UI surfaces the pending expression-review count without turning it into a child score.
 - Exact HEAD `50d04cf2f891b4844ddf16f225b40f4bf1a947cf` passed V2 #326 / full Hide #784.
 - Locked reporting: PRODUCT ~79%, CODED ~94%, CI ~92%, Browser Runtime ~88%, Device 0%, Release 0%.
+
+
+## 27. 2026-09-22 bounded MEANING recall recovery
+- Direct MEANING recall now has a bounded miss-recovery path instead of silent advancement.
+- Wrong recall → one safe masked-context assisted retry when available → full meaning relearn only if still needed → DOMAIN_EXTENSION.
+- Assisted meaning retry and relearn exposure remain non-recall and cannot inflate Memory Strength.
+- Exact HEAD `dbe3fcf7a41a8b2a0a7e831af63ee41139e18a28` passed V2 #334 / full Hide #792.
+- Locked reporting: PRODUCT ~78%, CODED ~94%, CI ~91%, Browser Runtime ~87%, Device 0%, Release 0%.
