@@ -32,7 +32,7 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 | Korean EVIDENCE TRAIL | RUNTIME_VERIFIED | yes when verified contextEvidence exists | verified-context fixture | browser evidence-selection truth-boundary flow | representative Korean source evidence still open |
 | Hanja SOUND FIND | RUNTIME_VERIFIED | yes when verified soundEvidence exists | verified-sound fixture | dedicated V2 browser sound-recall flow | representative Hanja source/device pronunciation workflow still open |
 | HIDDEN WORDS reinforcement | RUNTIME_VERIFIED | conditional | fixture | Memory Engine-gated + reason-specific + staged-assistance browser flows | deeper multi-step ladder remains partial beyond one safe clue escalation |
-| FINAL SEEK | RUNTIME_VERIFIED | yes | fixture | unassisted recall + optional support + failed-recall shape reconstruction + Seek Again browser regressions | full letter-key reconstruction game remains reference-only |
+| FINAL SEEK | RUNTIME_VERIFIED | yes | fixture | unassisted recall + optional support + touch mechanical-letter-chunk reconstruction + keyboard fallback + Seek Again browser regressions | richer multilingual reconstruction remains open |
 | SEEK AGAIN recovery | RUNTIME_VERIFIED | yes | fixture | wrong → one safe clue → assisted retry → required unassisted retry; one-clue limit + relearn fallback browser flows | spaced/long-term follow-up remains Ready-owned and not claimed here |
 | Memory evidence recording | RUNTIME_VERIFIED | yes | fixture | V2 Memory Ladder browser flow | long-term calibration still needs representative history |
 | Memory advisory to Ready | PARTIAL | no current hosted V2 target | candidate-contract shaped | Hide V2 producer + Ready V2 consumer contract CI | hosted current-candidate roundtrip unverified |
@@ -502,3 +502,18 @@ Head before matrix document: 63db5206a836050c3dfe5f2b9fd0238d6baeb464
 - Successful chunk reconstruction remains `ASSISTED_RECONSTRUCTION`, `objectiveRecall=false`, `recallScoreImpact=false`; SEEK AGAIN still provides the unassisted proof.
 - Exact HEAD `00a5d8c8ddd50444d0762aed34be880a3b2fff12` passed V2 #358 / full Hide #816.
 - No percentage increase is claimed because this is UX completion inside the already-counted FINAL SEEK reconstruction capability.
+
+
+### 2026-09-22 touch letter-chunk Final Seek reconstruction increment
+- English FINAL_SEEK_RECONSTRUCT now provides an actual touch reconstruction interaction rather than only a shape cue + free-text retry.
+- The runtime mechanically splits the verified token into 2–3 character chunks based only on character positions; chunks are explicitly **not** claimed as roots, affixes or morphemes.
+- Child-facing reconstruction supports:
+  - shuffled/rotated letter-chunk tiles;
+  - live assembled preview;
+  - one-chunk undo;
+  - reset;
+  - direct text input fallback for keyboard/accessibility.
+- Touch targets are browser-verified at mobile 390×844 without horizontal overflow.
+- Reconstruction remains `ASSISTED_RECONSTRUCTION`, `objectiveRecall=false`, `recallScoreImpact=false`; successful assembly still requires subsequent unassisted SEEK AGAIN.
+- Exact HEAD `00a5d8c8ddd50444d0762aed34be880a3b2fff12` passed V2 #358 / full Hide #816.
+- Conservative reporting rises one point for this materially more complete child-facing reconstruction path: PRODUCT ~81%, CODED ~97%, CI ~94%, Browser Runtime ~90%, Device 0%, Release 0%.
