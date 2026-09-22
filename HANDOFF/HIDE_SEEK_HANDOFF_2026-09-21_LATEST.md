@@ -578,3 +578,11 @@ Important current frontier:
 - Do not allow repeated clue loops; after one assist, another miss goes to relearn.
 - Same-day recovery remains IMMEDIATE_ONLY and does not create spacing policy inside Hide.
 - Current locked reporting: PRODUCT ~80%, CODED ~96%, CI ~93%, Browser Runtime ~89%, Device 0%, Release 0%.
+
+
+## 2026-09-22 touch reconstruction delta
+- Exact HEAD `00a5d8c8ddd50444d0762aed34be880a3b2fff12` passed V2 #358 / full Hide #816.
+- English FINAL SEEK assisted reconstruction now supports 390×844 touch letter-chunk assembly with undo/reset and >=44px chunk targets.
+- Treat chunks as plain letter groups, not roots/etymology.
+- Reconstruction success remains assisted/non-recall; SEEK AGAIN remains the required unassisted proof.
+- Percentages unchanged: PRODUCT ~80%, CODED ~96%, CI ~93%, Browser Runtime ~89%, Device 0%, Release 0%.
