@@ -72,7 +72,7 @@
     {
       "id": "HIDE-V2-C2S-012",
       "type": "EVIDENCE",
-      "statement": "Locked last closed product estimate: Product 79, Coded 95, CI 92, Browser Runtime 88, Device 0, Release 0.",
+      "statement": "Locked last closed product estimate: Product 80, Coded 96, CI 93, Browser Runtime 89, Device 0, Release 0.",
       "destination": "status"
     },
     {
@@ -272,6 +272,18 @@
       "type": "DECISION",
       "statement": "Hide may expose HUMAN_SEMANTIC_REVIEW_AVAILABLE for Korean production evidence but must not auto-score semantic correctness; candidate scope must respect active session.queue.",
       "destination": "language-memory/korean-human-review"
+    },
+    {
+      "id": "HIDE-V2-C2S-046",
+      "type": "EVIDENCE",
+      "statement": "SEEK AGAIN wrong recall may use one safe bounded clue; assisted success remains non-recall and must return to unassisted SEEK AGAIN.",
+      "destination": "learning/seek-again"
+    },
+    {
+      "id": "HIDE-V2-C2S-047",
+      "type": "DECISION",
+      "statement": "SEEK AGAIN assistance is one-shot; after the clue is consumed, another miss must fall through to relearn. Same-day recovery remains IMMEDIATE_ONLY and does not create spacing policy in Hide.",
+      "destination": "memory-evidence/recovery"
     }
   ],
   "coverage": {
