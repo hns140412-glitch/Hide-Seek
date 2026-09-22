@@ -649,29 +649,53 @@
   }
 
   function finalReconstructionPlan(word){
-    if(String(word?.languageDomain||'').toUpperCase()!=='ENGLISH')return null;
-    const token=String(word?.token||'').trim().toLowerCase();
-    const cue=englishShapeCue(token);
-    if(!cue||!/^[a-z]{4,}$/.test(token))return null;
-    const count=token.length>=9?3:2;
-    const base=Math.floor(token.length/count);
-    const extra=token.length%count;
-    const chunks=[];
-    let at=0;
-    for(let i=0;i<count;i++){
-      const size=base+(i<extra?1:0);
-      chunks.push(token.slice(at,at+size));
-      at+=size;
+    const domain=String(word?.languageDomain||'').toUpperCase();
+    const token=String(word?.token||'').trim().normalize('NFKC');
+    if(domain==='ENGLISH'){
+      const lower=token.toLowerCase();
+      const cue=englishShapeCue(lower);
+      if(!cue||!/^[a-z]{4,}$/.test(lower))return null;
+      const count=lower.length>=9?3:2;
+      const base=Math.floor(lower.length/count);
+      const extra=lower.length%count;
+      const chunks=[];
+      let at=0;
+      for(let i=0;i<count;i++){
+        const size=base+(i<extra?1:0);
+        chunks.push(lower.slice(at,at+size));
+        at+=size;
+      }
+      const tiles=chunks.length>1?[...chunks.slice(1),chunks[0]]:[...chunks];
+      return {
+        type:'CHUNK_ASSEMBLY',
+        label:'글자 조각 재구성',
+        cue,
+        chunks,
+        tiles,
+        sourceRef:null,
+        semantics:'MECHANICAL_CHARACTER_CHUNKS_NOT_MORPHEMES'
+      };
     }
-    const tiles=chunks.length>1?[...chunks.slice(1),chunks[0]]:[...chunks];
-    return {
-      type:'CHUNK_ASSEMBLY',
-      label:'글자 조각 재구성',
-      cue,
-      chunks,
-      tiles,
-      semantics:'MECHANICAL_CHARACTER_CHUNKS_NOT_MORPHEMES'
-    };
+    const support=firstFindSupportPlan(word);
+    if(domain==='KOREAN'&&support?.type==='MEANING_MAP'&&support.sourceRef){
+      return {
+        type:'VERIFIED_MEANING_MAP_RECONSTRUCTION',
+        label:'뜻 구조로 다시 재구성',
+        cue:support.cue,
+        sourceRef:support.sourceRef,
+        semantics:'VERIFIED_MEANING_STRUCTURE_ASSISTANCE'
+      };
+    }
+    if(domain==='HANJA'&&support?.type==='SOUND'&&support.sourceRef){
+      return {
+        type:'VERIFIED_SOUND_RECONSTRUCTION',
+        label:'검증된 음으로 다시 재구성',
+        cue:support.cue,
+        sourceRef:support.sourceRef,
+        semantics:'VERIFIED_SOUND_ASSISTANCE'
+      };
+    }
+    return null;
   }
 
   function useFinalSupport(session,mission,support={}){
@@ -743,7 +767,8 @@
       objectiveRecall:false,
       recallScoreImpact:false,
       assisted:true,
-      supportType:plan.type
+      supportType:plan.type,
+      source:plan.sourceRef||null
     });
     const next=clone(session);
     next.stage=ok?'SEEK_AGAIN':'SEEK_AGAIN_RELEARN';
