@@ -26,7 +26,7 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 | OCR review persistence/resume | RUNTIME_VERIFIED | yes | provider-shaped fixture only | reload + editable review-draft persistence + warning/provenance + explicit duplicate-merge browser tests | real-provider calibration incomplete |
 | MEMORIZE / THINKING TRAIL | RUNTIME_VERIFIED | yes | fixture | prediction→reveal→self-comparison + established-clue reuse browser flow | representative multilingual inference histories still open |
 | FIRST FIND | RUNTIME_VERIFIED | yes | fixture | correct/wrong/unsure + English shape + verified Korean meaning-map + verified Hanja sound assist + relearn truth-boundary browser flows | representative source breadth still open |
-| MEANING CLUE | RUNTIME_VERIFIED | yes | fixture | direct recall fallback + session-scoped bidirectional recognition + confusion handoff browser flow | broader representative confusion sets still open |
+| MEANING CLUE | RUNTIME_VERIFIED | yes | fixture | direct recall + bounded context-assist/relearn + session-scoped bidirectional recognition + confusion handoff browser flow | broader representative confusion/context sets still open |
 | English CONNECTION | RUNTIME_VERIFIED | yes | fixture | established inference-history personalization + non-recall guidance browser flow | broader representative vocabulary/history still open |
 | Korean RESPONSE TRAIL | RUNTIME_VERIFIED | yes | fixture | production evidence + target-use feedback + scoped human-review handoff/completion note browser flow | external parent/teacher review UI and representative responses remain open |
 | Korean EVIDENCE TRAIL | RUNTIME_VERIFIED | yes when verified contextEvidence exists | verified-context fixture | browser evidence-selection truth-boundary flow | representative Korean source evidence still open |
@@ -452,3 +452,17 @@ Head before matrix document: 63db5206a836050c3dfe5f2b9fd0238d6baeb464
 - The child completion surface quietly reports how many expressions remain for parent/teacher semantic review.
 - Exact HEAD `50d04cf2f891b4844ddf16f225b40f4bf1a947cf` passed V2 #326 / full Hide #784.
 - Conservative reporting: PRODUCT ~79%, CODED stays ~94%, CI ~92%, Browser Runtime ~88%, Device 0%, Release 0%.
+
+
+### 2026-09-22 bounded Meaning recall recovery increment
+- Single-item direct MEANING recall no longer silently advances after a wrong answer.
+- Recovery path is bounded:
+  1. wrong direct meaning recall is stored as objective recall failure;
+  2. if a safe context clue exists, one assisted meaning retry is offered;
+  3. assisted success remains objectiveVerified but non-recall;
+  4. assisted miss, or no safe clue, escalates to full meaning relearn exposure;
+  5. the journey then continues to DOMAIN_EXTENSION.
+- Safe context source is either normalized verified contextEvidence or an existing example sentence; the target token is masked in the cue.
+- Relearn exposure is assisted/non-recall and cannot inflate Memory Strength.
+- Exact HEAD `dbe3fcf7a41a8b2a0a7e831af63ee41139e18a28` passed V2 #334 / full Hide #792.
+- Conservative reporting rises one point for this newly runtime-proven meaning-recovery path: PRODUCT ~78%, CODED ~94%, CI ~91%, Browser Runtime ~87%, Device 0%, Release 0%.
