@@ -19,7 +19,6 @@
     FINAL_SEEK:'마지막 찾기',
     FINAL_SEEK_RECONSTRUCT:'글자 조립',
     SEEK_AGAIN_ASSIST:'단서로 다시 찾기',
-    SEEK_AGAIN_ASSIST:'다시 찾기 단서',
     SEEK_AGAIN_RELEARN:'다시 만나기',
     SEEK_AGAIN:'다시 찾기',
     COMPLETE:'탐험 완료'
@@ -43,6 +42,7 @@
     HIDDEN_WORDS_RELEARN:'보강 다시 보기',
     FINAL_SEEK:'마지막 찾기',
     FINAL_SEEK_RECONSTRUCT:'마지막 찾기 글자 조립',
+    SEEK_AGAIN_ASSIST:'다시 찾기 단서',
     SEEK_AGAIN_RELEARN:'다시 만나기',
     SEEK_AGAIN:'다시 찾기',
     THINKING_TRAIL:'생각 길'
