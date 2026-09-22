@@ -18,6 +18,8 @@
     HIDDEN_WORDS_RELEARN:'다시 만나기',
     FINAL_SEEK:'마지막 찾기',
     FINAL_SEEK_RECONSTRUCT:'글자 조립',
+    SEEK_AGAIN_ASSIST:'단서로 다시 찾기',
+    SEEK_AGAIN_ASSIST:'다시 찾기 단서',
     SEEK_AGAIN_RELEARN:'다시 만나기',
     SEEK_AGAIN:'다시 찾기',
     COMPLETE:'탐험 완료'
@@ -74,7 +76,7 @@
     const steps=[
       ['MEMORIZE','01 만나기'],['FIRST_FIND','02 첫 찾기'],['MEANING','03 뜻 단서'],['DOMAIN_EXTENSION','04 연결 길'],['FINAL_SEEK','05 마지막 찾기'],['SEEK_AGAIN','06 다시 찾기']
     ];
-    const normalized=stage==='FINAL_SEEK_RECONSTRUCT'?'FINAL_SEEK':stage==='SEEK_AGAIN_RELEARN'?'SEEK_AGAIN':(stage==='FIRST_FIND_ASSIST'||stage==='FIRST_FIND_RELEARN')?'FIRST_FIND':(stage==='MEANING_CHOICE_REVIEW'||stage==='MEANING_ASSIST'||stage==='MEANING_RELEARN')?'MEANING':(stage==='SOUND_FIND_RELEARN'||stage==='HIDDEN_WORDS'||stage==='HIDDEN_WORDS_ASSIST'||stage==='HIDDEN_WORDS_RELEARN')?'DOMAIN_EXTENSION':stage;
+    const normalized=stage==='FINAL_SEEK_RECONSTRUCT'?'FINAL_SEEK':(stage==='SEEK_AGAIN_ASSIST'||stage==='SEEK_AGAIN_RELEARN')?'SEEK_AGAIN':(stage==='FIRST_FIND_ASSIST'||stage==='FIRST_FIND_RELEARN')?'FIRST_FIND':(stage==='MEANING_CHOICE_REVIEW'||stage==='MEANING_ASSIST'||stage==='MEANING_RELEARN')?'MEANING':(stage==='SOUND_FIND_RELEARN'||stage==='HIDDEN_WORDS'||stage==='HIDDEN_WORDS_ASSIST'||stage==='HIDDEN_WORDS_RELEARN')?'DOMAIN_EXTENSION':stage;
     const activeIndex=Math.max(0,steps.findIndex(([key])=>key===normalized));
     return `<ol class="journey-path" aria-label="단어 탐험 길">${steps.map(([key,label],i)=>`<li class="${i<activeIndex?'is-done':''} ${i===activeIndex?'is-current':''}"><span aria-hidden="true">${i<activeIndex?'✓':i+1}</span><small>${esc(label)}</small></li>`).join('')}</ol>`;
   };
@@ -673,6 +675,30 @@
       return;
     }
 
+    if(session.stage==='SEEK_AGAIN_ASSIST'){
+      const support=HideV2Learning.firstFindSupportPlan(w);
+      if(!support){
+        HideV2Session.update({...session,stage:'SEEK_AGAIN_RELEARN'});
+        render();
+        return;
+      }
+      const prompt=support.type==='SOUND'
+        ?'검증된 음을 단서로 글자를 다시 떠올려보세요.'
+        :support.type==='MEANING_MAP'
+          ?'검증된 뜻의 구조를 단서로 단어를 다시 떠올려보세요.'
+          :'글자 골격을 보고 단어를 다시 떠올려보세요.';
+      view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}${journeyHtml(session.stage)}${crewHtml(w,session.stage)}<div class="learn-head"><span class="phase-chip">${childStageLabel('SEEK_AGAIN_ASSIST')}</span><b>${idx}/${total}</b></div><section class="card word-card seek-again-assist"><p class="quest-overline">ONE LAST CLUE</p><h2>${esc(support.label)}</h2><p>${esc(prompt)}</p><div class="memory-trace"><b>${esc(support.label)}</b><span>${esc(support.cue)}</span></div>${support.sourceRef?`<small class="truth-source">출처 확인됨 · ${esc(support.sourceRef)}</small>`:''}<small>이 단서를 보고 맞혀도 아직 무힌트 성공은 아니에요. 다음 화면에서 다시 혼자 찾아봐요.</small><input id="v2SeekAgainAssist" class="input" aria-label="다시 찾기 도움 답 입력" autocomplete="off" spellcheck="false"><button id="v2SeekAgainAssistCheck" class="btn primary full" type="button">단서로 다시 확인</button></section></section>`;
+      $('#v2SeekAgainAssistCheck').onclick=()=>{
+        const answer=$('#v2SeekAgainAssist').value.trim();
+        if(!answer){setFlash('단서를 보고 떠올린 답을 입력해 주세요.');return}
+        const r=HideV2Learning.submitSeekAgainAssist(session,m,answer);
+        HideV2Session.update(r.session);
+        setFlash(r.ok?'단서로 찾았어요. 이제 힌트 없이 한 번 더 확인해요.':'이번엔 단어를 잠깐 다시 보고 다시 찾아봐요.');
+        render()
+      };
+      return;
+    }
+
     if(session.stage==='SEEK_AGAIN_RELEARN'){
       view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}${journeyHtml(session.stage)}${crewHtml(w,session.stage)}<div class="learn-head"><span class="phase-chip">${childStageLabel('SEEK_AGAIN_RELEARN')}</span><b>${idx}/${total}</b></div><section class="card word-card"><p>놓친 단어를 잠깐 다시 만나봐요.</p><div class="bigword">${esc(w.token)}</div><h2 style="text-align:center">${esc(w.meaning)}</h2>${w.example?`<p class="example">${esc(w.example)}</p>`:''}<button id="v2Rehide" class="btn primary full">다시 숨기기</button></section></section>`;
       $('#v2Rehide').onclick=()=>{HideV2Session.update(HideV2Learning.submitSeekAgainRelearn(session,m).session);render()};
@@ -681,7 +707,14 @@
 
     if(session.stage==='SEEK_AGAIN'){
       view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}${journeyHtml(session.stage)}${crewHtml(w,session.stage)}<div class="learn-head"><span class="phase-chip">${childStageLabel('SEEK_AGAIN')}</span><b>${idx}/${total}</b></div><section class="card word-card"><p>이번에는 다시 찾을 수 있을까요?</p><div class="bigword">${esc(w.meaning)}</div><input id="v2SeekAgain" class="input" aria-label="다시 찾기 답 입력" autocomplete="off" spellcheck="false"><button id="v2SeekAgainCheck" class="btn primary full">다시 찾기</button></section></section>`;
-      $('#v2SeekAgainCheck').onclick=()=>{const r=HideV2Learning.checkSeekAgain(session,m,$('#v2SeekAgain').value);HideV2Session.update(r.session);setFlash(r.ok?'다시 찾았어요':'한 번 더 보고 다시 찾아봐요.');render()};
+      $('#v2SeekAgainCheck').onclick=()=>{
+        const answer=$('#v2SeekAgain').value.trim();
+        if(!answer){setFlash('기억에서 떠올린 단어를 입력해 주세요.');return}
+        const r=HideV2Learning.checkSeekAgain(session,m,answer);
+        HideV2Session.update(r.session);
+        setFlash(r.ok?'다시 찾았어요':r.support?'마지막으로 작은 단서 하나만 써볼게요.':'한 번 더 보고 다시 찾아봐요.');
+        render()
+      };
       return;
     }
   }
