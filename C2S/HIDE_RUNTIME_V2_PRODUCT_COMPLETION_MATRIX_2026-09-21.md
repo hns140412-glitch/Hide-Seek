@@ -565,3 +565,40 @@ Head before matrix document: 63db5206a836050c3dfe5f2b9fd0238d6baeb464
 - Locked product reporting remains PRODUCT ~81%, CODED ~97%, CI ~94%, Browser Runtime ~90%, Device 0%, Release 0%.
 - Do not increase these numbers for documentation-only commits or secondary polish.
 - Next percentage movement requires material closure of representative OCR/provider, physical-device, current cross-app roundtrip, or release-evidence gates.
+
+
+### 2026-09-22 pre-deploy secondary-gap closure
+- Custom Mission Map sorting is now implemented as presentation-only ordering:
+  - SMART / recent activity / name / item-count sort;
+  - sorting does not mutate mission evidence, `updatedAt`, Memory Strength, or Ready scheduling ownership.
+- Large-history Memory Ladder rendering is windowed at 60 rows per increment:
+  - browser DOM no longer renders the entire long wordbook at once;
+  - search still evaluates the full wordbook;
+  - JSON/CSV export still exports the full Hide-owned memory snapshot.
+- Representative browser stress fixture: 240 word records; initial 60 → 120 via “더 보기”; off-window `word239` remains searchable; export keeps all 240 items.
+- V1 migration now applies `EXPLICIT_OBJECTIVE_FLAGS_ONLY` recall truth:
+  - missing legacy `objectiveRecall` is never inferred from event names such as retrieval/recovery;
+  - explicit V1 language-memory objective recall remains preserved;
+  - recognition/association structure is normalized for weakness/confusion continuity without promoting it to recall.
+- Exact code checkpoint `8fd23e6e9f0db1e8b6d242cef7c71ebaabc5d2be` passed:
+  - Validate Hide Runtime V2 #403 — SUCCESS;
+  - Validate Hide & Seek #861 — SUCCESS.
+- Frozen pre-deploy candidate:
+  - branch `frozen/hide-v2-candidate-2026-09-22-04`;
+  - SHA `8fd23e6e9f0db1e8b6d242cef7c71ebaabc5d2be`.
+- These are secondary robustness closures. Locked reporting does **not** increase:
+  - PRODUCT ~81%
+  - CODED ~97%
+  - CI ~94%
+  - Browser Runtime ~90%
+  - Device 0%
+  - Release 0%.
+
+### Current pre-deploy major gates
+1. representative real printed-sheet OCR with current provider/calibration;
+2. physical-device camera/touch/OS-keyboard/PWA/install-update visual QA;
+3. current Ready rebuild ↔ frozen Hide candidate exact-source browser roundtrip;
+4. current Snap Exploration Crew live provider roundtrip;
+5. exact-source deploy mechanism for the frozen candidate.
+
+Historical Ready integration evidence is not sufficient for gate 3: `integration/hide-memory-review-roundtrip-v01` is diverged from the current Ready rebuild branch. Do not reinterpret the old green runs as current-product closure.
