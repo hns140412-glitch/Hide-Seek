@@ -287,6 +287,14 @@ test('Hide V2 Meaning Clue uses bidirectional recognition and feeds confusion re
 
   await expect(page.getByRole('heading',{name:'단어에서 뜻 찾기'})).toBeVisible();
   await page.getByRole('button',{name:'섬',exact:true}).click();
+  await expect(page.getByText('헷갈린 뜻 비교',{exact:true})).toBeVisible();
+  await expect(page.getByText('내가 고른 연결',{exact:true})).toBeVisible();
+  await expect(page.getByText('실제 연결',{exact:true})).toBeVisible();
+  await expect(page.getByText('섬',{exact:true})).toBeVisible();
+  await expect(page.getByText('혜택',{exact:true})).toBeVisible();
+  expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')).activeSession.stage)).toBe('MEANING_CHOICE_REVIEW');
+
+  await page.getByRole('button',{name:'비교하고 연결 길로'}).click();
   await expect(page.getByText('연결 길',{exact:true})).toBeVisible();
   await page.getByRole('button',{name:'다음'}).click();
   await expect(page.getByText('숨은 단어 보강',{exact:true})).toBeVisible();
@@ -298,6 +306,7 @@ test('Hide V2 Meaning Clue uses bidirectional recognition and feeds confusion re
     return s.missions[0].items[0].evidence;
   });
   const meaning=evidence.find(x=>x.stage==='MEANING');
+  const compare=evidence.find(x=>x.stage==='MEANING_CHOICE_REVIEW');
   expect(meaning.evidenceMode).toBe('RECOGNITION');
   expect(meaning.result).toBe('MISMATCH');
   expect(meaning.objectiveVerified).toBe(true);
@@ -305,6 +314,12 @@ test('Hide V2 Meaning Clue uses bidirectional recognition and feeds confusion re
   expect(meaning.recallScoreImpact).toBe(false);
   expect(meaning.confusedWithToken).toBe('island');
   expect(meaning.confusedWithMeaning).toBe('섬');
+  expect(compare.evidenceMode).toBe('ERROR_COMPARISON_EXPOSURE');
+  expect(compare.result).toBe('SEEN');
+  expect(compare.objectiveVerified).toBe(false);
+  expect(compare.objectiveRecall).toBe(false);
+  expect(compare.recallScoreImpact).toBe(false);
+  expect(compare.assisted).toBe(true);
 
   const plan=await page.evaluate(()=>{
     const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
