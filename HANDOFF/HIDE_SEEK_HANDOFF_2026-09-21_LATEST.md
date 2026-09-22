@@ -586,3 +586,11 @@ Important current frontier:
 - Treat chunks as plain letter groups, not roots/etymology.
 - Reconstruction success remains assisted/non-recall; SEEK AGAIN remains the required unassisted proof.
 - Percentages unchanged: PRODUCT ~80%, CODED ~96%, CI ~93%, Browser Runtime ~89%, Device 0%, Release 0%.
+
+
+## 2026-09-22 safe memory export delta
+- Exact HEAD `f55acb54eaf88b3c3f60812aff6ac2b234b3020e` passed V2 #367 / full Hide #825.
+- Memory records export is available as JSON/CSV from the secondary record-details surface.
+- Export authority is Hide specialist memory evidence only; never emit Ready dates/schedules from Hide.
+- CSV cells with formula-leading characters are hardened before download.
+- Current locked reporting remains PRODUCT ~80%, CODED ~96%, CI ~93%, Browser Runtime ~89%, Device 0%, Release 0%.
