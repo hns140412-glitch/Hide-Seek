@@ -2114,6 +2114,111 @@ test('Hide V2 Final Seek reconstruction can be completed by touch letter chunks 
   expect(ev.assisted).toBe(true);
 });
 
+test('Hide V2 Korean Final Seek reconstruction uses only verified meaning structure and stays assisted',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'국어 재구성'},missions:[{
+        id:'m-ko-final-reconstruct',title:'국어 재구성',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        items:[{
+          id:'w-ko-final-reconstruct',lexicalId:'책임::맡은 일을 다함',token:'책임',meaning:'맡은 일을 다함',languageDomain:'KOREAN',missionRole:'NEW',example:'책임을 다했다.',evidence:[],source:{},
+          meaningMap:{verified:true,sourceType:'VERIFIED_KOREAN_MEANING_MAP',sourceRef:'fixture:korean:책임',coreMeaning:'맡은 일을 다하는 것',nodes:[{role:'HANJA_ORIGIN',label:'責任',meaning:'맡을 책 · 맡길 임'}],bridges:[]}
+        }],
+        sourceCount:0,provenance:{source:'TEST_FIXTURE'}
+      }],
+      activeMissionId:'m-ko-final-reconstruct',
+      activeSession:{id:'s-ko-final-reconstruct',missionId:'m-ko-final-reconstruct',index:0,queue:['w-ko-final-reconstruct'],stage:'FINAL_SEEK_RECONSTRUCT',startedAt:new Date().toISOString(),completedAt:null,attempts:{}},
+      captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'탐험 이어가기'}).click();
+  await expect(page.getByRole('heading',{name:'단서로 다시 재구성하기'})).toBeVisible();
+  await expect(page.getByText('뜻 구조로 다시 재구성',{exact:true})).toBeVisible();
+  await expect(page.getByText(/責任/)).toBeVisible();
+  await expect(page.getByText(/fixture:korean:책임/)).toBeVisible();
+
+  await page.getByLabel('재구성 답 입력').fill('책임');
+  await page.getByRole('button',{name:'재구성 기억 확인'}).click();
+  await expect(page.locator('.phase-chip')).toHaveText('다시 찾기');
+
+  const ev=await page.evaluate(()=>{
+    const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
+    return s.missions[0].items[0].evidence.find(x=>x.stage==='FINAL_SEEK_RECONSTRUCT');
+  });
+  expect(ev.result).toBe('CORRECT');
+  expect(ev.supportType).toBe('VERIFIED_MEANING_MAP_RECONSTRUCTION');
+  expect(ev.source).toBe('fixture:korean:책임');
+  expect(ev.objectiveRecall).toBe(false);
+  expect(ev.recallScoreImpact).toBe(false);
+  expect(ev.assisted).toBe(true);
+
+  await page.getByLabel('다시 찾기 답 입력').fill('책임');
+  await page.getByRole('button',{name:'다시 찾기'}).click();
+  await expect(page.getByRole('heading',{name:'탐험 완료'})).toBeVisible();
+});
+
+test('Hide V2 Hanja Final Seek reconstruction uses only verified sound and stays assisted',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'한자 재구성'},missions:[{
+        id:'m-hanja-final-reconstruct',title:'한자 재구성',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        items:[{
+          id:'w-hanja-final-reconstruct',lexicalId:'山::산',token:'山',meaning:'산',languageDomain:'HANJA',missionRole:'NEW',evidence:[],source:{},
+          soundEvidence:{verified:true,sourceType:'VERIFIED_HANJA_SOUND',sourceRef:'fixture:hanja:山',reading:'산'}
+        }],
+        sourceCount:0,provenance:{source:'TEST_FIXTURE'}
+      }],
+      activeMissionId:'m-hanja-final-reconstruct',
+      activeSession:{id:'s-hanja-final-reconstruct',missionId:'m-hanja-final-reconstruct',index:0,queue:['w-hanja-final-reconstruct'],stage:'FINAL_SEEK_RECONSTRUCT',startedAt:new Date().toISOString(),completedAt:null,attempts:{}},
+      captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'탐험 이어가기'}).click();
+  await expect(page.getByRole('heading',{name:'단서로 다시 재구성하기'})).toBeVisible();
+  await expect(page.getByText('검증된 음으로 다시 재구성',{exact:true})).toBeVisible();
+  await expect(page.getByText('산',{exact:true})).toBeVisible();
+  await expect(page.getByText(/fixture:hanja:山/)).toBeVisible();
+
+  await page.getByLabel('재구성 답 입력').fill('山');
+  await page.getByRole('button',{name:'재구성 기억 확인'}).click();
+  await expect(page.locator('.phase-chip')).toHaveText('다시 찾기');
+
+  const ev=await page.evaluate(()=>{
+    const s=JSON.parse(localStorage.getItem('hide_seek_v2_state'));
+    return s.missions[0].items[0].evidence.find(x=>x.stage==='FINAL_SEEK_RECONSTRUCT');
+  });
+  expect(ev.result).toBe('CORRECT');
+  expect(ev.supportType).toBe('VERIFIED_SOUND_RECONSTRUCTION');
+  expect(ev.source).toBe('fixture:hanja:山');
+  expect(ev.objectiveRecall).toBe(false);
+  expect(ev.recallScoreImpact).toBe(false);
+  expect(ev.assisted).toBe(true);
+});
+
+test('Hide V2 multilingual Final Seek reconstruction fails closed without verified support',async({page})=>{
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'재구성 fail closed'},missions:[{
+        id:'m-ko-final-unverified',title:'재구성 fail closed',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        items:[{
+          id:'w-ko-final-unverified',lexicalId:'책임::맡은 일을 다함',token:'책임',meaning:'맡은 일을 다함',languageDomain:'KOREAN',missionRole:'NEW',evidence:[],source:{},
+          meaningMap:{verified:false,sourceType:'UNVERIFIED',sourceRef:'',coreMeaning:'',nodes:[{role:'HANJA_ORIGIN',label:'責任',meaning:'임시'}]}
+        }],
+        sourceCount:0,provenance:{source:'TEST_FIXTURE'}
+      }],
+      activeMissionId:'m-ko-final-unverified',
+      activeSession:{id:'s-ko-final-unverified',missionId:'m-ko-final-unverified',index:0,queue:['w-ko-final-unverified'],stage:'FINAL_SEEK_RECONSTRUCT',startedAt:new Date().toISOString(),completedAt:null,attempts:{}},
+      captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'탐험 이어가기'}).click();
+  await expect(page.getByText('다시 만나기',{exact:true})).toBeVisible();
+  expect(await page.getByRole('heading',{name:'단서로 다시 재구성하기'}).count()).toBe(0);
+  expect(await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')).activeSession.stage)).toBe('SEEK_AGAIN_RELEARN');
+});
+
 test('Hide V2 product home prioritizes active mission and keeps secondary tools subordinate',async({page})=>{
   await page.setViewportSize({width:390,height:844});
   await page.addInitScript(()=>{
