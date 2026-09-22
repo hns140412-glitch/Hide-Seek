@@ -645,3 +645,39 @@ Important current frontier:
 - If green: do not reopen already-closed child-journey slices unless new evidence shows a regression.
 - Main remaining gates are representative OCR/provider evidence, physical-device QA, frozen Ready↔Hide roundtrip, live Snap crew-provider roundtrip, and exact-source release proof.
 - No Netlify/siteId-only deploy, no main merge, no V1 monolith feature growth.
+
+
+## 2026-09-22 PRE-DEPLOY CONTINUATION
+- Current code checkpoint before documentation: `8fd23e6e9f0db1e8b6d242cef7c71ebaabc5d2be`.
+- Validation:
+  - V2 #403 SUCCESS
+  - full Hide #861 SUCCESS.
+- Frozen candidate:
+  - `frozen/hide-v2-candidate-2026-09-22-04`
+  - exact SHA `8fd23e6e9f0db1e8b6d242cef7c71ebaabc5d2be`.
+- Newly closed secondary branch gaps:
+  - custom Mission Map sorting;
+  - large-history Memory Ladder windowed rendering/search/export stress;
+  - broader V1 migration samples with fail-closed explicit-objective recall truth.
+- Do not raise completion percentages for these secondary closures.
+- Locked status remains PRODUCT ~81%, CODED ~97%, CI ~94%, Browser Runtime ~90%, Device 0%, Release 0%.
+
+### Cross-app freshness warning
+- Historical Ready integration branch: `integration/hide-memory-review-roundtrip-v01` SHA `91e06f2e51fdfb4df265e600e940ae97df598768`.
+- Current Ready rebuild observed: `taky/ready-rebuild-v01-2026-09-21` SHA `39afc78da7a96e5d79462c90d99ef03df60d80ee`.
+- Those branches are diverged; historical roundtrip PASS is not current Ready product proof.
+- Current Snap implementation observed: `taky/snap-pop-implementation-2026-09-20` SHA `cbcd21c713d39869f7ecb5ec8bf84660d764f020`.
+- Snap remains owner of Exploration Crew identity/personality/intervention grammar. Hide consumes provider presentation/support only and keeps a neutral fallback.
+
+### Do next before any deployment
+1. obtain representative real-print/current-provider OCR evidence;
+2. establish a current Ready rebuild-compatible exact-source Hide roundtrip;
+3. establish current Snap crew-provider roundtrip;
+4. perform physical-device QA for camera/touch/OS keyboard/PWA lifecycle;
+5. use only an external deploy path capable of binding the exact frozen SHA.
+
+### Still forbidden
+- siteId-only Netlify deploy for candidate validation;
+- main merge to manufacture release evidence;
+- V1 monolith feature growth;
+- claiming DEVICE/RELEASE PASS from browser CI.
