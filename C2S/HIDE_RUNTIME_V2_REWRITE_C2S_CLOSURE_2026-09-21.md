@@ -425,3 +425,11 @@ FALSE_CONVERGENCE = 0: live deploy/device/real-provider claims remain OPEN.
 - Active-session mission inclusion blocks the whole bulk mutation atomically; no partial mutation is permitted.
 - Exact HEAD `4292b6ed02d6b5d1aa253c2617a66aee4af3ccb7` passed V2 #383 / full Hide #841.
 - Completion percentages are unchanged because this is a secondary management closure, not a new core learning path.
+
+
+## 32. 2026-09-22 remaining gate classification
+- Do not continue inflating internal implementation percentages by treating external evidence gaps as code gaps.
+- Major remaining blockers: representative live-provider OCR, physical-device verification, frozen Ready↔Hide roundtrip, live Snap crew-provider roundtrip, and exact-source release proof.
+- Current V2 branch already browser-verifies the child learning/recovery journey, multilingual bounded assistance, Memory Ladder, OCR preserve-first review/retry, mission management, exports, PWA safe points, completion motion/reduced-motion and unified exploration art direction.
+- Secondary branch polish is allowed only if it does not distract from the blocker classes above.
+- Locked reporting remains PRODUCT ~81%, CODED ~97%, CI ~94%, Browser Runtime ~90%, Device 0%, Release 0%.
