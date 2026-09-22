@@ -1,0 +1,33 @@
+name: Validate Hide Runtime V2
+
+on:
+  pull_request:
+    paths:
+      - 'v2.html'
+      - 'manifest-v2.json'
+      - 'sw-v2.js'
+      - 'src/v2/**'
+      - 'tests/hide-v2-product-flow.spec.js'
+      - 'tools/validate-hide-v2-architecture.js'
+      - '.github/workflows/validate-v2.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate-v2:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check V2 JavaScript syntax
+        run: |
+          for f in src/v2/*.js; do node --check "$f"; done
+      - name: Validate V2 architecture isolation
+        run: node tools/validate-hide-v2-architecture.js
+      - name: Install browser test harness
+        run: npm install
+      - name: Verify V2 product flows
+        run: npx playwright test tests/hide-v2-product-flow.spec.js --project=chromium

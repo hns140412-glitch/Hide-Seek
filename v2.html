@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#dcecc9">
+  <link rel="manifest" href="./manifest-v2.json">
+  <title>Hide & Seek</title>
+  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./hide-runtime.css">
+  <link rel="stylesheet" href="./hide-bridge.css">
+  <link rel="stylesheet" href="./src/v2/v2.css">
+</head>
+<body class="v2-runtime">
+  <div id="app" class="app-shell">
+    <header class="top-safe">
+      <button id="backBtn" class="icon-btn ghost" type="button" hidden>‹</button>
+      <div class="brand-lockup"><span class="brand-mark">H&S</span><span class="brand-copy"><b>HIDE & SEEK</b><small>숨은 단어 탐험</small></span></div>
+      <button id="settingsBtn" class="icon-btn" type="button">설정</button>
+    </header>
+    <main id="view" class="view" aria-live="polite"></main>
+    <aside id="partnerBar" class="partner-bar"><span id="partnerText"></span></aside>
+    <nav id="bottomNav" class="bottom-nav"></nav>
+  </div>
+  <div id="toast" class="toast" role="status"></div>
+  <input id="sheetCameraInput" type="file" accept="image/*" capture="environment" hidden>
+  <input id="sheetLibraryInput" type="file" accept="image/*" multiple hidden>
+
+  <script src="./vendor/taky/event-envelope.js"></script>
+  <script src="./vendor/taky/vision-ingest.js"></script>
+  <script src="./vendor/taky/http-json.js"></script>
+  <script src="./vendor/taky/pwa-update-state.js"></script>
+  <script src="./src/v2/release-v2.js"></script>
+  <script src="./hide-learning-basis-v01.js"></script>
+  <script src="./hide-language-evidence.js"></script>
+  <script src="./hide-language-model.js"></script>
+  <script src="./hide-family-ocr-adapter.js"></script>
+
+  <script src="./src/v2/app-store.js"></script>
+  <script src="./src/v2/mission-service.js"></script>
+  <script src="./src/v2/memory-engine.js"></script>
+  <script src="./src/v2/trail-engine.js"></script>
+  <script src="./src/v2/crew-adapter.js"></script>
+  <script src="./src/v2/learning-session.js"></script>
+  <script src="./src/v2/session-service.js"></script>
+  <script src="./src/v2/capture-store.js"></script>
+  <script src="./src/v2/capture-controller.js"></script>
+  <script src="./src/v2/router.js"></script>
+  <script src="./src/v2/legacy-migration.js"></script>
+  <script src="./src/v2/ready-bridge.js"></script>
+  <script src="./src/v2/pwa-v2.js"></script>
+  <script src="./src/v2/mobile-shell.js"></script>
+  <script src="./src/v2/app.js"></script>
+</body>
+</html>

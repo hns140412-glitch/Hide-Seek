@@ -1,0 +1,166 @@
+# Hide Runtime V2 — External Resource Gate
+
+Date: 2026-09-21
+Status: FROZEN CANDIDATE READY / EXTERNAL EXECUTION NOT YET CALLED
+
+## Frozen candidate
+
+- repository: hns140412-glitch/Hide-Seek
+- frozen branch: `frozen/hide-v2-candidate-2026-09-21-01`
+- frozen SHA: `679d7cbed3f1fbece1de363f82084bb12cfa02e6`
+- Validate Hide Runtime V2 #75: SUCCESS
+- Validate Hide & Seek #529: SUCCESS
+
+Ready consumer candidate:
+- repository: hns140412-glitch/Ready-Set
+- branch: `integration/hide-memory-review-roundtrip-v01`
+- evidence SHA before Ready C2S doc write: `84b68624612c745b5a30274cb0b5744199963a53`
+- final C2S HEAD after contract documentation: `d5a347f801f10da446a7793104b5b14ceae0d33c`
+- Hide Memory Review Roundtrip #14: SUCCESS
+- Ready Integration CI #279: SUCCESS
+- Ready Runtime E2E #450: SUCCESS
+- Daily/Weekly/Single Active Task/TAKY gates: SUCCESS
+
+## TAKY external-resource gate
+
+Required sequence:
+`LOCAL/BRANCH -> CI/RUNTIME -> ONE FROZEN CANDIDATE -> EXTERNAL DEPLOY/VALIDATION`
+
+Gate state:
+- local/branch closure: PASS
+- CI/runtime closure: PASS
+- candidate SHA frozen: PASS
+- external call budget for this preview goal: 1
+- same external call repeated without new evidence: NO
+- lower-impact path exhausted for hosted roundtrip question: YES
+- production merge: NOT REQUESTED
+- device verification: NOT CLAIMED
+
+## Binding blocker
+
+The available Netlify connector exposes four account links.
+The Hide repository contains no authoritative Netlify `siteId` / account-link binding.
+The historical public URL is not sufficient evidence for a connector account/site identifier.
+
+Therefore:
+- DO NOT guess a Netlify account link.
+- DO NOT create a new site.
+- DO NOT spend the single external deploy execution until the existing Hide site binding is proven.
+- classify current block as `EXTERNAL_TARGET_BINDING_UNVERIFIED`.
+
+## Next compliant action
+
+Resolve the existing Hide & Seek Netlify site/account binding from authoritative connected-account metadata or an existing site identifier.
+Then use exactly one deploy execution for the frozen SHA and validate the hosted V2 URL.
+After a hosted V2 target exists, configure Ready's `ReadySetSpecialistTargets.hideSeekV2` to that frozen target and execute one current-candidate roundtrip validation.
+
+## Claim boundary
+
+`FROZEN_CANDIDATE_READY != EXTERNAL_DEPLOYED != LIVE_ROUNDTRIP_VERIFIED != DEVICE_VERIFIED`
+
+
+## Netlify binding resolution update
+
+Resolved authoritative existing site binding:
+- link_id: `link_6a9d3a910a108191b064364655f076f8`
+- site name: `hide-seek-taky`
+- siteId: `55aa69e3-1da8-4e4f-9b83-23de14b8fc87`
+- production URL: `https://hide-seek-taky.netlify.app`
+- current production deploy id: `6aa262eef7e52f00093aac72`
+- current production commit: `49fa106ff20f7c497d7f18bd903be34479ec28c3`
+- current production branch: `main`
+- Netlify historical commit URL uses the pre-rename repository alias, but the same commit is present in current `hns140412-glitch/Hide-Seek`; this is repository rename lineage, not a separate source.
+
+## External execution blocker refined
+
+The available Netlify deploy connector accepts only `siteId` and does not accept a source branch, commit SHA, source package, or deploy-preview ref.
+
+Therefore an invocation cannot prove that it will deploy frozen candidate
+`679d7cbed3f1fbece1de363f82084bb12cfa02e6`
+rather than rebuild the production branch `main`.
+
+No Netlify deploy preview/status is attached to the frozen SHA in GitHub.
+
+Classification:
+`EXTERNAL_DEPLOY_SOURCE_REF_UNSPECIFIABLE`
+
+Required compliant path:
+- obtain a deployment action that accepts exact branch/SHA/source package, or
+- enable an existing governed branch/preview deployment path for the frozen candidate,
+- then consume the one-deploy budget.
+
+Do NOT call the current siteId-only deploy action for this frozen-candidate validation goal.
+
+
+## Frozen candidate 02
+
+Current governed frozen candidate:
+- branch: `frozen/hide-v2-candidate-2026-09-21-02`
+- exact SHA: `42f7627b405d1026a0339fb5ed11b563d65d8003`
+- Validate Hide Runtime V2 #102: SUCCESS
+- Validate Hide & Seek #556: SUCCESS
+
+Candidate 01 is superseded and MUST NOT be deployed.
+
+External deployment is still blocked by:
+`EXTERNAL_DEPLOY_SOURCE_REF_UNSPECIFIABLE`
+
+The available siteId-only Netlify action cannot target this exact frozen SHA, so consuming the one external deploy budget would not prove candidate-02 deployment.
+
+
+## Frozen candidate 03
+
+Candidate 02 is superseded because product UI code changed after that freeze.
+
+Current governed frozen candidate:
+- branch: `frozen/hide-v2-candidate-2026-09-21-03`
+- exact SHA: `e006dc0ca3fdadb704e9403f7af566668093a88f`
+- Validate Hide Runtime V2 #116: SUCCESS
+- Validate Hide & Seek #570: SUCCESS
+- includes Seek Again, Trail Mastery separation, child-facing product UI redesign, mobile/PWA/OCR resilience and Ready V2 contract corrections.
+
+Candidates 01 and 02 MUST NOT be deployed.
+
+External deployment remains blocked by:
+`EXTERNAL_DEPLOY_SOURCE_REF_UNSPECIFIABLE`
+
+The available Netlify siteId-only action still cannot target an exact branch/SHA, so it cannot prove candidate-03 deployment.
+
+
+## Frozen candidate 04 — current pre-deploy candidate
+
+Candidate 03 is superseded by later Runtime V2 branch work.
+
+Current governed frozen candidate:
+- branch: `frozen/hide-v2-candidate-2026-09-22-04`
+- exact SHA: `8fd23e6e9f0db1e8b6d242cef7c71ebaabc5d2be`
+- Validate Hide Runtime V2 #403: SUCCESS
+- Validate Hide & Seek #861: SUCCESS
+- includes the previously closed core child journey plus:
+  - custom Mission Map sorting as presentation-only state;
+  - large-history Memory Ladder windowed rendering with full-history search/export integrity;
+  - broader V1 migration truth gating with explicit-objective-flags-only recall policy.
+
+Candidates 01, 02 and 03 are superseded and MUST NOT be deployed.
+
+### Current cross-app evidence boundary
+The historical Ready consumer branch `integration/hide-memory-review-roundtrip-v01` remains green at SHA `91e06f2e51fdfb4df265e600e940ae97df598768`, but it is not current Ready product evidence.
+Compared with current Ready rebuild branch `taky/ready-rebuild-v01-2026-09-21`, the branches are diverged (current rebuild is 368 commits ahead and 19 commits behind relative to the old integration branch comparison).
+Current Ready rebuild exact HEAD observed during this gate refresh: `39afc78da7a96e5d79462c90d99ef03df60d80ee`.
+Therefore:
+- historical roundtrip PASS remains historical contract evidence only;
+- `CURRENT_READY_HIDE_ROUNDTRIP_VERIFIED = false`;
+- do not label the Ready↔Hide integration gate closed until a current rebuild-compatible exact-source roundtrip is proven.
+
+Current Snap & Pop implementation branch observed:
+- branch: `taky/snap-pop-implementation-2026-09-20`
+- exact HEAD: `cbcd21c713d39869f7ecb5ec8bf84660d764f020`
+- exploration crew ownership/rules remain Snap-owned;
+- Hide neutral fallback/provider adapter is present;
+- live current Snap provider roundtrip remains OPEN.
+
+### External deploy blocker remains unchanged
+`EXTERNAL_DEPLOY_SOURCE_REF_UNSPECIFIABLE`
+
+The available siteId-only deployment path cannot prove deployment of exact frozen SHA `8fd23e6e9f0db1e8b6d242cef7c71ebaabc5d2be`.
+Do not consume the external deploy budget until the deploy action can bind to the exact frozen source.

@@ -1,11 +1,11 @@
 (() => {
   'use strict';
-  const HIDE_RUNTIME_VERSION = '2026.09.07-a';
+  const HIDE_RUNTIME_VERSION = '2026.09.21-c';
   const CAPTURE_STATE_KEY = 'hideSeekCaptureSession';
   const legacyBrandReplacements = [
     [/Word Detective Team/g, 'Hidden Word Trail'],
     [/ACTIVE CASE/g, 'ACTIVE TRAIL'],
-    [/시험지 · 사건 파일/g, '시험지 · 단어 탐험'],
+    [/시험지 · 사건 파일/g, '탐험 미션'],
     [/사건 파일 작성 완료/g, '단어 탐험 준비 완료'],
     [/사건 파일/g, '단어 탐험'],
     [/오늘의 수사 상태/g, '오늘의 탐험 상태'],
@@ -25,12 +25,53 @@
   const makeId = prefix => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const currentSession = () => S[CAPTURE_STATE_KEY] || null;
 
+  function migrateLegacyCaptureSession() {
+    const legacy = S.captureSession;
+    if (!legacy || S[CAPTURE_STATE_KEY]) {
+      if (legacy && S[CAPTURE_STATE_KEY]) {
+        delete S.captureSession;
+        save();
+      }
+      return;
+    }
+    const pages = Array.isArray(legacy.pages) ? legacy.pages.map((p, i) => ({
+      pageId: p.pageId || makeId('page'),
+      displayOrder: i + 1,
+      blobKey: p.blobKey || p.assetKey || '',
+      capturedAt: p.capturedAt || legacy.createdAt || nowISO(),
+      source: p.source || p.sourceType || 'legacy',
+      quality: {
+        width: Number(p.width || p.quality?.width || 0),
+        height: Number(p.height || p.quality?.height || 0),
+        warnings: Array.isArray(p.warnings) ? p.warnings : (p.quality?.warnings || []),
+        quality: p.quality?.quality || p.quality || '저장됨'
+      },
+      revision: Number(p.revision || 1),
+      dirty: !p.analyzedAt
+    })).filter(p => p.blobKey) : [];
+    S[CAPTURE_STATE_KEY] = {
+      captureSessionId: legacy.captureSessionId || legacy.sessionId || makeId('capture'),
+      status: legacy.status === 'CLOSED' ? 'CANCELLED' : 'CAPTURING',
+      createdAt: legacy.createdAt || nowISO(),
+      updatedAt: legacy.updatedAt || nowISO(),
+      pages,
+      analysisBatches: Array.isArray(legacy.analysisBatches) ? legacy.analysisBatches : [],
+      lastRows: S.ocrDraft?.captureSessionId === (legacy.captureSessionId || legacy.sessionId) ? (S.ocrDraft.rows || []) : [],
+      dirtyPageIds: pages.filter(p => p.dirty).map(p => p.pageId),
+      committedSheetId: legacy.committedSheetId || null,
+      migratedFromLegacyCapture: true
+    };
+    delete S.captureSession;
+    save();
+  }
+
   function newCaptureSession() {
     const s = {
       captureSessionId: makeId('capture'),
       status: 'CAPTURING',
       createdAt: nowISO(),
       updatedAt: nowISO(),
+      inputActorRole: String(S.sharedLearningContext?.actor_role || S.sharedLearningContext?.role || 'UNSPECIFIED').toUpperCase(),
       pages: [],
       analysisBatches: [],
       lastRows: [],
@@ -46,6 +87,55 @@
     const s = currentSession();
     if (!s || s.status === 'COMMITTED' || s.status === 'CANCELLED') return newCaptureSession();
     return s;
+  }
+
+  function reopenCommittedMission(sheetId) {
+    const sh = (S.sheets || []).find(x => x.sheetId === sheetId);
+    if (!sh) return { ok:false, reason:'MISSION_NOT_FOUND' };
+    const sourcePages = Array.isArray(sh.recognitionMeta?.sourcePages) ? sh.recognitionMeta.sourcePages : [];
+    if (!sourcePages.length) return { ok:false, reason:'SOURCE_PAGES_UNAVAILABLE' };
+    const pages = sourcePages.map((p, i) => ({
+      pageId: p.pageId,
+      displayOrder: Number(p.displayOrder || i + 1),
+      blobKey: p.blobKey,
+      capturedAt: p.capturedAt || sh.createdAt || nowISO(),
+      source: p.source || 'mission-reopen',
+      inputActorRole: p.inputActorRole || sh.recognitionMeta?.inputActorRole || 'UNSPECIFIED',
+      quality: p.quality || { quality:'저장됨', warnings:[] },
+      revision: Number(p.revision || 1),
+      dirty: true
+    })).filter(p => p.pageId && p.blobKey);
+    if (!pages.length) return { ok:false, reason:'SOURCE_BLOBS_UNAVAILABLE' };
+    const session = {
+      captureSessionId: makeId('capture-reopen'),
+      status:'CAPTURING',
+      createdAt:nowISO(),
+      updatedAt:nowISO(),
+      inputActorRole: sh.recognitionMeta?.inputActorRole || 'UNSPECIFIED',
+      editingSheetId: sh.sheetId,
+      pages,
+      analysisBatches:[],
+      lastRows:(sh.items||[]).map(w=>({
+        ...w,
+        sourcePageId:w.sourcePageId||pages[0]?.pageId||'',
+        sourcePageOrder:w.sourcePageOrder||1,
+        reviewResolved:!w.needsReview
+      })),
+      dirtyPageIds:pages.map(p=>p.pageId),
+      committedSheetId:sh.sheetId
+    };
+    S[CAPTURE_STATE_KEY]=session;
+    save();
+    renderCaptureHub();
+    return { ok:true, session:JSON.parse(JSON.stringify(session)) };
+  }
+
+  async function deleteMissionAssets(sheetId) {
+    const sh = (S.sheets || []).find(x => x.sheetId === sheetId);
+    const pages = Array.isArray(sh?.recognitionMeta?.sourcePages) ? sh.recognitionMeta.sourcePages : [];
+    const keys = [...new Set(pages.map(p => p.blobKey).filter(Boolean))];
+    for (const key of keys) await dbDelete(key).catch(() => {});
+    return { ok:true, deletedAssetCount:keys.length };
   }
 
   function persistCaptureSession(session) {
@@ -105,6 +195,7 @@
       page.blobKey = blobKey;
       page.capturedAt = nowISO();
       page.source = source;
+      page.inputActorRole = session.inputActorRole || 'UNSPECIFIED';
       page.quality = quality;
       page.revision = Number(page.revision || 0) + 1;
       page.dirty = true;
@@ -117,6 +208,7 @@
         blobKey,
         capturedAt: nowISO(),
         source,
+        inputActorRole: session.inputActorRole || 'UNSPECIFIED',
         quality,
         revision: 1,
         dirty: true
@@ -304,49 +396,28 @@
     view.querySelectorAll('[data-retake]').forEach(btn => {
       btn.onclick = () => openRapidCamera(btn.dataset.retake);
     });
-    setPartner('찍은 장은 임시 저장돼 있어. 더 찍어도 되고, 여기까지만 분석해도 돼.', 'note');
+    setPartner('더 찍을까, 아니면 여기까지 살펴볼까?', 'note');
   }
 
   async function analyzePage(page) {
     const blob = await dbGet(page.blobKey);
     if (!blob) throw new Error(`${page.displayOrder}번째 장의 임시 사진을 찾지 못했어요.`);
-    if (!navigator.onLine) throw new Error('OCR 분석은 온라인 연결이 필요해요.');
-    if (!runtimeApiKey) throw new Error('Gemini API Key가 필요해요.');
-
-    const VisionIngest = globalThis.TakyVisionIngest;
-    if (!VisionIngest?.buildRequest) throw new Error('공통 이미지 분석 계층을 불러오지 못했어요.');
-    const ingest = VisionIngest.buildRequest({
-      source: 'hide-seek:capture-page-ocr',
-      manifest: [{
-        source_id: page.pageId,
-        mime_type: blob.type || 'image/jpeg',
-        file_name: page.fileName || (`${page.pageId}.jpg`),
-        size: blob.size || 0
-      }],
-      metadata: { capture_session_id: ensureCaptureSession().captureSessionId, display_order: page.displayOrder }
+    const adapter = window.FamilyCaptureOcrAdapter;
+    if (!adapter?.analyzeVocabularyPage) throw new Error('공용 OCR 어댑터를 찾지 못했어요.');
+    const result = await adapter.analyzeVocabularyPage({
+      captureSessionId: ensureCaptureSession().captureSessionId,
+      page,
+      blob
     });
-    if (!ingest.ok) throw new Error(ingest.reason || '이미지 분석 준비 실패');
-    const img = await normalizedImageBase64(blob);
-    const seePrompt = `사진에 실제로 보이는 영어 단어와 한글 뜻만 행 순서대로 전사하세요. 원본에 없는 단어를 만들지 말고, 예문/힌트/정답 추측을 하지 마세요. 불확실하면 confidence를 low로 표시하세요. JSON만 출력: {"rows":[{"eng":"...","kor":"...","confidence":"high|medium|low"}]}`;
-    const see = await gemini(seePrompt, img.b64, img.mime);
-    const pairPrompt = `아래 SEE OCR 행만 사용해 영어 단어-한국어 뜻의 짝을 검증하세요. 원본에 없는 새 단어를 만들지 마세요. 헤더/번호/잡음은 제외하고 원래 순서를 유지하세요. 애매한 행은 low로 남기세요. JSON만 출력: {"rows":[{"eng":"...","kor":"...","confidence":"high|medium|low"}]}
-SEE:
-${JSON.stringify(see)}`;
-    const paired = await gemini(pairPrompt);
-    const rawRows = (paired.rows || see.rows || []).filter(x => x.eng || x.kor);
-    const normalized = VisionIngest.normalizeResult({
-      request_id: ingest.request.request_id,
-      provider: 'gemini',
-      items: rawRows.map((x, i) => ({
-        result_id: `${page.pageId}-row-${i}`,
-        evidence_source_ids: [page.pageId],
-        provider_payload: x
-      }))
-    });
-    if (!normalized.ok || !VisionIngest.validateEvidence(normalized.result, [page.pageId]).ok) {
-      throw new Error('OCR 근거 연결 검증 실패');
+    if (!result?.ok) {
+      const reason = result?.reason || 'OCR_ANALYSIS_FAILED';
+      if (reason === 'HIDE_VOCABULARY_RESULT_UNSUPPORTED') {
+        throw new Error('공용 OCR 분석기가 아직 단어 프린트 형식을 지원하지 않아요. 원본은 그대로 보존했어요.');
+      }
+      if (reason === 'OCR_OFFLINE') throw new Error('OCR 분석은 온라인 연결이 필요해요.');
+      throw new Error(result?.message || `OCR 분석 실패 · ${reason}`);
     }
-    return rawRows.map((x, i) => {
+    return (result.rows || []).filter(x => x.eng || x.kor).map((x, i) => {
       const confidence = x.confidence || 'medium';
       return {
         ...normalizeWord({
@@ -355,11 +426,26 @@ ${JSON.stringify(see)}`;
           kor: x.kor,
           confidence,
           needsReview: confidence === 'low',
-          manuallyEdited: false
+          manuallyEdited: false,
+          missionRole: x.missionRole || '',
+          missionRoleSource: x.missionRoleSource || (x.missionRole?'EXPLICIT_OCR_ROLE':''),
+          sourceColumn: x.sourceColumn || 'UNKNOWN',
+          sourceRowIndex: Number(x.sourceRowIndex ?? i),
+          sourceColumnIndex: Number(x.sourceColumnIndex ?? i)
         }, i),
         sourcePageId: page.pageId,
+        sourceColumn: x.sourceColumn || 'UNKNOWN',
+        sourceRowIndex: Number(x.sourceRowIndex ?? i),
+        sourceColumnIndex: Number(x.sourceColumnIndex ?? i),
         sourcePageOrder: page.displayOrder,
-        reviewResolved: confidence !== 'low'
+        reviewResolved: confidence !== 'low',
+        ocrProvider: result.provider || null,
+        ocrModel: result.model || null,
+        ocrAnalysisVersion: result.analysis_version || null,
+        ocrAnalysisDomain: result.analysis_domain || 'HIDE_VOCABULARY',
+        ocrVisionIngestRequestId: result.vision_ingest_request_id || null,
+        ocrEvidenceItemId: x.evidenceItemId || page.pageId,
+        ocrWarnings: Array.isArray(x.warnings) ? [...x.warnings] : []
       };
     });
   }
@@ -404,7 +490,12 @@ ${JSON.stringify(see)}`;
     }
 
     session.dirtyPageIds = (session.dirtyPageIds || []).filter(id => !succeeded.includes(id));
-    session.lastRows = [...cleanRows, ...newRows].sort((a, b) => (a.sourcePageOrder || 0) - (b.sourcePageOrder || 0));
+    session.lastRows = [...cleanRows, ...newRows].sort((a, b) => {
+      const pageDiff=(a.sourcePageOrder||0)-(b.sourcePageOrder||0);if(pageDiff)return pageDiff;
+      const colOrder={LEFT:0,CENTER:1,RIGHT:2,UNKNOWN:3};
+      const colDiff=(colOrder[a.sourceColumn]??3)-(colOrder[b.sourceColumn]??3);if(colDiff)return colDiff;
+      return Number(a.sourceColumnIndex??a.sourceRowIndex??0)-Number(b.sourceColumnIndex??b.sourceRowIndex??0);
+    });
     session.analysisBatches.push({
       batchId: makeId('batch'),
       sourcePageIds: targets.map(p => p.pageId),
@@ -427,21 +518,50 @@ ${JSON.stringify(see)}`;
       sourcePageId: row.sourcePageId,
       sourcePageOrder: row.sourcePageOrder,
       reviewResolved: row.reviewResolved ?? !row.needsReview,
-      manuallyEdited: !!row.manuallyEdited
+      manuallyEdited: !!row.manuallyEdited,
+      ocrProvider: row.ocrProvider || null,
+      ocrModel: row.ocrModel || null,
+      ocrAnalysisVersion: row.ocrAnalysisVersion || null,
+      ocrAnalysisDomain: row.ocrAnalysisDomain || 'HIDE_VOCABULARY',
+      ocrEvidenceItemId: row.ocrEvidenceItemId || row.sourcePageId || null,
+      ocrWarnings: Array.isArray(row.ocrWarnings) ? [...row.ocrWarnings] : [],
+      sourceColumn: row.sourceColumn || 'UNKNOWN',
+      sourceRowIndex: Number(row.sourceRowIndex ?? i),
+      sourceColumnIndex: Number(row.sourceColumnIndex ?? i)
     }));
 
+    data=data.map(x=>{
+      const explicit=["NEW","REVIEW"].includes(x.missionRole);
+      const missionRole=explicit?x.missionRole:(typeof inferMissionRole==='function'?inferMissionRole(x,session.editingSheetId||''):'');
+      const missionRoleSource=x.missionRoleSource||(explicit?'EXPLICIT_SOURCE_ROLE':missionRole==='REVIEW'?'LEARNER_HISTORY_INFERENCE':'FIRST_ENCOUNTER_INFERENCE');
+      return {...x,missionRole,missionRoleSource};
+    });
+    const roleCounts=()=>({NEW:data.filter(x=>x.missionRole==='NEW').length,REVIEW:data.filter(x=>x.missionRole==='REVIEW').length});
+    const roleSourceLabel=source=>({
+      EXPLICIT_OCR_ROLE:'원자료 표시',
+      EXPLICIT_SOURCE_ROLE:'명시 역할',
+      LEARNER_HISTORY_INFERENCE:'이전 학습 이력',
+      FIRST_ENCOUNTER_INFERENCE:'첫 등장',
+      MISSION_REVIEW_CONFIRMATION:'검토에서 확정'
+    })[String(source||'')]||'역할 근거 확인';
     const view = document.querySelector('#view');
+    const counts=roleCounts();
     view.innerHTML = `
       <section class="card">
         <div class="hero-kicker"><span>REVIEW BEFORE COMMIT</span><span>${data.length}개</span></div>
         <h2>단어 결과 확인</h2>
-        <p>낮은 신뢰 항목은 직접 수정하거나 ‘이대로 확인’을 눌러야 저장할 수 있어요.</p>
+        <p>프린트 양식과 관계없이 오늘 미션에서 NEW / REVIEW를 확인해요.</p>
+        <div class="card tint-leaf" style="margin-top:10px">
+          <b>오늘 미션 구성</b>
+          <p style="margin:4px 0 0">프린트마다 구성은 달라질 수 있어요. 위치가 아니라 확인된 역할을 기준으로 해요.</p>
+          <small id="hideRoleCount">현재 NEW ${counts.NEW} · REVIEW ${counts.REVIEW}</small>
+        </div>
         <div id="hideBatchRows" class="table" style="margin-top:12px"></div>
         <div class="hide-review-actions">
           <button id="hideReviewMore" class="btn secondary" type="button">촬영 더하기</button>
           <button id="hideReviewLibrary" class="btn secondary" type="button">앨범 추가</button>
           <button id="hideReviewAnalyze" class="btn secondary" type="button">변경 장 다시 분석</button>
-          <button id="hideReviewCommit" class="btn primary" type="button">시험지 만들기</button>
+          <button id="hideReviewCommit" class="btn primary" type="button">탐험 미션 만들기</button>
         </div>
       </section>`;
 
@@ -459,6 +579,7 @@ ${JSON.stringify(see)}`;
           <input class="eng" value="${esc(w.eng)}" aria-label="${i + 1}번 영어 단어">
           <input class="kor" value="${esc(w.kor)}" aria-label="${i + 1}번 뜻">
           <span class="badge ${w.reviewResolved ? 'good' : 'weak'}">${w.reviewResolved ? '확인' : '확인 필요'}</span>
+          <div class="hide-role-review"><button class="badge hide-role-toggle ${w.missionRole==='NEW'?'good':''}" data-role-toggle="${i}" type="button">${w.missionRole||'미분류'}</button><small class="hide-role-source">${esc(roleSourceLabel(w.missionRoleSource))}</small></div>
           ${w.reviewResolved ? '' : `<button class="hide-confirm-row" data-confirm="${i}" type="button">이대로 확인</button>`}
           <button class="row-delete" data-del="${i}" type="button" aria-label="${i + 1}번 행 삭제">×</button>
         </div>`).join('');
@@ -495,6 +616,18 @@ ${JSON.stringify(see)}`;
           draw();
         };
       });
+      rowsEl.querySelectorAll('[data-role-toggle]').forEach(btn => {
+        btn.onclick = () => {
+          const i=Number(btn.dataset.roleToggle);
+          data[i].missionRole=data[i].missionRole==='NEW'?'REVIEW':'NEW';
+          data[i].missionRoleSource='MISSION_REVIEW_CONFIRMATION';
+          const counts=roleCounts();
+          const countEl=view.querySelector('#hideRoleCount');
+          if(countEl)countEl.textContent=`현재 NEW ${counts.NEW} · REVIEW ${counts.REVIEW}`;
+          syncToSession();
+          draw();
+        };
+      });
     };
     draw();
 
@@ -522,12 +655,25 @@ ${JSON.stringify(see)}`;
       if (!data.length) return toast('단어와 뜻을 한 개 이상 확인해 주세요.');
       if (session.dirtyPageIds?.length) return toast('다시 찍은 장의 분석이 아직 남아 있어요.');
 
-      const sheetId = `sheet-${Date.now()}`;
-      const items = data.map((x, i) => ({
+      const editingSheet = session.editingSheetId ? (S.sheets || []).find(x => x.sheetId === session.editingSheetId) : null;
+      const sheetId = editingSheet?.sheetId || `sheet-${Date.now()}`;
+      let items = data.map((x, i) => ({
         ...normalizeWord({ ...x, needsReview: false }, i),
         sourcePageId: x.sourcePageId,
-        sourcePageOrder: x.sourcePageOrder
+        sourcePageOrder: x.sourcePageOrder,
+        ocrProvider: x.ocrProvider || null,
+        ocrModel: x.ocrModel || null,
+        ocrAnalysisVersion: x.ocrAnalysisVersion || null,
+        ocrAnalysisDomain: x.ocrAnalysisDomain || 'HIDE_VOCABULARY',
+        ocrEvidenceItemId: x.ocrEvidenceItemId || x.sourcePageId || null,
+        ocrWarnings: Array.isArray(x.ocrWarnings) ? [...x.ocrWarnings] : []
       }));
+      items = items.map(x=>{
+        const explicit=["NEW","REVIEW"].includes(x.missionRole);
+        const missionRole=explicit?x.missionRole:(typeof inferMissionRole==='function'?inferMissionRole(x,sheetId):'');
+        const missionRoleSource=x.missionRoleSource||(explicit?'EXPLICIT_SOURCE_ROLE':missionRole==='REVIEW'?'LEARNER_HISTORY_INFERENCE':'FIRST_ENCOUNTER_INFERENCE');
+        return {...x,missionRole,missionRoleSource};
+      });
       const newSheet = {
         sheetId,
         title: `${new Date().toLocaleDateString('ko-KR')} 숨은 단어`,
@@ -543,11 +689,40 @@ ${JSON.stringify(see)}`;
           reviewedAt: nowISO(),
           count: items.length,
           captureSessionId: session.captureSessionId,
-          analysisBatchIds: session.analysisBatches.map(b => b.batchId)
+          inputActorRole: session.inputActorRole || 'UNSPECIFIED',
+          analysisDomain: 'HIDE_VOCABULARY',
+          analysisBatchIds: session.analysisBatches.map(b => b.batchId),
+          providers: [...new Set(items.map(x => x.ocrProvider).filter(Boolean))],
+          models: [...new Set(items.map(x => x.ocrModel).filter(Boolean))],
+          evidenceItemIds: [...new Set(items.map(x => x.ocrEvidenceItemId).filter(Boolean))],
+          missionComposition:{
+            observedNew:items.filter(x=>x.missionRole==='NEW').length,
+            observedReview:items.filter(x=>x.missionRole==='REVIEW').length,
+            classificationSource:'ROLE_CONFIRMATION_OR_HISTORY',
+            layoutIndependent:true
+          },
+          sourcePages: session.pages.map(p => ({
+            pageId:p.pageId,
+            displayOrder:p.displayOrder,
+            blobKey:p.blobKey,
+            capturedAt:p.capturedAt,
+            source:p.source,
+            inputActorRole:p.inputActorRole || session.inputActorRole || 'UNSPECIFIED',
+            quality:p.quality,
+            revision:p.revision
+          }))
         }
       };
 
-      S.sheets.unshift(newSheet);
+      if (editingSheet) {
+        const idx = S.sheets.findIndex(x => x.sheetId === editingSheet.sheetId);
+        newSheet.title = editingSheet.title;
+        newSheet.createdAt = editingSheet.createdAt;
+        newSheet.learningProvenance = editingSheet.learningProvenance || {};
+        S.sheets[idx] = newSheet;
+      } else {
+        S.sheets.unshift(newSheet);
+      }
       S.activeSheetId = sheetId;
       S.ocrDraft = null;
       S.learning = clone(DEFAULT_STATE.learning);
@@ -557,12 +732,33 @@ ${JSON.stringify(see)}`;
       persistCaptureSession(session);
       S[CAPTURE_STATE_KEY] = null;
       save();
-      toast('숨은 단어 준비 완료');
+      toast(editingSheet ? '탐험 미션 재분석 완료' : '탐험 미션 준비 완료');
       currentTab = 'study';
       viewStack = [];
       render();
     };
-    setPartner('애매한 단어만 확인하면 돼. 분석이 끝나도 촬영은 계속 이어갈 수 있어.', 'note');
+    setPartner('애매한 단어만 골라서 같이 확인해보자.', 'note');
+  }
+
+  function bindCaptureInputs() {
+    const cameraInput = document.querySelector('#sheetCameraInput');
+    const libraryInput = document.querySelector('#sheetLibraryInput');
+    if (cameraInput && cameraInput.dataset.hideCaptureBound !== '1') {
+      cameraInput.dataset.hideCaptureBound = '1';
+      cameraInput.addEventListener('change', async event => {
+        const files = Array.from(event.target.files || []);
+        event.target.value = '';
+        await addFiles(files, 'camera-fallback');
+      });
+    }
+    if (libraryInput && libraryInput.dataset.hideCaptureBound !== '1') {
+      libraryInput.dataset.hideCaptureBound = '1';
+      libraryInput.addEventListener('change', async event => {
+        const files = Array.from(event.target.files || []);
+        event.target.value = '';
+        await addFiles(files, 'library');
+      });
+    }
   }
 
   function interceptLegacyCapture() {
@@ -588,22 +784,6 @@ ${JSON.stringify(see)}`;
       }
     }, true);
 
-    document.addEventListener('change', event => {
-      if (event.target?.id === 'sheetCameraInput') {
-        event.stopPropagation();
-        event.stopImmediatePropagation();
-        const files = event.target.files;
-        event.target.value = '';
-        addFiles(files, 'camera-fallback');
-      }
-      if (event.target?.id === 'sheetLibraryInput') {
-        event.stopPropagation();
-        event.stopImmediatePropagation();
-        const files = event.target.files;
-        event.target.value = '';
-        addFiles(files, 'library');
-      }
-    }, true);
   }
 
   function normalizeBrandText(root = document.body) {
@@ -658,8 +838,10 @@ ${JSON.stringify(see)}`;
 
   function bootHideRuntime() {
     document.documentElement.dataset.hideRuntime = HIDE_RUNTIME_VERSION;
+    migrateLegacyCaptureSession();
     document.title = 'Hide & Seek';
     document.querySelector('#sheetLibraryInput')?.setAttribute('multiple', '');
+    bindCaptureInputs();
     interceptLegacyCapture();
     startBrandObserver();
     phoneOrientationGuard();
@@ -680,8 +862,17 @@ ${JSON.stringify(see)}`;
   window.HideCaptureRuntime = Object.freeze({
     version: HIDE_RUNTIME_VERSION,
     openRapidCamera,
+    addFiles,
+    bindCaptureInputs,
     renderCaptureHub,
     analyzeDirtyPages,
+    reopenCommittedMission,
+    deleteMissionAssets,
+    migrateLegacyState: () => {
+      migrateLegacyCaptureSession();
+      const session = currentSession();
+      return session ? JSON.parse(JSON.stringify(session)) : null;
+    },
     currentSession: () => {
       const session = currentSession();
       return session ? JSON.parse(JSON.stringify(session)) : null;

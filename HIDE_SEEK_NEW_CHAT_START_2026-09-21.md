@@ -1,0 +1,225 @@
+# HIDE & SEEK — NEW CHAT START — 2026-09-21
+
+최신 TAKY 기준으로 Hide & Seek를 재개해.
+
+먼저 GitHub에서 아래 파일을 읽고 현재 상태를 복원해.
+- `C2S/HIDE_LANGUAGE_MEMORY_C2S_CLOSURE_2026-09-21.md`
+- `C2S/HIDE_LANGUAGE_MEMORY_IMPLEMENTATION_DELTA_2026-09-21.md`
+- `HANDOFF/HIDE_SEEK_HANDOFF_2026-09-21_LATEST.md`
+
+Repository:
+- `hns140412-glitch/Hide-Seek`
+
+Branch:
+- `implementation/hide-seek-capture-session-v02`
+
+PR:
+- #4
+- OPEN / DRAFT / HOLD / DO NOT MERGE
+
+Last CI-verified implementation checkpoint before handoff refresh:
+- HEAD `88731750f3491422518e84959042e088b3b2cc78`
+- Validate Hide & Seek #333 = SUCCESS
+
+Important ownership locks:
+1. Language Memory != homework / assignment / Hanja grade.
+2. Ready Learning Engine owns:
+   - homework / assignment interpretation,
+   - Learning Unit construction,
+   - Hanja grade/level resolution,
+   - subject progression / range / review context.
+3. Hide consumes resolved `learningContext` only.
+4. Hide must not independently infer Hanja grade/level.
+5. Hide owns cumulative language-memory evidence:
+   - form / sound / meaning,
+   - confusion,
+   - assisted vs unassisted recall,
+   - writing/reconstruction evidence when available,
+   - latency / hint dependence / recovery,
+   - spaced-recall evidence / retention evidence,
+   - Memory Ladder.
+6. Ready and Hide remain sibling products. Do not share identity/role/permission ownership through the learning-basis adapter.
+
+Learning basis currently referenced:
+- Ready Learning Master 0.5.1
+- Ready Subject Master 0.2.1
+- Ready Learning Reference 0.3.0
+- Korean basis: 국어 / READ_UNDERSTAND_EVIDENCE_RESPOND
+- Hanja basis: 한자 / FORM_SOUND_MEANING_RECALL / ENCODE -> RECALL -> CHECK -> RETRY
+
+Locked Hide learning flow:
+`variable print capture → review → NEW/REVIEW → MEMORIZATION → FIRST FIND → MEANING CLUE → CONNECTION TRAIL → HIDDEN WORDS → FINAL SEEK → morning test/later review → cumulative Memory Ladder`
+
+Critical semantics:
+- MEMORIZATION_EXPOSURE != RECALL_SUCCESS
+- FIRST FIND = first unassisted retrieval after memorization
+- assisted success != independent recall
+- same-day recovery != spaced recovery
+- mission pass != stable long-term memory
+- NEW/REVIEW is not inferred from page position
+- observed NEW12 + REVIEW24 is evidence/fixture only, never a global quota
+- historical etymology must be truth-gated
+- self-reported inference fit is not objective recall correctness
+- adaptive inference must be ESTABLISHED and applicable to the current word before reordering existing assistance
+
+Current implementation highlights:
+- verified evidence contract and fail-closed truth gate
+- progressive root/meaning reveal
+- progressive semantic scene reveal
+- child-facing Korean scene labels with stable internal IDs
+- language-specific parent explanation modes
+- Korean/Hanja verified meaning-map provenance gate
+- multilingual FIRST FIND / MEANING CLUE / FINAL SEEK
+- current-word adaptive applicability
+- dynamic mission composition
+- Memory Ladder with cumulative memory evidence
+- Ready learning-basis adapter loaded and cached
+
+Next work:
+- Continue pre-deploy implementation only.
+- First read the three canonical files, then check the latest branch HEAD and exact matching CI.
+- If the branch has advanced beyond the checkpoint, use the latest exact HEAD/CI rather than the old checkpoint.
+- Continue implementation gaps in Korean/Hanja Language Memory using resolved `learningContext`, without duplicating Learning Engine ownership.
+- Keep C2S and handoff synchronized after substantial changes.
+
+Do not:
+- use the user as tester/debugger,
+- call Netlify,
+- deploy,
+- merge PR #4,
+- fabricate etymology,
+- add independent Hanja grade inference to Hide,
+- hard-code 12/24,
+- treat the mock-test layout as source authority.
+
+
+## Long-term review ownership correction
+- Hide does **not** own review dates, long-term review cadence, or calendar allocation.
+- Hide owns memory evidence and advisory signals only, including memory strength, confusion, assisted/unassisted recall, spaced-recall evidence, recovery state, and next-review priority.
+- Ready Learning Engine interprets those signals into subject/review policy.
+- Ready & Set Planner owns actual scheduling and rescheduling through dated TODOs, free-window allocation, carry-over, and planner constraints.
+- Canonical loop: `Hide memory evidence -> Ready learning/review policy -> Ready & Set Planner schedule -> future Hide retrieval -> new memory evidence`.
+- A Hide-side `nextReviewPriority` is a priority signal, never a date/time schedule.
+
+
+Planner-owned review activation:
+- `nextReviewPriority` is advisory only.
+- Do not let Hide autonomously choose a prior word and decide to review it now.
+- A prior-memory review must come from an explicit `review_directive` owned by `READY_LEARNING_ENGINE` + `READY_SET_PLANNER`, with explicit lexical IDs.
+- Hide performs the retrieval and emits new memory evidence; Ready/Planner own policy and timing.
+
+
+Memory advisory packet:
+- Hide may emit `reviewAdvisories` with memory-state evidence and advisory priority.
+- Do not add dates/TODO/carry-over/reschedule ownership to Hide.
+- Ready Learning Engine interprets; Ready & Set Planner schedules.
+
+
+Resolved context persistence:
+- Preserve only Ready-resolved semantic-light `learningContext` on normalized words.
+- Correlate memory advisory evidence through `learningContextRef`.
+- Never infer Hanja grade/range or scheduling inside Hide from that context.
+
+
+Hanja memory evidence:
+- Keep FORM / SOUND / MEANING / RECALL / WRITE_OR_RECONSTRUCT evidence separate.
+- Do not count SOUND_REPLAY as successful sound recall; it is EXPOSURE_ONLY.
+- Continue using Ready-resolved learningContext only.
+
+
+Korean memory evidence:
+- Separate CONTEXT / MEANING / EVIDENCE / RECALL / EXPRESSION.
+- Do not upgrade context exposure to objective recall.
+- Do not treat word-meaning matching as source-text evidence selection.
+- Keep EVIDENCE at zero until a real evidence interaction is implemented.
+
+
+Korean EVIDENCE TRAIL:
+- Activate only from verified, source-linked `contextEvidence`.
+- Fail closed when the evidence excerpt is not contained in the source context or candidate contract is invalid.
+- EVIDENCE is earned only through explicit selection.
+- Keep CONTEXT exposure separate from objective CONTEXT recall.
+
+
+OCR ownership:
+- Treat Ready's family capture/OCR transport as the existing shared foundation.
+- Hide must reuse it and only own HIDE_VOCABULARY interpretation/review semantics.
+- Do not report OCR as unimplemented when only live-provider/device verification is missing.
+
+
+Ready memory-review integration:
+- Ready draft PR #100 implements the branch-only roundtrip adapter.
+- Preserve ownership: Hide evidence only -> Ready policy -> Planner schedule -> Hide retrieval.
+- Do not merge Ready PR #100 or deploy without explicit gate/human approval.
+
+
+Session roundtrip:
+- Ready PR #100 carries review_directive into Hide launch and preserves Hide memorySummary on return.
+- Keep all scheduling/policy ownership unchanged.
+
+
+Language Memory evidence semantics:
+- objectiveVerified != objectiveRecall.
+- Recognition, association, and context-evidence selection must not inflate recall.
+- Use evidenceMode to preserve interaction semantics.
+
+
+Language Memory next-state:
+- Hanja verified soundEvidence -> SOUND FIND typed recall.
+- Korean RESPONSE TRAIL -> learner-created sentence production.
+- Keep sound replay as exposure only.
+- Keep Korean lexical recall separate from sentence expression.
+
+
+Runtime V2 rewrite is now the active implementation direction.
+- Branch: `rewrite/hide-runtime-v2-2026-09-21`
+- Draft PR #12
+- Do not return to monolithic V1 feature growth except bounded reference/regression recovery.
+- Read `C2S/HIDE_RUNTIME_V2_REWRITE_2026-09-21.md` and `C2S/HIDE_RUNTIME_V2_PRODUCT_COMPLETION_MATRIX_2026-09-21.md` first.
+- Keep V2 completion separate from reusable V1/domain asset maturity.
+
+
+## Current frozen candidate
+- `frozen/hide-v2-candidate-2026-09-21-02`
+- SHA `42f7627b405d1026a0339fb5ed11b563d65d8003`
+- V2 #102 PASS / full Hide #556 PASS.
+- Candidate 01 is superseded.
+
+
+## NEW CHAT START — Runtime V2 rewrite closure
+
+Start with:
+1. `C2S/HIDE_RUNTIME_V2_REWRITE_C2S_CLOSURE_2026-09-21.md`
+2. `C2S/HIDE_RUNTIME_V2_REWRITE_ATOMS_2026-09-21.json`
+3. `C2S/HIDE_RUNTIME_V2_PRODUCT_COMPLETION_MATRIX_2026-09-21.md`
+4. `C2S/HIDE_RUNTIME_V2_EXTERNAL_RESOURCE_GATE_2026-09-21.md`
+5. `HANDOFF/HIDE_SEEK_HANDOFF_2026-09-21_LATEST.md`
+6. `Hide_Seek_UI_MASTER_LOGIC_REV_04.md`
+
+Then:
+- live-refresh `rewrite/hide-runtime-v2-2026-09-21`;
+- verify exact HEAD;
+- verify exact-head `Validate Hide Runtime V2` + `Validate Hide & Seek`;
+- if red, repair only the current product/gate mismatch before feature growth;
+- continue child-facing UI/UX surgery after exact-head green.
+
+Hard locks:
+- no V1 monolith feature growth;
+- no product-completion inflation from docs/tests;
+- Trail Mastery != Memory Strength;
+- Ready policy/Planner schedule ownership unchanged;
+- Seek Again same-day recovery != spaced recovery;
+- candidate 01 superseded;
+- candidate 02 is the current frozen candidate;
+- no Netlify siteId-only deploy for frozen validation because exact source ref cannot be specified;
+- DEVICE_VERIFIED remains 0 until physical-device evidence exists.
+
+
+## Current implementation snapshot
+- Active rewrite branch: `rewrite/hide-runtime-v2-2026-09-21`
+- Current frozen deployment candidate: `frozen/hide-v2-candidate-2026-09-21-03`
+- Candidate SHA: `e006dc0ca3fdadb704e9403f7af566668093a88f`
+- V2 #116 PASS / full Hide #570 PASS.
+- Current product completion: ~66%.
+- Continue V2 only; V1 remains reference/rollback.
+- Next major frontiers: exploration crew UI, final motion/celebration/art polish, real-provider OCR, physical-device verification, hosted Ready↔Hide roundtrip.

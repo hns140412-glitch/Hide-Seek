@@ -1,0 +1,379 @@
+{
+  "schema_version": "1.0",
+  "scope": "Hide Runtime V2 rewrite closure 2026-09-21",
+  "closure_file": "C2S/HIDE_RUNTIME_V2_REWRITE_C2S_CLOSURE_2026-09-21.md",
+  "atoms": [
+    {
+      "id": "HIDE-V2-C2S-001",
+      "type": "DECISION",
+      "statement": "Runtime V2 is the active implementation direction; V1 monolith is reference/rollback only.",
+      "destination": "architecture"
+    },
+    {
+      "id": "HIDE-V2-C2S-002",
+      "type": "CORRECTION",
+      "statement": "Product completion must be separated from code/CI/docs and reusable asset maturity.",
+      "destination": "product-integrity"
+    },
+    {
+      "id": "HIDE-V2-C2S-003",
+      "type": "REQUIREMENT",
+      "statement": "Seek Again recovery follows FINAL SEEK failure and same-day recovery is not spaced recovery.",
+      "destination": "learning-session"
+    },
+    {
+      "id": "HIDE-V2-C2S-004",
+      "type": "DECISION",
+      "statement": "Trail Mastery is current session/mission readiness; Memory Strength is long-term memory evidence.",
+      "destination": "trail-memory-separation"
+    },
+    {
+      "id": "HIDE-V2-C2S-005",
+      "type": "REQUIREMENT",
+      "statement": "Ready owns review policy and Planner schedule; Hide owns evidence/advisory signals only.",
+      "destination": "integration-ownership"
+    },
+    {
+      "id": "HIDE-V2-C2S-006",
+      "type": "REQUIREMENT",
+      "statement": "OCR partial success is preserved and only failed pages are retried.",
+      "destination": "capture-ocr"
+    },
+    {
+      "id": "HIDE-V2-C2S-007",
+      "type": "EVIDENCE",
+      "statement": "390x844 browser layout, reduced-height focus, offline shell and PWA safe-point flows have browser evidence; device verification remains zero.",
+      "destination": "runtime-evidence"
+    },
+    {
+      "id": "HIDE-V2-C2S-008",
+      "type": "DECISION",
+      "statement": "Frozen candidate 02 is the current governed frozen candidate; candidate 01 is superseded.",
+      "destination": "release"
+    },
+    {
+      "id": "HIDE-V2-C2S-009",
+      "type": "BLOCKER",
+      "statement": "Netlify deploy action cannot specify exact source ref; do not consume one-deploy budget.",
+      "destination": "external-resource-gate"
+    },
+    {
+      "id": "HIDE-V2-C2S-010",
+      "type": "FRONTIER",
+      "statement": "Continue child-facing UI/UX surgery against Hide_Seek_UI_MASTER_LOGIC_REV_04 after restoring exact-head CI.",
+      "destination": "next-work"
+    },
+    {
+      "id": "HIDE-V2-C2S-011",
+      "type": "OPEN",
+      "statement": "Representative real-provider OCR, physical device camera/keyboard/PWA lifecycle, and live hosted Ready-Hide roundtrip remain open.",
+      "destination": "validation"
+    },
+    {
+      "id": "HIDE-V2-C2S-012",
+      "type": "EVIDENCE",
+      "statement": "Locked handoff product estimate: Product 81, Coded 97, CI 94, Browser Runtime 90, Device 0, Release 0.",
+      "destination": "status"
+    },
+    {
+      "id": "HIDE-V2-C2S-013",
+      "type": "EVIDENCE",
+      "statement": "Runtime V2 Hanja SOUND FIND has dedicated browser proof using verified source-linked soundEvidence; typed SOUND recall is objective recall and preserves sourceRef.",
+      "destination": "language-memory/hanja"
+    },
+    {
+      "id": "HIDE-V2-C2S-014",
+      "type": "EVIDENCE",
+      "statement": "Runtime V2 Korean verified EVIDENCE TRAIL is browser-verified: explicit verified context evidence selection earns EVIDENCE+MEANING objective verification without claiming CONTEXT recall.",
+      "destination": "language-memory/korean"
+    },
+    {
+      "id": "HIDE-V2-C2S-015",
+      "type": "CORRECTION",
+      "statement": "Korean context exposure or evidence selection must not be converted into objective CONTEXT recall; RESPONSE TRAIL remains production evidence.",
+      "destination": "evidence-truth-boundary"
+    },
+    {
+      "id": "HIDE-V2-C2S-016",
+      "type": "EVIDENCE",
+      "statement": "Browser exploration art-direction continuity is verified across child-facing surfaces; physical-device visual QA remains open.",
+      "destination": "ui-ux"
+    },
+    {
+      "id": "HIDE-V2-C2S-017",
+      "type": "CORRECTION",
+      "statement": "A correct FINAL SEEK answer after explicit support is assisted and must not count as objective recall; same-day unassisted Seek Again recovery remains IMMEDIATE_ONLY until spaced evidence exists.",
+      "destination": "memory-evidence/final-seek"
+    },
+    {
+      "id": "HIDE-V2-C2S-018",
+      "type": "EVIDENCE",
+      "statement": "OCR review-to-mission commit preserves nested OCR page/row/confidence/provider/model/analysisVersion provenance.",
+      "destination": "capture/provenance"
+    },
+    {
+      "id": "HIDE-V2-C2S-019",
+      "type": "DECISION",
+      "statement": "Duplicate OCR lexical rows are merged only by explicit review action; the resulting mission item preserves every source occurrence under source.occurrences.",
+      "destination": "capture/review"
+    },
+    {
+      "id": "HIDE-V2-C2S-020",
+      "type": "EVIDENCE",
+      "statement": "OCR local-first review continuity persists human corrections, exclusions and explicit duplicate-merge decisions separately from raw OCR lastRows; reload/resume restores reviewDraft.",
+      "destination": "capture/review"
+    },
+    {
+      "id": "HIDE-V2-C2S-021",
+      "type": "EVIDENCE",
+      "statement": "FIRST FIND wrong recall enters an explicit relearn exposure before MEANING; answer re-exposure is assisted RELEARN_EXPOSURE and never objective recall.",
+      "destination": "learning/first-find"
+    },
+    {
+      "id": "HIDE-V2-C2S-022",
+      "type": "EVIDENCE",
+      "statement": "FIRST FIND supports explicit UNSURE as PASS retrieval evidence with objectiveRecall=true and objectiveVerified=false; wrong/unsure both enter assisted non-recall relearn exposure before MEANING.",
+      "destination": "learning/first-find"
+    },
+    {
+      "id": "HIDE-V2-C2S-023",
+      "type": "EVIDENCE",
+      "statement": "HIDDEN WORDS reinforcement is conditionally activated from the V2 Memory Engine primaryReason; stable items bypass it and reinforcement relearn remains assisted non-recall exposure.",
+      "destination": "learning/hidden-words"
+    },
+    {
+      "id": "HIDE-V2-C2S-024",
+      "type": "CORRECTION",
+      "statement": "Normal MEMORIZE/relearn exposure marked assisted must not be counted as hint dependency; hintDependency derives only from actual ASSISTANCE or positive hintLevel evidence.",
+      "destination": "memory-engine/hint-dependency"
+    },
+    {
+      "id": "HIDE-V2-C2S-025",
+      "type": "EVIDENCE",
+      "statement": "HIDDEN WORDS maps Memory Engine primaryReason to bounded activity modes: confusion->meaning, orthographic->English shape scaffold, verified sound->sound recall, otherwise unassisted token recall.",
+      "destination": "learning/hidden-words"
+    },
+    {
+      "id": "HIDE-V2-C2S-026",
+      "type": "EVIDENCE",
+      "statement": "MEANING CLUE uses session-scoped bidirectional recognition when valid peers exist; peerless sessions retain direct typed meaning recall.",
+      "destination": "learning/meaning"
+    },
+    {
+      "id": "HIDE-V2-C2S-027",
+      "type": "CORRECTION",
+      "statement": "MEANING recognition peers must come only from the active session.queue so Ready-directed lexical-id scope is not broadened by unrelated mission items.",
+      "destination": "ready-ownership/session-scope"
+    },
+    {
+      "id": "HIDE-V2-C2S-028",
+      "type": "EVIDENCE",
+      "statement": "MEANING recognition MISMATCH stores the confused token/meaning pair as objective recognition evidence without claiming recall, feeding Memory Engine confusion and Hidden Words meaning reinforcement.",
+      "destination": "memory-evidence/meaning-confusion"
+    },
+    {
+      "id": "HIDE-V2-C2S-029",
+      "type": "EVIDENCE",
+      "statement": "HIDDEN WORDS uses bounded staged assistance: reinforcement miss -> one safe minimal clue when available -> assisted retry -> full relearn only if still needed -> FINAL SEEK unassisted verification.",
+      "destination": "learning/hidden-words"
+    },
+    {
+      "id": "HIDE-V2-C2S-030",
+      "type": "CORRECTION",
+      "statement": "HIDDEN WORDS SHAPE mode displays a form cue and therefore must record assisted non-recall evidence; direct typed MEANING reinforcement remains objective meaning recall.",
+      "destination": "memory-evidence/assistance-truth-boundary"
+    },
+    {
+      "id": "HIDE-V2-C2S-031",
+      "type": "DECISION",
+      "statement": "Safe Hidden Words clue escalation is narrow: TOKEN may use English shape scaffold and MEANING may use existing example/context; unsupported SOUND/SHAPE second clues fail closed to relearn instead of inventing evidence.",
+      "destination": "learning/assistance"
+    },
+    {
+      "id": "HIDE-V2-C2S-032",
+      "type": "EVIDENCE",
+      "statement": "FINAL SEEK keeps the first attempt unassisted; an unassisted English miss may use one shape-based assisted reconstruction before any full relearn exposure.",
+      "destination": "learning/final-seek"
+    },
+    {
+      "id": "HIDE-V2-C2S-033",
+      "type": "CORRECTION",
+      "statement": "A correct FINAL_SEEK_RECONSTRUCT result is assisted and objectively verifiable but not objective recall; SEEK AGAIN remains the unassisted proof.",
+      "destination": "memory-evidence/final-seek"
+    },
+    {
+      "id": "HIDE-V2-C2S-034",
+      "type": "DECISION",
+      "statement": "Do not stack shape reconstruction after semantic FINAL SEEK support; if support was already used, fail closed to relearn before SEEK AGAIN.",
+      "destination": "learning/assistance"
+    },
+    {
+      "id": "HIDE-V2-C2S-035",
+      "type": "EVIDENCE",
+      "statement": "Wrong Hanja SOUND FIND now records objective sound recall failure, then uses verified source-linked reading relearn exposure before SOUND-specific Hidden Words reinforcement.",
+      "destination": "language-memory/hanja-sound-recovery"
+    },
+    {
+      "id": "HIDE-V2-C2S-036",
+      "type": "CORRECTION",
+      "statement": "Verified sound relearn exposure is assisted/non-recall and must not be counted as SOUND recall success.",
+      "destination": "memory-evidence/hanja-sound"
+    },
+    {
+      "id": "HIDE-V2-C2S-037",
+      "type": "DECISION",
+      "statement": "Immediate Hanja sound recovery may carry a session-scoped activity override so a concrete phonological weakness is not masked by generic recovery; this does not alter Memory Engine scores or Ready review/scheduling ownership.",
+      "destination": "learning/hidden-words"
+    },
+    {
+      "id": "HIDE-V2-C2S-038",
+      "type": "EVIDENCE",
+      "statement": "Runtime V2 MEMORIZE records first-seen prediction, clue used and confidence before reveal, then learner MATCH/NEAR/MISS comparison after reveal.",
+      "destination": "learning/thinking-trail"
+    },
+    {
+      "id": "HIDE-V2-C2S-039",
+      "type": "CORRECTION",
+      "statement": "Inference outcome remains LEARNER_SELF_REPORT with objectiveVerified=false, objectiveRecall=false and no recall-score impact; it must not inflate memory strength.",
+      "destination": "evidence-truth-boundary/inference"
+    },
+    {
+      "id": "HIDE-V2-C2S-040",
+      "type": "DECISION",
+      "statement": "Only ESTABLISHED and current-plan-applicable inference clue tendencies may surface as optional later guidance; LOW/EMERGING evidence must not become stable personalization.",
+      "destination": "learning/adaptive-inference"
+    },
+    {
+      "id": "HIDE-V2-C2S-041",
+      "type": "EVIDENCE",
+      "statement": "English FIRST FIND wrong/UNSURE may use one safe shape cue before full relearn; assisted retry is objectively checkable but never objective recall.",
+      "destination": "learning/first-find"
+    },
+    {
+      "id": "HIDE-V2-C2S-042",
+      "type": "CORRECTION",
+      "statement": "A correct FIRST_FIND_ASSIST response must not be counted as unassisted recall or Memory Strength recall success.",
+      "destination": "memory-evidence/assistance-truth-boundary"
+    },
+    {
+      "id": "HIDE-V2-C2S-043",
+      "type": "DECISION",
+      "statement": "FIRST FIND assistance fails closed outside supported English shape cues; Korean/Hanja cues must not be fabricated.",
+      "destination": "learning/assistance"
+    },
+    {
+      "id": "HIDE-V2-C2S-044",
+      "type": "EVIDENCE",
+      "statement": "Korean RESPONSE TRAIL now projects session-scoped expression review candidates to HIDE_SPECIALIST_RESULT_V2 with response text and target-use facts while semantic correctness remains explicitly unclaimed.",
+      "destination": "ready-bridge/korean-expression-review"
+    },
+    {
+      "id": "HIDE-V2-C2S-045",
+      "type": "DECISION",
+      "statement": "Hide may expose HUMAN_SEMANTIC_REVIEW_AVAILABLE for Korean production evidence but must not auto-score semantic correctness; candidate scope must respect active session.queue.",
+      "destination": "language-memory/korean-human-review"
+    },
+    {
+      "id": "HIDE-V2-C2S-046",
+      "type": "EVIDENCE",
+      "statement": "SEEK AGAIN wrong recall may use one safe bounded clue; assisted success remains non-recall and must return to unassisted SEEK AGAIN.",
+      "destination": "learning/seek-again"
+    },
+    {
+      "id": "HIDE-V2-C2S-047",
+      "type": "DECISION",
+      "statement": "SEEK AGAIN assistance is one-shot; after the clue is consumed, another miss must fall through to relearn. Same-day recovery remains IMMEDIATE_ONLY and does not create spacing policy in Hide.",
+      "destination": "memory-evidence/recovery"
+    },
+    {
+      "id": "HIDE-V2-C2S-048",
+      "type": "EVIDENCE",
+      "statement": "English Final Seek assisted reconstruction supports 390x844 touch letter-chunk assembly with undo/reset and >=44px targets; chunks are plain letter groups, not etymology claims.",
+      "destination": "learning/final-seek-ui"
+    },
+    {
+      "id": "HIDE-V2-C2S-049",
+      "type": "DECISION",
+      "statement": "Touch chunk reconstruction remains assisted/non-recall and must still be followed by unassisted Seek Again verification.",
+      "destination": "memory-evidence/final-seek"
+    },
+    {
+      "id": "HIDE-V2-C2S-050",
+      "type": "EVIDENCE",
+      "statement": "Wordbook supports browser-verified JSON/CSV export of Hide-owned memory evidence while excluding Ready scheduling fields.",
+      "destination": "records/export"
+    },
+    {
+      "id": "HIDE-V2-C2S-051",
+      "type": "CORRECTION",
+      "statement": "CSV export neutralizes formula-leading OCR/user text (=,+,-,@) so opening the export in a spreadsheet cannot execute that text as a formula.",
+      "destination": "records/export-security"
+    },
+    {
+      "id": "HIDE-V2-C2S-052",
+      "type": "EVIDENCE",
+      "statement": "FIRST FIND bounded assistance supports English deterministic shape, verified Korean meaning-map structure, and verified Hanja sound cues; missing/unverified multilingual support fails closed to relearn.",
+      "destination": "learning/first-find"
+    },
+    {
+      "id": "HIDE-V2-C2S-053",
+      "type": "EVIDENCE",
+      "statement": "Direct MEANING wrong recall uses one safe masked-context assisted retry when available and otherwise full relearn; assisted recovery remains non-recall.",
+      "destination": "learning/meaning"
+    },
+    {
+      "id": "HIDE-V2-C2S-054",
+      "type": "EVIDENCE",
+      "statement": "Bidirectional MEANING mismatch now pauses for learner-selected versus correct connection comparison exposure before Domain Extension; original mismatch remains confusion evidence.",
+      "destination": "learning/meaning-confusion"
+    },
+    {
+      "id": "HIDE-V2-C2S-055",
+      "type": "EVIDENCE",
+      "statement": "FINAL SEEK assisted reconstruction is multilingual: English mechanical letter chunks, verified Korean meaning-map structure, verified Hanja sound; all success remains assisted/non-recall and requires SEEK AGAIN.",
+      "destination": "learning/final-seek"
+    },
+    {
+      "id": "HIDE-V2-C2S-056",
+      "type": "EVIDENCE",
+      "statement": "Mission Map supports atomic multi-select bulk archive/delete with active-session protection; blocked sets do not partially mutate missions.",
+      "destination": "mission-management"
+    },
+    {
+      "id": "HIDE-V2-C2S-057",
+      "type": "DECISION",
+      "statement": "Completion motion and unified browser art direction are internally verified, but must not be relabeled as physical-device visual QA.",
+      "destination": "ui-ux/evidence-boundary"
+    },
+    {
+      "id": "HIDE-V2-C2S-058",
+      "type": "OPEN",
+      "statement": "Major remaining gates are representative real printed-sheet OCR/provider calibration, physical-device QA, frozen current Ready↔Hide roundtrip, live Snap crew-provider roundtrip, and exact-source release proof.",
+      "destination": "runtime-v2/open-gates"
+    },
+    {
+      "id": "HIDE-V2-C2S-059",
+      "type": "DECISION",
+      "statement": "Secondary branch polish such as custom mission sorting, large-history UX/export stress, and broader legacy-migration samples must not masquerade as closure of external/device/release blockers.",
+      "destination": "runtime-v2/scope-control"
+    },
+    {
+      "id": "HIDE-V2-C2S-060",
+      "type": "EVIDENCE",
+      "statement": "Latest handoff checkpoint 322c804ab7abe2ec43bc47f91d037774d7f254ed passed Validate Hide Runtime V2 #392 and Validate Hide & Seek #850.",
+      "destination": "runtime-v2/handoff-checkpoint"
+    },
+    {
+      "id": "HIDE-V2-C2S-061",
+      "type": "DECISION",
+      "statement": "Locked handoff reporting remains PRODUCT ~81%, CODED ~97%, CI_VERIFIED ~94%, BROWSER_RUNTIME_VERIFIED ~90%, DEVICE_VERIFIED 0%, RELEASE_VERIFIED 0%.",
+      "destination": "runtime-v2/reporting"
+    }
+  ],
+  "coverage": {
+    "UNMAPPED_MATERIAL": 0,
+    "SILENT_LOSS": 0,
+    "FALSE_CONVERGENCE": 0,
+    "C2S_COMPILE_CLOSED": true
+  }
+}

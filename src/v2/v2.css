@@ -1,0 +1,1633 @@
+/* Hide & Seek Runtime V2 UI boundary.
+   V2 reuses visual tokens from styles.css but owns layout/hit-testing here. */
+body.v2-runtime{
+  min-height:100dvh;
+  overflow-x:hidden;
+}
+.v2-runtime .app-shell{
+  min-height:100dvh;
+}
+.v2-runtime .top-safe{
+  position:relative;
+  top:auto;
+  z-index:10;
+}
+.v2-runtime .view{
+  padding-top:12px;
+  padding-bottom:32px;
+  scroll-padding-top:12px;
+}
+.v2-runtime #partnerBar,
+.v2-runtime #bottomNav{
+  display:none!important;
+}
+.v2-runtime .world-hero{
+  min-height:300px;
+}
+.v2-runtime .hero-case{
+  pointer-events:auto;
+}
+.v2-runtime button,
+.v2-runtime input,
+.v2-runtime textarea{
+  touch-action:manipulation;
+}
+.v2-runtime .btn{
+  min-height:48px;
+}
+.v2-runtime .input{
+  font-size:16px;
+}
+.v2-runtime textarea.input{
+  min-height:112px;
+  resize:vertical;
+}
+.v2-runtime .v2-runtime-badge{
+  display:inline-flex;
+  align-items:center;
+  min-height:28px;
+  padding:5px 9px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:800;
+}
+@media(max-width:390px){
+  .v2-runtime .view{
+    padding-left:10px;
+    padding-right:10px;
+  }
+  .v2-runtime .hero-actions{
+    grid-template-columns:1fr;
+  }
+}
+
+.v2-runtime{
+  --v2-safe-bottom:max(16px, env(safe-area-inset-bottom));
+}
+.v2-runtime .app-shell{
+  min-height:var(--v2-visual-height,100dvh);
+}
+.v2-runtime .view{
+  min-height:calc(var(--v2-visual-height,100dvh) - 72px);
+  padding-bottom:calc(40px + var(--v2-safe-bottom));
+}
+.v2-runtime .card,
+.v2-runtime .weak-item,
+.v2-runtime .learning-shell,
+.v2-runtime .thinking-map-card{
+  max-width:100%;
+  box-sizing:border-box;
+}
+.v2-runtime .weak-item{
+  gap:10px;
+  align-items:flex-start;
+  flex-wrap:wrap;
+}
+.v2-runtime .weak-item > *{
+  min-width:0;
+}
+.v2-runtime .input,
+.v2-runtime textarea.input,
+.v2-runtime select.input{
+  width:100%;
+  max-width:100%;
+  box-sizing:border-box;
+}
+.v2-runtime .ocr-warning{
+  display:block;
+  margin-top:4px;
+  font-weight:800;
+}
+@media(max-width:390px){
+  .v2-runtime .top-safe{
+    padding-left:max(10px, env(safe-area-inset-left));
+    padding-right:max(10px, env(safe-area-inset-right));
+  }
+  .v2-runtime .learn-head,
+  .v2-runtime .section-title{
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .v2-runtime .bigword{
+    overflow-wrap:anywhere;
+  }
+  .v2-runtime .thinking-parts,
+  .v2-runtime .inference-row,
+  .v2-runtime .grid3{
+    grid-template-columns:1fr!important;
+  }
+  .v2-runtime .weak-item [data-action],
+  .v2-runtime [data-review-toggle],
+  .v2-runtime [data-word-detail]{
+    min-height:44px;
+  }
+}
+
+
+/* V2 child-facing product system */
+.v2-runtime{
+  --v2-surface:rgba(255,255,255,.88);
+  --v2-ink:#183024;
+  --v2-muted:#66756c;
+  --v2-line:rgba(38,72,50,.12);
+  --v2-shadow:0 12px 36px rgba(51,77,61,.10);
+  --v2-radius-xl:26px;
+  --v2-radius-lg:20px;
+  --v2-radius-md:15px;
+}
+.v2-runtime .view{
+  width:min(100%,760px);
+  margin:0 auto;
+}
+.v2-runtime .quest-overline{
+  margin:0 0 5px;
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  opacity:.62;
+}
+.v2-runtime .quest-hero{
+  position:relative;
+  overflow:hidden;
+  padding:24px;
+  border-radius:var(--v2-radius-xl);
+  background:
+    radial-gradient(circle at 88% 10%,rgba(255,255,255,.82),transparent 30%),
+    linear-gradient(145deg,rgba(229,242,207,.96),rgba(214,234,222,.96));
+  box-shadow:var(--v2-shadow);
+  border:1px solid rgba(255,255,255,.72);
+}
+.v2-runtime .quest-hero:after{
+  content:"";
+  position:absolute;
+  width:170px;
+  height:170px;
+  border:18px solid rgba(70,115,82,.07);
+  border-radius:50%;
+  right:-55px;
+  bottom:-72px;
+}
+.v2-runtime .quest-hero__eyebrow{
+  position:relative;
+  z-index:1;
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.08em;
+}
+.v2-runtime .quest-hero__body{
+  position:relative;
+  z-index:1;
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:18px;
+  margin-top:26px;
+}
+.v2-runtime .quest-hero h1{
+  margin:0;
+  max-width:540px;
+  font-size:clamp(28px,7vw,44px);
+  line-height:1.06;
+  letter-spacing:-.04em;
+  color:var(--v2-ink);
+}
+.v2-runtime .quest-subcopy{
+  margin:12px 0 0;
+  color:var(--v2-muted);
+  font-weight:700;
+}
+.v2-runtime .quest-count{
+  flex:0 0 auto;
+  width:86px;
+  height:86px;
+  border-radius:24px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  background:rgba(255,255,255,.76);
+  box-shadow:0 8px 24px rgba(56,80,64,.08);
+}
+.v2-runtime .quest-count b{font-size:26px;line-height:1}
+.v2-runtime .quest-count span{font-size:11px;font-weight:800;margin-top:6px}
+.v2-runtime .quest-hero__actions{
+  position:relative;
+  z-index:1;
+  display:grid;
+  grid-template-columns:minmax(0,1.35fr) minmax(0,1fr) minmax(0,1fr);
+  gap:10px;
+  margin-top:24px;
+}
+.v2-runtime .btn.ghost{
+  background:rgba(255,255,255,.72);
+  border:1px solid var(--v2-line);
+}
+.v2-runtime .quest-alert{
+  margin-top:12px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  padding:16px 18px;
+  border-radius:18px;
+  background:rgba(225,241,248,.88);
+  border:1px solid rgba(83,129,150,.12);
+}
+.v2-runtime .quest-alert p{margin:3px 0 0;color:var(--v2-muted)}
+.v2-runtime .quest-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-top:12px;
+}
+.v2-runtime .quest-tile{
+  appearance:none;
+  border:1px solid var(--v2-line);
+  border-radius:var(--v2-radius-lg);
+  background:var(--v2-surface);
+  min-height:92px;
+  padding:16px;
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  align-items:center;
+  gap:12px;
+  text-align:left;
+  color:inherit;
+  box-shadow:0 8px 26px rgba(51,77,61,.06);
+}
+.v2-runtime .quest-tile__icon{
+  width:44px;height:44px;border-radius:14px;
+  display:grid;place-items:center;
+  background:rgba(222,237,214,.75);
+  font-size:22px;
+}
+.v2-runtime .quest-tile b{display:block;font-size:16px}
+.v2-runtime .quest-tile small{display:block;margin-top:3px;color:var(--v2-muted)}
+.v2-runtime .quest-tile i{font-size:25px;font-style:normal;opacity:.45}
+.v2-runtime .quest-status,
+.v2-runtime .memory-summary,
+.v2-runtime .memory-signals,
+.v2-runtime .wordbook,
+.v2-runtime .mission-card,
+.v2-runtime .screen-head{
+  border:1px solid var(--v2-line);
+  background:var(--v2-surface);
+  box-shadow:0 8px 26px rgba(51,77,61,.06);
+}
+.v2-runtime .quest-status{
+  margin-top:12px;
+  padding:20px;
+  border-radius:var(--v2-radius-lg);
+}
+.v2-runtime .quest-stat-row,
+.v2-runtime .memory-summary{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+}
+.v2-runtime .quest-stat{
+  min-height:84px;
+  border-radius:16px;
+  background:rgba(236,243,232,.72);
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+}
+.v2-runtime .quest-stat b{font-size:24px}
+.v2-runtime .quest-stat span{font-size:12px;font-weight:800;color:var(--v2-muted);margin-top:5px}
+.v2-runtime .screen-head{
+  border-radius:var(--v2-radius-xl);
+  padding:22px;
+  margin-bottom:12px;
+}
+.v2-runtime .screen-head h1{margin:0;font-size:30px;letter-spacing:-.03em}
+.v2-runtime .screen-head p:last-child{margin:8px 0 0;color:var(--v2-muted)}
+.v2-runtime .mission-list{display:grid;gap:10px}
+.v2-runtime .mission-card{
+  border-radius:var(--v2-radius-lg);
+  padding:18px;
+}
+.v2-runtime .mission-card.is-active{
+  outline:2px solid rgba(73,124,86,.24);
+  background:rgba(244,249,239,.96);
+}
+.v2-runtime .mission-card__status{
+  display:inline-flex;
+  padding:5px 9px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:900;
+  background:rgba(224,238,216,.88);
+}
+.v2-runtime .mission-card h2{margin:10px 0 3px;font-size:20px}
+.v2-runtime .mission-card p{margin:0;color:var(--v2-muted)}
+.v2-runtime .mission-card__actions{
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
+  margin-top:14px;
+}
+.v2-runtime .danger-lite{opacity:.72}
+.v2-runtime .memory-summary{
+  padding:12px;
+  border-radius:var(--v2-radius-lg);
+}
+.v2-runtime .memory-signals{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:10px;
+  padding:14px;
+  border-radius:var(--v2-radius-lg);
+}
+.v2-runtime .memory-signals span{
+  padding:7px 10px;
+  border-radius:999px;
+  background:rgba(239,243,236,.9);
+  font-size:12px;
+}
+.v2-runtime .wordbook{
+  margin-top:12px;
+  padding:18px;
+  border-radius:var(--v2-radius-lg);
+}
+.v2-runtime .word-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 118px;
+  gap:12px;
+  padding:14px 0;
+  border-bottom:1px solid var(--v2-line);
+}
+.v2-runtime .word-row:last-of-type{border-bottom:0}
+.v2-runtime .word-row__body b{display:block;font-size:19px}
+.v2-runtime .word-row__body span,.v2-runtime .word-row__body small{display:block;margin-top:4px;color:var(--v2-muted)}
+.v2-runtime .word-row__meter{text-align:right}
+.v2-runtime .mini-meter{
+  width:100%;
+  height:7px;
+  overflow:hidden;
+  border-radius:999px;
+  background:rgba(80,100,85,.10);
+  margin:6px 0 7px;
+}
+.v2-runtime .mini-meter span{
+  display:block;height:100%;border-radius:inherit;background:currentColor;opacity:.48
+}
+.v2-runtime .quest-progress{
+  margin-bottom:10px;
+  padding:0 2px;
+}
+.v2-runtime .quest-progress__meta{
+  display:flex;justify-content:space-between;gap:8px;
+  font-size:11px;font-weight:900;color:var(--v2-muted);
+}
+.v2-runtime .quest-progress__track{
+  height:7px;border-radius:999px;overflow:hidden;
+  background:rgba(69,91,75,.10);margin-top:6px
+}
+.v2-runtime .quest-progress__track span{
+  display:block;height:100%;border-radius:inherit;background:currentColor;opacity:.48
+}
+.v2-runtime .learning-shell{
+  max-width:620px;
+  margin:0 auto;
+}
+.v2-runtime .learning-shell>.card,
+.v2-runtime .learning-shell>.thinking-map-card{
+  border-radius:var(--v2-radius-xl);
+  box-shadow:var(--v2-shadow);
+}
+.v2-runtime .empty-state{
+  padding:34px 18px;
+  border-radius:var(--v2-radius-lg);
+  text-align:center;
+  background:rgba(244,247,242,.9);
+  color:var(--v2-muted);
+}
+.v2-runtime .empty-state b{display:block;color:var(--v2-ink);font-size:18px}
+.v2-runtime .empty-state p{margin:7px 0 0}
+
+@media(max-width:520px){
+  .v2-runtime .quest-hero{padding:20px}
+  .v2-runtime .quest-hero__body{align-items:flex-start}
+  .v2-runtime .quest-count{width:74px;height:74px;border-radius:20px}
+  .v2-runtime .quest-hero__actions{grid-template-columns:1fr}
+  .v2-runtime .quest-grid{grid-template-columns:1fr 1fr}
+  .v2-runtime .quest-stat-row,.v2-runtime .memory-summary{grid-template-columns:repeat(3,1fr)}
+  .v2-runtime .word-row{grid-template-columns:minmax(0,1fr) 96px}
+  .v2-runtime .mission-card__actions .btn{flex:1 1 calc(50% - 7px)}
+}
+@media(max-width:360px){
+  .v2-runtime .quest-grid{grid-template-columns:1fr}
+  .v2-runtime .quest-hero__body{display:block}
+  .v2-runtime .quest-count{margin-top:14px}
+  .v2-runtime .quest-stat-row,.v2-runtime .memory-summary{grid-template-columns:1fr}
+  .v2-runtime .word-row{grid-template-columns:1fr}
+  .v2-runtime .word-row__meter{text-align:left}
+}
+
+
+/* Exploration crew presentation: UI only. Personality and intervention grammar stay Snap & Pop-owned. */
+.v2-runtime .crew-strip{
+  display:grid;
+  grid-template-columns:46px minmax(0,1fr) auto;
+  gap:11px;
+  align-items:center;
+  margin:10px 0 14px;
+  padding:10px 12px;
+  border:1px solid var(--v2-line);
+  border-radius:18px;
+  background:linear-gradient(135deg,rgba(255,255,255,.94),rgba(238,247,225,.94));
+  box-shadow:0 7px 20px rgba(51,77,61,.055);
+}
+.v2-runtime .crew-strip__avatar{
+  width:46px;
+  height:46px;
+  display:grid;
+  place-items:center;
+  border-radius:15px;
+  background:rgba(207,230,191,.95);
+  color:var(--v2-ink);
+  font-size:20px;
+  font-weight:950;
+}
+.v2-runtime .crew-strip__copy{
+  min-width:0;
+  display:grid;
+  gap:3px;
+}
+.v2-runtime .crew-strip__copy b{
+  font-size:14px;
+  color:var(--v2-ink);
+}
+.v2-runtime .crew-strip__copy small{
+  overflow-wrap:anywhere;
+  color:var(--v2-muted);
+  font-size:12px;
+  line-height:1.38;
+  font-weight:700;
+}
+.v2-runtime .crew-support-btn{
+  min-height:44px;
+  padding-inline:12px;
+  white-space:nowrap;
+}
+@media(max-width:430px){
+  .v2-runtime .crew-strip{
+    grid-template-columns:42px minmax(0,1fr);
+  }
+  .v2-runtime .crew-strip__avatar{
+    width:42px;
+    height:42px;
+    border-radius:14px;
+  }
+  .v2-runtime .crew-support-btn{
+    grid-column:1/-1;
+    width:100%;
+  }
+}
+
+
+/* Child journey continuity + completion feedback */
+.v2-runtime .journey-path{
+  list-style:none;
+  display:grid;
+  grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:5px;
+  padding:0;
+  margin:0 0 10px;
+}
+.v2-runtime .journey-path li{
+  min-width:0;
+  display:grid;
+  justify-items:center;
+  gap:4px;
+  color:rgba(55,77,62,.42);
+}
+.v2-runtime .journey-path li span{
+  width:24px;
+  height:24px;
+  display:grid;
+  place-items:center;
+  border-radius:999px;
+  background:rgba(80,100,85,.09);
+  font-size:11px;
+  font-weight:950;
+}
+.v2-runtime .journey-path li small{
+  max-width:100%;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:9px;
+  font-weight:850;
+}
+.v2-runtime .journey-path li.is-done,
+.v2-runtime .journey-path li.is-current{
+  color:var(--v2-ink);
+}
+.v2-runtime .journey-path li.is-done span{
+  background:rgba(204,226,190,.92);
+}
+.v2-runtime .journey-path li.is-current span{
+  background:rgba(184,215,168,.98);
+  box-shadow:0 0 0 4px rgba(184,215,168,.22);
+}
+.v2-runtime .completion-card{
+  position:relative;
+  overflow:hidden;
+  border-radius:var(--v2-radius-xl);
+}
+.v2-runtime .completion-card:after{
+  content:"";
+  position:absolute;
+  width:150px;
+  height:150px;
+  right:-65px;
+  top:-65px;
+  border-radius:50%;
+  background:rgba(255,255,255,.28);
+}
+.v2-runtime .completion-mark{
+  position:relative;
+  z-index:1;
+  width:58px;
+  height:58px;
+  margin:0 auto 8px;
+  display:grid;
+  place-items:center;
+  border-radius:19px;
+  background:rgba(219,238,196,.96);
+  font-size:28px;
+  box-shadow:0 10px 28px rgba(51,77,61,.10);
+}
+.v2-runtime .completion-crew{
+  display:grid;
+  grid-template-columns:44px minmax(0,1fr);
+  gap:10px;
+  align-items:center;
+  max-width:360px;
+  margin:16px auto;
+  padding:11px 13px;
+  border-radius:18px;
+  background:rgba(255,255,255,.56);
+  text-align:left;
+}
+.v2-runtime .completion-crew__avatar{
+  width:44px;
+  height:44px;
+  display:grid;
+  place-items:center;
+  border-radius:15px;
+  background:rgba(207,230,191,.95);
+  font-weight:950;
+}
+.v2-runtime .completion-crew span:last-child{
+  display:grid;
+  gap:2px;
+}
+.v2-runtime .completion-crew small{
+  color:var(--v2-muted);
+  font-weight:700;
+}
+@media(max-width:390px){
+  .v2-runtime .journey-path{
+    gap:3px;
+  }
+  .v2-runtime .journey-path li small{
+    font-size:8px;
+  }
+}
+
+
+/* Home -> mission -> memory ladder continuity */
+.v2-runtime .trail-bridge{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr);
+  gap:8px;
+  align-items:center;
+  margin:14px 0;
+  padding:12px;
+  border:1px solid var(--v2-line);
+  border-radius:20px;
+  background:rgba(255,255,255,.72);
+}
+.v2-runtime .trail-bridge>i{
+  color:var(--v2-muted);
+  font-style:normal;
+  font-weight:900;
+}
+.v2-runtime .trail-bridge__step{
+  min-width:0;
+  display:grid;
+  justify-items:center;
+  gap:3px;
+  text-align:center;
+}
+.v2-runtime .trail-bridge__step>span{
+  width:28px;
+  height:28px;
+  display:grid;
+  place-items:center;
+  border-radius:999px;
+  background:rgba(204,226,190,.92);
+  font-weight:950;
+}
+.v2-runtime .trail-bridge__step b{
+  font-size:12px;
+}
+.v2-runtime .trail-bridge__step small{
+  color:var(--v2-muted);
+  font-size:10px;
+  line-height:1.25;
+}
+@media(max-width:390px){
+  .v2-runtime .trail-bridge{
+    gap:5px;
+    padding:10px 8px;
+  }
+  .v2-runtime .trail-bridge__step b{font-size:11px}
+  .v2-runtime .trail-bridge__step small{font-size:9px}
+}
+
+
+/* Child-readable Memory Ladder */
+.v2-runtime .ladder-board{
+  display:grid;
+  gap:10px;
+  margin:14px 0 18px;
+}
+.v2-runtime .ladder-rung{
+  display:grid;
+  gap:10px;
+  padding:13px;
+  border:1px solid var(--v2-line);
+  border-radius:20px;
+  background:rgba(255,255,255,.74);
+}
+.v2-runtime .ladder-rung__head{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.v2-runtime .ladder-rung__head>span{
+  width:34px;
+  height:34px;
+  display:grid;
+  place-items:center;
+  border-radius:12px;
+  font-weight:950;
+  background:rgba(215,228,210,.9);
+}
+.v2-runtime .ladder-rung__head>div{
+  display:grid;
+  gap:2px;
+}
+.v2-runtime .ladder-rung__head small{
+  color:var(--v2-muted);
+  font-weight:700;
+}
+.v2-runtime .ladder-rung__words{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+}
+.v2-runtime .ladder-rung__words button{
+  min-height:44px;
+  display:grid;
+  gap:2px;
+  min-width:86px;
+  padding:8px 11px;
+  border:0;
+  border-radius:14px;
+  background:rgba(244,247,241,.96);
+  color:var(--v2-ink);
+  text-align:left;
+  font:inherit;
+}
+.v2-runtime .ladder-rung__words button small{
+  color:var(--v2-muted);
+  font-size:10px;
+}
+.v2-runtime .ladder-rung--seek_again{
+  transform:translateX(0);
+}
+.v2-runtime .ladder-rung--climbing{
+  margin-left:18px;
+}
+.v2-runtime .ladder-rung--stable{
+  margin-left:36px;
+  background:rgba(240,248,232,.84);
+}
+.v2-runtime .ladder-empty{
+  color:var(--v2-muted);
+  font-size:11px;
+  padding:4px 0;
+}
+@media(max-width:390px){
+  .v2-runtime .ladder-rung--climbing{margin-left:10px}
+  .v2-runtime .ladder-rung--stable{margin-left:20px}
+}
+
+
+/* Memory reason + answer-safe crew support */
+.v2-runtime .memory-why-card{
+  display:grid;
+  gap:10px;
+  margin:14px 0;
+  padding:14px;
+  border:1px solid var(--v2-line);
+  border-radius:20px;
+  background:rgba(255,255,255,.78);
+}
+.v2-runtime .memory-why-card h2{
+  margin:0;
+  font-size:18px;
+}
+.v2-runtime .memory-why-card__word{
+  display:grid;
+  gap:4px;
+}
+.v2-runtime .memory-why-card__word b{
+  font-size:17px;
+}
+.v2-runtime .memory-why-card__word span{
+  color:var(--v2-muted);
+  line-height:1.45;
+}
+.v2-runtime .memory-crew-mini{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  gap:10px;
+  align-items:center;
+  padding-top:10px;
+  border-top:1px dashed var(--v2-line);
+}
+.v2-runtime .memory-crew-mini>div{
+  min-width:0;
+  display:grid;
+  gap:2px;
+}
+.v2-runtime .memory-crew-mini small{
+  color:var(--v2-muted);
+  line-height:1.3;
+}
+@media(max-width:390px){
+  .v2-runtime .memory-crew-mini{
+    grid-template-columns:auto minmax(0,1fr);
+  }
+  .v2-runtime .memory-crew-mini .btn{
+    grid-column:1/-1;
+    width:100%;
+  }
+}
+
+
+/* Home narrative hierarchy: story first, metrics second */
+.v2-runtime .quest-status--story{
+  display:grid;
+  gap:12px;
+}
+.v2-runtime .quest-status__story{
+  margin:0;
+  font-size:15px;
+  font-weight:800;
+  line-height:1.5;
+}
+.v2-runtime .home-crew{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr);
+  gap:10px;
+  align-items:center;
+  padding:12px;
+  border:1px solid var(--v2-line);
+  border-radius:18px;
+  background:rgba(255,255,255,.72);
+}
+.v2-runtime .home-crew>span:last-child{
+  min-width:0;
+  display:grid;
+  gap:3px;
+}
+.v2-runtime .home-crew small{
+  color:var(--v2-muted);
+  line-height:1.35;
+}
+.v2-runtime .quest-stat-row--quiet{
+  opacity:.74;
+}
+.v2-runtime .quest-stat-row--quiet .quest-stat{
+  box-shadow:none;
+  background:rgba(255,255,255,.52);
+}
+
+
+/* Mission map: child-facing route first, management second */
+.v2-runtime .mission-path{
+  display:grid;
+  gap:12px;
+  position:relative;
+  margin:12px 0 16px;
+}
+.v2-runtime .mission-path::before{
+  content:"";
+  position:absolute;
+  left:22px;
+  top:22px;
+  bottom:22px;
+  width:2px;
+  background:var(--v2-line);
+}
+.v2-runtime .mission-map-card{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr);
+  gap:12px;
+  align-items:start;
+  position:relative;
+}
+.v2-runtime .mission-map-marker{
+  position:relative;
+  z-index:1;
+  width:44px;
+  height:44px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  border:1px solid var(--v2-line);
+  background:rgba(255,255,255,.92);
+  font-weight:900;
+}
+.v2-runtime .mission-map-card.is-active .mission-map-marker{
+  transform:scale(1.06);
+}
+.v2-runtime .mission-map-actions{
+  grid-column:2;
+  display:grid;
+  gap:8px;
+}
+.v2-runtime .mission-tools summary{
+  cursor:pointer;
+  min-height:44px;
+  display:flex;
+  align-items:center;
+  font-weight:800;
+  color:var(--v2-muted);
+}
+.v2-runtime .mission-tools .mission-card__actions{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+  padding-top:6px;
+}
+@media(max-width:390px){
+  .v2-runtime .mission-tools .mission-card__actions{
+    grid-template-columns:1fr;
+  }
+}
+
+
+/* Completion: achievement first, metrics second */
+.v2-runtime .completion-card--story{
+  display:grid;
+  gap:12px;
+  text-align:center;
+}
+.v2-runtime .completion-achievement{
+  margin:0;
+  font-size:16px;
+  font-weight:900;
+  line-height:1.55;
+}
+.v2-runtime .completion-next{
+  display:grid;
+  gap:5px;
+  padding:14px;
+  border:1px solid var(--v2-line);
+  border-radius:18px;
+  background:rgba(255,255,255,.76);
+  text-align:left;
+}
+.v2-runtime .completion-next span{
+  font-size:12px;
+  font-weight:900;
+  color:var(--v2-muted);
+}
+.v2-runtime .completion-next b{
+  font-size:14px;
+  line-height:1.5;
+}
+.v2-runtime .completion-details{
+  text-align:left;
+}
+.v2-runtime .completion-details summary{
+  min-height:44px;
+  display:flex;
+  align-items:center;
+  cursor:pointer;
+  font-weight:800;
+  color:var(--v2-muted);
+}
+.v2-runtime .completion-details .grid3{
+  margin-top:8px;
+}
+
+
+/* Memory ladder: child recall path first, analysis second */
+.v2-runtime .memory-route-intro{
+  display:grid;
+  gap:5px;
+  margin:10px 0 14px;
+  padding:14px;
+  border:1px solid var(--v2-line);
+  border-radius:18px;
+  background:rgba(255,255,255,.76);
+}
+.v2-runtime .memory-route-intro>b{
+  font-size:17px;
+}
+.v2-runtime .memory-route-intro>span{
+  font-weight:900;
+}
+.v2-runtime .memory-route-intro>small{
+  color:var(--v2-muted);
+  line-height:1.4;
+}
+.v2-runtime .memory-record-details{
+  margin-top:14px;
+}
+.v2-runtime .memory-record-details>summary{
+  min-height:44px;
+  display:flex;
+  align-items:center;
+  cursor:pointer;
+  font-weight:800;
+  color:var(--v2-muted);
+}
+.v2-runtime .memory-record-details .memory-summary,
+.v2-runtime .memory-record-details .memory-signals,
+.v2-runtime .memory-record-details .wordbook{
+  margin-top:10px;
+}
+
+
+/* Memory detail: child path first, diagnostics second */
+.v2-runtime .memory-detail-story{
+  display:grid;
+  gap:12px;
+}
+.v2-runtime .memory-detail-meaning{
+  margin:0;
+  font-size:16px;
+  font-weight:800;
+  color:var(--v2-muted);
+}
+.v2-runtime .memory-detail-path,
+.v2-runtime .memory-detail-next{
+  display:grid;
+  gap:5px;
+  padding:14px;
+  border:1px solid var(--v2-line);
+  border-radius:18px;
+  background:rgba(255,255,255,.76);
+}
+.v2-runtime .memory-detail-path>span,
+.v2-runtime .memory-detail-next>span{
+  font-size:12px;
+  font-weight:900;
+  color:var(--v2-muted);
+}
+.v2-runtime .memory-detail-path>b,
+.v2-runtime .memory-detail-next>b{
+  font-size:18px;
+}
+.v2-runtime .memory-detail-path>small,
+.v2-runtime .memory-detail-next>small{
+  line-height:1.45;
+  color:var(--v2-muted);
+}
+.v2-runtime .memory-tech-details>summary{
+  min-height:44px;
+  display:flex;
+  align-items:center;
+  cursor:pointer;
+  font-weight:800;
+  color:var(--v2-muted);
+}
+.v2-runtime .memory-tech-details .grid3{
+  margin-top:8px;
+}
+
+
+/* OCR review: exploration setup, not an admin table */
+.v2-runtime .ocr-review-card{
+  display:grid;
+  gap:14px;
+}
+.v2-runtime .ocr-review-intro{
+  margin:0;
+  line-height:1.5;
+  color:var(--v2-muted);
+  font-weight:700;
+}
+.v2-runtime .ocr-review-list{
+  display:grid;
+  gap:12px;
+}
+.v2-runtime .ocr-review-row{
+  display:grid;
+  gap:10px;
+  padding:14px;
+  border:1px solid var(--v2-line);
+  border-radius:18px;
+  background:rgba(255,255,255,.76);
+}
+.v2-runtime .ocr-review-row.is-excluded{
+  opacity:.5;
+}
+.v2-runtime .ocr-review-row__head{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:center;
+}
+.v2-runtime .ocr-review-row__head>span,
+.v2-runtime .ocr-review-row__head>b{
+  font-weight:900;
+}
+.v2-runtime .ocr-review-row__head>small{
+  color:var(--v2-muted);
+}
+.v2-runtime .ocr-review-fields{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.v2-runtime .ocr-review-fields label{
+  display:grid;
+  gap:5px;
+}
+.v2-runtime .ocr-review-fields label>span{
+  font-size:12px;
+  font-weight:900;
+  color:var(--v2-muted);
+}
+.v2-runtime .ocr-source-details summary{
+  min-height:40px;
+  display:flex;
+  align-items:center;
+  cursor:pointer;
+  font-weight:800;
+  color:var(--v2-muted);
+}
+.v2-runtime .ocr-review-next{
+  display:grid;
+  gap:4px;
+  padding:12px 14px;
+  border-radius:16px;
+  background:rgba(255,255,255,.62);
+}
+.v2-runtime .ocr-review-next span{
+  color:var(--v2-muted);
+  line-height:1.4;
+}
+@media(max-width:390px){
+  .v2-runtime .ocr-review-fields{
+    grid-template-columns:1fr;
+  }
+}
+
+
+/* OCR recovery: preserve-first messaging */
+.v2-runtime .ocr-recovery-card{
+  display:grid;
+  gap:12px;
+}
+.v2-runtime .ocr-recovery-lead{
+  margin:0;
+  line-height:1.5;
+  font-weight:800;
+}
+.v2-runtime .ocr-error-details summary{
+  min-height:40px;
+  display:flex;
+  align-items:center;
+  cursor:pointer;
+  font-weight:800;
+  color:var(--v2-muted);
+}
+.v2-runtime .ocr-error-details small{
+  overflow-wrap:anywhere;
+  color:var(--v2-muted);
+}
+
+
+/* Gentle celebration motion; fully disabled for reduced-motion users */
+@keyframes hide-v2-complete-pop{
+  0%{transform:scale(.82);opacity:.35}
+  65%{transform:scale(1.08);opacity:1}
+  100%{transform:scale(1);opacity:1}
+}
+@keyframes hide-v2-complete-rise{
+  0%{transform:translateY(8px);opacity:.35}
+  100%{transform:translateY(0);opacity:1}
+}
+.v2-runtime .completion-card--story .completion-mark{
+  animation:hide-v2-complete-pop .46s ease-out both;
+}
+.v2-runtime .completion-card--story .completion-achievement,
+.v2-runtime .completion-card--story .completion-next{
+  animation:hide-v2-complete-rise .34s ease-out both;
+}
+.v2-runtime .completion-card--story .completion-next{
+  animation-delay:.08s;
+}
+@media(prefers-reduced-motion:reduce){
+  .v2-runtime .completion-card--story .completion-mark,
+  .v2-runtime .completion-card--story .completion-achievement,
+  .v2-runtime .completion-card--story .completion-next{
+    animation:none !important;
+    transform:none !important;
+  }
+}
+
+
+/* 2026-09-22 art-direction pass: one exploration world across child-facing surfaces */
+body.v2-runtime{
+  background:
+    radial-gradient(circle at 18% 8%,rgba(232,244,214,.72),transparent 28%),
+    radial-gradient(circle at 88% 20%,rgba(213,234,225,.62),transparent 30%),
+    linear-gradient(180deg,#f8fbf2 0%,#f3f7ee 58%,#eef4eb 100%);
+}
+.v2-runtime .app-shell{
+  position:relative;
+}
+.v2-runtime .app-shell::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  opacity:.42;
+  background:
+    linear-gradient(115deg,transparent 0 28%,rgba(76,110,83,.035) 28.5% 29%,transparent 29.5% 100%),
+    linear-gradient(65deg,transparent 0 64%,rgba(76,110,83,.028) 64.5% 65%,transparent 65.5% 100%);
+}
+.v2-runtime .view{
+  position:relative;
+  z-index:1;
+}
+.v2-runtime .quest-hero,
+.v2-runtime .screen-head,
+.v2-runtime .learning-shell>.card,
+.v2-runtime .thinking-map-card,
+.v2-runtime .completion-card,
+.v2-runtime .memory-detail-story,
+.v2-runtime .ocr-review-card,
+.v2-runtime .ocr-recovery-card{
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+}
+.v2-runtime .quest-hero{
+  border-color:rgba(255,255,255,.88);
+  box-shadow:
+    0 18px 48px rgba(53,78,61,.12),
+    inset 0 1px 0 rgba(255,255,255,.9);
+}
+.v2-runtime .quest-hero::before{
+  content:"";
+  position:absolute;
+  inset:14px;
+  border:1px dashed rgba(67,105,78,.10);
+  border-radius:21px;
+  pointer-events:none;
+}
+.v2-runtime .screen-head{
+  position:relative;
+  overflow:hidden;
+}
+.v2-runtime .screen-head::after{
+  content:"";
+  position:absolute;
+  width:120px;
+  height:120px;
+  border:14px solid rgba(73,108,81,.045);
+  border-radius:50%;
+  right:-54px;
+  top:-58px;
+  pointer-events:none;
+}
+.v2-runtime .mission-path{
+  padding-left:20px;
+}
+.v2-runtime .mission-path::before{
+  left:7px;
+  width:2px;
+  border-radius:999px;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(75,114,85,.24) 0 8px,
+      transparent 8px 15px
+    );
+}
+.v2-runtime .mission-map-card{
+  position:relative;
+  overflow:visible;
+  transition:transform .18s ease, box-shadow .18s ease;
+}
+.v2-runtime .mission-map-card::before{
+  content:"";
+  position:absolute;
+  left:-20px;
+  top:28px;
+  width:12px;
+  height:12px;
+  border-radius:50%;
+  background:#d7e9c8;
+  box-shadow:0 0 0 5px #f3f7ee,0 0 0 6px rgba(75,114,85,.14);
+}
+.v2-runtime .mission-map-card.is-active{
+  transform:translateY(-1px);
+  box-shadow:0 14px 34px rgba(51,77,61,.10);
+}
+.v2-runtime .learning-shell{
+  position:relative;
+}
+.v2-runtime .learning-shell::before{
+  content:"";
+  position:absolute;
+  inset:-8px -8px auto;
+  height:86px;
+  border-radius:28px;
+  background:linear-gradient(180deg,rgba(224,239,210,.50),rgba(224,239,210,0));
+  pointer-events:none;
+  z-index:-1;
+}
+.v2-runtime .journey-path{
+  position:relative;
+  padding-top:3px;
+}
+.v2-runtime .journey-path::before{
+  content:"";
+  position:absolute;
+  left:4%;
+  right:4%;
+  top:15px;
+  height:2px;
+  border-radius:999px;
+  background:rgba(72,105,80,.08);
+  z-index:0;
+}
+.v2-runtime .journey-path li{
+  position:relative;
+  z-index:1;
+}
+.v2-runtime .journey-path li.is-current span{
+  box-shadow:
+    0 0 0 4px rgba(184,215,168,.22),
+    0 5px 14px rgba(56,90,63,.12);
+}
+.v2-runtime .completion-card--story{
+  text-align:center;
+  background:
+    radial-gradient(circle at 50% -10%,rgba(255,255,255,.92),transparent 38%),
+    linear-gradient(160deg,rgba(233,246,213,.96),rgba(219,238,229,.96));
+}
+.v2-runtime .completion-next{
+  margin:14px 0;
+  padding:15px;
+  border:1px solid rgba(73,108,81,.10);
+  border-radius:18px;
+  background:rgba(255,255,255,.58);
+}
+.v2-runtime .completion-next span,
+.v2-runtime .completion-next b{
+  display:block;
+}
+.v2-runtime .completion-next span{
+  margin-bottom:5px;
+  color:var(--v2-muted);
+  font-size:12px;
+  font-weight:900;
+}
+.v2-runtime .ladder-board{
+  position:relative;
+  padding-left:8px;
+}
+.v2-runtime .ladder-board::before{
+  content:"";
+  position:absolute;
+  left:22px;
+  top:22px;
+  bottom:22px;
+  width:2px;
+  background:linear-gradient(to bottom,rgba(98,132,102,.10),rgba(98,132,102,.24));
+  border-radius:999px;
+}
+.v2-runtime .ladder-rung{
+  position:relative;
+  box-shadow:0 8px 24px rgba(51,77,61,.05);
+}
+.v2-runtime .ladder-rung__head>span{
+  position:relative;
+  z-index:1;
+  box-shadow:0 0 0 4px rgba(247,250,244,.96);
+}
+.v2-runtime .memory-route-intro,
+.v2-runtime .memory-why-card,
+.v2-runtime .memory-detail-path,
+.v2-runtime .memory-detail-next{
+  box-shadow:0 8px 24px rgba(51,77,61,.045);
+}
+.v2-runtime .ocr-review-row{
+  box-shadow:0 6px 18px rgba(51,77,61,.04);
+}
+.v2-runtime .ocr-review-row__head>b{
+  display:inline-flex;
+  align-items:center;
+  min-height:28px;
+  padding:4px 9px;
+  border-radius:999px;
+  background:rgba(246,223,169,.62);
+  font-size:11px;
+}
+@media(max-width:390px){
+  .v2-runtime .mission-path{padding-left:15px}
+  .v2-runtime .mission-path::before{left:5px}
+  .v2-runtime .mission-map-card::before{left:-15px}
+  .v2-runtime .quest-hero::before{inset:10px}
+}
+@media(prefers-reduced-motion:reduce){
+  .v2-runtime .mission-map-card{
+    transition:none!important;
+    transform:none!important;
+  }
+}
+
+
+/* Final Seek assistance is explicit and subordinate to unassisted recall */
+.v2-runtime .final-support{
+  display:grid;
+  gap:8px;
+  margin:12px 0;
+}
+.v2-runtime .final-support__scene{
+  display:grid;
+  gap:5px;
+  padding:12px 14px;
+  border:1px solid var(--v2-line);
+  border-radius:16px;
+  background:rgba(255,255,255,.68);
+}
+.v2-runtime .final-support__scene span{
+  line-height:1.45;
+}
+.v2-runtime .final-support__scene small{
+  color:var(--v2-muted);
+  line-height:1.4;
+}
+
+
+/* OCR duplicate review: explicit merge with source provenance retained */
+.v2-runtime .ocr-duplicate-badge{
+  display:inline-flex;
+  align-items:center;
+  min-height:28px;
+  padding:4px 9px;
+  border-radius:999px;
+  background:rgba(219,235,207,.86);
+  font-size:11px;
+  font-weight:900;
+}
+.v2-runtime .ocr-review-row.is-merged{
+  border-style:dashed;
+  background:rgba(244,247,240,.64);
+}
+.v2-runtime .ocr-review-row.is-merged .ocr-review-fields{
+  opacity:.58;
+}
+.v2-runtime .ocr-merged-note{
+  display:block;
+  padding:8px 2px 2px;
+  color:var(--v2-muted);
+  line-height:1.4;
+}
+
+
+/* Memory Ladder find tools: child-facing search + engine-owned state filters */
+.v2-runtime .memory-find-tools{
+  display:grid;
+  gap:10px;
+  margin:12px 0;
+  padding:14px;
+  border:1px solid var(--v2-line);
+  border-radius:18px;
+  background:rgba(255,255,255,.66);
+  box-shadow:0 8px 24px rgba(51,77,61,.04);
+}
+.v2-runtime .memory-find-tools label{
+  display:grid;
+  gap:6px;
+}
+.v2-runtime .memory-find-tools label>span{
+  font-size:12px;
+  font-weight:900;
+  color:var(--v2-muted);
+}
+.v2-runtime .memory-filter-row{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:6px;
+}
+.v2-runtime .memory-filter-row .btn{
+  min-width:0;
+  min-height:42px;
+  padding:8px 6px;
+  font-size:12px;
+}
+.v2-runtime .memory-filter-row .btn.is-active{
+  background:rgba(214,234,201,.92);
+  border-color:rgba(81,118,86,.26);
+}
+.v2-runtime .memory-find-tools>small{
+  color:var(--v2-muted);
+  font-weight:800;
+}
+@media(max-width:390px){
+  .v2-runtime .memory-filter-row{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+
+
+/* Mission map state filters */
+.v2-runtime .mission-find-tools{
+  display:grid;
+  gap:8px;
+  margin:12px 0;
+  padding:12px;
+  border:1px solid var(--v2-line);
+  border-radius:18px;
+  background:rgba(255,255,255,.62);
+}
+.v2-runtime .mission-filter-row{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:6px;
+}
+.v2-runtime .mission-filter-row .btn{
+  min-width:0;
+  min-height:42px;
+  padding:8px 6px;
+  font-size:12px;
+}
+.v2-runtime .mission-filter-row .btn.is-active{
+  background:rgba(214,234,201,.92);
+  border-color:rgba(81,118,86,.26);
+}
+.v2-runtime .mission-find-tools>small{
+  color:var(--v2-muted);
+  font-weight:800;
+}
+.v2-runtime .mission-bulk-tools{
+  display:grid;
+  gap:8px;
+  padding-top:10px;
+  border-top:1px solid var(--v2-line);
+}
+.v2-runtime .mission-bulk-tools>span{
+  font-size:12px;
+  font-weight:900;
+  color:var(--v2-muted);
+}
+.v2-runtime .mission-bulk-tools .btn-row{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:6px;
+}
+.v2-runtime .mission-bulk-tools .btn{
+  min-width:0;
+  min-height:44px;
+  padding:8px 6px;
+  font-size:12px;
+}
+.v2-runtime .mission-select{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  min-height:44px;
+  margin:0 0 8px;
+  padding:6px 10px;
+  border:1px solid var(--v2-line);
+  border-radius:999px;
+  background:rgba(255,255,255,.72);
+  font-size:12px;
+  font-weight:900;
+}
+.v2-runtime .mission-select input{
+  width:20px;
+  height:20px;
+  margin:0;
+}
+@media(max-width:390px){
+  .v2-runtime .mission-bulk-tools .btn-row{
+    grid-template-columns:1fr;
+  }
+}
+@media(max-width:390px){
+  .v2-runtime .mission-filter-row{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+
+
+/* Final Seek mechanical letter-chunk reconstruction */
+.v2-runtime .reconstruct-builder{
+  display:grid;
+  gap:10px;
+  margin:14px 0;
+  padding:14px;
+  border:1px solid var(--v2-line);
+  border-radius:18px;
+  background:rgba(255,255,255,.66);
+}
+.v2-runtime .reconstruct-output{
+  display:grid;
+  gap:4px;
+  min-height:58px;
+  padding:10px 12px;
+  border-radius:14px;
+  background:rgba(232,242,222,.72);
+}
+.v2-runtime .reconstruct-output small{
+  color:var(--v2-muted);
+  font-weight:900;
+}
+.v2-runtime .reconstruct-output b{
+  font-size:20px;
+  letter-spacing:.04em;
+  overflow-wrap:anywhere;
+}
+.v2-runtime .reconstruct-tiles{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+}
+.v2-runtime .reconstruct-tile{
+  min-width:0;
+  min-height:48px;
+  padding:10px 8px;
+  font-size:16px;
+  font-weight:900;
+}
+.v2-runtime .reconstruct-tools .btn{
+  min-height:42px;
+}
+@media(max-width:390px){
+  .v2-runtime .reconstruct-tiles{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+
+
+/* Memory export remains a subordinate ownership tool */
+.v2-runtime .memory-export-tools{
+  display:grid;
+  gap:10px;
+  margin:12px 0;
+  padding:12px 14px;
+  border:1px solid var(--v2-line);
+  border-radius:16px;
+  background:rgba(255,255,255,.58);
+}
+.v2-runtime .memory-export-tools>div:first-child{
+  display:grid;
+  gap:4px;
+}
+.v2-runtime .memory-export-tools small{
+  color:var(--v2-muted);
+  line-height:1.45;
+}
+.v2-runtime .memory-export-tools .btn-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+@media(max-width:390px){
+  .v2-runtime .memory-export-tools .btn-row{
+    grid-template-columns:1fr;
+  }
+}
+
+
+/* Mission finder combines text search with status filters */
+.v2-runtime .mission-find-tools label{
+  display:grid;
+  gap:6px;
+}
+.v2-runtime .mission-find-tools label>span{
+  font-size:12px;
+  font-weight:900;
+  color:var(--v2-muted);
+}

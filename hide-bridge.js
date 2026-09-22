@@ -1,9 +1,9 @@
 (() => {
   'use strict';
 
-  const BRIDGE_VERSION = '2026.09.07-a';
+  const BRIDGE_VERSION = '2026.09.21-c';
   const EVENT_LIMIT = 120;
-  const SHARED_PARAM_NAMES = ['session_id', 'goal_id', 'task_id', 'lap_id', 'return_target', 'snap_target', 'child_id'];
+  const SHARED_PARAM_NAMES = ['session_id', 'goal_id', 'task_id', 'lap_id', 'return_target', 'snap_target', 'child_id', 'actor_role', 'crew_member_id', 'crew_member_name', 'crew_rules_version', 'review_directive'];
   const legacyTerms = [
     [/Word Detective Team/g, 'Hidden Word Trail'],
     [/사건 파일/g, '단어 탐험'],
@@ -13,7 +13,6 @@
 
   const originalSave = save;
   let bridgePersisting = false;
-  let applyingUpdate = false;
   let lastSnapshot = '';
 
   const EventEnvelope = globalThis.TakyEventEnvelope;
@@ -34,6 +33,30 @@
     return S.sharedLearningContext || {};
   }
 
+  function reviewDirective() {
+    const raw = getContext().review_directive;
+    if (!raw) return null;
+    let parsed = raw;
+    if (typeof raw === 'string') {
+      try { parsed = JSON.parse(raw); } catch { return null; }
+    }
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
+    if (String(parsed.reviewPolicyOwner || '') !== 'READY_LEARNING_ENGINE') return null;
+    if (String(parsed.scheduleOwner || '') !== 'READY_SET_PLANNER') return null;
+    const lexicalIds = Array.isArray(parsed.lexicalIds)
+      ? [...new Set(parsed.lexicalIds.map(x => String(x || '').trim()).filter(Boolean))].slice(0, 24)
+      : [];
+    if (!lexicalIds.length) return null;
+    return Object.freeze({
+      authority:'EXPLICIT_READY_PLANNER_REVIEW_DIRECTIVE',
+      reviewPolicyOwner:'READY_LEARNING_ENGINE',
+      scheduleOwner:'READY_SET_PLANNER',
+      lexicalIds,
+      directiveId:String(parsed.directiveId || '').trim() || null,
+      taskId:String(parsed.taskId || getContext().task_id || '').trim() || null
+    });
+  }
+
   function persistBridgeState() {
     if (bridgePersisting) return;
     bridgePersisting = true;
@@ -44,12 +67,115 @@
     }
   }
 
-  function eventTypeForStatus(status) {
-    if (status === 'COMPLETED') return 'TASK_COMPLETED';
-    if (status === 'BLOCKED') return 'TASK_BLOCKED';
+  function taskStateForStatus(status) {
+    if (status === 'COMPLETED' || status === 'TEST_READY') return 'COMPLETED';
+    if (status === 'BLOCKED') return 'BLOCKED';
     if (status === 'HELP_NEEDED') return 'HELP_NEEDED';
+    return 'PARTIAL';
+  }
+
+  function eventTypeForStatus(status) {
+    const taskState = taskStateForStatus(status);
+    if (taskState === 'COMPLETED') return 'TASK_COMPLETED';
+    if (taskState === 'BLOCKED') return 'TASK_BLOCKED';
+    if (taskState === 'HELP_NEEDED') return 'HELP_NEEDED';
     if (status === 'LEARNING') return 'TASK_STARTED';
     return 'TASK_PROGRESS';
+  }
+
+  function buildMemorySummary() {
+    let words = [];
+    try { words = validWords(); } catch {}
+    const reasonCounts = { recovery: 0, confusion: 0, orthographic: 0, latency: 0, hint: 0, decay: 0, stable: 0 };
+    const priorities = [];
+    let measured = 0;
+    let strengthTotal = 0;
+    for (const w of words) {
+      let view = null;
+      try { view = memoryStatusView(w); } catch {}
+      const key = view?.reason?.key || 'stable';
+      if (key in reasonCounts) reasonCounts[key] += 1;
+      if (Number.isFinite(view?.strength)) { measured += 1; strengthTotal += Number(view.strength); }
+      if (Number.isFinite(view?.priority)) {
+        let sig = null;
+        let lastRecovery = null;
+        try { sig = deriveMemorySignature(w); } catch {}
+        try {
+          const recovery = traceList(w,'recovery');
+          lastRecovery = [...recovery].reverse().find(x=>x?.result==='UNASSISTED_RECALL') || null;
+        } catch {}
+        let learningContextRef=null;
+        try {
+          const lc=globalThis.HideLanguageModel?.learningContextFor?.(w)||null;
+          if(lc) learningContextRef={
+            contextId:lc.contextId||null,
+            learningUnitId:lc.learningUnitId||null,
+            subject:lc.subject||null,
+            unitLabel:lc.unitLabel||null,
+            rangeLabel:lc.rangeLabel||null,
+            progressionContext:lc.progressionContext||null,
+            reviewContext:lc.reviewContext||null,
+            assignmentRef:lc.assignmentRef||null,
+            sourceRef:lc.sourceRef||null,
+            hanjaLevelLabel:lc.hanjaLevelLabel||null,
+            hanjaLevelSchemeRef:lc.hanjaLevelSchemeRef||null,
+            resolvedBy:lc.resolvedBy||'READY_LEARNING_ENGINE'
+          };
+        } catch {}
+        priorities.push({
+          lexicalId: w.lexicalId || senseKey(w),
+          priority: Math.round(Number(view.priority)),
+          nextReviewPriority: Math.round(Number(view.priority)),
+          reason: key,
+          learningContextRef,
+          advisoryOnly:true,
+          evidenceBasis:'HIDE_MEMORY_EVIDENCE',
+          memoryStrength:Number.isFinite(view?.strength)?Math.round(Number(view.strength)):null,
+          semanticWeakness:Number(sig?.semanticWeakness||0),
+          recognitionWeakness:Number(sig?.recognitionWeakness||0),
+          phonologicalWeakness:Number(sig?.phonologicalWeakness||0),
+          orthographicWeakness:Number(sig?.orthographicWeakness||0),
+          confusionCount:Number(sig?.confusionPattern?.count||0),
+          slowRecall:Number(sig?.slowRecall||0),
+          timeoutRisk:Number(sig?.timeoutRisk||0),
+          hintDependency:Number(sig?.hintDependency||0),
+          recoveryStatus:String(sig?.recoveryStatus||'UNPROVEN'),
+          longTermDecay:Number(sig?.longTermDecay||0),
+          spacedEvidenceObserved:lastRecovery?.spacedEvidence===true,
+          needsUnassistedRecall:sig?.recoveryStatus==='NEEDS_UNASSISTED_RECALL'||sig?.recoveryStatus==='IMMEDIATE_ONLY',
+          languageMemoryEvidence:(()=>{try{return languageMemoryEvidenceSummary(w)}catch{return null}})()
+        });
+      }
+    }
+    priorities.sort((a, b) => b.priority - a.priority);
+    const roleCounts = words.reduce((a,w)=>{const role=String(w.missionRole||'').toUpperCase();if(role==='NEW'||role==='REVIEW')a[role]+=1;return a},{NEW:0,REVIEW:0});
+    const mockCounts={CORRECT:0,CONFUSED:0,WRONG:0,ASSISTED_CORRECT:0,RECOVERED_CORRECT:0};
+    let thinkingSceneAssistanceCount=0;
+    for(const w of words){
+      const assessment=Array.isArray(w.learningStats?.assessmentTrace)?w.learningStats.assessmentTrace:[];
+      for(const x of assessment){
+        if(x?.source==='MORNING_MOCK_TEST'&&x?.result in mockCounts)mockCounts[x.result]+=1;
+      }
+      const assistance=Array.isArray(w.learningStats?.assistanceTrace)?w.learningStats.assistanceTrace:[];
+      thinkingSceneAssistanceCount+=assistance.filter(x=>x?.step==='THINKING_SCENE').length;
+    }
+    return {
+      authority:'SPECIALIST_MEMORY_ADVISORY_ONLY',
+      reviewPolicyOwner:'READY_LEARNING_ENGINE',
+      scheduleOwner:'READY_SET_PLANNER',
+      prioritySemantics:'ADVISORY_SIGNAL_NOT_DATE',
+      averageMemoryStrength: measured ? Math.round(strengthTotal / measured) : 0,
+      reasonCounts,
+      needsUnassistedRecallCount: reasonCounts.recovery,
+      topReviewPriorities: priorities.slice(0, 5),
+      reviewAdvisories: priorities.slice(0, 12),
+      missionComposition:{newCount:roleCounts.NEW,reviewCount:roleCounts.REVIEW},
+      morningMockTest:{
+        recordedCount:Object.values(mockCounts).reduce((a,n)=>a+n,0),
+        resultCounts:mockCounts
+      },
+      thinkingSceneAssistanceCount
+    };
   }
 
   function buildTaskSnapshot() {
@@ -57,10 +183,24 @@
     try { sh = sheet(); } catch {}
     return {
       activeSheetId: S.activeSheetId || null,
+      explorationMissionId: S.activeSheetId || null,
+      explorationMissionTitle: sh?.title || null,
+      inputActorRole: S.hideSeekCaptureSession?.inputActorRole || getContext().actor_role || null,
       sheetStatus: sh?.status || null,
-      caseMastery: Number(sh?.caseMastery || 0),
+      trailMastery: Number(sh?.caseMastery || 0),
+      legacyCaseMastery: Number(sh?.caseMastery || 0),
+      taskState: taskStateForStatus(sh?.status || null),
       validWordCount: (() => { try { return validWords().length; } catch { return 0; } })(),
-      captureActive: !!(S.hideSeekCaptureSession && S.hideSeekCaptureSession.status === 'CAPTURING')
+      captureActive: !!(S.hideSeekCaptureSession && S.hideSeekCaptureSession.status === 'CAPTURING'),
+      learningPhase: S.learning?.phase || null,
+      learningHistoryCount: Array.isArray(S.learning?.history) ? S.learning.history.length : 0,
+      finalSeekAttemptCount: Array.isArray(S.codeRed?.history) ? S.codeRed.history.length : 0,
+      seekAgainRemainingCount: Array.isArray(S.codeRed?.retrace) ? S.codeRed.retrace.length : 0,
+      learningProvenance: sh?.learningProvenance ? { ...sh.learningProvenance } : {},
+      cumulativeLexiconCount: Object.keys(S.lexicon || {}).length,
+      missionComposition: sh?.missionComposition ? { ...sh.missionComposition } : (()=>{const ms=buildMemorySummary();return {expectedNew:ms.missionComposition.newCount,expectedReview:ms.missionComposition.reviewCount,layoutIndependent:true}})(),
+      morningMockTestSummary: buildMemorySummary().morningMockTest,
+      memorySummary: buildMemorySummary()
     };
   }
 
@@ -95,7 +235,7 @@
       task_id: context.task_id || null,
       lap_id: context.lap_id || null,
       child_id: context.child_id || null,
-      payload
+      actor_role: context.actor_role || null
     };
 
     S.takyLearningOutbox = [...(S.takyLearningOutbox || []), event].slice(-EVENT_LIMIT);
@@ -113,7 +253,7 @@
     return event;
   }
 
-  function safeReturnUrl(taskState = 'PARTIAL') {
+  function safeReturnUrl(taskState = 'PARTIAL', event = null) {
     const context = getContext();
     if (!context.return_target) return null;
     try {
@@ -125,6 +265,26 @@
       if (context.lap_id) url.searchParams.set('lap_id', context.lap_id);
       url.searchParams.set('task_state', taskState);
       url.searchParams.set('from_app', 'hide-seek');
+      if (event?.event_id) url.searchParams.set('event_id', event.event_id);
+      const summary = event?.payload?.memorySummary;
+      if (summary) url.searchParams.set('memory_summary', JSON.stringify(summary));
+      if (event?.payload) {
+        const p = event.payload;
+        const report = {
+          explorationMissionId: p.explorationMissionId || null,
+          explorationMissionTitle: p.explorationMissionTitle || null,
+          inputActorRole: p.inputActorRole || context.actor_role || null,
+          validWordCount: Number(p.validWordCount || 0),
+          trailMastery: Number(p.trailMastery || 0),
+          learningPhase: p.learningPhase || null,
+          finalSeekAttemptCount: Number(p.finalSeekAttemptCount || 0),
+          seekAgainRemainingCount: Number(p.seekAgainRemainingCount || 0),
+          missionComposition: p.missionComposition || null,
+          morningMockTestSummary: p.morningMockTestSummary || null,
+          specialistAuthority: 'SPECIALIST_MEMORY_ADVISORY_ONLY'
+        };
+        url.searchParams.set('specialist_report', JSON.stringify(report));
+      }
       return url.href;
     } catch {
       return null;
@@ -132,14 +292,14 @@
   }
 
   function returnToBase(taskState = 'PARTIAL', payload = {}) {
-    emit(
+    const event = emit(
       taskState === 'COMPLETED' ? 'TASK_COMPLETED' :
       taskState === 'BLOCKED' ? 'TASK_BLOCKED' :
       taskState === 'HELP_NEEDED' ? 'HELP_NEEDED' :
       'TASK_PARTIAL',
       { ...buildTaskSnapshot(), ...payload }
     );
-    const url = safeReturnUrl(taskState);
+    const url = safeReturnUrl(taskState, event);
     if (url) location.href = url;
     else toast('베이스캠프 연결 주소가 없어요. 현재 결과는 기기에 보존했어요.');
   }
@@ -149,15 +309,24 @@
     const event = emit('HANDOFF_TO_SNAP', {
       word: String(word || '').trim(),
       context: String(contextText || '').trim(),
-      sourceSheetId: S.activeSheetId || null
+      sourceSheetId: S.activeSheetId || null,
+      crewMemberId: S.crewMember?.explorerId || null,
+      crewMemberName: S.crewMember?.name || null,
+      crewRulesVersion: S.crewMember?.rulesVersion || null
     });
     if (!context.snap_target) return event;
     try {
       const url = new URL(context.snap_target, location.href);
       if (!['http:', 'https:'].includes(url.protocol)) return event;
       if (context.session_id) url.searchParams.set('session_id', context.session_id);
+      if (context.goal_id) url.searchParams.set('goal_id', context.goal_id);
       if (context.task_id) url.searchParams.set('task_id', context.task_id);
       if (context.lap_id) url.searchParams.set('lap_id', context.lap_id);
+      if (context.return_target) url.searchParams.set('return_target', context.return_target);
+      if (context.child_id) url.searchParams.set('child_id', context.child_id);
+      if (event.payload.crewMemberId) url.searchParams.set('crew_member_id', event.payload.crewMemberId);
+      if (event.payload.crewMemberName) url.searchParams.set('crew_member_name', event.payload.crewMemberName);
+      if (event.payload.crewRulesVersion) url.searchParams.set('crew_rules_version', event.payload.crewRulesVersion);
       url.searchParams.set('from_app', 'hide-seek');
       url.searchParams.set('word', event.payload.word);
       if (event.payload.context) url.searchParams.set('word_context', event.payload.context);
@@ -225,80 +394,11 @@
       chip.textContent = '베이스캠프로';
       chip.onclick = () => {
         let state = 'PARTIAL';
-        try {
-          const status = sheet()?.status;
-          if (status === 'COMPLETED' || status === 'TEST_READY') state = 'COMPLETED';
-        } catch {}
+        try { state = taskStateForStatus(sheet()?.status || null); } catch {}
         returnToBase(state);
       };
       document.body.appendChild(chip);
     }
-  }
-
-  async function applyWaitingUpdate(registration) {
-    if (applyingUpdate || !registration?.waiting) return;
-    if (!isSafeUpdatePoint()) return ensureUpdateChip(registration);
-    applyingUpdate = true;
-    S.hideUpdateReady = false;
-    persistBridgeState();
-    emit('UPDATE_APPLY', { safePoint: true });
-    let reloaded = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (reloaded) return;
-      reloaded = true;
-      location.reload();
-    }, { once: true });
-    registration.waiting.postMessage({ type: 'APPLY_UPDATE' });
-  }
-
-  function ensureUpdateChip(registration) {
-    let chip = document.getElementById('hideUpdateChip');
-    if (!registration?.waiting) {
-      chip?.remove();
-      return;
-    }
-    S.hideUpdateReady = true;
-    persistBridgeState();
-    if (!chip) {
-      chip = document.createElement('button');
-      chip.id = 'hideUpdateChip';
-      chip.className = 'hide-system-chip hide-system-chip-update';
-      chip.type = 'button';
-      chip.textContent = '업데이트 준비됨';
-      chip.onclick = () => {
-        if (isSafeUpdatePoint()) applyWaitingUpdate(registration);
-        else toast('학습이나 촬영이 끝난 안전한 시점에 적용할게요.');
-      };
-      document.body.appendChild(chip);
-    }
-  }
-
-  async function inspectUpdateRegistration(registration) {
-    if (!registration) return;
-    if (registration.waiting) {
-      if (isSafeUpdatePoint()) await applyWaitingUpdate(registration);
-      else ensureUpdateChip(registration);
-    }
-  }
-
-  async function watchSafeUpdates() {
-    if (!('serviceWorker' in navigator)) return;
-    try {
-      const registration = await navigator.serviceWorker.ready;
-      await inspectUpdateRegistration(registration);
-      registration.addEventListener('updatefound', () => {
-        const worker = registration.installing;
-        if (!worker) return;
-        worker.addEventListener('statechange', () => {
-          if (worker.state === 'installed' && navigator.serviceWorker.controller) {
-            setTimeout(() => inspectUpdateRegistration(registration), 0);
-          }
-        });
-      });
-      window.setInterval(() => {
-        if (S.hideUpdateReady && isSafeUpdatePoint()) inspectUpdateRegistration(registration);
-      }, 2500);
-    } catch {}
   }
 
   function normalizeBrandAttributes(root = document) {
@@ -338,6 +438,15 @@
     const incoming = readIncomingContext();
     if (Object.keys(incoming).length) {
       S.sharedLearningContext = { ...(S.sharedLearningContext || {}), ...incoming, receivedAt: iso() };
+      if (incoming.crew_member_id || incoming.crew_member_name) {
+        S.crewMember = {
+          ...(S.crewMember || {}),
+          explorerId: incoming.crew_member_id || S.crewMember?.explorerId || '',
+          name: incoming.crew_member_name || S.crewMember?.name || '탐험대원',
+          source: 'SNAP_POP_CANONICAL',
+          rulesVersion: incoming.crew_rules_version || S.crewMember?.rulesVersion || null
+        };
+      }
       persistBridgeState();
     }
     if (!S.sharedLearningContext) S.sharedLearningContext = {};
@@ -356,7 +465,6 @@
       }));
     }).observe(document.body, { childList: true, subtree: true });
     lastSnapshot = JSON.stringify(buildTaskSnapshot());
-    watchSafeUpdates();
 
     window.HideSeekBridge = Object.freeze({
       version: BRIDGE_VERSION,
@@ -365,6 +473,8 @@
       returnToBase,
       sendToSnap,
       requestImaginationCloud,
+      buildMemorySummary,
+      reviewDirective,
       isSafeUpdatePoint
     });
   }

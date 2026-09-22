@@ -21,7 +21,7 @@ Child-facing experience:
 Core fantasy:
 - words hide like treasure,
 - the learner explores and finds them,
-- the Guide accompanies the learner,
+- the exploration crew member accompanies the learner,
 - missed words hide again and are found again,
 - success means retrieval, not arrest/capture.
 
@@ -39,7 +39,7 @@ Active world language:
 - 찾기 / Seek
 - 발견 / Find
 - 다시 찾기 / Seek Again
-- 길잡이 / Guide
+- 탐험대원
 
 Possible hiding environments may include forest, beach, cave, ruins, underground spaces, secret boxes, trees, rocks, maps, paths and other original island locations.
 
@@ -103,7 +103,7 @@ If a historical rule is needed to explain current behavior, trace it to the acti
 
 ## 4.1 SHARED ASSIGNMENT / RAPID CAPTURE INHERITANCE — HARD LOCK
 
-When Hide & Seek renders or calls the shared GUIDE assignment/camera intake, it inherits:
+When Hide & Seek captures a printed vocabulary handout, it inherits the family shared Capture/OCR transport contract. Ready & Set is the current family learning-status/base-camp owner; Hide must not fork an independent OCR transport when the shared adapter is available.
 
 `SHUTTER → IMMEDIATE TEMP SAVE → NEXT SHOT`
 
@@ -112,7 +112,15 @@ When Hide & Seek renders or calls the shared GUIDE assignment/camera intake, it 
 
 A targeted retake SHALL preserve unaffected valid photos/results and reprocess only affected evidence where safe.
 
-Hide & Seek continues to own vocabulary-specific OCR/retrieval semantics; it does not absorb MAIN assignment authority.
+Hide & Seek continues to own vocabulary-specific interpretation/retrieval semantics; it does not absorb MAIN assignment authority.
+
+Family OCR transport contract:
+- endpoint: `/api/capture/analyze`
+- Ready default domain: `READY_ASSIGNMENT_FACT`
+- Hide domain: `HIDE_VOCABULARY`
+- Hide frontend SHALL NOT require a private Gemini API key or direct provider client.
+- assignment drafts MUST NOT be accepted as Hide vocabulary rows.
+- unsupported Hide-domain server response = explicit fail-closed, original capture preserved.
 
 ## 4.2 OCR REVIEW PROVENANCE — HARD LOCK
 
@@ -128,7 +136,8 @@ Preferred child-facing progression:
 `FIRST FIND → MEANING CLUE → CONNECTION TRAIL → HIDDEN WORDS → FINAL SEEK → SEEK AGAIN`
 
 Semantics:
-- FIRST FIND = initial word exposure/acquisition
+- MEMORIZATION = reviewed print words are first seen/understood before Hide retrieval.
+- FIRST FIND = first unassisted recall after memorization; the target is hidden.
 - MEANING CLUE = bidirectional meaning check
 - CONNECTION TRAIL = word↔meaning association
 - HIDDEN WORDS = weak/missed-word priority practice
@@ -158,12 +167,36 @@ Do not present police/case terminology as the learner's progress model.
 ## 7. CONNECTED SESSION CONTRACT
 
 When called from Ready & Set:
+- receive the current input actor role when available (`PARENT` / `CHILD`),
+- treat the printed vocabulary intake as an `탐험 미션`,
+- report learning status back to Ready & Set after specialist progress/result changes,
 - inherit `session_id / goal_id / task_id / lap_id / return_target`,
 - app switch does not pause/reset the shared timer,
 - app switch does not end the current Lap,
 - Hide & Seek owns vocabulary-task results only,
 - return `COMPLETED / PARTIAL / BLOCKED / HELP_NEEDED` as task-level state,
 - never close the full Ready & Set session.
+
+
+## 7.1 READY & SET LEARNING STATUS REPORT — HARD LOCK
+
+Ready & Set is the family learning-status / Learning Master / Planner owner.
+Hide & Seek SHALL report specialist evidence rather than independently deciding the family's next study allocation.
+
+Minimum report projection:
+- explorationMissionId / explorationMissionTitle
+- inputActorRole when known (`PARENT` / `CHILD`)
+- validWordCount
+- Trail Mastery
+- Memory Strength summary
+- needsUnassistedRecallCount
+- reasonCounts: recovery / confusion / orthographic / latency / hint / decay / stable
+- topReviewPriorities
+- taskState
+- session_id / goal_id / task_id / lap_id
+
+Authority boundary:
+`HIDE LEARNING EVIDENCE != READY ASSIGNMENT FACT != READY PLANNER AUTHORITY`
 
 ## 8. SNAP & POP HANDOFF
 
@@ -174,18 +207,18 @@ Example:
 
 Do not create a duplicate independent long-term vocabulary registry inside Snap & Pop.
 
-## 9. GUIDE
+## 9. EXPLORATION CREW MEMBER
 
-Use the shared Guide persona and connection concept.
+Exploration crew identity, personality, intervention grammar and reaction rules are owned and coordinated by Snap & Pop `SNAP-EXPLORATION-CREW-MASTER`. Hide & Seek consumes those rules and SHALL NOT define an independent crew personality system.
 
-Guide may give a minimal clue or short support, but must not reveal every answer immediately.
+The active exploration crew member may give a minimal clue or short support, but must not reveal every answer immediately.
 
 Clue use is a learning event, not a punishment.
 
-Preferred Guide voice:
-- 탐험 친구
-- 길잡이
+Preferred exploration crew behavior:
+- 탐험대원
 - 단서를 건네는 동료
+- Snap & Pop 탐험대 규칙을 따르는 동행
 
 Do not use police/detective-partner framing.
 
@@ -310,3 +343,69 @@ When the user explicitly authorizes central TAKY application, promote this proje
 Do not infer central TAKY write authorization from this project-master update alone.
 
 END — HIDE & SEEK UI MASTER LOGIC REV_04
+
+
+## LANGUAGE MEMORY & MEANING CORE
+
+Hide & Seek is not an English-only vocabulary product. Its reusable core is a language memory/meaning engine.
+
+Common learner flow:
+`REAL SOURCE → REVIEWED ITEM → LEARNER MEMORIZES → RETRIEVAL → MEANING CONNECTION → IMAGERY → MEMORY LADDER → LATER RETRIEVAL`
+
+The common engine must not force every language into an English root model.
+
+- **ENGLISH**: prefix / root / suffix / meaning bridge / context.
+- **KOREAN**: etymology when verified / affix / Hanja-origin when relevant / semantic relation / context.
+- **HANJA**: radical / component / sound / meaning / compound context.
+
+A meaning map is a **memory support**, not an extra vocabulary list.
+It should explain the current item and reuse only already encountered concepts where possible.
+Related words are not automatically assigned as new memorization targets.
+
+### Dynamic meaning map rule
+A map may contain:
+- verified components,
+- the path by which the meaning is formed,
+- imagery/scene cue,
+- memory bridge,
+- previously encountered related nodes.
+
+It must remain dynamic and learner-history-aware. It is not a fixed poster.
+
+### Truth gate
+Etymology, roots, Hanja decomposition and word-history claims must never be guessed.
+The runtime may show a structured meaning map only when `verified=true` / `verificationState=VERIFIED`.
+Otherwise the system falls back to word/meaning/context without fabricated decomposition.
+
+### Memory Ladder integration
+`MEANING_MAP` is an adaptive cue in the Memory Ladder.
+It sits before stronger answer-revealing cues when a verified map exists.
+The trace must record that a verified language-model cue was used, without converting assisted recall into independent recall.
+
+
+## REAL PRINT MISSION ROLE MODEL
+NEW / REVIEW are mission roles, not fixed global quotas.
+The current learner pattern may be 12 NEW + 24 REVIEW, but the engine must infer/use the actual mission composition.
+
+- NEW = first encounter in learner lexical history.
+- REVIEW = prior lexical/sense history exists.
+- NEW gets richer understanding support when verified.
+- REVIEW reuses prior Memory Ladder state.
+- A new mission never resets cumulative memory history.
+
+Memorization exposure and retrieval evidence are separate:
+`SEEN != RECALLED`
+`MEMORIZATION_EXPOSURE != FIRST_RECALL_CORRECT`.
+
+
+## MOCK TEST != SOURCE PRINT
+The photographed 36-word sheet used in this review is a parent-child morning mock test, not the original learning handout.
+
+Observed evidence:
+- 12 NEW + 24 REVIEW for the current routine.
+- NEW 12 are on the left only in that specific mock-test artifact.
+
+Do not generalize this layout to intake:
+`PRINT POSITION != MISSION ROLE`.
+
+The source print may change format. NEW/REVIEW belongs to mission composition and learner history, with human correction available at review.

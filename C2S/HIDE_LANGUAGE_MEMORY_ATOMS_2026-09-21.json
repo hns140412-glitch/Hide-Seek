@@ -1,0 +1,124 @@
+{
+  "schema": "TKY-C2S-001",
+  "scope": "Hide & Seek language-memory/root-etymology direction 2026-09-21",
+  "closure": {
+    "unmapped_material": 0,
+    "silent_loss": 0,
+    "false_convergence": 0,
+    "compile_closed": true
+  },
+  "atoms": [
+    {
+      "id": "HIDE-C2S-001",
+      "type": "DECISION",
+      "text": "Hide & Seek is a Language Memory & Meaning Engine, not an English-only vocabulary app.",
+      "destination": "PRODUCT_IDENTITY",
+      "status": "LOCKED"
+    },
+    {
+      "id": "HIDE-C2S-002",
+      "type": "DECISION",
+      "text": "Core value is structure/root/etymology -> concept -> visual image -> inference -> retrieval.",
+      "destination": "LEARNING_ENGINE",
+      "status": "LOCKED"
+    },
+    {
+      "id": "HIDE-C2S-003",
+      "type": "DECISION",
+      "text": "Visual support must be dynamic thinking-first exploration, not a fixed word-family poster.",
+      "destination": "UX",
+      "status": "LOCKED"
+    },
+    {
+      "id": "HIDE-C2S-004",
+      "type": "RULE",
+      "text": "Historical etymology must be verified; morphology/transparent compounds/mnemonics must be separately labeled.",
+      "destination": "TRUTH_GATE",
+      "status": "LOCKED"
+    },
+    {
+      "id": "HIDE-C2S-005",
+      "type": "CORRECTION",
+      "text": "Uploaded 36-word artifact is a parent-child morning mock test, not the source print.",
+      "supersedes": "SOURCE_PRINT_ASSUMPTION",
+      "status": "PROPAGATED"
+    },
+    {
+      "id": "HIDE-C2S-006",
+      "type": "CORRECTION",
+      "text": "Left-side placement of NEW 12 is artifact-specific and must not determine mission role.",
+      "supersedes": "LEFT_COLUMN_ROLE_RULE",
+      "status": "PROPAGATED"
+    },
+    {
+      "id": "HIDE-C2S-007",
+      "type": "DECISION",
+      "text": "Current observed mission composition is NEW 12 + REVIEW 24; it is not a universal hard-coded quota.",
+      "destination": "MISSION_MODEL",
+      "status": "LOCKED"
+    },
+    {
+      "id": "HIDE-C2S-008",
+      "type": "EVIDENCE",
+      "text": "Current real NEW 12: environment, rainforest, mountain, planet, desert, ocean, island, jungle, glacier, earthquake, climate, harvest.",
+      "destination": "TEST_FIXTURE",
+      "status": "LOCKED"
+    },
+    {
+      "id": "HIDE-C2S-009",
+      "type": "CORRECTION",
+      "text": "FIRST FIND is first unassisted retrieval after memorization, not exposure/acquisition.",
+      "supersedes": "FIRST_FIND_EXPOSURE",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "HIDE-C2S-010",
+      "type": "RULE",
+      "text": "MEMORIZATION_EXPOSURE != RECALL_SUCCESS.",
+      "destination": "MEMORY_LADDER",
+      "status": "LOCKED"
+    },
+    {
+      "id": "HIDE-C2S-011",
+      "type": "DECISION",
+      "text": "Morning mock-test outcomes are external assessment evidence with PARENT_CHILD provenance and do not equal Hide FINAL SEEK.",
+      "destination": "ASSESSMENT",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "HIDE-C2S-012",
+      "type": "DECISION",
+      "text": "Language-specific interpreters: English morphology/root; Korean etymology/affix/Hanja-origin/semantics; Hanja radical/component/sound/meaning.",
+      "destination": "LANGUAGE_CORE",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "HIDE-C2S-013",
+      "type": "DECISION",
+      "text": "Related-word links grow from prior/current encounters and must not become an extra memorization list.",
+      "destination": "DYNAMIC_MAP",
+      "status": "IMPLEMENTED"
+    },
+    {
+      "id": "HIDE-C2S-014",
+      "type": "FRONTIER",
+      "text": "Build verified root/etymology data contract and interactive visual grammar.",
+      "destination": "NEXT_IMPLEMENTATION",
+      "status": "OPEN"
+    },
+    {
+      "id": "HIDE-C2S-015",
+      "type": "FRONTIER",
+      "text": "Add first-seen-word prediction interaction and track prediction/clue/confidence separately from recall.",
+      "destination": "NEXT_IMPLEMENTATION",
+      "status": "OPEN"
+    },
+    {
+      "id": "HIDE-C2S-016",
+      "type": "RULE",
+      "text": "No user-as-QA, no deploy/Netlify/merge before frozen candidate and TAKY approval gate.",
+      "destination": "GOVERNANCE",
+      "status": "LOCKED"
+    }
+  ]
+}
