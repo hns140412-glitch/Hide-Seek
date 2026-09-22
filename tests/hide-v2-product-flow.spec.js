@@ -2382,6 +2382,80 @@ test('Hide V2 learning surface shows progress hierarchy without crowding the tas
   expect(ui.overflow).toBeLessThanOrEqual(1);
 });
 
+test('Hide V2 large memory history renders in windows while search and export still cover the full wordbook',async({page})=>{
+  await page.addInitScript(()=>{
+    const items=Array.from({length:240},(_,i)=>({
+      id:'w-'+i,
+      lexicalId:'word'+String(i).padStart(3,'0')+'::뜻'+i,
+      token:'word'+String(i).padStart(3,'0'),
+      meaning:'뜻'+i,
+      languageDomain:'ENGLISH',
+      missionRole:'REVIEW',
+      source:{},
+      evidence:[{
+        stage:'FINAL_SEEK',
+        evidenceMode:'RECALL',
+        axes:['FORM','RECALL'],
+        result:'CORRECT',
+        objectiveVerified:true,
+        objectiveRecall:true,
+        assisted:false,
+        spacedEvidence:true
+      }]
+    }));
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,
+      profile:{displayName:'대용량 기록'},
+      missions:[{
+        id:'m-large',
+        title:'대용량 미션',
+        status:'COMPLETED',
+        createdAt:'2026-09-01T00:00:00.000Z',
+        updatedAt:'2026-09-22T00:00:00.000Z',
+        items,
+        sourceCount:0,
+        provenance:{source:'TEST_FIXTURE'}
+      }],
+      activeMissionId:'m-large',
+      activeSession:null,
+      captureSession:null,
+      events:[],
+      updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'기억 사다리'}).click();
+  await page.getByText('기억 기록 자세히 보기',{exact:true}).click();
+
+  await expect(page.locator('.word-row')).toHaveCount(60);
+  await expect(page.getByRole('button',{name:/더 보기 \(60\/240\)/})).toBeVisible();
+  await expect(page.getByText('60/240개 단어 보기',{exact:true})).toBeVisible();
+
+  await page.getByRole('button',{name:/더 보기/}).click();
+  await expect(page.locator('.word-row')).toHaveCount(120);
+  await expect(page.getByText('120/240개 단어 보기',{exact:true})).toBeVisible();
+
+  await page.getByLabel('기억 단어 검색').fill('word239');
+  await expect(page.locator('.word-row')).toHaveCount(1);
+  await expect(page.getByText('word239',{exact:true})).toBeVisible();
+  await expect(page.getByText('1개 단어 보기',{exact:true})).toBeVisible();
+
+  const jsonPromise=page.waitForEvent('download');
+  await page.getByRole('button',{name:'JSON 내보내기'}).click();
+  const jsonDownload=await jsonPromise;
+  const fs=require('fs');
+  const json=JSON.parse(fs.readFileSync(await jsonDownload.path(),'utf8'));
+  expect(json.items).toHaveLength(240);
+  expect(json.items.some(x=>x.token==='word239')).toBe(true);
+
+  const metrics=await page.evaluate(()=>({
+    overflow:document.documentElement.scrollWidth-window.innerWidth,
+    rendered:document.querySelectorAll('.word-row').length
+  }));
+  expect(metrics.overflow).toBeLessThanOrEqual(1);
+  expect(metrics.rendered).toBe(1);
+});
+
 test('Hide V2 memory exports user-owned evidence without Ready scheduling and CSV formula execution risk',async({page})=>{
   await page.addInitScript(()=>{
     localStorage.setItem('hide_seek_v2_state',JSON.stringify({
