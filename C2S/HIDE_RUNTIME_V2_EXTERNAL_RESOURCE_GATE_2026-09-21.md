@@ -125,3 +125,42 @@ External deployment remains blocked by:
 `EXTERNAL_DEPLOY_SOURCE_REF_UNSPECIFIABLE`
 
 The available Netlify siteId-only action still cannot target an exact branch/SHA, so it cannot prove candidate-03 deployment.
+
+
+## Frozen candidate 04 — current pre-deploy candidate
+
+Candidate 03 is superseded by later Runtime V2 branch work.
+
+Current governed frozen candidate:
+- branch: `frozen/hide-v2-candidate-2026-09-22-04`
+- exact SHA: `8fd23e6e9f0db1e8b6d242cef7c71ebaabc5d2be`
+- Validate Hide Runtime V2 #403: SUCCESS
+- Validate Hide & Seek #861: SUCCESS
+- includes the previously closed core child journey plus:
+  - custom Mission Map sorting as presentation-only state;
+  - large-history Memory Ladder windowed rendering with full-history search/export integrity;
+  - broader V1 migration truth gating with explicit-objective-flags-only recall policy.
+
+Candidates 01, 02 and 03 are superseded and MUST NOT be deployed.
+
+### Current cross-app evidence boundary
+The historical Ready consumer branch `integration/hide-memory-review-roundtrip-v01` remains green at SHA `91e06f2e51fdfb4df265e600e940ae97df598768`, but it is not current Ready product evidence.
+Compared with current Ready rebuild branch `taky/ready-rebuild-v01-2026-09-21`, the branches are diverged (current rebuild is 368 commits ahead and 19 commits behind relative to the old integration branch comparison).
+Current Ready rebuild exact HEAD observed during this gate refresh: `39afc78da7a96e5d79462c90d99ef03df60d80ee`.
+Therefore:
+- historical roundtrip PASS remains historical contract evidence only;
+- `CURRENT_READY_HIDE_ROUNDTRIP_VERIFIED = false`;
+- do not label the Ready↔Hide integration gate closed until a current rebuild-compatible exact-source roundtrip is proven.
+
+Current Snap & Pop implementation branch observed:
+- branch: `taky/snap-pop-implementation-2026-09-20`
+- exact HEAD: `cbcd21c713d39869f7ecb5ec8bf84660d764f020`
+- exploration crew ownership/rules remain Snap-owned;
+- Hide neutral fallback/provider adapter is present;
+- live current Snap provider roundtrip remains OPEN.
+
+### External deploy blocker remains unchanged
+`EXTERNAL_DEPLOY_SOURCE_REF_UNSPECIFIABLE`
+
+The available siteId-only deployment path cannot prove deployment of exact frozen SHA `8fd23e6e9f0db1e8b6d242cef7c71ebaabc5d2be`.
+Do not consume the external deploy budget until the deploy action can bind to the exact frozen source.
