@@ -32,7 +32,7 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 | Korean EVIDENCE TRAIL | RUNTIME_VERIFIED | yes when verified contextEvidence exists | verified-context fixture | browser evidence-selection truth-boundary flow | representative Korean source evidence still open |
 | Hanja SOUND FIND | RUNTIME_VERIFIED | yes when verified soundEvidence exists | verified-sound fixture | dedicated V2 browser sound-recall flow | representative Hanja source/device pronunciation workflow still open |
 | HIDDEN WORDS reinforcement | RUNTIME_VERIFIED | conditional | fixture | Memory Engine-gated + reason-specific + staged-assistance browser flows | deeper multi-step ladder remains partial beyond one safe clue escalation |
-| FINAL SEEK | RUNTIME_VERIFIED | yes | fixture | unassisted recall + optional support + touch mechanical-letter-chunk reconstruction + keyboard fallback + Seek Again browser regressions | richer multilingual reconstruction remains open |
+| FINAL SEEK | RUNTIME_VERIFIED | yes | fixture | unassisted recall + English touch chunk reconstruction + verified Korean meaning-map reconstruction + verified Hanja sound reconstruction + Seek Again browser regressions | representative multilingual source breadth remains open |
 | SEEK AGAIN recovery | RUNTIME_VERIFIED | yes | fixture | wrong → one safe clue → assisted retry → required unassisted retry; one-clue limit + relearn fallback browser flows | spaced/long-term follow-up remains Ready-owned and not claimed here |
 | Memory evidence recording | RUNTIME_VERIFIED | yes | fixture | V2 Memory Ladder browser flow | long-term calibration still needs representative history |
 | Memory advisory to Ready | PARTIAL | no current hosted V2 target | candidate-contract shaped | Hide V2 producer + Ready V2 consumer contract CI | hosted current-candidate roundtrip unverified |
@@ -513,3 +513,16 @@ Head before matrix document: 63db5206a836050c3dfe5f2b9fd0238d6baeb464
 - Export controls stay subordinate inside “기억 기록 자세히 보기”, not the child’s primary journey.
 - Exact HEAD `f55acb54eaf88b3c3f60812aff6ac2b234b3020e` passed V2 #367 / full Hide #825.
 - Completion percentages remain PRODUCT ~80%, CODED ~96%, CI ~93%, Browser Runtime ~89%, Device 0%, Release 0%; this closes a secondary records-tool gap rather than a new core journey.
+
+
+### 2026-09-22 multilingual Final Seek reconstruction increment
+- FINAL SEEK assisted reconstruction is no longer English-only.
+- Current evidence-gated reconstruction paths:
+  - English → mechanical letter-chunk assembly; chunks are not morpheme/root claims.
+  - Korean → verified meaning-map structural cue only.
+  - Hanja → verified source-linked sound cue only.
+- Korean/Hanja reconstruction fails closed when verified support evidence is missing; no component, etymology or pronunciation is inferred.
+- All reconstruction success remains `ASSISTED_RECONSTRUCTION`, `objectiveRecall=false`, `recallScoreImpact=false` and must flow into SEEK AGAIN for unassisted proof.
+- Source-backed reconstruction records preserve the source reference.
+- Exact HEAD `a933c16efc013e076d9117aa0fa73f8594f895b7` passed V2 #368 / full Hide #826.
+- Conservative reporting rises one point for this newly runtime-proven multilingual recovery path: PRODUCT ~81%, CODED ~97%, CI ~94%, Browser Runtime ~90%, Device 0%, Release 0%.
