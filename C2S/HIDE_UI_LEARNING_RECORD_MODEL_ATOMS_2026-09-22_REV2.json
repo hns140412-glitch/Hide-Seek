@@ -1,0 +1,142 @@
+{
+  "schema": "TAKY_C2S_ATOMS_V1",
+  "product": "Hide & Seek",
+  "date": "2026-09-22",
+  "revision": "REV2",
+  "scope": "UI learning record crew badge model",
+  "atoms": [
+    {
+      "id": "HUI2-001",
+      "type": "DECISION",
+      "statement": "Primary bottom nav is HOME/홈, EXPLORE/탐험, CATCH/보물함 with small English above Korean primary.",
+      "owner": "Hide UI",
+      "status": "LOCKED"
+    },
+    {
+      "id": "HUI2-002",
+      "type": "DECISION",
+      "statement": "Home displays Ready-provided daily exploration goal and newly acquired items from reviewed homework/photo intake.",
+      "owner": "Hide UI/Ready boundary",
+      "status": "LOCKED"
+    },
+    {
+      "id": "HUI2-003",
+      "type": "DECISION",
+      "statement": "First TRACE is NEW-only; review TRACE is a distinct variant that may mix prior/re-hidden/current items.",
+      "owner": "Hide Learning",
+      "status": "LOCKED"
+    },
+    {
+      "id": "HUI2-004",
+      "type": "REQUIREMENT",
+      "statement": "TRACE is fast, think-first, game-like, low-input, non-punitive; full spelling entry is not default.",
+      "owner": "Hide Learning/UI",
+      "status": "LOCKED"
+    },
+    {
+      "id": "HUI2-005",
+      "type": "DECISION",
+      "statement": "LINK uses principle/verified relation, related-choice discrimination, then mixed connection test with tap pairing.",
+      "owner": "Hide Learning",
+      "status": "LOCKED"
+    },
+    {
+      "id": "HUI2-006",
+      "type": "TRUTH_GATE",
+      "statement": "Unverified etymology/root/Hanja/sound/decomposition is never invented.",
+      "owner": "Learning Engine/Hide",
+      "status": "LOCKED"
+    },
+    {
+      "id": "HUI2-007",
+      "type": "DECISION",
+      "statement": "PIECE is final missing critical-structure completion and is subject-adaptive, not English-only.",
+      "owner": "Hide Learning",
+      "status": "LOCKED"
+    },
+    {
+      "id": "HUI2-008",
+      "type": "DECISION",
+      "statement": "CATCH contains Items, Badge Book, Calendar, Item Detail and contextual memory-state views over shared learning history.",
+      "owner": "Hide UI",
+      "status": "LOCKED"
+    },
+    {
+      "id": "HUI2-009",
+      "type": "DECISION",
+      "statement": "Learning item history is cumulative across missions; later review may reuse prior lexical/sense history.",
+      "owner": "Hide Memory",
+      "status": "LOCKED"
+    },
+    {
+      "id": "HUI2-010",
+      "type": "DECISION",
+      "statement": "Memory Ladder is contextual from Home/CATCH/completion, not a bottom tab.",
+      "owner": "Hide UI",
+      "status": "LOCKED"
+    },
+    {
+      "id": "HUI2-011",
+      "type": "BOUNDARY",
+      "statement": "Global badge policy/catalog/thresholds remain shared/Snap-family-owned; Hide emits evidence and renders shared awards.",
+      "owner": "Cross-app",
+      "status": "LOCKED"
+    },
+    {
+      "id": "HUI2-012",
+      "type": "DECISION",
+      "statement": "Badge awards use a dedicated cross-app overlay/window at meaningful transitions; badge growth and history are visible in Badge Book.",
+      "owner": "Shared badge UI",
+      "status": "LOCKED"
+    },
+    {
+      "id": "HUI2-013",
+      "type": "DECISION",
+      "statement": "Calendar is a non-punitive history view, never a streak-pressure mechanic.",
+      "owner": "Shared history UI",
+      "status": "LOCKED"
+    },
+    {
+      "id": "HUI2-014",
+      "type": "REQUIREMENT",
+      "statement": "Badge humor may include mistakes/retries/confusion but must target situation/world/crew, never learner ability or identity.",
+      "owner": "Shared badge system",
+      "status": "LOCKED"
+    },
+    {
+      "id": "HUI2-015",
+      "type": "BOUNDARY",
+      "statement": "Snap owns crew identity/personality/intervention grammar; Hide consumes character_id and contextual appearance slots.",
+      "owner": "Snap/Hide",
+      "status": "LOCKED"
+    },
+    {
+      "id": "HUI2-016",
+      "type": "DECISION",
+      "statement": "Hide crew slots are pre-start, walkie-talkie, context reaction, LINK support, PIECE support, CATCH/badge, completion.",
+      "owner": "Hide UI",
+      "status": "LOCKED"
+    },
+    {
+      "id": "HUI2-017",
+      "type": "BOUNDARY",
+      "statement": "Ready owns goals/dates/planner/family completion sharing; Hide owns pre-start sharing, specialist learning, and completion report.",
+      "owner": "Ready/Hide",
+      "status": "LOCKED"
+    },
+    {
+      "id": "HUI2-018",
+      "type": "REQUIREMENT",
+      "statement": "Ultra-high-density illustration is required but interaction layer remains calm; emoji-first and generic wallpaper treatment are avoided.",
+      "owner": "Hide UI",
+      "status": "LOCKED"
+    },
+    {
+      "id": "HUI2-019",
+      "type": "CORRECTION",
+      "statement": "Runtime V2 linear stage lineage remains internal evidence and is not mandatory learner-facing navigation.",
+      "owner": "Hide UI/Runtime",
+      "status": "LOCKED"
+    }
+  ]
+}
