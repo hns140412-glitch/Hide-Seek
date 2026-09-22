@@ -1490,6 +1490,51 @@ body.v2-runtime{
   color:var(--v2-muted);
   font-weight:800;
 }
+.v2-runtime .mission-bulk-tools{
+  display:grid;
+  gap:8px;
+  padding-top:10px;
+  border-top:1px solid var(--v2-line);
+}
+.v2-runtime .mission-bulk-tools>span{
+  font-size:12px;
+  font-weight:900;
+  color:var(--v2-muted);
+}
+.v2-runtime .mission-bulk-tools .btn-row{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:6px;
+}
+.v2-runtime .mission-bulk-tools .btn{
+  min-width:0;
+  min-height:44px;
+  padding:8px 6px;
+  font-size:12px;
+}
+.v2-runtime .mission-select{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  min-height:44px;
+  margin:0 0 8px;
+  padding:6px 10px;
+  border:1px solid var(--v2-line);
+  border-radius:999px;
+  background:rgba(255,255,255,.72);
+  font-size:12px;
+  font-weight:900;
+}
+.v2-runtime .mission-select input{
+  width:20px;
+  height:20px;
+  margin:0;
+}
+@media(max-width:390px){
+  .v2-runtime .mission-bulk-tools .btn-row{
+    grid-template-columns:1fr;
+  }
+}
 @media(max-width:390px){
   .v2-runtime .mission-filter-row{
     grid-template-columns:repeat(2,minmax(0,1fr));
