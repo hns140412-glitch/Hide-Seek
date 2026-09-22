@@ -563,3 +563,10 @@ Important current frontier:
 - Single-item direct MEANING wrong recall now uses one masked safe context retry when available, otherwise full meaning relearn.
 - Assisted retry and meaning relearn are non-recall evidence.
 - Current locked reporting: PRODUCT ~78%, CODED ~94%, CI ~91%, Browser Runtime ~87%, Device 0%, Release 0%.
+
+
+## 2026-09-22 Meaning mismatch comparison delta
+- Exact HEAD `289d3d490847d17f7d311fe9f9f6d7a23f9a1402` passed V2 #341 / full Hide #799.
+- Bidirectional MEANING MISMATCH now pauses for one learner-selected vs correct connection comparison before DOMAIN_EXTENSION.
+- The comparison is assisted/non-recall; keep the original MISMATCH as the confusion evidence for later HIDDEN WORDS reinforcement.
+- Current locked reporting: PRODUCT ~79%, CODED ~95%, CI ~92%, Browser Runtime ~88%, Device 0%, Release 0%.
