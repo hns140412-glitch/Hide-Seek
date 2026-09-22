@@ -418,3 +418,10 @@ FALSE_CONVERGENCE = 0: live deploy/device/real-provider claims remain OPEN.
 - Reconstruction remains assisted/non-recall and SEEK AGAIN remains the required unassisted proof.
 - Exact HEAD `a933c16efc013e076d9117aa0fa73f8594f895b7` passed V2 #368 / full Hide #826.
 - Locked reporting: PRODUCT ~81%, CODED ~97%, CI ~94%, Browser Runtime ~90%, Device 0%, Release 0%.
+
+
+## 29. 2026-09-22 atomic bulk mission management
+- Mission Map supports multi-select bulk archive/delete with clear-selection controls.
+- Active-session mission inclusion blocks the whole bulk mutation atomically; no partial mutation is permitted.
+- Exact HEAD `4292b6ed02d6b5d1aa253c2617a66aee4af3ccb7` passed V2 #383 / full Hide #841.
+- Completion percentages are unchanged because this is a secondary management closure, not a new core learning path.
