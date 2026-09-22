@@ -377,3 +377,11 @@ FALSE_CONVERGENCE = 0: live deploy/device/real-provider claims remain OPEN.
 - Assisted meaning retry and relearn exposure remain non-recall and cannot inflate Memory Strength.
 - Exact HEAD `dbe3fcf7a41a8b2a0a7e831af63ee41139e18a28` passed V2 #334 / full Hide #792.
 - Locked reporting: PRODUCT ~78%, CODED ~94%, CI ~91%, Browser Runtime ~87%, Device 0%, Release 0%.
+
+
+## 28. 2026-09-22 MEANING mismatch immediate comparison
+- Wrong bidirectional MEANING recognition now enters an explicit learner-selected vs correct connection comparison before DOMAIN_EXTENSION.
+- Comparison evidence is assisted/non-recall exposure only; the original objective MISMATCH remains the confusion signal.
+- Session-scoped mismatch payload preserves the correction step across resume.
+- Exact HEAD `289d3d490847d17f7d311fe9f9f6d7a23f9a1402` passed V2 #341 / full Hide #799.
+- Locked reporting: PRODUCT ~79%, CODED ~95%, CI ~92%, Browser Runtime ~88%, Device 0%, Release 0%.
