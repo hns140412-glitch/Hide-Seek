@@ -41,7 +41,7 @@ Status: REWRITE IN PROGRESS / DRAFT / DO NOT MERGE / DO NOT DEPLOY
 | Child-facing core UI/UX | RUNTIME_VERIFIED | yes | browser/mobile viewport | home/mission/learning/completion/Memory Ladder/OCR review-recovery + 390×844 + exploration art-direction checks | physical-device visual QA/final device polish pending |
 | Exploration crew presentation layer | RUNTIME_VERIFIED | yes | adapter/fallback browser fixture | answer-safe crew strip + home/completion/Memory Ladder presentation tests | live current Snap crew-provider roundtrip and final art direction remain open |
 | Mission management surface | RUNTIME_VERIFIED | yes | N/A | selection/rename/archive/delete browser flow | richer history/filtering/bulk actions pending |
-| Records / wordbook surfaces | RUNTIME_VERIFIED | yes | fixture/history-shaped | cumulative wordbook + weakness dashboard + evidence detail browser flow | export pending |
+| Records / wordbook surfaces | RUNTIME_VERIFIED | yes | fixture/history-shaped | cumulative wordbook + weakness dashboard + evidence detail + safe CSV/JSON export browser flow | representative long-history export size still open |
 | PWA install/offline/update | RUNTIME_VERIFIED | yes | browser | isolated V2 manifest/SW/offline shell/update safe-point tests | physical install/device lifecycle still unverified |
 | Mobile 390×844 browser layout | RUNTIME_VERIFIED | yes | browser viewport | overflow/touch target/focus reduced-height tests | physical keyboard/touch/device browser still unverified |
 | Physical device behavior | NOT_STARTED | no | no | DEVICE_VERIFIED=0 | camera permission/touch/OS keyboard/install all pending |
@@ -503,3 +503,13 @@ Head before matrix document: 63db5206a836050c3dfe5f2b9fd0238d6baeb464
 - Exact HEAD `00a5d8c8ddd50444d0762aed34be880a3b2fff12` passed V2 #358 / full Hide #816.
 - No percentage increase is claimed because this is UX completion inside the already-counted FINAL SEEK reconstruction capability.
 
+
+
+### 2026-09-22 safe memory export increment
+- Memory Ladder detail can export the current Hide-owned Wordbook snapshot as JSON or CSV.
+- Export authority is explicitly `SPECIALIST_MEMORY_EVIDENCE_NOT_READY_SCHEDULE`; no Ready review date or schedule is projected into the file.
+- JSON preserves memory strength, advisory priority, weakness signature and primary reason without inventing scheduling fields.
+- CSV uses formula-injection hardening for cells beginning with `=`, `+`, `-`, or `@` so OCR/user text cannot become an executable spreadsheet formula when opened.
+- Export controls stay subordinate inside “기억 기록 자세히 보기”, not the child’s primary journey.
+- Exact HEAD `f55acb54eaf88b3c3f60812aff6ac2b234b3020e` passed V2 #367 / full Hide #825.
+- Completion percentages remain PRODUCT ~80%, CODED ~96%, CI ~93%, Browser Runtime ~89%, Device 0%, Release 0%; this closes a secondary records-tool gap rather than a new core journey.
