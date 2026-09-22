@@ -1321,8 +1321,23 @@ test('Hide V2 mission map filters open completed and archived journeys without c
   await page.getByRole('button',{name:'탐험 미션'}).click();
   await expect(page.getByRole('heading',{name:'오늘의 탐험 지도'})).toBeVisible();
   await expect(page.getByText('4개 탐험 보기',{exact:true})).toBeVisible();
+  await expect(page.getByLabel('탐험 미션 검색')).toBeVisible();
+
+  await page.getByLabel('탐험 미션 검색').fill('archive');
+  await expect(page.getByText('1개 탐험 보기',{exact:true})).toBeVisible();
+  await expect(page.locator('[data-mission-id="m-archive"]')).toBeVisible();
+  await expect(page.locator('[data-mission-id="m-ready"]')).toBeHidden();
+
+  await page.getByLabel('탐험 미션 검색').fill('일부');
+  await expect(page.getByText('1개 탐험 보기',{exact:true})).toBeVisible();
+  await expect(page.locator('[data-mission-id="m-partial"]')).toBeVisible();
 
   await page.getByRole('button',{name:'이어가기',exact:true}).click();
+  await expect(page.getByText('1개 탐험 보기',{exact:true})).toBeVisible();
+  await expect(page.locator('[data-mission-id="m-partial"]')).toBeVisible();
+
+  await page.getByLabel('탐험 미션 검색').fill('');
+  await expect(page.getByText('2개 탐험 보기',{exact:true})).toBeVisible();
   await expect(page.getByText('2개 탐험 보기',{exact:true})).toBeVisible();
   await expect(page.locator('[data-mission-id="m-ready"]')).toBeVisible();
   await expect(page.locator('[data-mission-id="m-partial"]')).toBeVisible();
