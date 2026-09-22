@@ -1360,6 +1360,60 @@ test('Hide V2 mission map filters open completed and archived journeys without c
   });
 });
 
+test('Hide V2 bulk mission archive updates selected missions atomically',async({page})=>{
+  await page.addInitScript(()=>{
+    const item=(id,token)=>({id,lexicalId:token+'::뜻',token,meaning:'뜻',languageDomain:'ENGLISH',missionRole:'REVIEW',evidence:[],source:{}});
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'미션 일괄보관'},missions:[
+        {id:'m-one',title:'첫 미션',status:'READY',createdAt:'2026-09-19T00:00:00.000Z',updatedAt:'2026-09-22T01:00:00.000Z',items:[item('w1','one')],sourceCount:0,provenance:{}},
+        {id:'m-two',title:'둘 미션',status:'COMPLETED',createdAt:'2026-09-19T00:00:00.000Z',updatedAt:'2026-09-22T00:00:00.000Z',items:[item('w2','two')],sourceCount:0,provenance:{}},
+        {id:'m-three',title:'셋 미션',status:'READY',createdAt:'2026-09-18T00:00:00.000Z',updatedAt:'2026-09-21T00:00:00.000Z',items:[item('w3','three')],sourceCount:0,provenance:{}}
+      ],activeMissionId:'m-three',activeSession:null,captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'탐험 미션'}).click();
+
+  await page.getByLabel('첫 미션 선택').check();
+  await page.getByLabel('둘 미션 선택').check();
+  await expect(page.getByText('2개 선택',{exact:true})).toBeVisible();
+  page.once('dialog',async d=>{expect(d.type()).toBe('confirm');await d.accept()});
+  await page.getByRole('button',{name:'선택 보관'}).click();
+
+  await expect(page.getByText('0개 선택',{exact:true})).toBeVisible();
+  const state=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')));
+  const statuses=Object.fromEntries(state.missions.map(x=>[x.id,x.status]));
+  expect(statuses['m-one']).toBe('ARCHIVED');
+  expect(statuses['m-two']).toBe('ARCHIVED');
+  expect(statuses['m-three']).toBe('READY');
+  expect(state.activeMissionId).toBe('m-three');
+});
+
+test('Hide V2 bulk mission delete blocks atomically when active-session mission is selected',async({page})=>{
+  await page.addInitScript(()=>{
+    const item=(id,token)=>({id,lexicalId:token+'::뜻',token,meaning:'뜻',languageDomain:'ENGLISH',missionRole:'REVIEW',evidence:[],source:{}});
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'미션 일괄삭제'},missions:[
+        {id:'m-active',title:'진행 미션',status:'READY',createdAt:'2026-09-19T00:00:00.000Z',updatedAt:'2026-09-22T01:00:00.000Z',items:[item('wa','active')],sourceCount:0,provenance:{}},
+        {id:'m-other',title:'다른 미션',status:'COMPLETED',createdAt:'2026-09-19T00:00:00.000Z',updatedAt:'2026-09-22T00:00:00.000Z',items:[item('wo','other')],sourceCount:0,provenance:{}}
+      ],activeMissionId:'m-active',
+      activeSession:{id:'s-active',missionId:'m-active',index:0,queue:['wa'],stage:'FIRST_FIND',startedAt:new Date().toISOString(),completedAt:null,attempts:{}},
+      captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'탐험 미션'}).click();
+
+  await page.getByLabel('진행 미션 선택').check();
+  await page.getByLabel('다른 미션 선택').check();
+  page.once('dialog',async d=>{expect(d.type()).toBe('confirm');await d.accept()});
+  await page.getByRole('button',{name:'선택 삭제'}).click();
+
+  const state=await page.evaluate(()=>JSON.parse(localStorage.getItem('hide_seek_v2_state')));
+  expect(state.missions.map(x=>x.id).sort()).toEqual(['m-active','m-other']);
+  expect(state.activeSession.missionId).toBe('m-active');
+});
+
 test('Hide V2 OCR review allows row correction and exclusion before commit',async({page})=>{
   await page.route('**/api/capture/analyze',async route=>{
     await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
