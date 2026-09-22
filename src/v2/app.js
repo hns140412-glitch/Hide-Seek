@@ -663,46 +663,57 @@
         render();
         return;
       }
-      view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}${journeyHtml(session.stage)}${crewHtml(w,session.stage)}<div class="learn-head"><span class="phase-chip">${childStageLabel('FINAL_SEEK_RECONSTRUCT')}</span><b>${idx}/${total}</b></div><section class="card word-card final-reconstruct-card"><p class="quest-overline">RECONSTRUCT</p><h2>글자 조각으로 다시 조립하기</h2><p>아래 조각은 어근이 아니라 단순한 글자 묶음이에요. 순서를 생각해서 단어를 다시 만들어봐요.</p><div class="memory-trace"><b>${esc(plan.label)}</b><span>${esc(plan.cue)}</span></div><div class="reconstruct-builder" aria-label="글자 조각 조립"><div class="reconstruct-output"><small>내 조립</small><b id="v2ReconstructPreview">—</b></div><div class="reconstruct-tiles">${plan.tiles.map((chunk,i)=>`<button class="btn secondary reconstruct-tile" type="button" data-chunk="${esc(chunk)}" data-tile-index="${i}">${esc(chunk)}</button>`).join('')}</div><div class="btn-row reconstruct-tools"><button id="v2ReconstructUndo" class="btn ghost" type="button">한 조각 지우기</button><button id="v2ReconstructReset" class="btn ghost" type="button">다시 시작</button></div></div><small>조각은 글자 순서를 떠올리게 돕는 장치예요. 성공해도 바로 무힌트 회상으로 세지 않고, 다음 다시 찾기에서 확인해요.</small><input id="v2FinalReconstruct" class="input" aria-label="재구성 답 입력" autocomplete="off" spellcheck="false"><button id="v2FinalReconstructCheck" class="btn primary full" type="button">조립 기억 확인</button></section></section>`;
+      const chunkMode=plan.type==='CHUNK_ASSEMBLY'&&Array.isArray(plan.tiles)&&plan.tiles.length>0;
+      const title=chunkMode?'글자 조각으로 다시 조립하기':'단서로 다시 재구성하기';
+      const prompt=chunkMode
+        ?'아래 조각은 어근이 아니라 단순한 글자 묶음이에요. 순서를 생각해서 단어를 다시 만들어봐요.'
+        :plan.type==='VERIFIED_SOUND_RECONSTRUCTION'
+          ?'검증된 음을 단서로 한자를 다시 떠올려보세요.'
+          :'검증된 뜻의 구조를 단서로 단어를 다시 떠올려보세요.';
+      const builder=chunkMode
+        ?`<div class="reconstruct-builder" aria-label="글자 조각 조립"><div class="reconstruct-output"><small>내 조립</small><b id="v2ReconstructPreview">—</b></div><div class="reconstruct-tiles">${plan.tiles.map((chunk,i)=>`<button class="btn secondary reconstruct-tile" type="button" data-chunk="${esc(chunk)}" data-tile-index="${i}">${esc(chunk)}</button>`).join('')}</div><div class="btn-row reconstruct-tools"><button id="v2ReconstructUndo" class="btn ghost" type="button">한 조각 지우기</button><button id="v2ReconstructReset" class="btn ghost" type="button">다시 시작</button></div></div>`
+        :'';
+      const truth=plan.sourceRef?`<small class="truth-source">출처 확인됨 · ${esc(plan.sourceRef)}</small>`:'';
+      view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}${journeyHtml(session.stage)}${crewHtml(w,session.stage)}<div class="learn-head"><span class="phase-chip">${childStageLabel('FINAL_SEEK_RECONSTRUCT')}</span><b>${idx}/${total}</b></div><section class="card word-card final-reconstruct-card"><p class="quest-overline">RECONSTRUCT</p><h2>${esc(title)}</h2><p>${esc(prompt)}</p><div class="memory-trace"><b>${esc(plan.label)}</b><span>${esc(plan.cue)}</span></div>${truth}${builder}<small>${chunkMode?'조각은 글자 순서를 떠올리게 돕는 장치예요.':'이 단서는 검증된 자료를 바탕으로 한 재구성 도움이에요.'} 성공해도 바로 무힌트 회상으로 세지 않고, 다음 다시 찾기에서 확인해요.</small><input id="v2FinalReconstruct" class="input" aria-label="재구성 답 입력" autocomplete="off" spellcheck="false"><button id="v2FinalReconstructCheck" class="btn primary full" type="button">${chunkMode?'조립 기억 확인':'재구성 기억 확인'}</button></section></section>`;
       const reconstructInput=$('#v2FinalReconstruct');
-      const preview=$('#v2ReconstructPreview');
-      const selected=[];
-      const syncReconstruct=()=>{
-        const text=selected.join('');
-        reconstructInput.value=text;
-        preview.textContent=text||'—';
-      };
-      view().querySelectorAll('.reconstruct-tile').forEach(btn=>{btn.onclick=()=>{
-        selected.push(btn.dataset.chunk||'');
-        btn.disabled=true;
-        syncReconstruct()
-      }});
-      $('#v2ReconstructUndo').onclick=()=>{
-        if(!selected.length)return;
-        selected.pop();
-        view().querySelectorAll('.reconstruct-tile').forEach(x=>x.disabled=false);
-        const used=new Map();
-        selected.forEach(chunk=>used.set(chunk,(used.get(chunk)||0)+1));
-        view().querySelectorAll('.reconstruct-tile').forEach(x=>{
-          const chunk=x.dataset.chunk||'',n=used.get(chunk)||0;
-          if(n>0){x.disabled=true;used.set(chunk,n-1)}
-        });
-        syncReconstruct()
-      };
-      $('#v2ReconstructReset').onclick=()=>{
-        selected.length=0;
-        view().querySelectorAll('.reconstruct-tile').forEach(x=>x.disabled=false);
-        syncReconstruct()
-      };
-      reconstructInput.oninput=()=>{
-        preview.textContent=reconstructInput.value.trim()||'—';
-      };
+      if(chunkMode){
+        const preview=$('#v2ReconstructPreview');
+        const selected=[];
+        const syncReconstruct=()=>{
+          const text=selected.join('');
+          reconstructInput.value=text;
+          preview.textContent=text||'—';
+        };
+        view().querySelectorAll('.reconstruct-tile').forEach(btn=>{btn.onclick=()=>{
+          selected.push(btn.dataset.chunk||'');
+          btn.disabled=true;
+          syncReconstruct()
+        }});
+        $('#v2ReconstructUndo').onclick=()=>{
+          if(!selected.length)return;
+          selected.pop();
+          view().querySelectorAll('.reconstruct-tile').forEach(x=>x.disabled=false);
+          const used=new Map();
+          selected.forEach(chunk=>used.set(chunk,(used.get(chunk)||0)+1));
+          view().querySelectorAll('.reconstruct-tile').forEach(x=>{
+            const chunk=x.dataset.chunk||'',n=used.get(chunk)||0;
+            if(n>0){x.disabled=true;used.set(chunk,n-1)}
+          });
+          syncReconstruct()
+        };
+        $('#v2ReconstructReset').onclick=()=>{
+          selected.length=0;
+          view().querySelectorAll('.reconstruct-tile').forEach(x=>x.disabled=false);
+          syncReconstruct()
+        };
+        reconstructInput.oninput=()=>{preview.textContent=reconstructInput.value.trim()||'—'};
+      }
       $('#v2FinalReconstructCheck').onclick=()=>{
-        const answer=$('#v2FinalReconstruct').value.trim();
-        if(!answer){setFlash('글자 골격을 보고 떠올린 단어를 입력해 주세요.');return}
+        const answer=reconstructInput.value.trim();
+        if(!answer){setFlash(chunkMode?'글자 조각을 보고 떠올린 단어를 입력해 주세요.':'단서를 보고 떠올린 답을 입력해 주세요.');return}
         const r=HideV2Learning.submitFinalReconstruction(session,m,answer);
         HideV2Session.update(r.session);
-        setFlash(r.ok?'조립했어요. 이제 힌트 없이 다시 찾아봐요.':'이번엔 단어를 잠깐 다시 보고 다시 찾아볼게요.');
+        setFlash(r.ok?'재구성했어요. 이제 힌트 없이 다시 찾아봐요.':'이번엔 단어를 잠깐 다시 보고 다시 찾아볼게요.');
         render()
       };
       return;
