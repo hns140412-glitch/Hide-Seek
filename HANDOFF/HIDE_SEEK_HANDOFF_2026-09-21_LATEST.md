@@ -602,3 +602,10 @@ Important current frontier:
 - Missing/unverified multilingual support fails closed to relearn.
 - Reconstruction success remains assisted/non-recall and must be followed by unassisted SEEK AGAIN.
 - Current locked reporting: PRODUCT ~81%, CODED ~97%, CI ~94%, Browser Runtime ~90%, Device 0%, Release 0%.
+
+
+## 2026-09-22 bulk mission management delta
+- Exact HEAD `4292b6ed02d6b5d1aa253c2617a66aee4af3ccb7` passed V2 #383 / full Hide #841.
+- Mission Map now has multi-select bulk archive/delete and clear selection.
+- If the selected set includes the mission owning the active session, the entire bulk mutation is blocked with no partial changes.
+- Keep this as a subordinate management tool; do not let bulk controls dominate the child journey.
