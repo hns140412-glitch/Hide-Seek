@@ -8,6 +8,10 @@
     FIRST_FIND_ASSIST:'단서로 다시 찾기',
     FIRST_FIND_RELEARN:'다시 만나기',
     MEANING:'뜻 단서',
+    MEANING_ASSIST:'뜻 단서 도움',
+    MEANING_RELEARN:'뜻 다시 보기',
+    MEANING_ASSIST:'뜻 단서로 다시 찾기',
+    MEANING_RELEARN:'뜻 다시 만나기',
     DOMAIN_EXTENSION:'연결 길',
     SOUND_FIND_RELEARN:'소리 다시 만나기',
     HIDDEN_WORDS:'숨은 단어 보강',
@@ -68,7 +72,7 @@
     const steps=[
       ['MEMORIZE','01 만나기'],['FIRST_FIND','02 첫 찾기'],['MEANING','03 뜻 단서'],['DOMAIN_EXTENSION','04 연결 길'],['FINAL_SEEK','05 마지막 찾기'],['SEEK_AGAIN','06 다시 찾기']
     ];
-    const normalized=stage==='FINAL_SEEK_RECONSTRUCT'?'FINAL_SEEK':stage==='SEEK_AGAIN_RELEARN'?'SEEK_AGAIN':(stage==='FIRST_FIND_ASSIST'||stage==='FIRST_FIND_RELEARN')?'FIRST_FIND':(stage==='SOUND_FIND_RELEARN'||stage==='HIDDEN_WORDS'||stage==='HIDDEN_WORDS_ASSIST'||stage==='HIDDEN_WORDS_RELEARN')?'DOMAIN_EXTENSION':stage;
+    const normalized=stage==='FINAL_SEEK_RECONSTRUCT'?'FINAL_SEEK':stage==='SEEK_AGAIN_RELEARN'?'SEEK_AGAIN':(stage==='FIRST_FIND_ASSIST'||stage==='FIRST_FIND_RELEARN')?'FIRST_FIND':(stage==='MEANING_ASSIST'||stage==='MEANING_RELEARN')?'MEANING':(stage==='SOUND_FIND_RELEARN'||stage==='HIDDEN_WORDS'||stage==='HIDDEN_WORDS_ASSIST'||stage==='HIDDEN_WORDS_RELEARN')?'DOMAIN_EXTENSION':stage;
     const activeIndex=Math.max(0,steps.findIndex(([key])=>key===normalized));
     return `<ol class="journey-path" aria-label="단어 탐험 길">${steps.map(([key,label],i)=>`<li class="${i<activeIndex?'is-done':''} ${i===activeIndex?'is-current':''}"><span aria-hidden="true">${i<activeIndex?'✓':i+1}</span><small>${esc(label)}</small></li>`).join('')}</ol>`;
   };
@@ -443,8 +447,40 @@
         }});
       }else{
         view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}${journeyHtml(session.stage)}${crewHtml(w,session.stage)}<div class="learn-head"><span class="phase-chip">${childStageLabel('MEANING')}</span><b>${idx}/${total}</b></div><section class="card word-card"><div class="bigword">${esc(w.token)}</div><input id="v2Meaning" class="input" aria-label="뜻 회상 입력" autocomplete="off"><button id="v2MeaningCheck" class="btn primary full">뜻 확인</button></section></section>`;
-        $('#v2MeaningCheck').onclick=()=>{const r=HideV2Learning.checkMeaning(session,m,$('#v2Meaning').value);HideV2Session.update(r.session);setFlash(r.ok?'뜻도 기억했어요':'뜻 회상은 틀렸어요.');render()};
+        $('#v2MeaningCheck').onclick=()=>{
+          const answer=$('#v2Meaning').value.trim();
+          if(!answer){setFlash('기억에서 떠올린 뜻을 입력해 주세요.');return}
+          const r=HideV2Learning.checkMeaning(session,m,answer);
+          HideV2Session.update(r.session);
+          setFlash(r.ok?'뜻도 기억했어요':r.support?'문맥 단서로 한 번 더 찾아볼게요.':'뜻을 잠깐 다시 보고 이어갈게요.');
+          render()
+        };
       }
+      return;
+    }
+
+    if(session.stage==='MEANING_ASSIST'){
+      const support=HideV2Learning.meaningSupportPlan(w);
+      if(!support){
+        HideV2Session.update({...session,stage:'MEANING_RELEARN'});
+        render();
+        return;
+      }
+      view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}${journeyHtml(session.stage)}${crewHtml(w,session.stage)}<div class="learn-head"><span class="phase-chip">${childStageLabel('MEANING_ASSIST')}</span><b>${idx}/${total}</b></div><section class="card word-card meaning-assist"><p class="quest-overline">ONE SMALL CLUE</p><h2>${esc(support.label)}</h2><p>문맥을 보고 뜻을 다시 떠올려보세요.</p><div class="memory-trace"><b>${esc(support.label)}</b><span>${esc(support.cue)}</span></div>${support.sourceRef?`<small class="truth-source">출처 확인됨 · ${esc(support.sourceRef)}</small>`:''}<small>이 단서를 본 뒤 맞혀도 무힌트 뜻 회상 성공으로 세지 않아요.</small><input id="v2MeaningAssistAnswer" class="input" aria-label="뜻 도움 답 입력" autocomplete="off"><button id="v2MeaningAssistCheck" class="btn primary full" type="button">단서로 뜻 다시 확인</button></section></section>`;
+      $('#v2MeaningAssistCheck').onclick=()=>{
+        const answer=$('#v2MeaningAssistAnswer').value.trim();
+        if(!answer){setFlash('단서를 보고 떠올린 뜻을 입력해 주세요.');return}
+        const r=HideV2Learning.submitMeaningAssist(session,m,answer);
+        HideV2Session.update(r.session);
+        setFlash(r.ok?'단서로 뜻을 다시 찾았어요.':'이번엔 뜻을 잠깐 다시 보고 이어갈게요.');
+        render()
+      };
+      return;
+    }
+
+    if(session.stage==='MEANING_RELEARN'){
+      view().innerHTML=`<section class="learning-shell">${progressHtml(idx,total)}${journeyHtml(session.stage)}${crewHtml(w,session.stage)}<div class="learn-head"><span class="phase-chip">${childStageLabel('MEANING_RELEARN')}</span><b>${idx}/${total}</b></div><section class="card word-card meaning-relearn"><p>방금 놓친 뜻을 잠깐 다시 만나봐요.</p><div class="bigword">${esc(w.token)}</div><h2 style="text-align:center">${esc(w.meaning)}</h2><small>지금 보는 건 다시 익히는 시간이에요. 뜻 회상 성공으로 세지 않아요.</small><button id="v2MeaningRehide" class="btn primary full" type="button">다시 숨기고 연결 길로</button></section></section>`;
+      $('#v2MeaningRehide').onclick=()=>{HideV2Session.update(HideV2Learning.submitMeaningRelearn(session,m).session);render()};
       return;
     }
 
