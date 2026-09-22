@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const STAGES=['MEMORIZE','FIRST_FIND','FIRST_FIND_ASSIST','FIRST_FIND_RELEARN','MEANING','MEANING_ASSIST','MEANING_RELEARN','DOMAIN_EXTENSION','SOUND_FIND_RELEARN','HIDDEN_WORDS','HIDDEN_WORDS_ASSIST','FINAL_SEEK','FINAL_SEEK_RECONSTRUCT','SEEK_AGAIN_RELEARN','SEEK_AGAIN','COMPLETE'];
+  const STAGES=['MEMORIZE','FIRST_FIND','FIRST_FIND_ASSIST','FIRST_FIND_RELEARN','MEANING','MEANING_CHOICE_REVIEW','MEANING_ASSIST','MEANING_RELEARN','DOMAIN_EXTENSION','SOUND_FIND_RELEARN','HIDDEN_WORDS','HIDDEN_WORDS_ASSIST','FINAL_SEEK','FINAL_SEEK_RECONSTRUCT','SEEK_AGAIN_RELEARN','SEEK_AGAIN','COMPLETE'];
   const clone=x=>JSON.parse(JSON.stringify(x));
   const current=(session,mission)=>mission.items.find(x=>x.id===session.queue?.[session.index])||null;
   const initialStageFor=w=>String(w?.missionRole||'NEW').toUpperCase()==='REVIEW'?'FIRST_FIND':'MEMORIZE';
@@ -42,6 +42,7 @@
     if(next.stage==='FIRST_FIND'){next.stage='MEANING';return next}
     if(next.stage==='FIRST_FIND_RELEARN'){next.stage='MEANING';return next}
     if(next.stage==='MEANING'){next.stage='DOMAIN_EXTENSION';return next}
+    if(next.stage==='MEANING_CHOICE_REVIEW'){next.stage='DOMAIN_EXTENSION';return next}
     if(next.stage==='MEANING_ASSIST'){next.stage='DOMAIN_EXTENSION';return next}
     if(next.stage==='MEANING_RELEARN'){next.stage='DOMAIN_EXTENSION';return next}
     if(next.stage==='DOMAIN_EXTENSION'){next.stage='FINAL_SEEK';return next}
@@ -237,7 +238,47 @@
       confusedWithMeaning:ok?null:selected?.meaning||null,
       attempt:attempt.count
     });
-    return {ok,challenge,selected,session:advance(attempt.session,mission)};
+    if(ok)return {ok,challenge,selected,session:advance(attempt.session,mission)};
+    const next=clone(attempt.session);
+    next.stage='MEANING_CHOICE_REVIEW';
+    next.meaningMismatch={
+      wordId:w.id,
+      direction:challenge.direction,
+      selectedId:selected?.id||null,
+      selectedToken:selected?.token||'',
+      selectedMeaning:selected?.meaning||'',
+      correctToken:w.token||'',
+      correctMeaning:w.meaning||''
+    };
+    return {ok,challenge,selected,session:next};
+  }
+
+  function submitMeaningChoiceReview(session,mission){
+    const w=current(session,mission);
+    const mismatch=session?.meaningMismatch;
+    if(!mismatch||mismatch.wordId!==w?.id){
+      const next=clone(session);
+      next.stage='DOMAIN_EXTENSION';
+      delete next.meaningMismatch;
+      return {unsupported:true,session:next};
+    }
+    HideV2Memory.record(mission.id,w.id,{
+      stage:'MEANING_CHOICE_REVIEW',
+      evidenceMode:'ERROR_COMPARISON_EXPOSURE',
+      axes:['MEANING','RECOGNITION'],
+      result:'SEEN',
+      objectiveVerified:false,
+      objectiveRecall:false,
+      recallScoreImpact:false,
+      assisted:true,
+      direction:mismatch.direction,
+      confusedWithToken:mismatch.selectedToken||null,
+      confusedWithMeaning:mismatch.selectedMeaning||null
+    });
+    const next=clone(session);
+    delete next.meaningMismatch;
+    next.stage='DOMAIN_EXTENSION';
+    return {session:next};
   }
 
   function meaningSupportPlan(word){
@@ -729,6 +770,6 @@
   }
 
   window.HideV2Learning=Object.freeze({
-    STAGES,create,current,advance,submitMemorize,checkFirstFind,firstFindSupportPlan,submitFirstFindAssist,markFirstFindUnsure,submitFirstFindRelearn,meaningChallenge,checkMeaningChoice,meaningSupportPlan,checkMeaning,submitMeaningAssist,submitMeaningRelearn,hiddenWordsPlan,hiddenWordsSupportPlan,submitDomainExtension,submitSoundRelearn,submitHiddenWords,submitHiddenWordsAssist,submitHiddenWordsRelearn,finalReconstructionPlan,useFinalSupport,checkFinalSeek,submitFinalReconstruction,submitSeekAgainRelearn,checkSeekAgain
+    STAGES,create,current,advance,submitMemorize,checkFirstFind,firstFindSupportPlan,submitFirstFindAssist,markFirstFindUnsure,submitFirstFindRelearn,meaningChallenge,checkMeaningChoice,submitMeaningChoiceReview,meaningSupportPlan,checkMeaning,submitMeaningAssist,submitMeaningRelearn,hiddenWordsPlan,hiddenWordsSupportPlan,submitDomainExtension,submitSoundRelearn,submitHiddenWords,submitHiddenWordsAssist,submitHiddenWordsRelearn,finalReconstructionPlan,useFinalSupport,checkFinalSeek,submitFinalReconstruction,submitSeekAgainRelearn,checkSeekAgain
   });
 })();
