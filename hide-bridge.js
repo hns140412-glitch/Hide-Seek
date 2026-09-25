@@ -166,6 +166,34 @@
     return event;
   }
 
+  function emitLearningMemorySignal(input = {}) {
+    const context = getContext();
+    const payload = {
+      skill_id: input.skill_id || input.word || input.item_id || context.concept_skill_target || null,
+      word: input.word || null,
+      item_id: input.item_id || null,
+      member_id: input.member_id || context.child_id || null,
+      subject: input.subject || context.subject || null,
+      concept_skill_target: input.concept_skill_target || context.concept_skill_target || null,
+      learning_target_id: input.learning_target_id || context.learning_target_id || null,
+      correct: typeof input.correct === 'boolean' ? input.correct : null,
+      assisted: !!(input.assisted || input.hint_used),
+      confusion: input.confusion ?? null,
+      strength: input.strength ?? null,
+      weakness: input.weakness ?? null,
+      spacedEvidence: input.spacedEvidence ?? input.spaced_evidence ?? null,
+      nextReviewPriority: input.nextReviewPriority ?? input.next_review_priority ?? null,
+      mode: input.mode || null,
+      sourceSheetId: S.activeSheetId || null,
+      evidence_source_refs: Array.isArray(input.source_refs) ? [...input.source_refs] : [],
+      evidence_provenance: Array.isArray(input.provenance) ? [...input.provenance] : [],
+      observation_only: true,
+      global_mastery_claim: false,
+      long_term_schedule_owned_by_learning_engine: true
+    };
+    return emit('LEARNING_MEMORY_SIGNAL', payload);
+  }
+
   function requestImaginationCloud(word, reason = 'retrieval_support') {
     return emit('IMAGINATION_CLOUD_REQUEST', {
       word: String(word || '').trim(),
@@ -365,6 +393,7 @@
       returnToBase,
       sendToSnap,
       requestImaginationCloud,
+      emitLearningMemorySignal,
       isSafeUpdatePoint
     });
   }
