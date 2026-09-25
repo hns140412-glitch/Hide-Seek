@@ -3,7 +3,7 @@
 
   const BRIDGE_VERSION = '2026.09.07-a';
   const EVENT_LIMIT = 120;
-  const SHARED_PARAM_NAMES = ['family_id','member_id','actor_member_id','profile_id','member_display_name','member_avatar_ref','assignment_id','analysis_id','learning_unit_id','todo_id','session_id','goal_id','task_id','lap_id','return_target','snap_target','child_id'];
+  const SHARED_PARAM_NAMES = ['family_id','member_id','actor_member_id','profile_id','member_display_name','member_avatar_ref','companion_id','companion_name','assignment_id','analysis_id','learning_unit_id','todo_id','session_id','goal_id','task_id','lap_id','return_target','snap_target','child_id'];
   const legacyTerms = [
     [/Word Detective Team/g, 'Hidden Word Trail'],
     [/사건 파일/g, '단어 탐험'],
@@ -129,7 +129,7 @@
     try {
       const url = new URL(context.return_target, location.href);
       if (!['http:', 'https:'].includes(url.protocol)) return null;
-      for (const key of ['family_id','member_id','actor_member_id','profile_id','member_display_name','member_avatar_ref','assignment_id','analysis_id','learning_unit_id','todo_id','session_id','goal_id','task_id','lap_id']) {
+      for (const key of ['family_id','member_id','actor_member_id','profile_id','member_display_name','member_avatar_ref','companion_id','companion_name','assignment_id','analysis_id','learning_unit_id','todo_id','session_id','goal_id','task_id','lap_id']) {
         if (context[key]) url.searchParams.set(key, context[key]);
       }
       url.searchParams.set('task_state', taskState);
