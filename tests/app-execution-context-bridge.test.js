@@ -26,3 +26,6 @@ assert(app.includes("if(!(STORAGE_SCOPE_IDENTITY.mode==='AUTHENTICATED_MEMBER'&&
 
 assert(src.includes('TakyExplorationEvent'));
 assert(src.includes("taky-exploration-event"));
+
+assert(src.includes('companion_id'));
+assert(src.includes('companion_name'));
