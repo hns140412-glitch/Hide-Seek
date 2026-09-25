@@ -11,7 +11,7 @@ for(const field of [
   'learning_unit_id: context.learning_unit_id || null',
   'todo_id: context.todo_id || null'
 ]) assert(src.includes(field), 'missing event lineage: '+field);
-assert(src.includes("for (const key of ['family_id','member_id','profile_id','assignment_id','analysis_id','learning_unit_id','todo_id','session_id','goal_id','task_id','lap_id'])"));
+assert(src.includes("for (const key of ['family_id','member_id','actor_member_id','profile_id','member_display_name','member_avatar_ref','companion_id','companion_name','assignment_id','analysis_id','learning_unit_id','todo_id','session_id','goal_id','task_id','lap_id'])"));
 assert(src.includes("url.searchParams.set(key, context[key])"));
 console.log('HIDE_APP_EXECUTION_CONTEXT_BRIDGE_PASS');
 
