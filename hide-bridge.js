@@ -3,7 +3,7 @@
 
   const BRIDGE_VERSION = '2026.09.07-a';
   const EVENT_LIMIT = 120;
-  const SHARED_PARAM_NAMES = ['session_id', 'goal_id', 'task_id', 'lap_id', 'return_target', 'snap_target', 'child_id'];
+  const SHARED_PARAM_NAMES = ['family_id','member_id','profile_id','assignment_id','analysis_id','learning_unit_id','todo_id','session_id','goal_id','task_id','lap_id','return_target','snap_target','child_id'];
   const legacyTerms = [
     [/Word Detective Team/g, 'Hidden Word Trail'],
     [/사건 파일/g, '단어 탐험'],
@@ -90,6 +90,13 @@
       type,
       app:'hide-seek',
       at:envelope.occurred_at,
+      family_id: context.family_id || null,
+      member_id: context.member_id || context.child_id || null,
+      profile_id: context.profile_id || null,
+      assignment_id: context.assignment_id || null,
+      analysis_id: context.analysis_id || null,
+      learning_unit_id: context.learning_unit_id || null,
+      todo_id: context.todo_id || null,
       session_id: context.session_id || null,
       goal_id: context.goal_id || null,
       task_id: context.task_id || null,
@@ -119,10 +126,9 @@
     try {
       const url = new URL(context.return_target, location.href);
       if (!['http:', 'https:'].includes(url.protocol)) return null;
-      if (context.session_id) url.searchParams.set('session_id', context.session_id);
-      if (context.goal_id) url.searchParams.set('goal_id', context.goal_id);
-      if (context.task_id) url.searchParams.set('task_id', context.task_id);
-      if (context.lap_id) url.searchParams.set('lap_id', context.lap_id);
+      for (const key of ['family_id','member_id','profile_id','assignment_id','analysis_id','learning_unit_id','todo_id','session_id','goal_id','task_id','lap_id']) {
+        if (context[key]) url.searchParams.set(key, context[key]);
+      }
       url.searchParams.set('task_state', taskState);
       url.searchParams.set('from_app', 'hide-seek');
       return url.href;
@@ -155,9 +161,9 @@
     try {
       const url = new URL(context.snap_target, location.href);
       if (!['http:', 'https:'].includes(url.protocol)) return event;
-      if (context.session_id) url.searchParams.set('session_id', context.session_id);
-      if (context.task_id) url.searchParams.set('task_id', context.task_id);
-      if (context.lap_id) url.searchParams.set('lap_id', context.lap_id);
+      for (const key of ['family_id','member_id','profile_id','assignment_id','analysis_id','learning_unit_id','todo_id','session_id','goal_id','task_id','lap_id']) {
+        if (context[key]) url.searchParams.set(key, context[key]);
+      }
       url.searchParams.set('from_app', 'hide-seek');
       url.searchParams.set('word', event.payload.word);
       if (event.payload.context) url.searchParams.set('word_context', event.payload.context);
