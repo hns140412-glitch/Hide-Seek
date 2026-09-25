@@ -1,0 +1,35 @@
+name: Ready Learning Context Integration
+
+on:
+  push:
+    branches:
+      - integration/ready-learning-context-binding-2026-09-25
+
+permissions:
+  contents: read
+
+jobs:
+  exact-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - name: Show candidate SHA
+        run: |
+          echo "HIDE_READY_INTEGRATION_SHA=${GITHUB_SHA}"
+          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm install
+      - name: Syntax check bridge and app
+        run: |
+          node --check src/v2/ready-bridge.js
+          node --check src/v2/app.js
+      - name: Run Hide V2 product-flow regression
+        run: npx playwright test tests/hide-v2-product-flow.spec.js --project=chromium
