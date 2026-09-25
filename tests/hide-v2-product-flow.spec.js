@@ -2673,3 +2673,28 @@ test('Hide V2 preserves Ready learning-context identity as provenance without co
   expect(result.readyLearningContext.lexicalIds).toBeUndefined();
   expect(result.taskContext.task_id).toBe('task-ready-context');
 });
+
+
+test('Hide V2 rejects Ready learning-context payloads that try to carry authority or omit required identity',async({page})=>{
+  await page.goto('/v2.html');
+  const result=await page.evaluate(()=>{
+    const encode=value=>{
+      const raw=JSON.stringify(value);
+      const bytes=new TextEncoder().encode(raw);
+      let binary=''; for(const b of bytes)binary+=String.fromCharCode(b);
+      return btoa(binary).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+    };
+    const base={
+      contract_version:'READY_LEARNING_CONTEXT_V1',
+      learning_unit_id:'u1',
+      analysis_id:'a1',
+      assignment_id:'as1'
+    };
+    return {
+      forbidden:window.HideV2ReadyBridge.decodeReadyLearningContext(encode({...base,planner_authority:'YES'})),
+      missing:window.HideV2ReadyBridge.decodeReadyLearningContext(encode({contract_version:'READY_LEARNING_CONTEXT_V1',analysis_id:'a1',assignment_id:'as1'}))
+    };
+  });
+  expect(result.forbidden).toBeNull();
+  expect(result.missing).toBeNull();
+});
