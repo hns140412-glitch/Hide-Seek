@@ -111,6 +111,8 @@
 
     try {
       window.dispatchEvent(new CustomEvent('taky-learning-event', { detail: event }));
+      const exploration=globalThis.TakyExplorationEvent?.fromAppEvent?.(event);
+      if(exploration)window.dispatchEvent(new CustomEvent('taky-exploration-event',{detail:exploration}));
     } catch {}
     try {
       if (window.opener && !window.opener.closed) window.opener.postMessage({ type: 'TAKY_LEARNING_EVENT', event }, targetOrigin());
