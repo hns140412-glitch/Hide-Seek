@@ -2698,3 +2698,66 @@ test('Hide V2 rejects Ready learning-context payloads that try to carry authorit
   expect(result.forbidden).toBeNull();
   expect(result.missing).toBeNull();
 });
+
+
+test('Ready material binding is created only by explicit confirmation and never by active-mission guessing',async({page})=>{
+  const readyContext={
+    contract_version:'READY_LEARNING_CONTEXT_V1',
+    learning_unit_id:'unit-bind-1',analysis_id:'analysis-bind-1',assignment_id:'assignment-bind-1',
+    source_range:'Unit 9',workbook_ref_id:'book-bind-1',subject:'영어',concept_skill_target:'VOCABULARY',
+    activity_types:['MEMORY'],cognitive_load_profile:['RETRIEVAL'],unresolved_flags:[],
+    provenance:{engine:'READY_LEARNING_ENGINE',version:'READY_SPECIALIST_HANDOFF_V01',confirmation_state:'ROUTED'}
+  };
+  const encoded=Buffer.from(JSON.stringify(readyContext),'utf8').toString('base64url');
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'Binding'},missions:[{
+        id:'mission-bind-1',title:'Unit 9 단어',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        items:[{id:'w-bind',lexicalId:'alpha::알파',token:'alpha',meaning:'알파',languageDomain:'ENGLISH',missionRole:'NEW',evidence:[],source:{}}],
+        sourceCount:1,provenance:{}
+      }],activeMissionId:'mission-bind-1',activeSession:null,captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html?session_id=s-bind&task_id=t-bind&lap_id=l-bind&return_target='+encodeURIComponent('https://ready.example/app')+'&learning_context='+encodeURIComponent(encoded));
+  const result=await page.evaluate(()=>({
+    passive:window.HideV2ReadyBridge.buildResult().materialBinding,
+    explicit:window.HideV2ReadyBridge.buildResult({confirmMaterialBinding:true}).materialBinding
+  }));
+  expect(result.passive).toBeNull();
+  expect(result.explicit.confirmation_state).toBe('HUMAN_CONFIRMED');
+  expect(result.explicit.specialist_material_id).toBe('mission-bind-1');
+  expect(result.explicit.assignment_id).toBe('assignment-bind-1');
+});
+
+test('stored Ready material binding may select the exact confirmed Hide mission but mismatched binding is rejected',async({page})=>{
+  const readyContext={
+    contract_version:'READY_LEARNING_CONTEXT_V1',
+    learning_unit_id:'unit-bind-2',analysis_id:'analysis-bind-2',assignment_id:'assignment-bind-2',
+    source_range:'Unit 10',workbook_ref_id:'book-bind-2',subject:'영어',concept_skill_target:'VOCABULARY',
+    activity_types:['MEMORY'],cognitive_load_profile:['RETRIEVAL'],unresolved_flags:[],
+    provenance:{engine:'READY_LEARNING_ENGINE',version:'READY_SPECIALIST_HANDOFF_V01',confirmation_state:'ROUTED'}
+  };
+  const encoded=Buffer.from(JSON.stringify(readyContext),'utf8').toString('base64url');
+  const binding={
+    contract_version:'READY_SPECIALIST_MATERIAL_BINDING_V1',
+    assignment_id:'assignment-bind-2',analysis_id:'analysis-bind-2',learning_unit_id:'unit-bind-2',
+    source_range:'Unit 10',workbook_ref_id:'book-bind-2',concept_skill_target:'VOCABULARY',
+    specialist_app:'hide-seek',specialist_material_id:'mission-bind-2b',specialist_material_kind:'HIDE_MISSION',
+    confirmation_state:'HUMAN_CONFIRMED',confirmation_source:'READY_STORED_BINDING'
+  };
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'Binding'},missions:[
+        {id:'mission-bind-2a',title:'Wrong',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),items:[],sourceCount:0,provenance:{}},
+        {id:'mission-bind-2b',title:'Correct',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),items:[],sourceCount:0,provenance:{}}
+      ],activeMissionId:'mission-bind-2a',activeSession:null,captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html?session_id=s-bind-2&task_id=t-bind-2&lap_id=l-bind-2&learning_context='+encodeURIComponent(encoded)+'&material_binding='+encodeURIComponent(JSON.stringify(binding)));
+  const result=await page.evaluate(()=>({
+    activeMissionId:window.HideV2Store.snapshot().activeMissionId,
+    accepted:window.HideV2ReadyBridge.materialBinding()?.specialist_material_id||null
+  }));
+  expect(result.accepted).toBe('mission-bind-2b');
+  expect(result.activeMissionId).toBe('mission-bind-2b');
+});
