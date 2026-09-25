@@ -4,9 +4,9 @@ const RELEASE=globalThis.HideSeekReleaseDescriptor;
 if(!globalThis.TakyReleaseContract?.validateDescriptor?.(RELEASE)?.ok)throw new Error('INVALID_HIDE_RELEASE_DESCRIPTOR');
 const APP_REV=RELEASE.app_version;
 const SCHEMA_VERSION=RELEASE.data_schema_version;
-const STORAGE_KEY_BASE="hide_seek_state";
+const STORAGE_KEY="hide_seek_state";
 const SESSION_API_KEY="hide_seek_runtime_api_key";
-const ASSET_DB_NAME_BASE="hide-seek-assets";
+const ASSET_DB_NAME="hide-seek-assets";
 const StorageScope=globalThis.TakyStorageScope;
 if(!StorageScope?.storageKey)throw new Error('HIDE_STORAGE_SCOPE_UNAVAILABLE');
 const launchParams=new URLSearchParams(location.search);
@@ -16,8 +16,8 @@ const STORAGE_SCOPE_SESSION=(()=>{
  return family_id&&member_id?{authenticated:true,family_id,member_id}:{authenticated:false};
 })();
 const STORAGE_SCOPE_IDENTITY=StorageScope.identity(STORAGE_SCOPE_SESSION);
-const STORAGE_KEY=StorageScope.storageKey('app/hide/state',STORAGE_KEY_BASE,STORAGE_SCOPE_SESSION);
-const ASSET_DB_NAME=StorageScope.storageKey('app/hide/assets',ASSET_DB_NAME_BASE,STORAGE_SCOPE_SESSION);
+const ACTIVE_STORAGE_KEY=StorageScope.storageKey('app/hide/state',STORAGE_KEY,STORAGE_SCOPE_SESSION);
+const ACTIVE_ASSET_DB_NAME=StorageScope.storageKey('app/hide/assets',ASSET_DB_NAME,STORAGE_SCOPE_SESSION);
 const DEFAULT_WORDS=[
 {id:"w1",eng:"environment",kor:"환경",example:"We should protect the environment.",wrong:2,pass:0,hint:0,learningStats:{}},
 {id:"w2",eng:"evidence",kor:"증거",example:"The detective found new evidence.",wrong:2,pass:0,hint:0,learningStats:{}},
@@ -70,7 +70,7 @@ function discoverCompatibleLegacyState(){
  try{
   for(let i=0;i<localStorage.length;i++){
    const key=localStorage.key(i);
-   if(!key||key===STORAGE_KEY)continue;
+   if(!key||key===ACTIVE_STORAGE_KEY)continue;
    try{const parsed=JSON.parse(localStorage.getItem(key));if(isCompatibleLegacyState(parsed))return parsed}catch{}
   }
  }catch{}
@@ -78,19 +78,19 @@ function discoverCompatibleLegacyState(){
 }
 function load(){
  try{
-  const current=localStorage.getItem(STORAGE_KEY);
+  const current=localStorage.getItem(ACTIVE_STORAGE_KEY);
   if(current)return migrate(JSON.parse(current));
   const legacy=discoverCompatibleLegacyState();
   if(legacy){
    const migrated=migrate(legacy);
-   localStorage.setItem(STORAGE_KEY,JSON.stringify(migrated));
+   localStorage.setItem(ACTIVE_STORAGE_KEY,JSON.stringify(migrated));
    return migrated;
   }
   return clone(DEFAULT_STATE);
  }catch{return clone(DEFAULT_STATE)}
 }
 let S=load(),currentTab="home",viewStack=[],runtimeApiKey=sessionStorage.getItem(SESSION_API_KEY)||"",selectedGuide=S.guide.id||"fox",selectedGuideName=S.guide.name||"",selectedProfileFile=null,selectedTile=null,codeSession=null,codeTimer=null,selectedKey=null,toastTimer=null;
-function save(){S.schemaVersion=SCHEMA_VERSION;S.appRevision=APP_REV;localStorage.setItem(STORAGE_KEY,JSON.stringify(S));window.dispatchEvent(new CustomEvent('hide-seek-state-saved',{detail:{pwa_safe_point:globalThis.HideSeekPwaSafePoint?.()===true}}));if(globalThis.HideSeekPwaSafePoint?.()===true)window.dispatchEvent(new CustomEvent('hide-seek-safe-point'))}
+function save(){S.schemaVersion=SCHEMA_VERSION;S.appRevision=APP_REV;localStorage.setItem(ACTIVE_STORAGE_KEY,JSON.stringify(S));window.dispatchEvent(new CustomEvent('hide-seek-state-saved',{detail:{pwa_safe_point:globalThis.HideSeekPwaSafePoint?.()===true}}));if(globalThis.HideSeekPwaSafePoint?.()===true)window.dispatchEvent(new CustomEvent('hide-seek-safe-point'))}
 function sheet(){return S.sheets.find(x=>x.sheetId===S.activeSheetId)||S.sheets[0]}
 function validWords(){return (sheet()?.items||[]).filter(w=>w.eng&&w.kor&&!w.needsReview)}
 function allWords(){return sheet()?.items||[]}
@@ -110,15 +110,16 @@ function updateChrome(){const onboard=!S.onboardingDone;$("#bottomNav").style.di
 function pushView(fn){viewStack.push(()=>render());fn();updateChrome()}
 function goBack(){const fn=viewStack.pop();stopCodeTimer();if(fn)fn();else render();updateChrome()}
 function render(){stopCodeTimer();updateChrome();if(!S.onboardingDone)return renderOnboarding();const map={home:renderHome,sheets:renderSheets,study:renderLearningHub,words:renderWords,records:renderRecords};(map[currentTab]||renderHome)();updateChrome()}
-async function dbOpen(name=ASSET_DB_NAME){return new Promise((res,rej)=>{const q=indexedDB.open(name,1);q.onupgradeneeded=()=>{if(!q.result.objectStoreNames.contains("assets"))q.result.createObjectStore("assets")};q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})}
+async function dbOpen(name=ACTIVE_ASSET_DB_NAME){return new Promise((res,rej)=>{const q=indexedDB.open(name,1);q.onupgradeneeded=()=>{if(!q.result.objectStoreNames.contains("assets"))q.result.createObjectStore("assets")};q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})}
 async function dbSet(k,v){const db=await dbOpen();return new Promise((res,rej)=>{const tx=db.transaction("assets","readwrite");tx.objectStore("assets").put(v,k);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error)})}
 async function readAssetFromDb(db,k){return new Promise((res,rej)=>{if(!db.objectStoreNames.contains("assets"))return res(undefined);const q=db.transaction("assets").objectStore("assets").get(k);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})}
 async function discoverCompatibleLegacyAsset(k){
+ if(STORAGE_SCOPE_IDENTITY.mode==='AUTHENTICATED_MEMBER')return undefined;
  if(typeof indexedDB.databases!=="function")return undefined;
  try{
   const dbs=await indexedDB.databases();
   for(const meta of dbs){
-   if(!meta?.name||meta.name===ASSET_DB_NAME)continue;
+   if(!meta?.name||meta.name===ACTIVE_ASSET_DB_NAME)continue;
    try{
     const db=await new Promise((res,rej)=>{const q=indexedDB.open(meta.name);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)});
     const value=await readAssetFromDb(db,k);
