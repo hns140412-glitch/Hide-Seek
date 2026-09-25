@@ -10,7 +10,9 @@ assert.notEqual(Scope.storageKey('app/hide/assets','hide-seek-assets',a),Scope.s
 assert.equal(Scope.storageKey('app/hide/state','hide_seek_state',{}),'hide_seek_state');
 
 const src=fs.readFileSync(require('node:path').join(__dirname,'..','app.js'),'utf8');
-assert(src.includes("const STORAGE_KEY=StorageScope.storageKey('app/hide/state',STORAGE_KEY_BASE,STORAGE_SCOPE_SESSION)"));
-assert(src.includes("const ASSET_DB_NAME=StorageScope.storageKey('app/hide/assets',ASSET_DB_NAME_BASE,STORAGE_SCOPE_SESSION)"));
+assert(src.includes("const ACTIVE_STORAGE_KEY=StorageScope.storageKey('app/hide/state',STORAGE_KEY,STORAGE_SCOPE_SESSION)"));
+assert(src.includes("const ACTIVE_ASSET_DB_NAME=StorageScope.storageKey('app/hide/assets',ASSET_DB_NAME,STORAGE_SCOPE_SESSION)"));
 assert(src.includes("if(STORAGE_SCOPE_IDENTITY.mode==='AUTHENTICATED_MEMBER')return null"));
 console.log('HIDE_FAMILY_MEMBER_SCOPE_ISOLATION_PASS');
+
+assert(src.includes("if(STORAGE_SCOPE_IDENTITY.mode==='AUTHENTICATED_MEMBER')return undefined"));
