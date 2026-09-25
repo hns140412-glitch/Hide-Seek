@@ -4,9 +4,20 @@ const RELEASE=globalThis.HideSeekReleaseDescriptor;
 if(!globalThis.TakyReleaseContract?.validateDescriptor?.(RELEASE)?.ok)throw new Error('INVALID_HIDE_RELEASE_DESCRIPTOR');
 const APP_REV=RELEASE.app_version;
 const SCHEMA_VERSION=RELEASE.data_schema_version;
-const STORAGE_KEY="hide_seek_state";
+const STORAGE_KEY_BASE="hide_seek_state";
 const SESSION_API_KEY="hide_seek_runtime_api_key";
-const ASSET_DB_NAME="hide-seek-assets";
+const ASSET_DB_NAME_BASE="hide-seek-assets";
+const StorageScope=globalThis.TakyStorageScope;
+if(!StorageScope?.storageKey)throw new Error('HIDE_STORAGE_SCOPE_UNAVAILABLE');
+const launchParams=new URLSearchParams(location.search);
+const STORAGE_SCOPE_SESSION=(()=>{
+ const family_id=String(launchParams.get('family_id')||'').trim();
+ const member_id=String(launchParams.get('member_id')||'').trim();
+ return family_id&&member_id?{authenticated:true,family_id,member_id}:{authenticated:false};
+})();
+const STORAGE_SCOPE_IDENTITY=StorageScope.identity(STORAGE_SCOPE_SESSION);
+const STORAGE_KEY=StorageScope.storageKey('app/hide/state',STORAGE_KEY_BASE,STORAGE_SCOPE_SESSION);
+const ASSET_DB_NAME=StorageScope.storageKey('app/hide/assets',ASSET_DB_NAME_BASE,STORAGE_SCOPE_SESSION);
 const DEFAULT_WORDS=[
 {id:"w1",eng:"environment",kor:"환경",example:"We should protect the environment.",wrong:2,pass:0,hint:0,learningStats:{}},
 {id:"w2",eng:"evidence",kor:"증거",example:"The detective found new evidence.",wrong:2,pass:0,hint:0,learningStats:{}},
@@ -55,6 +66,7 @@ function isCompatibleLegacyState(v){
  return !!(v&&typeof v==="object"&&Array.isArray(v.sheets)&&v.sheets.some(sh=>Array.isArray(sh?.items)&&sh.items.some(w=>w&&("eng" in w||"kor" in w)))&&(v.profile||v.guide||v.memory||v.codeRed));
 }
 function discoverCompatibleLegacyState(){
+ if(STORAGE_SCOPE_IDENTITY.mode==='AUTHENTICATED_MEMBER')return null;
  try{
   for(let i=0;i<localStorage.length;i++){
    const key=localStorage.key(i);
