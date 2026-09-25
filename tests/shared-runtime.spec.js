@@ -74,3 +74,34 @@ test('Hide loads shared HTTP transport without moving API key ownership',async({
   expect(out.rate.category).toBe('RATE_LIMITED');
   expect(out.rate.retry_after_ms).toBe(2000);
 });
+
+
+test('Hide emits Learning memory signal without owning review schedule',async({page})=>{
+  await page.goto('http://127.0.0.1:4173/');
+  await expect.poll(()=>page.evaluate(()=>!!globalThis.HideSeekBridge?.emitLearningMemorySignal)).toBe(true);
+  const out=await page.evaluate(()=>{
+    const event=globalThis.HideSeekBridge.emitLearningMemorySignal({
+      word:'apple',
+      correct:false,
+      hint_used:true,
+      confusion:'meaning',
+      spacedEvidence:{attempts:2},
+      nextReviewPriority:'HIGH'
+    });
+    return {
+      type:event.type,
+      event_type:event.event_type,
+      payload:event.payload,
+      valid:globalThis.TakyEventEnvelope.validate(event).ok
+    };
+  });
+  expect(out.type).toBe('LEARNING_MEMORY_SIGNAL');
+  expect(out.event_type).toBe('LEARNING_MEMORY_SIGNAL');
+  expect(out.payload.word).toBe('apple');
+  expect(out.payload.correct).toBe(false);
+  expect(out.payload.assisted).toBe(true);
+  expect(out.payload.nextReviewPriority).toBe('HIGH');
+  expect(out.payload.observation_only).toBe(true);
+  expect(out.payload.long_term_schedule_owned_by_learning_engine).toBe(true);
+  expect(out.valid).toBe(true);
+});
