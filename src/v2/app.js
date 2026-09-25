@@ -770,8 +770,15 @@
     const fullMissionScope=trail.fullMissionScope===true;
     HideV2Mission.updateMission(m.id,x=>{x.status=fullMissionScope?'COMPLETED':'PARTIAL';x.memorySummary=summary;x.trailSummary=trail});
     const readyContext=globalThis.HideV2ReadyBridge?.context?.()||{};
+    const readyLearningContext=globalThis.HideV2ReadyBridge?.readyLearningContext?.()||null;
+    const confirmedReadyBinding=globalThis.HideV2ReadyBridge?.materialBinding?.()||null;
     const expressionReviews=globalThis.HideV2ReadyBridge?.expressionReviewCandidates?.(m,scopedIds)||[];
-    const returnButton=readyContext.return_target?'<button id="v2ReturnReady" class="btn primary full" style="margin-top:8px">Ready & Set으로 돌아가기</button>':'';
+    const bindingButton=readyContext.return_target&&readyLearningContext&&!confirmedReadyBinding
+      ?'<button id="v2BindReadyMission" class="btn primary full" style="margin-top:8px">이 단어 묶음을 Ready 과제와 연결하고 돌아가기</button>'
+      :'';
+    const returnButton=readyContext.return_target
+      ?'<button id="v2ReturnReady" class="btn secondary full" style="margin-top:8px">'+(bindingButton?'연결하지 않고 Ready & Set으로':'Ready & Set으로 돌아가기')+'</button>'
+      :'';
     const expressionReviewHtml=expressionReviews.length
       ?`<section class="completion-next expression-review-note"><span>함께 확인할 표현</span><b>${expressionReviews.length}개 문장이 있어요.</b><small>목표 단어 사용 여부만 확인됐고, 문장의 의미 정확도는 부모·교사와 함께 확인해요.</small></section>`
       :'';
@@ -783,10 +790,11 @@
     const nextStep=summary.reviewAdvisories.length>0
       ?('기억 사다리에 다시 만나볼 단어가 '+summary.reviewAdvisories.length+'개 있어요. 날짜는 Ready & Set이 정하고, 여기서는 기억 흔적만 보여줘요.')
       :'지금은 다시 볼 단어 신호가 없어요. 다음 탐험에서도 스스로 떠오르는지 확인해봐요.';
-    view().innerHTML=`<section class="card tint-leaf completion-card completion-card--story"><div class="completion-mark" aria-hidden="true">✦</div><p class="quest-overline">MISSION COMPLETE</p><h1>탐험 완료</h1><p class="completion-achievement">${esc(achievement)}</p><div class="completion-crew"><span class="completion-crew__avatar">${esc(crew.avatarText||'탐')}</span><span><b>${esc(crew.displayName||'탐험대원')}</b><small>오늘 길을 끝까지 함께 왔어요.</small></span></div><section class="completion-next"><span>다음 탐험</span><b>${esc(nextStep)}</b></section>${expressionReviewHtml}<button id="v2MemoryLadder" class="btn primary full">기억 사다리 보기</button><button id="v2Home" class="btn secondary full">홈으로</button>${returnButton}<details class="completion-details"><summary>오늘의 기록 보기</summary><div class="grid3"><div class="status-pill"><b>${trail.trailMastery}%</b><span>길 익힘</span></div><div class="status-pill"><b>${summary.averageMemoryStrength}%</b><span>기억 힘</span></div><div class="status-pill"><b>${trail.recoveredTodayCount}</b><span>다시 찾음</span></div></div><div class="metric"><span>다음에 다시 볼 단어</span><b>${summary.reviewAdvisories.length}</b></div></details></section>`;
+    view().innerHTML=`<section class="card tint-leaf completion-card completion-card--story"><div class="completion-mark" aria-hidden="true">✦</div><p class="quest-overline">MISSION COMPLETE</p><h1>탐험 완료</h1><p class="completion-achievement">${esc(achievement)}</p><div class="completion-crew"><span class="completion-crew__avatar">${esc(crew.avatarText||'탐')}</span><span><b>${esc(crew.displayName||'탐험대원')}</b><small>오늘 길을 끝까지 함께 왔어요.</small></span></div><section class="completion-next"><span>다음 탐험</span><b>${esc(nextStep)}</b></section>${expressionReviewHtml}<button id="v2MemoryLadder" class="btn primary full">기억 사다리 보기</button><button id="v2Home" class="btn secondary full">홈으로</button>${bindingButton}${returnButton}<details class="completion-details"><summary>오늘의 기록 보기</summary><div class="grid3"><div class="status-pill"><b>${trail.trailMastery}%</b><span>길 익힘</span></div><div class="status-pill"><b>${summary.averageMemoryStrength}%</b><span>기억 힘</span></div><div class="status-pill"><b>${trail.recoveredTodayCount}</b><span>다시 찾음</span></div></div><div class="metric"><span>다음에 다시 볼 단어</span><b>${summary.reviewAdvisories.length}</b></div></details></section>`;
     globalThis.HideV2ReadyBridge?.emitTaskEvent?.('TASK_COMPLETED');
     $('#v2MemoryLadder').onclick=()=>{HideV2Session.clear();HideV2Router.go('records')};
     $('#v2Home').onclick=()=>{HideV2Session.clear();HideV2Router.go('home')};
+    if($('#v2BindReadyMission'))$('#v2BindReadyMission').onclick=()=>globalThis.HideV2ReadyBridge?.returnToReady?.({confirmMaterialBinding:true});
     if($('#v2ReturnReady'))$('#v2ReturnReady').onclick=()=>globalThis.HideV2ReadyBridge?.returnToReady?.();
   }
 
