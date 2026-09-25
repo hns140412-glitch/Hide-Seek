@@ -194,7 +194,28 @@ function updateCodeUI(){$$('.slot').forEach(s=>{const id=codeSession.answers[Num
 function undoCode(){const slots=Object.keys(codeSession.answers);if(!slots.length)return;const last=slots.at(-1),id=codeSession.answers[last],k=codeSession.keys.find(x=>x.id===id);if(k)k.used=false;delete codeSession.answers[last];updateCodeUI()}
 function useCodeHint(){codeSession.hintLevel++;const unanswered=codeSession.blankIdx.map((_,i)=>i).filter(i=>!codeSession.answers[i]);if(!unanswered.length)return;const slot=unanswered[0],needed=codeSession.word.eng[codeSession.blankIdx[slot]].toLowerCase(),key=codeSession.keys.find(k=>!k.used&&k.ch===needed);if(!key)return;if(codeSession.hintLevel>=3)placeKey(key.id,slot);else{const el=$(`[data-key="${CSS.escape(key.id)}"]`);el?.classList.add('selected');setPartner(codeSession.hintLevel===1?'필요한 열쇠 하나가 살짝 반응했어.':'정답 열쇠를 빈칸 가까이 생각해봐.','hint')}}
 function checkCodeAnswer(){const built=codeSession.blankIdx.map((_,slot)=>codeSession.keys.find(k=>k.id===codeSession.answers[slot])?.ch||''),need=codeSession.blankIdx.map(i=>codeSession.word.eng[i].toLowerCase());if(built.every((x,i)=>x===need[i]))recordCodeResult(codeSession.wrongAttempts>0?'WRONG':codeSession.hintLevel?'HINT_USED':'CORRECT')}
-function recordCodeResult(type){stopCodeTimer();const w=codeSession.word,attempt={wordId:w.id,type,at:nowISO(),hintLevel:codeSession.hintLevel,wrongAttempts:codeSession.wrongAttempts};S.codeRed.results[w.id]=attempt;S.codeRed.history.push(attempt);w.learningStats=w.learningStats||{};w.learningStats.codeRedAttempts=(w.learningStats.codeRedAttempts||0)+1;if(['WRONG','PASS','TIMEOUT','HINT_USED'].includes(type)){if(!S.codeRed.retrace.includes(w.id))S.codeRed.retrace.push(w.id);if(type==='WRONG')w.wrong=(w.wrong||0)+1;if(type==='PASS')w.pass=(w.pass||0)+1;if(type==='TIMEOUT')w.learningStats.timeout=(w.learningStats.timeout||0)+1;if(type==='HINT_USED')w.hint=(w.hint||0)+1}else{S.learning.combo++;S.learning.flow=Math.min(6,S.learning.flow+1)}S.codeRed.index++;markStudy(type==='CORRECT'?5:1);save();if(S.codeRed.index<codeTargets().length)renderCodeRed();else finishCodeRed()}
+function recordCodeResult(type){
+ stopCodeTimer();
+ const w=codeSession.word,attempt={wordId:w.id,type,at:nowISO(),hintLevel:codeSession.hintLevel,wrongAttempts:codeSession.wrongAttempts};
+ if(['CORRECT','WRONG','HINT_USED','TIMEOUT'].includes(type)&&globalThis.HideSeekBridge?.emit){
+  globalThis.HideSeekBridge.emit('RETRIEVAL_ATTEMPT_RESULT',{
+   word_id:w.id,
+   lexical_id:w.id,
+   interactionMode:'CORE',
+   assisted:type==='HINT_USED'||codeSession.hintLevel>0,
+   attemptCount:Math.max(1,(codeSession.wrongAttempts||0)+1),
+   verification_candidate:{
+    verifier_type:'RETRIEVAL_EXACT_MATCH',
+    verifier_version:'HIDE_CODE_RED_V1',
+    target_semantics:'UNASSISTED_EXACT_RETRIEVAL',
+    outcome:type==='CORRECT'?1:0,
+    reference_id:`hide-word:${sheet()?.sheetId||'unknown'}:${w.id}:spelling`,
+    basis:'DETERMINISTIC_LOCAL_MATCH',
+    result_type:type
+   }
+  });
+ }
+ S.codeRed.results[w.id]=attempt;S.codeRed.history.push(attempt);w.learningStats=w.learningStats||{};w.learningStats.codeRedAttempts=(w.learningStats.codeRedAttempts||0)+1;if(['WRONG','PASS','TIMEOUT','HINT_USED'].includes(type)){if(!S.codeRed.retrace.includes(w.id))S.codeRed.retrace.push(w.id);if(type==='WRONG')w.wrong=(w.wrong||0)+1;if(type==='PASS')w.pass=(w.pass||0)+1;if(type==='TIMEOUT')w.learningStats.timeout=(w.learningStats.timeout||0)+1;if(type==='HINT_USED')w.hint=(w.hint||0)+1}else{S.learning.combo++;S.learning.flow=Math.min(6,S.learning.flow+1)}S.codeRed.index++;markStudy(type==='CORRECT'?5:1);save();if(S.codeRed.index<codeTargets().length)renderCodeRed();else finishCodeRed()}
 function startCodeTimer(){const total=codeSession.seconds;codeTimer=setInterval(()=>{const left=Math.max(0,total-(Date.now()-codeSession.start)/1000),pct=Math.round(left/total*100),ring=$('#timeRing'),txt=$('#timeText');if(!ring||!txt)return;ring.style.setProperty('--p',pct);txt.textContent=Math.ceil(left);ring.classList.toggle('warn',pct<=45&&pct>20);ring.classList.toggle('alert',pct<=20);if(left<=0)recordCodeResult('TIMEOUT')},150)}
 function stopCodeTimer(){if(codeTimer){clearInterval(codeTimer);codeTimer=null}}
 function finishCodeRed(){stopCodeTimer();const currentTargets=codeTargets(),passed=currentTargets.filter(w=>S.codeRed.results[w.id]?.type==='CORRECT').map(w=>w.id);if(S.codeRed.retryOnly)S.codeRed.retrace=S.codeRed.retrace.filter(id=>!passed.includes(id));if(S.codeRed.retrace.length){sheet().status='RETRACE_REQUIRED';save();return renderRetrace()}sheet().caseMastery=100;sheet().status='TEST_READY';S.learning.phase='done';save();renderComplete()}
