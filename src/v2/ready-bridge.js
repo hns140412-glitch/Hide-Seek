@@ -15,12 +15,16 @@
       const bytes=Uint8Array.from(binary,ch=>ch.charCodeAt(0));
       const value=JSON.parse(new TextDecoder().decode(bytes));
       if(!value||value.contract_version!=='READY_LEARNING_CONTEXT_V1')return null;
-      const list=v=>Array.isArray(v)?v.filter(x=>typeof x==='string').slice(0,12):[];
+      const forbiddenKeys=new Set(['role','permission','permissions','planner_authority','allocation_authority','family_id','child_id','hanja_grade','hanja_level','grade_inference']);
+      if(Object.keys(value).some(key=>forbiddenKeys.has(key)))return null;
+      const required=['learning_unit_id','analysis_id','assignment_id'];
+      if(required.some(key=>!String(value[key]||'').trim()))return null;
+      const list=v=>Array.isArray(v)?[...new Set(v.filter(x=>typeof x==='string').map(x=>x.trim()).filter(Boolean))].slice(0,12):[];
       return Object.freeze({
         contract_version:'READY_LEARNING_CONTEXT_V1',
-        learning_unit_id:String(value.learning_unit_id||'').slice(0,120)||null,
-        analysis_id:String(value.analysis_id||'').slice(0,120)||null,
-        assignment_id:String(value.assignment_id||'').slice(0,120)||null,
+        learning_unit_id:String(value.learning_unit_id).slice(0,120),
+        analysis_id:String(value.analysis_id).slice(0,120),
+        assignment_id:String(value.assignment_id).slice(0,120),
         source_range:String(value.source_range||'').slice(0,160)||null,
         workbook_ref_id:String(value.workbook_ref_id||'').slice(0,120)||null,
         subject:String(value.subject||'').slice(0,80)||null,
