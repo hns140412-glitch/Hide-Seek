@@ -33,3 +33,27 @@ jobs:
           node --check src/v2/app.js
       - name: Run Hide V2 product-flow regression
         run: npx playwright test tests/hide-v2-product-flow.spec.js --project=chromium
+      - name: Package exact validated source
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release
+          git archive --format=zip --output=release/hide-ready-integration-source.zip "${GITHUB_SHA}"
+          SHA256="$(sha256sum release/hide-ready-integration-source.zip | awk '{print $1}')"
+          {
+            echo "repository=${GITHUB_REPOSITORY}"
+            echo "branch=${GITHUB_REF_NAME}"
+            echo "source_sha=${GITHUB_SHA}"
+            echo "archive=hide-ready-integration-source.zip"
+            echo "archive_sha256=${SHA256}"
+            echo "generated_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "validation=Hide V2 product-flow exact-source CI"
+          } > release/manifest.txt
+          cat release/manifest.txt
+      - name: Upload exact validated source
+        uses: actions/upload-artifact@v4
+        with:
+          name: hide-ready-integration-${{ github.sha }}
+          path: release/
+          retention-days: 7
+          if-no-files-found: error
