@@ -64,3 +64,12 @@ assert(hideAppHttp.includes("'x-goog-api-key':runtimeApiKey"));
 assert(hideAppHttp.includes("r.category==='AUTH_REJECTED'"));
 assert(hideAppHttp.includes("r.category==='RATE_LIMITED'"));
 console.log('PASS: Hide consumes shared HTTP transport while retaining API credential/error semantics');
+
+const verificationApp=fs.readFileSync(path.join(__dirname,'..','app.js'),'utf8');
+assert(verificationApp.includes("verification_candidate"));
+assert(verificationApp.includes("RETRIEVAL_EXACT_MATCH"));
+assert(verificationApp.includes("UNASSISTED_EXACT_RETRIEVAL"));
+assert(verificationApp.includes("DETERMINISTIC_LOCAL_MATCH"));
+assert(verificationApp.includes("type==='CORRECT'?1:0"));
+assert(!verificationApp.includes("caseMastery:100,verified_outcome"));
+console.log('PASS: Hide emits deterministic retrieval verification candidates without promoting caseMastery to learner mastery');
