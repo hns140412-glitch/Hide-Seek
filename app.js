@@ -55,7 +55,7 @@ function normalizeWord(w,i=0){return {id:w.id||`w-${Date.now()}-${i}`,eng:String
 function migrate(raw){
  const s=Object.assign(clone(DEFAULT_STATE),raw||{});
  s.schemaVersion=SCHEMA_VERSION;s.appRevision=APP_REV;
- s.profile=Object.assign({},DEFAULT_STATE.profile,raw?.profile||{});s.guide=Object.assign({},DEFAULT_STATE.guide,raw?.guide||{});s.settings=Object.assign({},DEFAULT_STATE.settings,raw?.settings||{});
+ s.profile=Object.assign({},DEFAULT_STATE.profile,{sharedAvatarRef:""},raw?.profile||{});s.guide=Object.assign({},DEFAULT_STATE.guide,raw?.guide||{});s.settings=Object.assign({},DEFAULT_STATE.settings,raw?.settings||{});
  s.learning=Object.assign({},DEFAULT_STATE.learning,raw?.learning||raw?.study||{});s.codeRed=Object.assign({},DEFAULT_STATE.codeRed,raw?.codeRed||{});s.memory=raw?.memory||{};
  if(!Array.isArray(s.sheets)||!s.sheets.length)s.sheets=clone(DEFAULT_STATE.sheets);
  s.sheets=s.sheets.map((sh,si)=>({...sh,sheetId:sh.sheetId||`sheet-${si}`,updatedAt:sh.updatedAt||sh.createdAt||nowISO(),status:sh.status||"READY",caseMastery:Number(sh.caseMastery||0),items:(sh.items||[]).map(normalizeWord),recognitionMeta:sh.recognitionMeta||{}}));
@@ -90,6 +90,12 @@ function load(){
  }catch{return clone(DEFAULT_STATE)}
 }
 let S=load(),currentTab="home",viewStack=[],runtimeApiKey=sessionStorage.getItem(SESSION_API_KEY)||"",selectedGuide=S.guide.id||"fox",selectedGuideName=S.guide.name||"",selectedProfileFile=null,selectedTile=null,codeSession=null,codeTimer=null,selectedKey=null,toastTimer=null;
+const SHARED_MEMBER_DISPLAY_NAME=String(launchParams.get('member_display_name')||'').trim();
+const SHARED_MEMBER_AVATAR_REF=String(launchParams.get('member_avatar_ref')||'').trim();
+if(STORAGE_SCOPE_IDENTITY.mode==='AUTHENTICATED_MEMBER'){
+  if(SHARED_MEMBER_DISPLAY_NAME)S.profile.displayName=SHARED_MEMBER_DISPLAY_NAME;
+  if(SHARED_MEMBER_AVATAR_REF)S.profile.sharedAvatarRef=SHARED_MEMBER_AVATAR_REF;
+}
 function save(){S.schemaVersion=SCHEMA_VERSION;S.appRevision=APP_REV;localStorage.setItem(ACTIVE_STORAGE_KEY,JSON.stringify(S));window.dispatchEvent(new CustomEvent('hide-seek-state-saved',{detail:{pwa_safe_point:globalThis.HideSeekPwaSafePoint?.()===true}}));if(globalThis.HideSeekPwaSafePoint?.()===true)window.dispatchEvent(new CustomEvent('hide-seek-safe-point'))}
 function sheet(){return S.sheets.find(x=>x.sheetId===S.activeSheetId)||S.sheets[0]}
 function validWords(){return (sheet()?.items||[]).filter(w=>w.eng&&w.kor&&!w.needsReview)}
