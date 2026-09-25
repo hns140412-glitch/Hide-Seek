@@ -23,3 +23,6 @@ assert(app.includes("SHARED_MEMBER_DISPLAY_NAME"));
 assert(app.includes("sharedLocked=STORAGE_SCOPE_IDENTITY.mode==='AUTHENTICATED_MEMBER'&&!!SHARED_MEMBER_DISPLAY_NAME"));
 assert(app.includes("이름 변경은 베이스캠프에서 할 수 있어."));
 assert(app.includes("if(!(STORAGE_SCOPE_IDENTITY.mode==='AUTHENTICATED_MEMBER'&&SHARED_MEMBER_DISPLAY_NAME))"));
+
+assert(src.includes('TakyExplorationEvent'));
+assert(src.includes("taky-exploration-event"));
