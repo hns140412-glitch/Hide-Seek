@@ -3,7 +3,7 @@ name: Validate Hide & Seek
 on:
   pull_request:
   push:
-    branches: ["main"]
+    branches: ["main", "taky/app-execution-context-bridge-2026-09-25"]
 
 permissions:
   contents: read
@@ -27,6 +27,8 @@ jobs:
           node --check vendor/taky/pwa-update-state.js
       - name: Validate shared runtime contract
         run: node tests/shared-runtime-contract.test.js
+      - name: Validate app execution context bridge
+        run: node tests/app-execution-context-bridge.test.js
       - name: Install Playwright
         run: |
           npm install --no-save @playwright/test@1.55.0
