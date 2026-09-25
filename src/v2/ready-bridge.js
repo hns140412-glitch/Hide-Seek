@@ -1,11 +1,44 @@
 (() => {
   'use strict';
-  const PARAMS=['session_id','goal_id','task_id','lap_id','return_target','snap_target','child_id','actor_role','crew_member_id','crew_member_name','crew_rules_version','review_directive'];
+  const PARAMS=['session_id','goal_id','task_id','lap_id','return_target','snap_target','child_id','actor_role','crew_member_id','crew_member_name','crew_rules_version','review_directive','learning_context'];
   function context(){
     const q=new URLSearchParams(location.search),out={};
     for(const k of PARAMS){const v=q.get(k);if(v)out[k]=v}
     return out;
   }
+  function decodeReadyLearningContext(raw){
+    if(!raw||typeof raw!=='string'||raw.length>6000)return null;
+    try{
+      const normalized=raw.replace(/-/g,'+').replace(/_/g,'/');
+      const padded=normalized+'='.repeat((4-normalized.length%4)%4);
+      const binary=atob(padded);
+      const bytes=Uint8Array.from(binary,ch=>ch.charCodeAt(0));
+      const value=JSON.parse(new TextDecoder().decode(bytes));
+      if(!value||value.contract_version!=='READY_LEARNING_CONTEXT_V1')return null;
+      const list=v=>Array.isArray(v)?v.filter(x=>typeof x==='string').slice(0,12):[];
+      return Object.freeze({
+        contract_version:'READY_LEARNING_CONTEXT_V1',
+        learning_unit_id:String(value.learning_unit_id||'').slice(0,120)||null,
+        analysis_id:String(value.analysis_id||'').slice(0,120)||null,
+        assignment_id:String(value.assignment_id||'').slice(0,120)||null,
+        source_range:String(value.source_range||'').slice(0,160)||null,
+        workbook_ref_id:String(value.workbook_ref_id||'').slice(0,120)||null,
+        subject:String(value.subject||'').slice(0,80)||null,
+        concept_skill_target:String(value.concept_skill_target||'').slice(0,180)||null,
+        activity_types:list(value.activity_types),
+        cognitive_load_profile:list(value.cognitive_load_profile),
+        divisible_boundary:String(value.divisible_boundary||'').slice(0,80)||null,
+        confidence:Number.isFinite(value.confidence)?Math.max(0,Math.min(1,value.confidence)):null,
+        unresolved_flags:list(value.unresolved_flags),
+        provenance:{
+          engine:String(value.provenance?.engine||'').slice(0,80)||null,
+          version:String(value.provenance?.version||'').slice(0,40)||null,
+          confirmation_state:String(value.provenance?.confirmation_state||'').slice(0,40)||null
+        }
+      });
+    }catch{return null}
+  }
+  function readyLearningContext(){return decodeReadyLearningContext(context().learning_context)}
   function reviewDirective(){
     const raw=context().review_directive;if(!raw)return null;
     let x;try{x=JSON.parse(raw)}catch{return null}
@@ -78,6 +111,7 @@
       expressionReviewCandidates:expressionReviews,
       humanSemanticReviewAvailable:expressionReviews.length>0,
       reviewDirective:reviewDirective(),
+      readyLearningContext:readyLearningContext(),
       completedAt:new Date().toISOString()
     };
   }
@@ -97,5 +131,5 @@
     location.assign(url.href);
     return {ok:true,event};
   }
-  window.HideV2ReadyBridge=Object.freeze({context,reviewDirective,targetItemIds,expressionReviewCandidates,buildResult,emitTaskEvent,returnToReady});
+  window.HideV2ReadyBridge=Object.freeze({context,decodeReadyLearningContext,readyLearningContext,reviewDirective,targetItemIds,expressionReviewCandidates,buildResult,emitTaskEvent,returnToReady});
 })();
