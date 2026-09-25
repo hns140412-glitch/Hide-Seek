@@ -2633,3 +2633,43 @@ test('Hide V2 mission and memory surfaces use product cards instead of raw statu
   await expect(page.locator('.word-row')).toHaveCount(1);
   await expect(page.getByRole('button',{name:'기억 보기'})).toBeVisible();
 });
+
+
+test('Hide V2 preserves Ready learning-context identity as provenance without converting it into lexical ids',async({page})=>{
+  const readyContext={
+    contract_version:'READY_LEARNING_CONTEXT_V1',
+    learning_unit_id:'unit-ready-1',
+    analysis_id:'analysis-ready-1',
+    assignment_id:'assignment-ready-1',
+    source_range:'Unit 7 / p.18-19',
+    workbook_ref_id:'workbook-ready-1',
+    subject:'영어',
+    concept_skill_target:'VOCABULARY',
+    activity_types:['MEMORY'],
+    cognitive_load_profile:['RETRIEVAL'],
+    divisible_boundary:'WORD_SET',
+    confidence:0.92,
+    unresolved_flags:[],
+    provenance:{engine:'READY_LEARNING_ENGINE',version:'READY_SPECIALIST_HANDOFF_V01',confirmation_state:'ROUTED'}
+  };
+  const encoded=Buffer.from(JSON.stringify(readyContext),'utf8').toString('base64url');
+  await page.addInitScript(()=>{
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'Ready 연동'},missions:[{
+        id:'m-ready-context',title:'Ready 연동 미션',status:'READY',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),
+        items:[{id:'w-ready',lexicalId:'benefit::혜택',token:'benefit',meaning:'혜택',languageDomain:'ENGLISH',missionRole:'REVIEW',evidence:[],source:{}}],
+        sourceCount:0,provenance:{}
+      }],activeMissionId:'m-ready-context',activeSession:null,captureSession:null,events:[],updatedAt:new Date().toISOString()
+    }));
+  });
+  await page.goto('/v2.html?session_id=ready-session-context&task_id=task-ready-context&lap_id=lap-ready-context&learning_context='+encodeURIComponent(encoded));
+  const result=await page.evaluate(()=>window.HideV2ReadyBridge.buildResult());
+  expect(result.readyLearningContext.contract_version).toBe('READY_LEARNING_CONTEXT_V1');
+  expect(result.readyLearningContext.assignment_id).toBe('assignment-ready-1');
+  expect(result.readyLearningContext.analysis_id).toBe('analysis-ready-1');
+  expect(result.readyLearningContext.learning_unit_id).toBe('unit-ready-1');
+  expect(result.readyLearningContext.source_range).toBe('Unit 7 / p.18-19');
+  expect(result.readyLearningContext.workbook_ref_id).toBe('workbook-ready-1');
+  expect(result.readyLearningContext.lexicalIds).toBeUndefined();
+  expect(result.taskContext.task_id).toBe('task-ready-context');
+});
