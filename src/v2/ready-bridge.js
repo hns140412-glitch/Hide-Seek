@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const PARAMS=['session_id','goal_id','task_id','lap_id','return_target','snap_target','child_id','actor_role','crew_member_id','crew_member_name','crew_rules_version','review_directive','learning_context'];
+  const PARAMS=['session_id','goal_id','task_id','lap_id','return_target','snap_target','child_id','actor_role','crew_member_id','crew_member_name','crew_rules_version','review_directive','learning_context','material_binding'];
   function context(){
     const q=new URLSearchParams(location.search),out={};
     for(const k of PARAMS){const v=q.get(k);if(v)out[k]=v}
@@ -43,6 +43,69 @@
     }catch{return null}
   }
   function readyLearningContext(){return decodeReadyLearningContext(context().learning_context)}
+  function materialBinding(){
+    const raw=context().material_binding;
+    if(!raw)return null;
+    let value;try{value=typeof raw==='string'?JSON.parse(raw):raw}catch{return null}
+    if(!value||typeof value!=='object'||Array.isArray(value))return null;
+    if(value.contract_version!=='READY_SPECIALIST_MATERIAL_BINDING_V1')return null;
+    if(value.confirmation_state!=='HUMAN_CONFIRMED')return null;
+    if(String(value.specialist_app||'').trim()!=='hide-seek')return null;
+    const ready=readyLearningContext();if(!ready)return null;
+    const same=(a,b)=>String(a||'').trim()===String(b||'').trim();
+    if(!same(value.assignment_id,ready.assignment_id))return null;
+    if(value.analysis_id&&!same(value.analysis_id,ready.analysis_id))return null;
+    if(value.learning_unit_id&&!same(value.learning_unit_id,ready.learning_unit_id))return null;
+    if(!same(value.source_range,ready.source_range))return null;
+    if(!same(value.workbook_ref_id,ready.workbook_ref_id))return null;
+    if(!same(value.concept_skill_target,ready.concept_skill_target))return null;
+    if(!String(value.specialist_material_id||'').trim())return null;
+    return Object.freeze({
+      contract_version:'READY_SPECIALIST_MATERIAL_BINDING_V1',
+      assignment_id:ready.assignment_id,
+      analysis_id:ready.analysis_id,
+      learning_unit_id:ready.learning_unit_id,
+      source_range:ready.source_range,
+      workbook_ref_id:ready.workbook_ref_id,
+      concept_skill_target:ready.concept_skill_target,
+      specialist_app:'hide-seek',
+      specialist_material_id:String(value.specialist_material_id).slice(0,160),
+      specialist_material_kind:String(value.specialist_material_kind||'HIDE_MISSION').slice(0,80),
+      confirmation_state:'HUMAN_CONFIRMED',
+      confirmation_source:String(value.confirmation_source||'READY_STORED_BINDING').slice(0,80)
+    });
+  }
+
+  function applyConfirmedMaterialBinding(){
+    const binding=materialBinding();if(!binding)return null;
+    const missionId=binding.specialist_material_id;
+    const s=HideV2Store.snapshot();
+    if(!(s.missions||[]).some(m=>m.id===missionId))return null;
+    HideV2Mission.setActive(missionId);
+    return missionId;
+  }
+
+  function materialBindingCandidate(){
+    const ready=readyLearningContext();if(!ready)return null;
+    const s=HideV2Store.snapshot();
+    const mission=(s.missions||[]).find(m=>m.id===s.activeMissionId)||null;
+    if(!mission)return null;
+    return Object.freeze({
+      contract_version:'READY_SPECIALIST_MATERIAL_BINDING_V1',
+      assignment_id:ready.assignment_id,
+      analysis_id:ready.analysis_id,
+      learning_unit_id:ready.learning_unit_id,
+      source_range:ready.source_range,
+      workbook_ref_id:ready.workbook_ref_id,
+      concept_skill_target:ready.concept_skill_target,
+      specialist_app:'hide-seek',
+      specialist_material_id:mission.id,
+      specialist_material_kind:'HIDE_MISSION',
+      confirmation_state:'HUMAN_CONFIRMED',
+      confirmation_source:'HIDE_USER_ACTION'
+    });
+  }
+
   function reviewDirective(){
     const raw=context().review_directive;if(!raw)return null;
     let x;try{x=JSON.parse(raw)}catch{return null}
@@ -91,7 +154,7 @@
       .filter(Boolean);
   }
 
-  function buildResult(){
+  function buildResult(options={}){
     const s=HideV2Store.snapshot();
     const m=s.missions.find(x=>x.id===s.activeMissionId)||null;
     const activeSession=s.activeSession||null;
@@ -116,24 +179,26 @@
       humanSemanticReviewAvailable:expressionReviews.length>0,
       reviewDirective:reviewDirective(),
       readyLearningContext:readyLearningContext(),
+      materialBinding:materialBinding()||(options.confirmMaterialBinding===true?materialBindingCandidate():null),
       completedAt:new Date().toISOString()
     };
   }
-  function emitTaskEvent(type='TASK_PROGRESS'){
-    const payload=buildResult();
+  function emitTaskEvent(type='TASK_PROGRESS',options={}){
+    const payload=buildResult(options);
     const envelope=globalThis.TakyEventEnvelope?.create
       ? globalThis.TakyEventEnvelope.create({source:'hide-seek',event_type:type,payload})
       : {event_id:'v2-'+Date.now(),source:'hide-seek',event_type:type,payload,created_at:new Date().toISOString()};
     HideV2Store.transaction(s=>{s.events.push(envelope);if(s.events.length>120)s.events=s.events.slice(-120)});
     return envelope;
   }
-  function returnToReady(){
-    const c=context(),target=c.return_target;if(!target)return {ok:false,reason:'RETURN_TARGET_MISSING',event:emitTaskEvent('TASK_COMPLETED')};
-    const event=emitTaskEvent('TASK_COMPLETED');
+  function returnToReady(options={}){
+    const c=context(),target=c.return_target;if(!target)return {ok:false,reason:'RETURN_TARGET_MISSING',event:emitTaskEvent('TASK_COMPLETED',options)};
+    const event=emitTaskEvent('TASK_COMPLETED',options);
     const url=new URL(target,location.href);
     url.searchParams.set('learning_event',JSON.stringify(event));
     location.assign(url.href);
     return {ok:true,event};
   }
-  window.HideV2ReadyBridge=Object.freeze({context,decodeReadyLearningContext,readyLearningContext,reviewDirective,targetItemIds,expressionReviewCandidates,buildResult,emitTaskEvent,returnToReady});
+  window.HideV2ReadyBridge=Object.freeze({context,decodeReadyLearningContext,readyLearningContext,materialBinding,materialBindingCandidate,applyConfirmedMaterialBinding,reviewDirective,targetItemIds,expressionReviewCandidates,buildResult,emitTaskEvent,returnToReady});
+  applyConfirmedMaterialBinding();
 })();
