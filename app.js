@@ -201,7 +201,9 @@ function recordCodeResult(type){
   globalThis.HideSeekBridge.emit('RETRIEVAL_ATTEMPT_RESULT',{
    word_id:w.id,
    lexical_id:w.id,
+   instrumentVersion:'HIDE_CODE_RED_V1',
    interactionMode:'CORE',
+   responseLatencyMs:Math.max(0,Date.now()-(codeSession.start||Date.now())),
    assisted:type==='HINT_USED'||codeSession.hintLevel>0,
    attemptCount:Math.max(1,(codeSession.wrongAttempts||0)+1),
    verification_candidate:{
