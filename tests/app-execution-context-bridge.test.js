@@ -17,3 +17,9 @@ console.log('HIDE_APP_EXECUTION_CONTEXT_BRIDGE_PASS');
 
 assert(src.includes('member_display_name'));
 assert(src.includes('actor_member_id'));
+
+const app=fs.readFileSync('app.js','utf8');
+assert(app.includes("SHARED_MEMBER_DISPLAY_NAME"));
+assert(app.includes("sharedLocked=STORAGE_SCOPE_IDENTITY.mode==='AUTHENTICATED_MEMBER'&&!!SHARED_MEMBER_DISPLAY_NAME"));
+assert(app.includes("이름 변경은 베이스캠프에서 할 수 있어."));
+assert(app.includes("if(!(STORAGE_SCOPE_IDENTITY.mode==='AUTHENTICATED_MEMBER'&&SHARED_MEMBER_DISPLAY_NAME))"));
