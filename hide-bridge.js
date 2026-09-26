@@ -166,6 +166,72 @@
     return event;
   }
 
+  // Optional central evidence path. No automatic login, URL-derived authority,
+  // background flush, or claim of central sync from the legacy bounded event list.
+  // The authenticated host supplies its actual session + central Bearer providers.
+  let centralEvidencePipeline = null;
+  let centralEvidenceState = { status:'UNBOUND', event_id:null, reason:'TRUSTED_CENTRAL_SESSION_NOT_CONFIGURED' };
+  function centralEvidenceStatus() { return { ...centralEvidenceState }; }
+  function reportCentralEvidence(status, event_id, reason) {
+    centralEvidenceState = { status, event_id:event_id || null, reason:reason || null };
+    try {
+      window.dispatchEvent(new CustomEvent('hide-central-evidence-status',
+        { detail:centralEvidenceStatus() }));
+    } catch {}
+  }
+  function configureCentralEvidence({ endpointUrl, sessionProvider, tokenProvider,
+    fetchImpl, indexedDB:database, dbName } = {}) {
+    if (centralEvidencePipeline) throw new Error('CENTRAL_EVIDENCE_ALREADY_CONFIGURED');
+    if (typeof sessionProvider !== 'function' || typeof tokenProvider !== 'function')
+      throw new Error('EXPLICIT_TRUSTED_CENTRAL_SESSION_REQUIRED');
+    const factory = globalThis.TakyCentralEvidence?.pipeline;
+    if (factory?.VERSION !== 'TAKY_PWA_SCOPED_EVIDENCE_PIPELINE_V1' ||
+        typeof factory.create !== 'function')
+      throw new Error('PINNED_CENTRAL_BROWSER_PIPELINE_UNAVAILABLE');
+    const pipeline = factory.create({ endpointUrl, sessionProvider, tokenProvider,
+      fetchImpl:fetchImpl || globalThis.fetch.bind(globalThis),
+      indexedDB:database || globalThis.indexedDB, dbName,
+      cryptoProvider:globalThis.crypto });
+    centralEvidencePipeline = pipeline;
+    reportCentralEvidence('READY', null, null);
+    return Object.freeze({ configured:true, version:pipeline.version });
+  }
+  async function flushCentralEvidenceOnce(owner) {
+    if (!centralEvidencePipeline) throw new Error('CENTRAL_EVIDENCE_NOT_CONFIGURED');
+    const result = await centralEvidencePipeline.flushOne('hide-seek',owner);
+    if (result.processed) reportCentralEvidence(result.status === 'ACKED'
+      ? 'CENTRAL_OBSERVATION_ACKED' : result.status === 'BLOCKED' ? 'HOLD' : 'PENDING',
+      null,result.reason);
+    return result;
+  }
+  async function closeCentralEvidence() {
+    if (!centralEvidencePipeline) return;
+    const pipeline=centralEvidencePipeline;
+    centralEvidencePipeline=null;
+    await pipeline.close();
+    reportCentralEvidence('UNBOUND',null,'CENTRAL_EVIDENCE_CLOSED');
+  }
+  function queueCentralMemorySignal(event) {
+    if (!centralEvidencePipeline) {
+      reportCentralEvidence('UNBOUND',event.event_id,'TRUSTED_CENTRAL_SESSION_NOT_CONFIGURED');
+      return;
+    }
+    const p=event.payload || {};
+    if (!p.member_id || !p.subject || !p.concept_skill_target) {
+      reportCentralEvidence('HOLD',event.event_id,'EXPLICIT_LEARNING_SCOPE_REQUIRED');
+      return;
+    }
+    // An event's child_id and member_id are only client assertions; the pinned
+    // central mapper/session and then the server separately check scope.
+    Promise.resolve().then(()=>centralEvidencePipeline.enqueueBridge('hide-seek',event))
+      .then(result=>{
+        if (result?.queued === true || result?.duplicate === true)
+          reportCentralEvidence('PENDING_CENTRAL_OUTBOX',event.event_id,null);
+        else reportCentralEvidence('HOLD',event.event_id,'DURABLE_ENQUEUE_NOT_CONFIRMED');
+      }).catch(error=>reportCentralEvidence('HOLD',event.event_id,
+        String(error?.message || 'CENTRAL_ENQUEUE_UNAVAILABLE')));
+  }
+
   function emitLearningMemorySignal(input = {}) {
     const context = getContext();
     const payload = {
@@ -192,7 +258,9 @@
       review_need_owned_by_learning_engine: true,
       dated_allocation_owned_by_planner: true
     };
-    return emit('LEARNING_MEMORY_SIGNAL', payload);
+    const event=emit('LEARNING_MEMORY_SIGNAL', payload);
+    queueCentralMemorySignal(event);
+    return event;
   }
 
   function emitChildAuthoredReflection(input = {}) {
@@ -536,6 +604,10 @@
       sendToSnap,
       requestImaginationCloud,
       emitLearningMemorySignal,
+      configureCentralEvidence,
+      flushCentralEvidenceOnce,
+      closeCentralEvidence,
+      centralEvidenceStatus,
       emitChildAuthoredReflection,
       ensureChildReflectionProducer,
       isSafeUpdatePoint
