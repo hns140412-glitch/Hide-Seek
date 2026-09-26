@@ -20,6 +20,7 @@ jobs:
           node --check app.js
           node --check hide-brand-current.js
           node --check hide-bridge.js
+          node --check vendor/taky/central-evidence-browser-v1.js
           node --check hide-runtime.js
           node --check hide-release-v01.js
           node --check hide-pwa-update-v01.js
@@ -36,4 +37,4 @@ jobs:
           python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/hide-http.log 2>&1 &
           echo $! > /tmp/hide-http.pid
       - name: Run shared runtime browser regression
-        run: npx playwright test tests/shared-runtime.spec.js --reporter=line
+        run: npx playwright test tests/shared-runtime.spec.js tests/central-evidence.spec.js --reporter=line
