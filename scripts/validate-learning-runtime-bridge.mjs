@@ -7,7 +7,8 @@ const required=[
   'evidence_provenance',
   'observation_only: true',
   'global_mastery_claim: false',
-  'long_term_schedule_owned_by_learning_engine: true',
+  'review_need_owned_by_learning_engine: true',
+  'dated_allocation_owned_by_planner: true',
   'emitLearningMemorySignal,'
 ];
 for(const token of required){if(!s.includes(token))throw new Error('MISSING:'+token);}
