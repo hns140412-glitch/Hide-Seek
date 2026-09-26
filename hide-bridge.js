@@ -189,7 +189,8 @@
       evidence_provenance: Array.isArray(input.provenance) ? [...input.provenance] : [],
       observation_only: true,
       global_mastery_claim: false,
-      long_term_schedule_owned_by_learning_engine: true
+      review_need_owned_by_learning_engine: true,
+      dated_allocation_owned_by_planner: true
     };
     return emit('LEARNING_MEMORY_SIGNAL', payload);
   }
