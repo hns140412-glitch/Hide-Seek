@@ -73,3 +73,25 @@ assert(verificationApp.includes("DETERMINISTIC_LOCAL_MATCH"));
 assert(verificationApp.includes("type==='CORRECT'?1:0"));
 assert(!verificationApp.includes("caseMastery:100,verified_outcome"));
 console.log('PASS: Hide emits deterministic retrieval verification candidates without promoting caseMastery to learner mastery');
+
+const badgeProducer=fs.readFileSync(path.join(__dirname,'..','hide-bridge.js'),'utf8');
+for(const token of [
+  'function emitChildAuthoredReflection',
+  "evidence_type:'SELF_REFLECTION_EVIDENCE'",
+  "verified_outcome:null",
+  "authority:'SELF_REFLECTION_OBSERVATION_ONLY'",
+  'child_authored:true',
+  'explicit_confirmation:true',
+  'inference_from_telemetry:false',
+  'direct_award_allowed:false',
+  'requires_candidate_review:true',
+  'auto_infer_error_discovery:false',
+  'auto_infer_deep_thinking:false',
+  'auto_infer_special_behavior:false',
+  'ensureChildReflectionProducer',
+  '내 기록 저장'
+]) assert(badgeProducer.includes(token), 'missing badge producer token: '+token);
+assert(!badgeProducer.includes("emit('ERROR_DISCOVERY'"));
+assert(!badgeProducer.includes("emit('DEEP_THINKING'"));
+assert(!badgeProducer.includes("emit('SPECIAL_BEHAVIOR'"));
+console.log('PASS: SP-BADGE-006 uses explicit child-authored reflection and forbids telemetry-driven badge inference');

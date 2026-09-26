@@ -194,6 +194,145 @@
     return emit('LEARNING_MEMORY_SIGNAL', payload);
   }
 
+  function emitChildAuthoredReflection(input = {}) {
+    const context = getContext();
+    const allowedDifficulty = new Set(['EASY','OK','HARD','VERY_HARD']);
+    const allowedRecall = new Set(['KNEW_AND_RECALLED','KNEW_BUT_COULD_NOT_RECALL','RECALLED_WITH_HINT','DID_NOT_KNOW']);
+    const allowedConfidence = new Set(['LOW','MEDIUM','HIGH']);
+    const difficulty = String(input.difficulty || '').toUpperCase();
+    const recall_state = String(input.recall_state || '').toUpperCase();
+    const confidence = String(input.confidence || '').toUpperCase();
+    const member_id = input.member_id || context.child_id || null;
+    if (input.child_authored !== true || input.explicit_confirmation !== true) {
+      return { ok:false, reason:'CHILD_AUTHORED_CONFIRMATION_REQUIRED' };
+    }
+    if (!member_id) return { ok:false, reason:'MEMBER_SCOPE_REQUIRED' };
+    if (!allowedDifficulty.has(difficulty) || !allowedRecall.has(recall_state) || !allowedConfidence.has(confidence)) {
+      return { ok:false, reason:'SELF_REFLECTION_SELECTION_REQUIRED' };
+    }
+    const payload = {
+      evidence_contract:'TAKY_SELF_REFLECTION_EVIDENCE_V1',
+      event_id: input.event_id || `hide-reflection-${Date.now()}`,
+      observed_at: new Date().toISOString(),
+      member_id,
+      subject: input.subject || context.subject || '영어',
+      concept_skill_target: input.concept_skill_target || context.concept_skill_target || 'vocabulary',
+      evidence_type:'SELF_REFLECTION_EVIDENCE',
+      source_app:'hide-seek',
+      instrument_version:'HIDE_CHILD_REFLECTION_V1',
+      interaction_mode:'SELF_REFLECTION',
+      verified_outcome:null,
+      reflection:{
+        difficulty,
+        recall_state,
+        confidence,
+        confusion_with:Array.isArray(input.confusion_with)?input.confusion_with.map(v=>String(v).trim()).filter(Boolean):[],
+        used_hint:input.used_hint===true,
+        notes:input.notes ? String(input.notes).trim() : null
+      },
+      provenance:{
+        authority:'SELF_REFLECTION_OBSERVATION_ONLY',
+        can_verify_performance:false,
+        can_directly_set_mastery:false,
+        child_authored:true,
+        explicit_confirmation:true,
+        inference_from_telemetry:false,
+        direct_award_allowed:false,
+        requires_candidate_review:true
+      },
+      badge_guard:{
+        auto_canonicalize:false,
+        auto_activate:false,
+        auto_award:false,
+        auto_infer_error_discovery:false,
+        auto_infer_deep_thinking:false,
+        auto_infer_special_behavior:false
+      },
+      sourceSheetId:S.activeSheetId || null
+    };
+    return emit('SELF_REFLECTION_EVIDENCE', payload);
+  }
+
+  function ensureChildReflectionProducer() {
+    let completed = false;
+    try { completed = sheet()?.status === 'TEST_READY'; } catch {}
+    const existing = document.getElementById('hideChildReflectionProducer');
+    if (!completed) { existing?.remove(); return; }
+    if (existing) return;
+
+    const root = document.getElementById('view');
+    if (!root) return;
+    const section = document.createElement('section');
+    section.id = 'hideChildReflectionProducer';
+    section.className = 'card';
+    section.style.marginTop = '12px';
+    section.innerHTML = `
+      <div class="hero-kicker"><span>MY REFLECTION</span><span>내가 직접 기록</span></div>
+      <h2>오늘 단어 찾기는 어땠어?</h2>
+      <p>정답 기록과 별개예요. 네가 직접 고른 내용만 배지 후보 검토의 증거가 될 수 있어요.</p>
+      <div data-reflect-group="difficulty" class="btn-row" style="margin-top:10px">
+        <button class="btn secondary" data-value="EASY" type="button">쉬웠어</button>
+        <button class="btn secondary" data-value="OK" type="button">괜찮았어</button>
+        <button class="btn secondary" data-value="HARD" type="button">어려웠어</button>
+        <button class="btn secondary" data-value="VERY_HARD" type="button">아주 어려웠어</button>
+      </div>
+      <div data-reflect-group="recall" class="btn-row" style="margin-top:8px">
+        <button class="btn secondary" data-value="KNEW_AND_RECALLED" type="button">바로 떠올랐어</button>
+        <button class="btn secondary" data-value="KNEW_BUT_COULD_NOT_RECALL" type="button">아는데 안 떠올랐어</button>
+        <button class="btn secondary" data-value="RECALLED_WITH_HINT" type="button">힌트 후 떠올랐어</button>
+        <button class="btn secondary" data-value="DID_NOT_KNOW" type="button">몰랐어</button>
+      </div>
+      <div data-reflect-group="confidence" class="btn-row" style="margin-top:8px">
+        <button class="btn secondary" data-value="LOW" type="button">아직 자신 없어</button>
+        <button class="btn secondary" data-value="MEDIUM" type="button">조금 자신 있어</button>
+        <button class="btn secondary" data-value="HIGH" type="button">자신 있어</button>
+      </div>
+      <label style="display:block;margin-top:10px">헷갈린 단어가 있으면 적어도 돼
+        <input id="hideReflectionConfusion" type="text" placeholder="예: accept, except" style="width:100%;margin-top:6px">
+      </label>
+      <button class="btn primary full" id="hideReflectionSubmit" type="button" style="margin-top:12px">내 기록 저장</button>
+      <small id="hideReflectionStatus" style="display:block;margin-top:8px"></small>
+    `;
+    root.appendChild(section);
+
+    const selected = { difficulty:null, recall_state:null, confidence:null };
+    section.querySelectorAll('[data-reflect-group]').forEach(group => {
+      group.querySelectorAll('[data-value]').forEach(button => {
+        button.addEventListener('click', () => {
+          group.querySelectorAll('[data-value]').forEach(x => x.classList.remove('primary'));
+          button.classList.add('primary');
+          const key = group.dataset.reflectGroup === 'recall' ? 'recall_state' : group.dataset.reflectGroup;
+          selected[key] = button.dataset.value;
+        });
+      });
+    });
+    section.querySelector('#hideReflectionSubmit')?.addEventListener('click', () => {
+      if (!selected.difficulty || !selected.recall_state || !selected.confidence) {
+        toast('세 가지를 네가 직접 골라 주세요.');
+        return;
+      }
+      const confusion = String(section.querySelector('#hideReflectionConfusion')?.value || '')
+        .split(',').map(v => v.trim()).filter(Boolean);
+      const result = emitChildAuthoredReflection({
+        ...selected,
+        confusion_with:confusion,
+        used_hint:selected.recall_state === 'RECALLED_WITH_HINT',
+        child_authored:true,
+        explicit_confirmation:true
+      });
+      const status = section.querySelector('#hideReflectionStatus');
+      if (result?.ok === false) {
+        if (status) status.textContent = result.reason === 'MEMBER_SCOPE_REQUIRED'
+          ? '베이스캠프에서 연결된 사용자 정보가 있어야 저장할 수 있어요.'
+          : '선택 내용을 다시 확인해 주세요.';
+        return;
+      }
+      if (status) status.textContent = '내가 직접 남긴 회고가 저장됐어요. 자동 배지 지급은 하지 않아요.';
+      const submit = section.querySelector('#hideReflectionSubmit');
+      if (submit) submit.disabled = true;
+    });
+  }
+
   function requestImaginationCloud(word, reason = 'retrieval_support') {
     return emit('IMAGINATION_CLOUD_REQUEST', {
       word: String(word || '').trim(),
@@ -377,11 +516,13 @@
     wrapSaveForBridge();
     ensureCaptureResumeChip();
     ensureBaseCampChip();
+    ensureChildReflectionProducer();
     normalizeBrandAttributes();
     new MutationObserver(records => {
       records.forEach(record => record.addedNodes.forEach(node => {
         if (node.nodeType === Node.ELEMENT_NODE) normalizeBrandAttributes(node);
       }));
+      ensureChildReflectionProducer();
     }).observe(document.body, { childList: true, subtree: true });
     lastSnapshot = JSON.stringify(buildTaskSnapshot());
     watchSafeUpdates();
@@ -394,6 +535,8 @@
       sendToSnap,
       requestImaginationCloud,
       emitLearningMemorySignal,
+      emitChildAuthoredReflection,
+      ensureChildReflectionProducer,
       isSafeUpdatePoint
     });
   }
