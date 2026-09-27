@@ -51,16 +51,24 @@
     const coverage=new Set(matched.map(w=>w.lexicalId));
     return d.lexicalIds.every(id=>coverage.has(id))?matched.map(w=>w.id):[];
   }
+  function sameCentralBundleRun(mission,ctx){
+    const run=mission?.provenance?.readyRun||{};
+    return !!ctx.session_id&&!!ctx.task_id&&!!ctx.lap_id&&!!ctx.child_id&&
+      run.session_id===ctx.session_id&&run.task_id===ctx.task_id&&
+      run.lap_id===ctx.lap_id&&run.child_id===ctx.child_id;
+  }
   function resolveTargetMission(){
     const active=HideV2Mission.activeMission();
     if(!hasReviewRequest())return {ok:!!active,mission:active,targetItemIds:null,
       reason:active?null:'MISSION_REQUIRED'};
     const d=reviewDirective();
     if(!d)return {ok:false,reason:'EXPLICIT_REVIEW_DIRECTIVE_INVALID'};
+    const ctx=context(),central=d.authority==='EXPLICIT_CENTRAL_PLANNER_REVIEW_DIRECTIVE';
     const candidates=HideV2Mission.listMissions().filter(m=>
       m.status!=='ARCHIVED'&&
       (m.provenance?.source!=='READY_SCOPED_REVIEW_BUNDLE'||
-       (m.provenance?.reviewDirectiveId===d.directiveId&&hasOriginalSources(m))));
+       (m.provenance?.reviewDirectiveId===d.directiveId&&hasOriginalSources(m)&&
+        (!central||sameCentralBundleRun(m,ctx)))));
     const ordered=[active,...candidates].filter((m,i,a)=>m&&
       candidates.some(x=>x.id===m.id)&&a.findIndex(x=>x?.id===m.id)===i);
     const chosen=ordered.find(m=>targetItemIds(m)?.length>0);
@@ -85,11 +93,15 @@
     });
     if(picked.some(x=>!x))return {ok:false,reason:'REVIEW_TARGETS_NOT_AVAILABLE',
       missingLexicalIds:d.lexicalIds.filter((id,i)=>!picked[i])};
-    const bundle={id:'ready-bundle:'+d.directiveId,
+    const bundle={id:'ready-bundle:'+d.directiveId+
+      (central?':'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8):''),
       title:'함께 다시 찾기 · '+picked.length+'개 단어',
       items:picked,sourceCount:0,provenance:{
         source:'READY_SCOPED_REVIEW_BUNDLE',reviewDirectiveId:d.directiveId,
-        targetLexicalIds:[...d.lexicalIds]}};
+        targetLexicalIds:[...d.lexicalIds],
+        ...(central?{readyRun:{session_id:ctx.session_id||null,
+          task_id:ctx.task_id||null,lap_id:ctx.lap_id||null,
+          child_id:ctx.child_id||null}}:{})}};
     return {ok:true,mission:null,reviewBundle:bundle,
       targetItemIds:picked.map(x=>x.id),directive:d};
   }
