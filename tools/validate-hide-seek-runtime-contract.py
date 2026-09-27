@@ -398,7 +398,7 @@ for needle in [
     "/api/capture/analyze",
     "HIDE_VOCABULARY_RESULT_UNSUPPORTED",
     "TakyVisionIngest",
-    "VisionIngest.validateEvidence",
+    "VisionIngest.validateForRequest",
     "OCR_EVIDENCE_MISMATCH",
     "vision_ingest_request_id",
     "TakyHttpJson",
