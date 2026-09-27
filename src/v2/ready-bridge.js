@@ -34,6 +34,16 @@
       observationIsVerifiedProof:false
     });
   }
+  function hasOriginalSources(mission){
+    if(mission?.provenance?.source!=='READY_SCOPED_REVIEW_BUNDLE')return true;
+    const originals=HideV2Store.snapshot().missions;
+    return !!mission.items?.length&&mission.items.every(item=>{
+      const ref=item.reviewSource||{};
+      const source=originals.find(m=>m.id===ref.missionId&&
+        m.provenance?.source!=='READY_SCOPED_REVIEW_BUNDLE');
+      return !!source?.items?.some(w=>w.id===ref.itemId&&w.lexicalId===item.lexicalId);
+    });
+  }
   function targetItemIds(mission){
     if(!hasReviewRequest())return null;
     const d=reviewDirective();if(!d)return [];
@@ -50,7 +60,7 @@
     const candidates=HideV2Mission.listMissions().filter(m=>
       m.status!=='ARCHIVED'&&
       (m.provenance?.source!=='READY_SCOPED_REVIEW_BUNDLE'||
-       m.provenance?.reviewDirectiveId===d.directiveId));
+       (m.provenance?.reviewDirectiveId===d.directiveId&&hasOriginalSources(m))));
     const ordered=[active,...candidates].filter((m,i,a)=>m&&
       candidates.some(x=>x.id===m.id)&&a.findIndex(x=>x?.id===m.id)===i);
     const chosen=ordered.find(m=>targetItemIds(m)?.length>0);
@@ -90,7 +100,8 @@
     const sameRun=!central||(!!ctx.session_id&&!!ctx.task_id&&!!ctx.lap_id&&!!ctx.child_id&&
       session?.readySessionId===ctx.session_id&&session.readyTaskId===ctx.task_id&&
       session.readyLapId===ctx.lap_id&&session.readyChildId===ctx.child_id);
-    return !!(sameRun&&d&&session&&mission&&session.missionId===mission.id&&
+    return !!(sameRun&&d&&session&&mission&&hasOriginalSources(mission)&&
+      session.missionId===mission.id&&
       (session.reviewDirectiveId===d.directiveId||
         (d.authority==='EXPLICIT_READY_PLANNER_REVIEW_DIRECTIVE'&&
          !session.reviewDirectiveId))&&
