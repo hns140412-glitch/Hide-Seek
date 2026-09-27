@@ -112,6 +112,9 @@ test('missing or invalid central target cannot silently run the full active miss
  expect(unstarted.attempt.event).toBeUndefined();
  expect(unstarted.delta).toBe(0);
  expect(await page.evaluate(()=>HideV2ReadyBridge.buildResult().taskState)).toBe('PARTIAL');
+ await page.evaluate(()=>HideV2Router.go('learn'));
+ await expect(page.getByText(/다른 단어로 바꾸어 진행하지 않았어요/)).toBeVisible();
+ expect(await page.locator('#view').getByText('REVIEW_TARGETS_NOT_AVAILABLE').count()).toBe(0);
 });
 test('a previously finished mission and unrelated in-progress session cannot certify a new central task',async({page})=>{
  const unrelated=mission('wrong',[word('a','a::뜻','a')],'COMPLETED');
