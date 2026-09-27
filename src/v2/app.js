@@ -116,15 +116,23 @@
       HideV2Mission.setActive(existing.mission.id);
       return {ok:true,pair:existing,reused:true};
     }
-    if(!choice.mission)return {ok:false,reason:'MISSION_REQUIRED'};
-    HideV2Mission.setActive(choice.mission.id);
+    let selected=choice.mission;
+    if(choice.reviewBundle){
+      try{
+        selected=HideV2Mission.addMission(choice.reviewBundle);
+      }catch(error){
+        return {ok:false,reason:error?.message||'REVIEW_SESSION_START_FAILED'};
+      }
+    }
+    if(!selected)return {ok:false,reason:'MISSION_REQUIRED'};
+    HideV2Mission.setActive(selected.id);
     try{
-      const created=HideV2Session.start(choice.mission,{
+      const created=HideV2Session.start(selected,{
         targetItemIds:choice.targetItemIds,
         reviewDirectiveId:choice.directive?.directiveId||null,
         reviewAuthority:choice.directive?.authority||null
       });
-      return {ok:true,pair:{session:created,mission:choice.mission},reused:false};
+      return {ok:true,pair:{session:created,mission:selected},reused:false};
     }catch(error){return {ok:false,reason:error?.message||'REVIEW_SESSION_START_FAILED'}}
   }
   function setFlash(x){flash=x;setTimeout(()=>{flash='';render()},1200)}
