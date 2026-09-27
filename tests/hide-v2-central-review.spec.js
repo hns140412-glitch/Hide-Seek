@@ -71,6 +71,17 @@ test('central lexical directive finds exact V2 mission and preserves scoped memo
  expect(emitted.payload.memorySummary.scopedItemIds).toEqual(['a','b']);
  expect(emitted.payload.trailSummary.scopeItemIds).toEqual(['a','b']);
  expect(emitted.payload.taskContext.task_id).toBe('task-1');
+ await page.evaluate(()=>HideV2Router.go('learn'));
+ const stored=await page.evaluate(()=>{
+  const m=HideV2Mission.activeMission();
+  return {status:m.status,missionMemoryIds:m.memorySummary.scopedItemIds,
+   missionTrailCount:m.trailSummary.totalWordCount,
+   returned:HideV2ReadyBridge.buildResult().memorySummary.scopedItemIds};
+ });
+ expect(stored.status).toBe('PARTIAL');
+ expect(stored.missionMemoryIds).toEqual(['a','b','c']);
+ expect(stored.missionTrailCount).toBe(3);
+ expect(stored.returned).toEqual(['a','b']);
 });
 test('missing or invalid central target cannot silently run the full active mission',async({page})=>{
  await visit(page,directive(['missing::뜻']),
