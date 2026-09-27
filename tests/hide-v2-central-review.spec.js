@@ -183,3 +183,85 @@ test('approved Ready return carries scoped V2 feedback in fragment without serve
  expect(event.payload.taskState).toBe('PARTIAL');
  expect(event.payload.reviewedLexicalIds).toEqual(['a::뜻']);
 });
+
+test('central multi-mission bundle returns the exact scoped result and writes evidence to original words once',async({page})=>{
+ const unrelated=mission('unrelated',[word('unrelated-item','other::뜻','other')]);
+ const sourceA=mission('source-a',[
+  word('a-original','a::뜻','a'),word('c-original','c::뜻','c')]);
+ const sourceB=mission('source-b',[word('b-original','b::뜻','b')]);
+ await visit(page,directive(['a::뜻','b::뜻']),[unrelated,sourceA,sourceB]);
+ const started=await page.evaluate(()=>{
+  const before=HideV2Memory.wordbook();
+  const start=HideV2App.start(),state=HideV2Store.snapshot();
+  const m=state.missions.find(x=>x.id===state.activeMissionId);
+  return {start,wordCount:before.length,activeMissionId:m?.id,
+   provenance:m?.provenance,items:m?.items.map(x=>({
+    id:x.id,lexicalId:x.lexicalId,reviewSource:x.reviewSource})),
+   queue:state.activeSession?.queue};
+ });
+ expect(started.start.ok).toBe(true);
+ expect(started.wordCount).toBe(4);
+ expect(started.provenance.source).toBe('READY_SCOPED_REVIEW_BUNDLE');
+ expect(started.provenance.targetLexicalIds).toEqual(['a::뜻','b::뜻']);
+ expect(started.items).toEqual([
+  {id:'review-item-0',lexicalId:'a::뜻',
+   reviewSource:{missionId:'source-a',itemId:'a-original'}},
+  {id:'review-item-1',lexicalId:'b::뜻',
+   reviewSource:{missionId:'source-b',itemId:'b-original'}}
+ ]);
+ expect(started.queue).toEqual(['review-item-0','review-item-1']);
+ const written=await page.evaluate(()=>{
+  const bundle=HideV2Mission.activeMission();
+  HideV2Memory.record(bundle.id,'review-item-0',{
+   stage:'FINAL_SEEK',evidenceMode:'RECALL',axes:['FORM','RECALL'],
+   result:'WRONG',objectiveRecall:true,objectiveVerified:false,assisted:false});
+  HideV2Memory.record(bundle.id,'review-item-1',{
+   stage:'FINAL_SEEK',evidenceMode:'RECALL',axes:['FORM','RECALL'],
+   result:'HINT_USED',objectiveRecall:true,objectiveVerified:false,assisted:true});
+  const s=HideV2Store.snapshot();
+  const find=(missionId,itemId)=>s.missions.find(x=>x.id===missionId)
+    ?.items.find(x=>x.id===itemId);
+  const originalA=find('source-a','a-original');
+  const originalB=find('source-b','b-original');
+  const unrelated=find('unrelated','unrelated-item');
+  const untouched=find('source-a','c-original');
+  const result=HideV2ReadyBridge.buildResult();
+  const after=HideV2Memory.wordbook();
+  const resumed=HideV2App.start();
+  return {originalA:originalA?.evidence,originalB:originalB?.evidence,
+   unrelated:unrelated?.evidence,untouched:untouched?.evidence,
+   result,resumed,bundles:HideV2Mission.listMissions().filter(m=>
+    m.provenance?.source==='READY_SCOPED_REVIEW_BUNDLE').length,
+   wordCount:after.length,lexicalIds:after.map(x=>x.lexicalId)};
+ });
+ expect(written.originalA).toHaveLength(1);
+ expect(written.originalB).toHaveLength(1);
+ expect(written.originalA[0].reviewBundleId).toBe(started.activeMissionId);
+ expect(written.originalB[0].reviewBundleId).toBe(started.activeMissionId);
+ expect(written.unrelated).toEqual([]);
+ expect(written.untouched).toEqual([]);
+ expect(written.bundles).toBe(1);
+ expect(written.wordCount).toBe(4);
+ expect(new Set(written.lexicalIds).size).toBe(4);
+ expect(written.resumed.ok).toBe(true);
+ expect(written.result.taskState).toBe('PARTIAL');
+ expect(written.result.reviewedLexicalIds).toEqual(['a::뜻','b::뜻']);
+ expect(written.result.memorySummary.scopedItemIds)
+  .toEqual(['review-item-0','review-item-1']);
+ expect(written.result.trailSummary.scopeItemIds)
+  .toEqual(['review-item-0','review-item-1']);
+ const completed=await page.evaluate(()=>{
+  const active=HideV2Store.snapshot().activeSession;
+  HideV2Session.update({...active,stage:'COMPLETE',completedAt:new Date().toISOString()});
+  const sent=HideV2ReadyBridge.returnToReady();
+  return {event:sent.event,originalCounts:[
+   HideV2Store.snapshot().missions.find(x=>x.id==='source-a')
+    .items.find(x=>x.id==='a-original').evidence.length,
+   HideV2Store.snapshot().missions.find(x=>x.id==='source-b')
+    .items.find(x=>x.id==='b-original').evidence.length]};
+ });
+ expect(completed.event.event_type).toBe('TASK_COMPLETED');
+ expect(completed.event.payload.taskState).toBe('COMPLETED');
+ expect(completed.event.payload.reviewedLexicalIds).toEqual(['a::뜻','b::뜻']);
+ expect(completed.originalCounts).toEqual([1,1]);
+});
