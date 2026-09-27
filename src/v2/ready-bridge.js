@@ -133,6 +133,14 @@
   }
   function returnToReady(){
     const c=context(),target=c.return_target;
+    const s=HideV2Store.snapshot();
+    const mission=s.missions.find(x=>x.id===s.activeMissionId);
+    const active=s.activeSession;
+    if(!mission||!active||active.missionId!==mission.id||
+       !String(active.startedAt||'').trim()||
+       !Array.isArray(active.queue)||!active.queue.length||
+       !matchesActiveReview(active,mission))
+      return {ok:false,reason:'MATCHED_ACTIVE_REVIEW_SESSION_REQUIRED'};
     const eventType=buildResult().taskState==='COMPLETED'?'TASK_COMPLETED':'TASK_PARTIAL';
     if(!target)return {ok:false,reason:'RETURN_TARGET_MISSING',event:emitTaskEvent(eventType)};
     let url;
