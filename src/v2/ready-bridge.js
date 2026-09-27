@@ -135,8 +135,18 @@
     const c=context(),target=c.return_target;
     const eventType=buildResult().taskState==='COMPLETED'?'TASK_COMPLETED':'TASK_PARTIAL';
     if(!target)return {ok:false,reason:'RETURN_TARGET_MISSING',event:emitTaskEvent(eventType)};
+    let url;
+    try{
+      url=new URL(target,location.href);
+      const allowed=Array.isArray(globalThis.HideV2TrustedReadyOrigins)
+        ?globalThis.HideV2TrustedReadyOrigins:[];
+      const localhost=['localhost','127.0.0.1','[::1]'].includes(url.hostname);
+      if(url.username||url.password||url.hash||
+         (url.protocol!=='https:'&&!(url.protocol==='http:'&&localhost))||
+         (url.origin!==location.origin&&!allowed.includes(url.origin)))
+        return {ok:false,reason:'EXPLICIT_READY_RETURN_ORIGIN_REQUIRED'};
+    }catch{return {ok:false,reason:'EXPLICIT_READY_RETURN_ORIGIN_REQUIRED'}}
     const event=emitTaskEvent(eventType);
-    const url=new URL(target,location.href);
     url.searchParams.set('learning_event',JSON.stringify(event));
     location.assign(url.href);
     return {ok:true,event};
