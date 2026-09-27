@@ -96,6 +96,9 @@
     const completed=scopedMission&&activeSession.stage==='COMPLETE'&&
       matchesActiveReview(activeSession,m);
     const scopeItemIds=scopedMission?activeSession.queue:null;
+    const scopeSet=Array.isArray(scopeItemIds)?new Set(scopeItemIds):null;
+    const reviewedLexicalIds=(m?.items||[])
+      .filter(w=>!scopeSet||scopeSet.has(w.id)).map(w=>w.lexicalId).filter(Boolean);
     const trail=m?HideV2Trail.missionSummary(m,{itemIds:scopeItemIds}):null;
     const expressionReviews=expressionReviewCandidates(m,scopeItemIds);
     return {
@@ -110,6 +113,7 @@
       learningPhase:activeSession?.stage|| (completed?'COMPLETE':null),
       trailMastery:trail?.trailMastery??null,
       trailSummary:trail,
+      reviewedLexicalIds,
       memorySummary:m?HideV2Memory.missionSummary(m,{itemIds:scopeItemIds}):null,
       expressionReviewCandidates:expressionReviews,
       humanSemanticReviewAvailable:expressionReviews.length>0,
