@@ -55,11 +55,15 @@ const visionReq=vision.buildRequest({source:'hide-seek:test',manifest:[{source_i
 assert.equal(visionReq.ok,true);
 const visionResult=vision.normalizeResult({request_id:visionReq.request.request_id,items:[{evidence_source_ids:['page-1'],provider_payload:{eng:'word',kor:'뜻'}}]});
 assert.equal(visionResult.ok,true);
-assert.equal(vision.validateEvidence(visionResult.result,['page-1']).ok,true);
+assert.equal(vision.validateForRequest(visionResult.result,visionReq.request).ok,true);
+const unlinked=vision.normalizeResult({request_id:visionReq.request.request_id,items:[{provider_payload:{eng:'word'}}]});
+assert.equal(vision.validateForRequest(unlinked.result,visionReq.request).ok,false);
 const familyOcr=fs.readFileSync(path.join(__dirname,'..','hide-family-ocr-adapter.js'),'utf8');
 const hideRuntime=fs.readFileSync(path.join(__dirname,'..','hide-runtime.js'),'utf8');
 assert(familyOcr.includes('TakyVisionIngest'));
-assert(familyOcr.includes('VisionIngest.validateEvidence'));
+assert(familyOcr.includes('VisionIngest.validateForRequest'));
+assert(familyOcr.includes('OCR_REQUEST_BINDING_MISSING'));
+assert(familyOcr.includes('OCR_REQUEST_BINDING_MISMATCH'));
 assert(familyOcr.includes('OCR_EVIDENCE_MISMATCH'));
 assert(hideRuntime.includes('ocrVisionIngestRequestId'));
 console.log('PASS: Hide consumes shared vision ingest evidence mechanics while retaining vocabulary pairing semantics');
