@@ -161,3 +161,25 @@ test('unapproved return target never receives scoped child learning envelope',as
  const unsafe=await page.evaluate(()=>HideV2ReadyBridge.returnToReady());
  expect(unsafe.reason).toBe('EXPLICIT_READY_RETURN_ORIGIN_REQUIRED');
 });
+
+test('approved Ready return carries scoped V2 feedback in fragment without server query',async({page})=>{
+ await visit(page,directive(['a::뜻']),
+  [mission('matched',[word('a','a::뜻','a')])],'matched');
+ const started=await page.evaluate(()=>{
+  const r=HideV2App.start();
+  const url=new URL(location.href);
+  url.searchParams.set('return_target',location.origin+'/v2.html');
+  history.replaceState(null,'',url.href);
+  setTimeout(()=>HideV2ReadyBridge.returnToReady(),0);
+  return r.ok;
+ });
+ expect(started).toBe(true);
+ await page.waitForURL(/#learning_event=/);
+ const url=new URL(page.url());
+ expect(url.searchParams.has('learning_event')).toBe(false);
+ const event=JSON.parse(new URLSearchParams(url.hash.slice(1)).get('learning_event'));
+ expect(event.source).toBe('hide-seek');
+ expect(event.event_type).toBe('TASK_PARTIAL');
+ expect(event.payload.taskState).toBe('PARTIAL');
+ expect(event.payload.reviewedLexicalIds).toEqual(['a::뜻']);
+});
