@@ -116,3 +116,18 @@ test('mismatched task binding is rejected and local Ready directive remains supp
  expect(selected.directive.reviewPolicyOwner).toBe('READY_LEARNING_ENGINE');
  expect(selected.started.ok).toBe(true);
 });
+
+test('unapproved return target never receives scoped child learning envelope',async({page})=>{
+ const target=encodeURIComponent('https://untrusted.example/collect');
+ await page.goto('/v2.html?return_target='+target);
+ const result=await page.evaluate(()=>({
+  response:HideV2ReadyBridge.returnToReady(),
+  eventCount:HideV2Store.snapshot().events.length
+ }));
+ expect(result.response.ok).toBe(false);
+ expect(result.response.reason).toBe('EXPLICIT_READY_RETURN_ORIGIN_REQUIRED');
+ expect(result.eventCount).toBe(0);
+ await page.goto('/v2.html?return_target='+encodeURIComponent('javascript:alert(1)'));
+ const unsafe=await page.evaluate(()=>HideV2ReadyBridge.returnToReady());
+ expect(unsafe.reason).toBe('EXPLICIT_READY_RETURN_ORIGIN_REQUIRED');
+});
