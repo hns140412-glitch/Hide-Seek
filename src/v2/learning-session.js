@@ -8,13 +8,18 @@
 
   function create(mission,options={}){
     if(!mission?.items?.length)throw new Error('MISSION_REQUIRED');
-    const requested=Array.isArray(options.targetItemIds)?options.targetItemIds:[];
-    const queue=(requested.length?requested:mission.items.map(x=>x.id)).filter(id=>mission.items.some(x=>x.id===id));
+    const scoped=Array.isArray(options.targetItemIds);
+    const requested=scoped?[...new Set(options.targetItemIds)]:[];
+    if(scoped&&(!requested.length||requested.some(id=>!mission.items.some(x=>x.id===id))))
+      throw new Error('EXPLICIT_REVIEW_TARGETS_NOT_IN_MISSION');
+    const queue=scoped?requested:mission.items.map(x=>x.id);
     if(!queue.length)throw new Error('SESSION_QUEUE_EMPTY');
     const first=mission.items.find(x=>x.id===queue[0]);
     return {
       id:'session-'+Date.now().toString(36),
       missionId:mission.id,
+      reviewDirectiveId:String(options.reviewDirectiveId||'').trim()||null,
+      reviewAuthority:String(options.reviewAuthority||'').trim()||null,
       index:0,
       queue,
       stage:initialStageFor(first),
