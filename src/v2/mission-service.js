@@ -47,7 +47,18 @@
     };
   }
   function createMission(input={}){
-    const items=(Array.isArray(input.items)?input.items:[]).map(normalizeItem).filter(Boolean);
+    const isReviewBundle=input.provenance?.source==='READY_SCOPED_REVIEW_BUNDLE';
+    const items=(Array.isArray(input.items)?input.items:[])
+      .map((raw,index)=>{
+        const normalized=normalizeItem(raw,index);
+        if(!normalized||!isReviewBundle)return normalized;
+        const source=raw?.reviewSource||{};
+        if(!clean(source.missionId)||!clean(source.itemId))
+          throw new Error('REVIEW_BUNDLE_SOURCE_REQUIRED');
+        return {...normalized,missionRole:'REVIEW',
+          evidence:structuredClone(Array.isArray(raw.evidence)?raw.evidence:[]),
+          reviewSource:{missionId:clean(source.missionId),itemId:clean(source.itemId)}};
+      }).filter(Boolean);
     if(!items.length)throw new Error('MISSION_ITEMS_REQUIRED');
     return {
       id:clean(input.id)||id('mission'),
