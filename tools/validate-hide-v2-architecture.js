@@ -38,6 +38,7 @@ if(!learning.includes('submitMemorize'))fail.push('V2_MEMORIZATION_EVIDENCE_MISS
 if(!learning.includes('checkFinalSeek'))fail.push('V2_FINAL_SEEK_EVIDENCE_MISSING');
 if(!learning.includes('submitSeekAgainRelearn'))fail.push('V2_SEEK_AGAIN_RELEARN_MISSING');
 if(!learning.includes('checkSeekAgain'))fail.push('V2_SEEK_AGAIN_RECALL_MISSING');
+for(const direction of ['MEANING_TO_FORM','FORM_TO_MEANING'])if(!learning.includes("recallDirection:'"+direction+"'"))fail.push('V2_RECALL_DIRECTION_MISSING:'+direction);
 if(!app.includes("childStageLabel('SEEK_AGAIN_RELEARN')"))fail.push('V2_SEEK_AGAIN_RELEARN_UI_MISSING');
 if(!app.includes("childStageLabel('SEEK_AGAIN')"))fail.push('V2_SEEK_AGAIN_UI_MISSING');
 
@@ -72,7 +73,7 @@ for(const token of ['HIDE_CURRENT_MISSION_READINESS','CURRENT_SESSION_OR_MISSION
   if(!trail.includes(token))fail.push('V2_TRAIL_MASTERY_CONTRACT_MISSING:'+token);
 }
 const memory=fs.readFileSync(path.join(ROOT,'src/v2/memory-engine.js'),'utf8');
-for(const token of ['signature','memoryStrength','nextReviewPriority','recoveryStatus','wordbook','dashboard']){
+for(const token of ['signature','memoryStrength','nextReviewPriority','recoveryStatus','recallDirections','wordbook','dashboard']){
   if(!memory.includes(token))fail.push('V2_MEMORY_LADDER_CONTRACT_MISSING:'+token);
 }
 
