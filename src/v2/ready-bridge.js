@@ -59,7 +59,9 @@
     if(!hasReviewRequest())return true;
     const d=reviewDirective(),expected=targetItemIds(mission);
     return !!(d&&session&&mission&&session.missionId===mission.id&&
-      session.reviewDirectiveId===d.directiveId&&
+      (session.reviewDirectiveId===d.directiveId||
+        (d.authority==='EXPLICIT_READY_PLANNER_REVIEW_DIRECTIVE'&&
+         !session.reviewDirectiveId))&&
       Array.isArray(expected)&&expected.length&&
       JSON.stringify(session.queue)===JSON.stringify(expected));
   }
