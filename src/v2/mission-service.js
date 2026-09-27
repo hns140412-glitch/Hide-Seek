@@ -93,9 +93,15 @@
       if(s.activeSession?.missionId===id)s.activeSession=null;
     });
   }
+  function activeBundleSourceIds(state){
+    const active=state.missions.find(m=>m.id===state.activeSession?.missionId);
+    return new Set(active?.provenance?.source==='READY_SCOPED_REVIEW_BUNDLE'
+      ?active.items.map(w=>w.reviewSource?.missionId).filter(Boolean):[]);
+  }
   function deleteMission(id){
     const s=HideV2Store.snapshot();
     if(s.activeSession?.missionId===id)throw new Error('ACTIVE_SESSION_MISSION_DELETE_BLOCKED');
+    if(activeBundleSourceIds(s).has(id))throw new Error('ACTIVE_REVIEW_SOURCE_DELETE_BLOCKED');
     HideV2Store.transaction(state=>{
       state.missions=state.missions.filter(x=>x.id!==id);
       if(state.activeMissionId===id){
@@ -113,6 +119,8 @@
     const s=HideV2Store.snapshot();
     const activeSessionMissionId=s.activeSession?.missionId||null;
     if(activeSessionMissionId&&selected.includes(activeSessionMissionId))throw new Error('ACTIVE_SESSION_MISSION_BULK_BLOCKED');
+    if(selected.some(id=>activeBundleSourceIds(s).has(id)))
+      throw new Error('ACTIVE_REVIEW_SOURCE_DELETE_BLOCKED');
     const existing=new Set(s.missions.map(x=>x.id));
     const valid=selected.filter(id=>existing.has(id));
     if(!valid.length)throw new Error('MISSION_SELECTION_REQUIRED');
