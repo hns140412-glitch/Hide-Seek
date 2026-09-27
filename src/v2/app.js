@@ -89,6 +89,14 @@
   let flash='';
 
   function mission(){return HideV2Mission.activeMission()}
+  const reviewStartMessage=reason=>({
+    MISSION_REQUIRED:'먼저 탐험 미션을 준비해 주세요.',
+    EXPLICIT_REVIEW_DIRECTIVE_INVALID:'복습 지시를 확인하지 못했어요. Ready & Set에서 과제를 다시 열어 주세요.',
+    REVIEW_TARGETS_NOT_AVAILABLE:'이번 복습에 필요한 단어가 저장된 미션을 찾지 못했어요. 다른 단어로 바꾸어 진행하지 않았어요.',
+    DIFFERENT_ACTIVE_SESSION_REQUIRES_EXPLICIT_RESOLUTION:'다른 탐험이 진행 중이라 현재 기록을 그대로 보존했어요. 먼저 기존 탐험을 정리해 주세요.',
+    EXPLICIT_REVIEW_TARGETS_NOT_IN_MISSION:'복습 단어 범위를 확인하지 못했어요. 과제를 다시 선택해 주세요.',
+    REVIEW_SESSION_START_FAILED:'복습을 시작하지 못했어요. 저장된 탐험을 확인해 주세요.'
+  })[reason]||'복습을 시작하지 못했어요. 현재 기록은 보존했어요.';
   function ensureReadyScopedSession(){
     const bridge=globalThis.HideV2ReadyBridge;
     const choice=bridge?.resolveTargetMission?.()||{ok:!!mission(),mission:mission(),targetItemIds:null};
@@ -290,7 +298,7 @@
     if($('#v2ResumeReview'))$('#v2ResumeReview').onclick=()=>review(HideV2Capture.reviewRows());
     if($('#v2Start'))$('#v2Start').onclick=()=>{
       const started=ensureReadyScopedSession();
-      if(!started.ok){setFlash(started.reason);return}
+      if(!started.ok){setFlash(reviewStartMessage(started.reason));return}
       HideV2Router.go('learn')
     };
   }
@@ -409,7 +417,7 @@
     const resolved=ensureReadyScopedSession();
     if(!resolved.ok){
       view().innerHTML='<section class="card"><h2>복습 대상을 확인할 수 없어요</h2>'+
-        '<p>'+esc(resolved.reason)+'</p>'+
+        '<p>'+esc(reviewStartMessage(resolved.reason))+'</p>'+
         '<button id="v2ReviewReturn" class="btn secondary">탐험 지도로 돌아가기</button></section>';
       $('#v2ReviewReturn').onclick=()=>HideV2Router.go('home');
       return;
