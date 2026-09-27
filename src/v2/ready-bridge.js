@@ -126,8 +126,10 @@
     return envelope;
   }
   function returnToReady(){
-    const c=context(),target=c.return_target;if(!target)return {ok:false,reason:'RETURN_TARGET_MISSING',event:emitTaskEvent('TASK_COMPLETED')};
-    const event=emitTaskEvent('TASK_COMPLETED');
+    const c=context(),target=c.return_target;
+    const eventType=buildResult().taskState==='COMPLETED'?'TASK_COMPLETED':'TASK_PARTIAL';
+    if(!target)return {ok:false,reason:'RETURN_TARGET_MISSING',event:emitTaskEvent(eventType)};
+    const event=emitTaskEvent(eventType);
     const url=new URL(target,location.href);
     url.searchParams.set('learning_event',JSON.stringify(event));
     location.assign(url.href);
