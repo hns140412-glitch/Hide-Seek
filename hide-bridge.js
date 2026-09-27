@@ -339,10 +339,21 @@
   // observation neither certifies objective recall nor allocates a Planner date.
   function emitLearningMemorySignal(input = {}) {
     const context=getContext();
+    // This is a local continuity check, not browser-granted family authority.
+    // A caller must not rebind a Ready-selected child through payload overrides.
+    if(context.child_id&&input.member_id&&input.member_id!==context.child_id)
+      return {ok:false,reason:'MEMBER_SCOPE_MISMATCH'};
+    if(context.subject&&input.subject&&
+       String(input.subject).trim().toLowerCase()!==String(context.subject).trim().toLowerCase())
+      return {ok:false,reason:'LEARNING_SCOPE_MISMATCH'};
+    if(context.concept_skill_target&&input.concept_skill_target&&
+       String(input.concept_skill_target).trim().toLowerCase()!==
+       String(context.concept_skill_target).trim().toLowerCase())
+      return {ok:false,reason:'LEARNING_SCOPE_MISMATCH'};
     return emit('LEARNING_MEMORY_SIGNAL',{
       skill_id:input.skill_id||input.word||input.item_id||context.concept_skill_target||null,
       word:input.word||null,item_id:input.item_id||null,
-      member_id:input.member_id||context.child_id||null,
+      member_id:context.child_id||input.member_id||null,
       subject:input.subject||context.subject||null,
       concept_skill_target:input.concept_skill_target||context.concept_skill_target||null,
       learning_target_id:input.learning_target_id||context.learning_target_id||null,
