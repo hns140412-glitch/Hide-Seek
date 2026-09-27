@@ -33,7 +33,7 @@ assert(api.learningContextFor(readyContext)?.resolvedBy==='READY_LEARNING_ENGINE
 const evidence=sandbox.window.HideLanguageEvidence;
 assert(evidence?.SCHEMA_VERSION===2,'language evidence schema');
 assert(Array.isArray(evidence.invalidRecords)&&evidence.invalidRecords.length===0,'language evidence records must validate');
-assert(Object.keys(evidence.records||{}).length===10,'verified evidence record count');
+assert(Object.keys(evidence.records||{}).length===12,'verified evidence record count');
 for(const [word,record] of Object.entries(evidence.records||{}))assert(evidence.validateRecord(word,record),'evidence record '+word);
 assert(evidence.validateRecord('earthquake',evidence.records.earthquake),'verified compound contract');
 assert(!evidence.validateRecord('bad',{supportType:'VERIFIED_ETYMOLOGY',sourceType:'ETYMONLINE',sourceRef:'http://example.com',center:{label:'x',meaning:'x'},nodes:[{role:'ROOT',label:'x',meaning:'x'}],bridge:'x',scene:'x'}),'invalid source must fail');
@@ -161,7 +161,8 @@ assert(html.includes('건너서 나르다'),'memory bridge rendering');
 assert(html.includes('PREFIX')&&html.includes('ROOT'),'role rendering');
 
 const starter=api.starterExploration({eng:'rainforest'},{encounteredWords:['jungle']});
-assert(starter?.type==='TRANSPARENT_COMPOUND','rainforest should use transparent compound support');
+assert(starter?.type==='TRANSPARENT_COMPOUND'&&starter?.verified===true,'rainforest should use verified transparent compound support');
+assert(starter?.sourceRef?.includes('rain%20forest'),'rainforest must preserve canonical source pointer');
 assert(starter?.links.includes('jungle'),'encountered connection should appear');
 assert(starter?.claimsHistoricalEtymology===false,'starter support must not claim historical etymology');
 const islandPlan=api.starterExploration({eng:'island'},{encounteredWords:['ocean']});
@@ -193,7 +194,8 @@ assert(verifiedEarthquake?.type==='TRANSPARENT_COMPOUND'&&verifiedEarthquake?.cl
 const earthquakeHtml=api.renderStarterExplorationHtml({eng:'earthquake'},{encounteredWords:[]},x=>String(x));
 assert(earthquakeHtml.includes('검증 구조')&&!earthquakeHtml.includes('검증 어원'),'earthquake truth badge');
 const oceanTruthGate=api.starterExploration({eng:'ocean'},{encounteredWords:[]});
-assert(oceanTruthGate?.verified===false&&oceanTruthGate?.type==='SEMANTIC_SCENE','ocean must remain semantic scene when deeper origin is unknown');
+assert(oceanTruthGate?.verified===true&&oceanTruthGate?.type==='VERIFIED_ETYMOLOGY','ocean must use the verified Greek-Latin historical path');
+assert(oceanTruthGate?.nodes?.some(x=>x.role==='ORIGIN_GUARD'),'ocean must preserve deeper-origin uncertainty guard');
 const verifiedGlacier=api.verifiedEvidence({eng:'glacier'});
 assert(verifiedGlacier?.center?.label==='glace','glacier verified center concept');
 const verifiedClimate=api.verifiedEvidence({eng:'climate'});
@@ -208,9 +210,10 @@ const rootProfile={adaptiveClue:{clue:'ROOT_ETYMOLOGY'}};
 const environmentAdaptiveHtml=api.renderStarterExplorationHtml({eng:'environment'},{encounteredWords:[],skillProfile:rootProfile},x=>String(x));
 assert(environmentAdaptiveHtml.includes('반복해서 확인된 단서'),'verified root may reuse root preference');
 const oceanAdaptiveHtml=api.renderStarterExplorationHtml({eng:'ocean'},{encounteredWords:[],skillProfile:rootProfile},x=>String(x));
-assert(!oceanAdaptiveHtml.includes('반복해서 확인된 단서'),'unsupported root preference must not leak into ocean');
+assert(oceanAdaptiveHtml.includes('반복해서 확인된 단서'),'verified ocean etymology may use an etymology clue preference');
+assert(oceanAdaptiveHtml.includes('더 깊은 기원'),'ocean UI must retain the deeper-origin guard');
 assert(api.clueApplicableToPlan(api.starterExploration({eng:'rainforest'},{}),'WORD_PART'),'compound should allow word-part clue');
-assert(!api.clueApplicableToPlan(api.starterExploration({eng:'ocean'},{}),'ROOT_ETYMOLOGY'),'semantic ocean should reject root clue');
+assert(api.clueApplicableToPlan(api.starterExploration({eng:'ocean'},{}),'ROOT_ETYMOLOGY'),'verified ocean historical path may use etymology clue');
 const mountainScene=api.renderStarterExplorationHtml({eng:'mountain'},{encounteredWords:[]},x=>String(x));
 assert(mountainScene.includes('평평한 땅')&&mountainScene.includes('위로 솟기')&&mountainScene.includes('높은 꼭대기'),'child-facing mountain scene labels');
 assert(!mountainScene.includes('>GROUND<')&&!mountainScene.includes('>RISE<')&&!mountainScene.includes('>PEAK<'),'internal scene ids must not leak as labels');
@@ -231,8 +234,8 @@ assert(!noInvent.includes('MEANING_MAP')&&!noInvent.includes('THINKING_SCENE'),'
 assert(api.clueApplicableToPlan(null,'ROOT_ETYMOLOGY')===false,'adaptive clue must fail safe when current word has no exploration plan');
 const parentVerified=api.parentExplanation({eng:'mountain'});
 assert(parentVerified?.mode==='VERIFIED_ETYMOLOGY_OR_ROOT'&&parentVerified?.text.includes('mons / montis'),'parent verified explanation');
-const parentSemantic=api.parentExplanation({eng:'ocean'});
-assert(parentSemantic?.mode==='SEMANTIC_SCENE'&&parentSemantic?.text.includes('억지로 어원을 나누지 않고'),'parent semantic truth boundary');
+const parentOcean=api.parentExplanation({eng:'ocean'});
+assert(parentOcean?.mode==='VERIFIED_ETYMOLOGY_OR_ROOT'&&parentOcean?.text.includes('Okeanos'),'parent explanation may use verified ocean historical path');
 const skill=api.summarizeInferenceSkill([
   {event:'FIRST_SEEN_PREDICTION',clueUsed:'ROOT_ETYMOLOGY',confidence:'HIGH',outcome:'MATCH'},
   {event:'FIRST_SEEN_PREDICTION',clueUsed:'SCENE',confidence:'MEDIUM',outcome:'NEAR'},
