@@ -133,6 +133,21 @@
   }
   function returnToReady(){
     const c=context(),target=c.return_target;
+    // Reject an unapproved return destination before any attempt to export
+    // child progress; this check is independent of whether a session exists.
+    let url=null;
+    if(target){
+      try{
+        url=new URL(target,location.href);
+        const allowed=Array.isArray(globalThis.HideV2TrustedReadyOrigins)
+          ?globalThis.HideV2TrustedReadyOrigins:[];
+        const localhost=['localhost','127.0.0.1','[::1]'].includes(url.hostname);
+        if(url.username||url.password||url.hash||
+           (url.protocol!=='https:'&&!(url.protocol==='http:'&&localhost))||
+           (url.origin!==location.origin&&!allowed.includes(url.origin)))
+          return {ok:false,reason:'EXPLICIT_READY_RETURN_ORIGIN_REQUIRED'};
+      }catch{return {ok:false,reason:'EXPLICIT_READY_RETURN_ORIGIN_REQUIRED'}}
+    }
     const s=HideV2Store.snapshot();
     const mission=s.missions.find(x=>x.id===s.activeMissionId);
     const active=s.activeSession;
@@ -143,17 +158,6 @@
       return {ok:false,reason:'MATCHED_ACTIVE_REVIEW_SESSION_REQUIRED'};
     const eventType=buildResult().taskState==='COMPLETED'?'TASK_COMPLETED':'TASK_PARTIAL';
     if(!target)return {ok:false,reason:'RETURN_TARGET_MISSING',event:emitTaskEvent(eventType)};
-    let url;
-    try{
-      url=new URL(target,location.href);
-      const allowed=Array.isArray(globalThis.HideV2TrustedReadyOrigins)
-        ?globalThis.HideV2TrustedReadyOrigins:[];
-      const localhost=['localhost','127.0.0.1','[::1]'].includes(url.hostname);
-      if(url.username||url.password||url.hash||
-         (url.protocol!=='https:'&&!(url.protocol==='http:'&&localhost))||
-         (url.origin!==location.origin&&!allowed.includes(url.origin)))
-        return {ok:false,reason:'EXPLICIT_READY_RETURN_ORIGIN_REQUIRED'};
-    }catch{return {ok:false,reason:'EXPLICIT_READY_RETURN_ORIGIN_REQUIRED'}}
     const event=emitTaskEvent(eventType);
     url.searchParams.set('learning_event',JSON.stringify(event));
     location.assign(url.href);
