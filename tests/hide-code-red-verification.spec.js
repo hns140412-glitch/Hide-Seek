@@ -28,6 +28,7 @@ test('main Code Red candidate survives the richer Hide Draft trace without minti
    }))};
  });
  expect(observed.after-observed.initial).toBe(6);
+ expect(await page.evaluate(()=>recordCodeResult.toString().includes('emitCodeRedRetrievalCandidate(type,w,attempt,sh)'))).toBe(true);
  expect(observed.pass).toBeNull();
  expect(observed.stored).toHaveLength(6);
  expect(observed.stored.map(x=>x.data.verification_candidate.outcome))
@@ -46,4 +47,28 @@ test('main Code Red candidate survives the richer Hide Draft trace without minti
   expect(row.verified).toBeUndefined();
  }
  expect(observed.emitted.every(x=>x.eventId&&x.same)).toBe(true);
+});
+
+test('main learning-memory signal keeps child/skill context and remains advisory only',async({page})=>{
+ await page.goto('/?'+new URLSearchParams({child_id:'CHILD_A',subject:'english',
+  concept_skill_target:'vocabulary',learning_target_id:'a::뜻'}));
+ await expect.poll(()=>page.evaluate(()=>typeof globalThis.HideSeekBridge?.emitLearningMemorySignal)).toBe('function');
+ const result=await page.evaluate(()=>{
+  const e=globalThis.HideSeekBridge.emitLearningMemorySignal({
+    word:'a',correct:false,assisted:true,nextReviewPriority:80,spacedEvidence:false,
+    source_refs:['source-sheet-1'],provenance:['answer-trail-1']
+  });
+  return {type:e.event_type,data:e.payload,valid:TakyEventEnvelope.validate(e).ok};
+ });
+ expect(result.type).toBe('LEARNING_MEMORY_SIGNAL');
+ expect(result.valid).toBe(true);
+ expect(result.data).toMatchObject({member_id:'CHILD_A',subject:'english',
+  concept_skill_target:'vocabulary',learning_target_id:'a::뜻',
+  correct:false,assisted:true,nextReviewPriority:80,spacedEvidence:false,
+  observation_only:true,global_mastery_claim:false,
+  schedule_date_owned_by:'READY_SET_PLANNER',
+  evidence_source_refs:['source-sheet-1'],evidence_provenance:['answer-trail-1']});
+ expect(result.data).not.toHaveProperty('verified_outcome');
+ expect(result.data).not.toHaveProperty('verification_receipt');
+ expect(result.data).not.toHaveProperty('planner_date');
 });
