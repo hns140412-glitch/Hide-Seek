@@ -301,3 +301,26 @@ test('scoped review protects source deletion and refuses an orphaned bundle retu
  expect(result.sourceEvidence).toEqual([]);
  expect(result.hasDeletedSource).toBe(false);
 });
+
+test('duplicate original rows for one lexical target cannot silently expand review scope',async({page})=>{
+ const duplicated=mission('source-a',[word('a1','a::뜻','a'),word('a2','a::뜻','a')]);
+ const other=mission('source-b',[word('b1','b::뜻','b')]);
+ await visit(page,directive(['a::뜻','b::뜻']),[duplicated,other],'source-a');
+ const result=await page.evaluate(()=>{
+  const before=HideV2Store.snapshot();
+  const target=HideV2ReadyBridge.targetItemIds(before.missions[0]);
+  const choice=HideV2ReadyBridge.resolveTargetMission();
+  const started=HideV2App.start(),after=HideV2Store.snapshot();
+  return {target,choice,started,missionCount:after.missions.length,
+   session:after.activeSession,sourceCounts:after.missions.map(m=>m.items.length)};
+ });
+ expect(result.target).toEqual([]);
+ expect(result.choice.reason).toBe('REVIEW_TARGETS_AMBIGUOUS');
+ expect(result.choice.ambiguousLexicalIds).toEqual(['a::뜻']);
+ expect(result.started.reason).toBe('REVIEW_TARGETS_AMBIGUOUS');
+ expect(result.missionCount).toBe(2);
+ expect(result.session).toBeNull();
+ expect(result.sourceCounts).toEqual([2,1]);
+ await page.evaluate(()=>HideV2Router.go('learn'));
+ await expect(page.getByText(/원본 항목에 중복되어/)).toBeVisible();
+});
