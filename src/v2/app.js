@@ -127,7 +127,14 @@
     if(!selected)return {ok:false,reason:'MISSION_REQUIRED'};
     HideV2Mission.setActive(selected.id);
     try{
+      const readyContext=hasDirective?bridge.context():{};
+      if(choice.directive?.authority==='EXPLICIT_CENTRAL_PLANNER_REVIEW_DIRECTIVE'&&
+         (!readyContext.session_id||!readyContext.task_id||!readyContext.lap_id))
+        return {ok:false,reason:'CENTRAL_READY_RUN_IDENTITY_REQUIRED'};
       const created=HideV2Session.start(selected,{
+        readySessionId:readyContext.session_id||null,
+        readyTaskId:readyContext.task_id||null,
+        readyLapId:readyContext.lap_id||null,
         targetItemIds:choice.targetItemIds,
         reviewDirectiveId:choice.directive?.directiveId||null,
         reviewAuthority:choice.directive?.authority||null
