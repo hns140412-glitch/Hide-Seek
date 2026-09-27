@@ -265,3 +265,37 @@ test('central multi-mission bundle returns the exact scoped result and writes ev
  expect(completed.event.payload.reviewedLexicalIds).toEqual(['a::뜻','b::뜻']);
  expect(completed.originalCounts).toEqual([1,1]);
 });
+
+test('scoped review protects source deletion and refuses an orphaned bundle return',async({page})=>{
+ const sources=[mission('source-a',[word('a','a::뜻','a')]),
+  mission('source-b',[word('b','b::뜻','b')])];
+ await visit(page,directive(['a::뜻','b::뜻']),sources,'source-a');
+ const result=await page.evaluate(()=>{
+  const first=HideV2App.start(),before=HideV2Store.snapshot();
+  const previous=before.activeSession;
+  let singleError=null,bulkError=null;
+  try{HideV2Mission.deleteMission('source-a')}catch(e){singleError=e.message}
+  try{HideV2Mission.bulkDeleteMissions(['source-b'])}catch(e){bulkError=e.message}
+  const protectedCount=HideV2Store.snapshot().missions.length;
+  HideV2Session.clear();
+  HideV2Mission.deleteMission('source-b');
+  HideV2Session.update(previous);
+  const beforeEvents=HideV2Store.snapshot().events.length;
+  const orphaned=HideV2ReadyBridge.resolveTargetMission();
+  const rejected=HideV2ReadyBridge.returnToReady();
+  const after=HideV2Store.snapshot();
+  return {first,singleError,bulkError,protectedCount,orphaned,rejected,
+   eventDelta:after.events.length-beforeEvents,
+   sourceEvidence:after.missions.find(m=>m.id==='source-a').items[0].evidence,
+   hasDeletedSource:after.missions.some(m=>m.id==='source-b')};
+ });
+ expect(result.first.ok).toBe(true);
+ expect(result.singleError).toBe('ACTIVE_REVIEW_SOURCE_DELETE_BLOCKED');
+ expect(result.bulkError).toBe('ACTIVE_REVIEW_SOURCE_DELETE_BLOCKED');
+ expect(result.protectedCount).toBe(3);
+ expect(result.orphaned.reason).toBe('REVIEW_TARGETS_NOT_AVAILABLE');
+ expect(result.rejected.reason).toBe('MATCHED_ACTIVE_REVIEW_SESSION_REQUIRED');
+ expect(result.eventDelta).toBe(0);
+ expect(result.sourceEvidence).toEqual([]);
+ expect(result.hasDeletedSource).toBe(false);
+});
