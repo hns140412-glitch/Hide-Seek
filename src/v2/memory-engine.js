@@ -27,6 +27,9 @@
         sourceWord.evidence.push({...row,reviewBundleId:missionId});
         if(sourceWord.evidence.length>120)sourceWord.evidence=sourceWord.evidence.slice(-120);
         original.updatedAt=row.at;
+        original.memorySummary=missionSummary(original);
+        if(globalThis.HideV2Trail?.missionSummary)
+          original.trailSummary=HideV2Trail.missionSummary(original);
       }
     });
   }
