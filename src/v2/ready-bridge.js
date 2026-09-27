@@ -47,9 +47,10 @@
   function targetItemIds(mission){
     if(!hasReviewRequest())return null;
     const d=reviewDirective();if(!d)return [];
-    const matched=(mission?.items||[]).filter(w=>d.lexicalIds.includes(w.lexicalId));
-    const coverage=new Set(matched.map(w=>w.lexicalId));
-    return d.lexicalIds.every(id=>coverage.has(id))?matched.map(w=>w.id):[];
+    // One target lexical ID must bind one exact word row. Do not return an
+    // accidental duplicate row or silently choose one of two OCR records.
+    const rows=d.lexicalIds.map(id=>(mission?.items||[]).filter(w=>w.lexicalId===id));
+    return rows.every(matches=>matches.length===1)?rows.map(matches=>matches[0].id):[];
   }
   function sameCentralBundleRun(mission,ctx){
     const run=mission?.provenance?.readyRun||{};
@@ -79,6 +80,10 @@
     // the unrelated-active-session guard in the app has passed.
     const original=ordered.filter(m=>
       m.provenance?.source!=='READY_SCOPED_REVIEW_BUNDLE');
+    const ambiguous=d.lexicalIds.filter(lexicalId=>original.some(m=>
+      m.items?.filter(w=>w.lexicalId===lexicalId).length>1));
+    if(ambiguous.length)return {ok:false,reason:'REVIEW_TARGETS_AMBIGUOUS',
+      ambiguousLexicalIds:ambiguous};
     const picked=d.lexicalIds.map((lexicalId,i)=>{
       for(const m of original){
         const w=m.items?.find(x=>x.lexicalId===lexicalId);
