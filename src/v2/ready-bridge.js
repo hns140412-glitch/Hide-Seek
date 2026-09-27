@@ -87,9 +87,9 @@
     if(!hasReviewRequest())return true;
     const d=reviewDirective(),expected=targetItemIds(mission),ctx=context();
     const central=d?.authority==='EXPLICIT_CENTRAL_PLANNER_REVIEW_DIRECTIVE';
-    const sameRun=!central||(!!ctx.session_id&&!!ctx.task_id&&!!ctx.lap_id&&
-      session.readySessionId===ctx.session_id&&session.readyTaskId===ctx.task_id&&
-      session.readyLapId===ctx.lap_id);
+    const sameRun=!central||(!!ctx.session_id&&!!ctx.task_id&&!!ctx.lap_id&&!!ctx.child_id&&
+      session?.readySessionId===ctx.session_id&&session.readyTaskId===ctx.task_id&&
+      session.readyLapId===ctx.lap_id&&session.readyChildId===ctx.child_id);
     return !!(sameRun&&d&&session&&mission&&session.missionId===mission.id&&
       (session.reviewDirectiveId===d.directiveId||
         (d.authority==='EXPLICIT_READY_PLANNER_REVIEW_DIRECTIVE'&&
