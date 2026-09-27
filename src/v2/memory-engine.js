@@ -106,14 +106,19 @@
     return reasons.sort((a,b)=>b.severity-a.severity)[0];
   }
 
-  function missionSummary(mission){
-    const rows=(mission?.items||[]).map(w=>({word:w,...summary(w)}));
+  function missionSummary(mission,options={}){
+    const allowed=Array.isArray(options.itemIds)?new Set(options.itemIds):null;
+    const rows=(mission?.items||[])
+      .filter(w=>!allowed||allowed.has(w.id))
+      .map(w=>({word:w,...summary(w)}));
     const advisories=rows.filter(x=>x.needsUnassistedRecall||x.memoryStrength<60);
     return {
       authority:'SPECIALIST_MEMORY_ADVISORY_ONLY',
       reviewPolicyOwner:'READY_LEARNING_ENGINE',
       scheduleOwner:'READY_SET_PLANNER',
       prioritySemantics:'ADVISORY_SIGNAL_NOT_DATE',
+      scopedItemIds:rows.map(x=>x.word.id),
+      fullMissionScope:rows.length===(mission?.items||[]).length,
       averageMemoryStrength:rows.length?Math.round(rows.reduce((a,x)=>a+x.memoryStrength,0)/rows.length):0,
       reviewAdvisories:advisories.map(x=>({
         lexicalId:x.word.lexicalId,
