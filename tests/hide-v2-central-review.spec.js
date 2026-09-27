@@ -23,7 +23,7 @@ const visit=async(page,config,missions,activeMissionId='wrong',activeSession=nul
    events:[],updatedAt:'2026-09-27T00:00:00Z'})),
   {missions,activeMissionId,activeSession});
  const q=new URLSearchParams({session_id:'ready-session-1',task_id:'task-1',
-  lap_id:'ready-lap-1',review_directive:JSON.stringify(config)});
+  lap_id:'ready-lap-1',child_id:'CHILD_A',review_directive:JSON.stringify(config)});
  await page.goto('/v2.html?'+q.toString());
 };
 test('central lexical directive finds exact V2 mission and preserves scoped memory/advisory',async({page})=>{
