@@ -20,6 +20,11 @@
       missionId:mission.id,
       reviewDirectiveId:String(options.reviewDirectiveId||'').trim()||null,
       reviewAuthority:String(options.reviewAuthority||'').trim()||null,
+      // Ready run identity is distinct from a reusable Planner TODO/directive.
+      // A completed V2 session cannot certify a newly launched Ready lap.
+      readySessionId:String(options.readySessionId||'').trim()||null,
+      readyTaskId:String(options.readyTaskId||'').trim()||null,
+      readyLapId:String(options.readyLapId||'').trim()||null,
       index:0,
       queue,
       stage:initialStageFor(first),
