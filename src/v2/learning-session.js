@@ -25,6 +25,7 @@
       readySessionId:String(options.readySessionId||'').trim()||null,
       readyTaskId:String(options.readyTaskId||'').trim()||null,
       readyLapId:String(options.readyLapId||'').trim()||null,
+      readyChildId:String(options.readyChildId||'').trim()||null,
       index:0,
       queue,
       stage:initialStageFor(first),
