@@ -134,9 +134,17 @@ for(const token of ["./v2.html","./manifest-v2.json","hide-seek-v2:","caches.mat
 if(sw.includes("'./index.html'")||sw.includes("'./app.js'")||sw.includes("'./hide-runtime.js'"))fail.push('V2_SW_MUST_NOT_CACHE_V1_RUNTIME');
 
 const ready=fs.readFileSync(path.join(ROOT,'src/v2/ready-bridge.js'),'utf8');
-for(const token of ["EXPLICIT_READY_PLANNER_REVIEW_DIRECTIVE","reviewPolicyOwner:'READY_LEARNING_ENGINE'","scheduleOwner:'READY_SET_PLANNER'"]){
+for(const token of ["EXPLICIT_READY_PLANNER_REVIEW_DIRECTIVE",
+  "EXPLICIT_CENTRAL_PLANNER_REVIEW_DIRECTIVE",
+  "'TAKY_LEARNING_ENGINE_CORE':'READY_LEARNING_ENGINE'",
+  "scheduleOwner:'READY_SET_PLANNER'","REVIEW_TARGETS_NOT_AVAILABLE",
+  "matchesActiveReview"]){
   if(!ready.includes(token))fail.push('V2_READY_OWNERSHIP_MISSING:'+token);
 }
+if(!learning.includes('EXPLICIT_REVIEW_TARGETS_NOT_IN_MISSION'))
+  fail.push('V2_MISSING_TARGET_MUST_NOT_FALL_BACK_TO_FULL_MISSION');
+if(!app.includes('ensureReadyScopedSession'))
+  fail.push('V2_SCOPED_REVIEW_MUST_SELECT_TARGET_MISSION');
 const sessionService=fs.readFileSync(path.join(ROOT,'src/v2/session-service.js'),'utf8');
 if(!sessionService.includes('HideV2Store.transaction'))fail.push('SESSION_STATE_MUST_USE_STORE');
 if(!sessionService.includes('activeSession'))fail.push('PERSISTED_ACTIVE_SESSION_OWNER_MISSING');
