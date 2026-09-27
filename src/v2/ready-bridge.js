@@ -146,6 +146,12 @@
       .filter(w=>!scopeSet||scopeSet.has(w.id)).map(w=>w.lexicalId).filter(Boolean);
     const trail=m?HideV2Trail.missionSummary(m,{itemIds:scopeItemIds}):null;
     const expressionReviews=expressionReviewCandidates(m,scopeItemIds);
+    const directive=reviewDirective();
+    const summary=m?HideV2Memory.missionSummary(m,{itemIds:scopeItemIds}):null;
+    // Only the return projection changes owner: local Hide evidence remains
+    // specialist advisory and central policy is not delegated to Ready.
+    const memorySummary=summary&&directive?.authority==='EXPLICIT_CENTRAL_PLANNER_REVIEW_DIRECTIVE'
+      ?{...summary,reviewPolicyOwner:'TAKY_LEARNING_ENGINE_CORE'}:summary;
     return {
       resultContract:'HIDE_SPECIALIST_RESULT_V2',
       sourceApp:'hide-seek',
@@ -159,10 +165,10 @@
       trailMastery:trail?.trailMastery??null,
       trailSummary:trail,
       reviewedLexicalIds,
-      memorySummary:m?HideV2Memory.missionSummary(m,{itemIds:scopeItemIds}):null,
+      memorySummary,
       expressionReviewCandidates:expressionReviews,
       humanSemanticReviewAvailable:expressionReviews.length>0,
-      reviewDirective:reviewDirective(),
+      reviewDirective:directive,
       completedAt:new Date().toISOString()
     };
   }
