@@ -3,7 +3,7 @@ test('central V2 exact Ready run identity is required',async({page})=>{
  const m={id:'one',title:'one',status:'READY',items:[{id:'a',lexicalId:'a::뜻',token:'a',meaning:'뜻',languageDomain:'ENGLISH',missionRole:'REVIEW',evidence:[]}],provenance:{source:'TEST_FIXTURE'}};
  await page.addInitScript(missions=>localStorage.setItem('hide_seek_v2_state',JSON.stringify({version:1,profile:{displayName:'test'},missions,activeMissionId:'one',activeSession:null,events:[]})),[m]);
  const d={authority:'EXPLICIT_CENTRAL_PLANNER_REVIEW_DIRECTIVE',reviewPolicyOwner:'TAKY_LEARNING_ENGINE_CORE',scheduleOwner:'READY_SET_PLANNER',lexicalIds:['a::뜻'],directiveId:'central-hide:todo-one',taskId:'task-one',basisKind:'OBSERVATION_ADVISORY_ONLY',observationIsVerifiedProof:false};
- const qs=new URLSearchParams({session_id:'session-one',task_id:'task-one',lap_id:'lap-one',review_directive:JSON.stringify(d)});
+ const qs=new URLSearchParams({session_id:'session-one',task_id:'task-one',lap_id:'lap-one',child_id:'CHILD_A',review_directive:JSON.stringify(d)});
  await page.goto('/v2.html?'+qs);
  const r=await page.evaluate(()=>{
    const first=HideV2App.start();
@@ -37,4 +37,22 @@ test('missing central Ready session prevents mutation before a multi-mission bun
  expect(r.after).toBe(r.before);
  expect(r.session).toBe(null);
  expect(r.events).toBe(0);
+});
+
+test('central V2 refuses a changed member even when session and lexical IDs match',async({page})=>{
+ const m={id:'member-check',title:'member-check',status:'READY',items:[{id:'a',lexicalId:'a::뜻',token:'a',meaning:'뜻',languageDomain:'ENGLISH',missionRole:'REVIEW',evidence:[]}],provenance:{source:'TEST_FIXTURE'}};
+ await page.addInitScript(items=>localStorage.setItem('hide_seek_v2_state',JSON.stringify({version:1,profile:{displayName:'test'},missions:items,activeMissionId:'member-check',activeSession:null,events:[]})),[m]);
+ const d={authority:'EXPLICIT_CENTRAL_PLANNER_REVIEW_DIRECTIVE',reviewPolicyOwner:'TAKY_LEARNING_ENGINE_CORE',scheduleOwner:'READY_SET_PLANNER',lexicalIds:['a::뜻'],directiveId:'central-hide:todo-one',taskId:'task-one',basisKind:'OBSERVATION_ADVISORY_ONLY',observationIsVerifiedProof:false};
+ await page.goto('/v2.html?'+new URLSearchParams({session_id:'session-one',task_id:'task-one',lap_id:'lap-one',child_id:'CHILD_A',review_directive:JSON.stringify(d)}));
+ const result=await page.evaluate(()=>{
+  const first=HideV2App.start(),initial=HideV2Store.snapshot().activeSession;
+  const url=new URL(location.href);url.searchParams.set('child_id','CHILD_B');history.replaceState(null,'',url);
+  const old=HideV2ReadyBridge.returnToReady(),newRun=HideV2App.start(),after=HideV2Store.snapshot().activeSession;
+  return {first,initial,old,newRun,after};
+ });
+ expect(result.first.ok).toBe(true);
+ expect(result.initial.readyChildId).toBe('CHILD_A');
+ expect(result.old.reason).toBe('MATCHED_ACTIVE_REVIEW_SESSION_REQUIRED');
+ expect(result.newRun.reason).toBe('DIFFERENT_ACTIVE_SESSION_REQUIRES_EXPLICIT_RESOLUTION');
+ expect(result.after.id).toBe(result.initial.id);
 });
