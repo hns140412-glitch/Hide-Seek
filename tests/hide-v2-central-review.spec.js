@@ -324,3 +324,28 @@ test('duplicate original rows for one lexical target cannot silently expand revi
  await page.evaluate(()=>HideV2Router.go('learn'));
  await expect(page.getByText(/원본 항목에 중복되어/)).toBeVisible();
 });
+
+test('a separately configured trusted Ready origin receives only the scoped browser fragment',async({page})=>{
+ await page.addInitScript(()=>{window.HideV2TrustedReadyOrigins=['https://ready.example.test']});
+ await page.route('https://ready.example.test/return',route=>
+  route.fulfill({status:200,contentType:'text/html',body:'<!doctype html><title>Return fixture</title>'}));
+ await visit(page,directive(['a::뜻']),[mission('matched',[word('a','a::뜻','a')])],'matched');
+ const didStart=await page.evaluate(()=>{
+  const started=HideV2App.start();
+  const url=new URL(location.href);
+  url.searchParams.set('return_target','https://ready.example.test/return');
+  history.replaceState(null,'',url);
+  setTimeout(()=>HideV2ReadyBridge.returnToReady(),0);
+  return started.ok;
+ });
+ expect(didStart).toBe(true);
+ await page.waitForURL(url=>url.origin==='https://ready.example.test'&&
+  url.hash.startsWith('#learning_event='));
+ const url=new URL(page.url());
+ expect(url.searchParams.has('learning_event')).toBe(false);
+ const event=JSON.parse(new URLSearchParams(url.hash.slice(1)).get('learning_event'));
+ expect(event.event_type).toBe('TASK_PARTIAL');
+ expect(event.payload.taskContext.child_id).toBe('CHILD_A');
+ expect(event.payload.reviewedLexicalIds).toEqual(['a::뜻']);
+ expect(event.payload.memorySummary.reviewPolicyOwner).toBe('TAKY_LEARNING_ENGINE_CORE');
+});
