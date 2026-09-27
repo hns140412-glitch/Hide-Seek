@@ -47,13 +47,41 @@
       reason:active?null:'MISSION_REQUIRED'};
     const d=reviewDirective();
     if(!d)return {ok:false,reason:'EXPLICIT_REVIEW_DIRECTIVE_INVALID'};
-    const candidates=HideV2Mission.listMissions().filter(m=>m.status!=='ARCHIVED');
-    const chosen=[active,...candidates].filter(Boolean).find(m=>
-      targetItemIds(m)?.length>0&&m.status!=='ARCHIVED');
-    if(!chosen)return {ok:false,reason:'REVIEW_TARGETS_NOT_AVAILABLE',
-      missingLexicalIds:d.lexicalIds};
-    return {ok:true,mission:chosen,targetItemIds:targetItemIds(chosen),
+    const candidates=HideV2Mission.listMissions().filter(m=>
+      m.status!=='ARCHIVED'&&
+      (m.provenance?.source!=='READY_SCOPED_REVIEW_BUNDLE'||
+       m.provenance?.reviewDirectiveId===d.directiveId));
+    const ordered=[active,...candidates].filter((m,i,a)=>m&&
+      candidates.some(x=>x.id===m.id)&&a.findIndex(x=>x?.id===m.id)===i);
+    const chosen=ordered.find(m=>targetItemIds(m)?.length>0);
+    if(chosen)return {ok:true,mission:chosen,targetItemIds:targetItemIds(chosen),
       directive:d};
+    // Preserve the exact lexical scope even when the review items originate
+    // from separate source sheets. A linked bundle is persisted only after
+    // the unrelated-active-session guard in the app has passed.
+    const original=ordered.filter(m=>
+      m.provenance?.source!=='READY_SCOPED_REVIEW_BUNDLE');
+    const picked=d.lexicalIds.map((lexicalId,i)=>{
+      for(const m of original){
+        const w=m.items?.find(x=>x.lexicalId===lexicalId);
+        if(w)return {id:'review-item-'+i,lexicalId,token:w.token,
+          meaning:w.meaning,example:w.example,languageDomain:w.languageDomain,
+          learningContext:w.learningContext,meaningMap:w.meaningMap,
+          contextEvidence:w.contextEvidence,soundEvidence:w.soundEvidence,
+          missionRole:'REVIEW',evidence:structuredClone(w.evidence||[]),
+          reviewSource:{missionId:m.id,itemId:w.id}};
+      }
+      return null;
+    });
+    if(picked.some(x=>!x))return {ok:false,reason:'REVIEW_TARGETS_NOT_AVAILABLE',
+      missingLexicalIds:d.lexicalIds.filter((id,i)=>!picked[i])};
+    const bundle={id:'ready-bundle:'+d.directiveId,
+      title:'함께 다시 찾기 · '+picked.length+'개 단어',
+      items:picked,sourceCount:0,provenance:{
+        source:'READY_SCOPED_REVIEW_BUNDLE',reviewDirectiveId:d.directiveId,
+        targetLexicalIds:[...d.lexicalIds]}};
+    return {ok:true,mission:null,reviewBundle:bundle,
+      targetItemIds:picked.map(x=>x.id),directive:d};
   }
   function matchesActiveReview(session,mission){
     if(!hasReviewRequest())return true;
