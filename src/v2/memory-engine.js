@@ -4,11 +4,30 @@
   const clamp=(n,min=0,max=100)=>Math.max(min,Math.min(max,Number(n)||0));
 
   function record(missionId,wordId,evidence){
-    HideV2Mission.updateMission(missionId,m=>{
-      const w=m.items.find(x=>x.id===wordId);if(!w)return;
+    const row={at:now(),...evidence};
+    HideV2Store.transaction(s=>{
+      const m=s.missions.find(x=>x.id===missionId);
+      const w=m?.items.find(x=>x.id===wordId);
+      if(!w)return;
+      let original=null,sourceWord=null;
+      if(m.provenance?.source==='READY_SCOPED_REVIEW_BUNDLE'){
+        const ref=w.reviewSource||{};
+        original=s.missions.find(x=>x.id===ref.missionId&&
+          x.provenance?.source!=='READY_SCOPED_REVIEW_BUNDLE');
+        sourceWord=original?.items.find(x=>x.id===ref.itemId&&
+          x.lexicalId===w.lexicalId);
+        if(!sourceWord)throw new Error('SCOPED_REVIEW_ORIGINAL_MISSING');
+      }
       w.evidence=Array.isArray(w.evidence)?w.evidence:[];
-      w.evidence.push({at:now(),...evidence});
+      w.evidence.push(row);
       if(w.evidence.length>120)w.evidence=w.evidence.slice(-120);
+      m.updatedAt=row.at;
+      if(sourceWord){
+        sourceWord.evidence=Array.isArray(sourceWord.evidence)?sourceWord.evidence:[];
+        sourceWord.evidence.push({...row,reviewBundleId:missionId});
+        if(sourceWord.evidence.length>120)sourceWord.evidence=sourceWord.evidence.slice(-120);
+        original.updatedAt=row.at;
+      }
     });
   }
 
@@ -142,7 +161,8 @@
   }
 
   function wordbook(){
-    const missions=HideV2Mission.listMissions();
+    const missions=HideV2Mission.listMissions().filter(m=>
+      m.provenance?.source!=='READY_SCOPED_REVIEW_BUNDLE');
     const map=new Map();
     for(const mission of missions){
       for(const word of mission.items||[]){
