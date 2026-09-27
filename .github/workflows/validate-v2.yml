@@ -12,6 +12,9 @@ on:
       - 'tests/hide-v2-product-flow.spec.js'
       - 'tests/hide-v2-central-review.spec.js'
       - 'tests/hide-v2-ready-run-isolation.spec.js'
+      - 'tests/hide-code-red-verification.spec.js'
+      - 'app.js'
+      - 'hide-bridge.js'
       - 'tools/validate-hide-v2-architecture.js'
       - '.github/workflows/validate-v2.yml'
 
@@ -34,4 +37,4 @@ jobs:
       - name: Install browser test harness
         run: npm install
       - name: Verify V2 product flows
-        run: npx playwright test tests/hide-v2-product-flow.spec.js tests/hide-v2-central-review.spec.js tests/hide-v2-ready-run-isolation.spec.js --project=chromium
+        run: npx playwright test tests/hide-v2-product-flow.spec.js tests/hide-v2-central-review.spec.js tests/hide-v2-ready-run-isolation.spec.js tests/hide-code-red-verification.spec.js --project=chromium
