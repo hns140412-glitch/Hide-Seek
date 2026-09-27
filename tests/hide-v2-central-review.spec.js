@@ -51,6 +51,10 @@ test('central lexical directive finds exact V2 mission and preserves scoped memo
  });
  const before=await page.evaluate(()=>HideV2ReadyBridge.buildResult());
  expect(before.taskState).toBe('PARTIAL');
+ const partial=await page.evaluate(()=>HideV2ReadyBridge.returnToReady());
+ expect(partial.ok).toBe(false);
+ expect(partial.event.event_type).toBe('TASK_PARTIAL');
+ expect(partial.event.payload.taskState).toBe('PARTIAL');
  expect(before.memorySummary.scopedItemIds).toEqual(['a','b']);
  expect(before.memorySummary.reviewAdvisories.map(x=>x.lexicalId)).not.toContain('c::뜻');
  await page.evaluate(()=>{
@@ -59,6 +63,10 @@ test('central lexical directive finds exact V2 mission and preserves scoped memo
  });
  const result=await page.evaluate(()=>HideV2ReadyBridge.buildResult());
  expect(result.taskState).toBe('COMPLETED');
+ const completed=await page.evaluate(()=>HideV2ReadyBridge.returnToReady());
+ expect(completed.ok).toBe(false);
+ expect(completed.event.event_type).toBe('TASK_COMPLETED');
+ expect(completed.event.payload.taskState).toBe('COMPLETED');
  expect(result.memorySummary.authority).toBe('SPECIALIST_MEMORY_ADVISORY_ONLY');
  expect(result.memorySummary.fullMissionScope).toBe(false);
  expect(result.trailSummary.totalWordCount).toBe(2);
