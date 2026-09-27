@@ -93,6 +93,7 @@
     MISSION_REQUIRED:'먼저 탐험 미션을 준비해 주세요.',
     EXPLICIT_REVIEW_DIRECTIVE_INVALID:'복습 지시를 확인하지 못했어요. Ready & Set에서 과제를 다시 열어 주세요.',
     REVIEW_TARGETS_NOT_AVAILABLE:'이번 복습에 필요한 단어가 저장된 미션을 찾지 못했어요. 다른 단어로 바꾸어 진행하지 않았어요.',
+    REVIEW_TARGETS_AMBIGUOUS:'같은 단어가 여러 원본 항목에 중복되어 있어 복습 대상을 임의로 선택하지 않았어요. 원본을 확인한 후 다시 시작해 주세요.',
     DIFFERENT_ACTIVE_SESSION_REQUIRES_EXPLICIT_RESOLUTION:'다른 탐험이 진행 중이라 현재 기록을 그대로 보존했어요. 먼저 기존 탐험을 정리해 주세요.',
     EXPLICIT_REVIEW_TARGETS_NOT_IN_MISSION:'복습 단어 범위를 확인하지 못했어요. 과제를 다시 선택해 주세요.',
     REVIEW_SESSION_START_FAILED:'복습을 시작하지 못했어요. 저장된 탐험을 확인해 주세요.'
