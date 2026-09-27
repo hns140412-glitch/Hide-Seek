@@ -810,9 +810,13 @@
     const summary=HideV2Memory.missionSummary(m,{itemIds:scopedIds}),
       trail=HideV2Trail.missionSummary(m,{itemIds:scopedIds});
     const fullMissionScope=trail.fullMissionScope===true;
+    // Completion UI and Ready return use scoped summaries, but a partial
+    // review must never overwrite the mission-wide historical aggregate.
+    const missionMemory=fullMissionScope?summary:HideV2Memory.missionSummary(m);
+    const missionTrail=fullMissionScope?trail:HideV2Trail.missionSummary(m);
     HideV2Mission.updateMission(m.id,x=>{
       x.status=fullMissionScope?'COMPLETED':(x.status==='COMPLETED'?'COMPLETED':'PARTIAL');
-      x.memorySummary=summary;x.trailSummary=trail;
+      x.memorySummary=missionMemory;x.trailSummary=missionTrail;
     });
     const readyContext=globalThis.HideV2ReadyBridge?.context?.()||{};
     const expressionReviews=globalThis.HideV2ReadyBridge?.expressionReviewCandidates?.(m,scopedIds)||[];
