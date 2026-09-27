@@ -71,4 +71,19 @@ test('main learning-memory signal keeps child/skill context and remains advisory
  expect(result.data).not.toHaveProperty('verified_outcome');
  expect(result.data).not.toHaveProperty('verification_receipt');
  expect(result.data).not.toHaveProperty('planner_date');
+ const scopeRejections=await page.evaluate(()=>{
+  const before=S.takyLearningOutbox.length;
+  const wrongMember=HideSeekBridge.emitLearningMemorySignal({
+   member_id:'CHILD_B',subject:'english',word:'a'});
+  const wrongSubject=HideSeekBridge.emitLearningMemorySignal({
+   member_id:'CHILD_A',subject:'math',word:'a'});
+  const wrongSkill=HideSeekBridge.emitLearningMemorySignal({
+   member_id:'CHILD_A',subject:'english',concept_skill_target:'arithmetic',word:'a'});
+  return {wrongMember,wrongSubject,wrongSkill,before,
+   after:S.takyLearningOutbox.length};
+ });
+ expect(scopeRejections.wrongMember.reason).toBe('MEMBER_SCOPE_MISMATCH');
+ expect(scopeRejections.wrongSubject.reason).toBe('LEARNING_SCOPE_MISMATCH');
+ expect(scopeRejections.wrongSkill.reason).toBe('LEARNING_SCOPE_MISMATCH');
+ expect(scopeRejections.after).toBe(scopeRejections.before);
 });
