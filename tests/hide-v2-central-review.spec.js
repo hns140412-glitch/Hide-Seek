@@ -1,0 +1,110 @@
+const {test,expect}=require('@playwright/test');
+const word=(id,lexicalId,token)=>({
+ id,lexicalId,token,meaning:token+' 뜻',languageDomain:'ENGLISH',
+ missionRole:'REVIEW',evidence:[],source:{}
+});
+const mission=(id,items,status='READY')=>({
+ id,title:'탐험 '+id,status,createdAt:'2026-09-27T00:00:00Z',
+ updatedAt:'2026-09-27T00:00:00Z',sourceCount:0,
+ provenance:{source:'TEST_FIXTURE'},items
+});
+const directive=(ids,task='task-1',central=true)=>({
+ authority:central?'EXPLICIT_CENTRAL_PLANNER_REVIEW_DIRECTIVE':
+   'EXPLICIT_READY_PLANNER_REVIEW_DIRECTIVE',
+ reviewPolicyOwner:central?'TAKY_LEARNING_ENGINE_CORE':'READY_LEARNING_ENGINE',
+ scheduleOwner:'READY_SET_PLANNER',lexicalIds:ids,
+ directiveId:'review:'+task,taskId:task,scheduledDate:'2026-09-30',
+ ...(central?{basisKind:'OBSERVATION_ADVISORY_ONLY',observationIsVerifiedProof:false}:{})
+});
+const visit=async(page,config,missions,activeMissionId='wrong',activeSession=null)=>{
+ await page.addInitScript(state=>localStorage.setItem('hide_seek_v2_state',
+  JSON.stringify({version:1,profile:{displayName:'검증 탐험가'},missions:state.missions,
+   activeMissionId:state.activeMissionId,activeSession:state.activeSession,
+   events:[],updatedAt:'2026-09-27T00:00:00Z'})),
+  {missions,activeMissionId,activeSession});
+ const q=new URLSearchParams({session_id:'ready-session-1',task_id:'task-1',
+  lap_id:'ready-lap-1',review_directive:JSON.stringify(config)});
+ await page.goto('/v2.html?'+q.toString());
+};
+test('central lexical directive finds exact V2 mission and preserves scoped memory/advisory',async({page})=>{
+ const wrong=mission('wrong',[word('other','other::뜻','other')]);
+ const correct=mission('matched',[
+  word('a','a::뜻','a'),word('b','b::뜻','b'),word('c','c::뜻','c')]);
+ await visit(page,directive(['a::뜻','b::뜻']),[wrong,correct]);
+ const started=await page.evaluate(()=>{
+  const x=HideV2App.start(),s=HideV2Store.snapshot();
+  return {ok:x.ok,missionId:s.activeMissionId,session:s.activeSession,
+   targets:HideV2ReadyBridge.targetItemIds(s.missions[1])};
+ });
+ expect(started.ok).toBe(true);
+ expect(started.missionId).toBe('matched');
+ expect(started.session.queue).toEqual(['a','b']);
+ expect(started.session.reviewAuthority).toBe('EXPLICIT_CENTRAL_PLANNER_REVIEW_DIRECTIVE');
+ expect(started.targets).toEqual(['a','b']);
+ await page.evaluate(()=>{
+  HideV2Memory.record('matched','a',{stage:'FINAL_SEEK',evidenceMode:'RECALL',
+   axes:['FORM','RECALL'],result:'WRONG',objectiveRecall:true,
+   objectiveVerified:true,assisted:false});
+  HideV2Memory.record('matched','c',{stage:'FINAL_SEEK',evidenceMode:'RECALL',
+   axes:['FORM','RECALL'],result:'WRONG',objectiveRecall:true,
+   objectiveVerified:true,assisted:false});
+ });
+ const before=await page.evaluate(()=>HideV2ReadyBridge.buildResult());
+ expect(before.taskState).toBe('PARTIAL');
+ expect(before.memorySummary.scopedItemIds).toEqual(['a','b']);
+ expect(before.memorySummary.reviewAdvisories.map(x=>x.lexicalId)).not.toContain('c::뜻');
+ await page.evaluate(()=>{
+  const s=HideV2Store.snapshot().activeSession;
+  HideV2Session.update({...s,stage:'COMPLETE',completedAt:new Date().toISOString()});
+ });
+ const result=await page.evaluate(()=>HideV2ReadyBridge.buildResult());
+ expect(result.taskState).toBe('COMPLETED');
+ expect(result.memorySummary.authority).toBe('SPECIALIST_MEMORY_ADVISORY_ONLY');
+ expect(result.memorySummary.fullMissionScope).toBe(false);
+ expect(result.trailSummary.totalWordCount).toBe(2);
+ expect(result.reviewDirective.observationIsVerifiedProof).toBe(false);
+});
+test('missing or invalid central target cannot silently run the full active mission',async({page})=>{
+ await visit(page,directive(['missing::뜻']),
+  [mission('wrong',[word('a','a::뜻','a')])]);
+ const result=await page.evaluate(()=>({
+  selected:HideV2ReadyBridge.resolveTargetMission(),
+  itemIds:HideV2ReadyBridge.targetItemIds(HideV2Mission.activeMission()),
+  started:HideV2App.start(),active:HideV2Store.snapshot().activeSession
+ }));
+ expect(result.selected.reason).toBe('REVIEW_TARGETS_NOT_AVAILABLE');
+ expect(result.itemIds).toEqual([]);
+ expect(result.started.ok).toBe(false);
+ expect(result.active).toBe(null);
+ expect(await page.evaluate(()=>HideV2ReadyBridge.buildResult().taskState)).toBe('PARTIAL');
+});
+test('a previously finished mission and unrelated in-progress session cannot certify a new central task',async({page})=>{
+ const unrelated=mission('wrong',[word('a','a::뜻','a')],'COMPLETED');
+ const matching=mission('matching',[word('b','b::뜻','b')]);
+ const unrelatedSession={id:'old-session',missionId:'wrong',index:0,
+  queue:['a'],stage:'FIRST_FIND',attempts:{},startedAt:'2026-09-27T00:00:00Z'};
+ await visit(page,directive(['b::뜻']),[unrelated,matching],'wrong',unrelatedSession);
+ const r=await page.evaluate(()=>({
+  before:HideV2ReadyBridge.buildResult(),
+  result:HideV2App.start(),after:HideV2Store.snapshot().activeSession
+ }));
+ expect(r.before.taskState).toBe('PARTIAL');
+ expect(r.result.reason).toBe('DIFFERENT_ACTIVE_SESSION_REQUIRES_EXPLICIT_RESOLUTION');
+ expect(r.after.id).toBe('old-session');
+ expect(r.after.queue).toEqual(['a']);
+});
+test('mismatched task binding is rejected and local Ready directive remains supported',async({page})=>{
+ await visit(page,directive(['a::뜻'],'another-task'),
+  [mission('matched',[word('a','a::뜻','a')])],'matched');
+ expect(await page.evaluate(()=>HideV2ReadyBridge.reviewDirective())).toBe(null);
+ expect((await page.evaluate(()=>HideV2App.start())).reason).toBe('EXPLICIT_REVIEW_DIRECTIVE_INVALID');
+ const local=directive(['a::뜻'],'task-1',false);
+ await page.goto('/v2.html?'+new URLSearchParams({session_id:'ready-session-1',
+  task_id:'task-1',lap_id:'ready-lap-1',review_directive:JSON.stringify(local)}));
+ const selected=await page.evaluate(()=>({
+  directive:HideV2ReadyBridge.reviewDirective(),
+  started:HideV2App.start()
+ }));
+ expect(selected.directive.reviewPolicyOwner).toBe('READY_LEARNING_ENGINE');
+ expect(selected.started.ok).toBe(true);
+});
