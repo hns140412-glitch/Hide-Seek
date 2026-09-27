@@ -521,7 +521,7 @@ function useCodeHint(){
 }
 function checkCodeAnswer(){const built=codeSession.blankIdx.map((_,slot)=>codeSession.keys.find(k=>k.id===codeSession.answers[slot])?.ch||''),need=codeSession.blankIdx.map(i=>codeSession.units[i]);if(built.every((x,i)=>x===need[i])){const elapsed=(Date.now()-codeSession.start)/1000,slow=elapsed>=codeSession.seconds*.7;recordCodeResult(codeSession.wrongAttempts>0?'WRONG':codeSession.hintLevel?'HINT_USED':slow?'SLOW_CORRECT':'CORRECT')}}
 function recallSpacingEvidence(w,attemptOrdinal,nowMs=Date.now()){const raw=w.learningStats?.lastAssistedAttemptOrdinal,lastAssistAt=Number(raw),hasOrdinal=raw!==undefined&&raw!==null&&raw!==''&&Number.isFinite(lastAssistAt),interveningItemCount=hasOrdinal?Math.max(0,attemptOrdinal-lastAssistAt-1):null,assistedMs=w.learningStats?.lastAssistedAt?Date.parse(w.learningStats.lastAssistedAt):NaN,elapsedSinceAssistMs=Number.isFinite(assistedMs)?Math.max(0,nowMs-assistedMs):null,spacedEvidence=interveningItemCount!=null&&(interveningItemCount>=1||Number(elapsedSinceAssistMs||0)>=30000);return {interveningItemCount,elapsedSinceAssistMs,spacedEvidence}}
-// Main-compatible Code Red retrieval observation. A browser candidate is
+// Main-compatible deterministic retrieval observation. A browser candidate is
 // never a central verified receipt: trusted server reference issuance/scoring
 // remains mandatory, and PASS is not a deterministic recall outcome.
 function emitCodeRedRetrievalCandidate(type,w,attempt,sh){
