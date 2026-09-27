@@ -159,7 +159,9 @@
     const eventType=buildResult().taskState==='COMPLETED'?'TASK_COMPLETED':'TASK_PARTIAL';
     if(!target)return {ok:false,reason:'RETURN_TARGET_MISSING',event:emitTaskEvent(eventType)};
     const event=emitTaskEvent(eventType);
-    url.searchParams.set('learning_event',JSON.stringify(event));
+    // A URL query is sent to the destination server and its access logs.
+    // Keep the bounded local return envelope in the browser fragment instead.
+    url.hash='learning_event='+encodeURIComponent(JSON.stringify(event));
     location.assign(url.href);
     return {ok:true,event};
   }
