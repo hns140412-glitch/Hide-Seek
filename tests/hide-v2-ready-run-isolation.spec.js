@@ -22,3 +22,19 @@ test('central V2 exact Ready run identity is required',async({page})=>{
  expect(r.current.stage).not.toBe('COMPLETE');
  expect(r.taskState).toBe('PARTIAL');
 });
+
+test('missing central Ready session prevents mutation before a multi-mission bundle is made',async({page})=>{
+ const word=(id,lexicalId)=>({id,lexicalId,token:id,meaning:'뜻',languageDomain:'ENGLISH',missionRole:'REVIEW',evidence:[]});
+ const missions=['a','b'].map(id=>({id,title:id,status:'READY',items:[word(id,id+'::뜻')],provenance:{source:'TEST_FIXTURE'}}));
+ await page.addInitScript(missions=>localStorage.setItem('hide_seek_v2_state',JSON.stringify({version:1,missions,profile:{displayName:'test'},activeMissionId:'a',activeSession:null,events:[]})),missions);
+ const d={authority:'EXPLICIT_CENTRAL_PLANNER_REVIEW_DIRECTIVE',reviewPolicyOwner:'TAKY_LEARNING_ENGINE_CORE',scheduleOwner:'READY_SET_PLANNER',lexicalIds:['a::뜻','b::뜻'],directiveId:'central-hide:todo-two',taskId:'task-two',basisKind:'OBSERVATION_ADVISORY_ONLY',observationIsVerifiedProof:false};
+ await page.goto('/v2.html?'+new URLSearchParams({task_id:'task-two',lap_id:'lap-one',review_directive:JSON.stringify(d)}));
+ const r=await page.evaluate(()=>{
+  const before=HideV2Store.snapshot(),start=HideV2App.start(),after=HideV2Store.snapshot();
+  return {start,before:before.missions.length,after:after.missions.length,session:after.activeSession,events:after.events.length};
+ });
+ expect(r.start.reason).toBe('CENTRAL_READY_RUN_IDENTITY_REQUIRED');
+ expect(r.after).toBe(r.before);
+ expect(r.session).toBe(null);
+ expect(r.events).toBe(0);
+});
