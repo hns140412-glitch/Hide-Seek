@@ -68,6 +68,7 @@ test('central lexical directive finds exact V2 mission and preserves scoped memo
  expect(completed.event.event_type).toBe('TASK_COMPLETED');
  expect(completed.event.payload.taskState).toBe('COMPLETED');
  expect(result.memorySummary.authority).toBe('SPECIALIST_MEMORY_ADVISORY_ONLY');
+ expect(result.memorySummary.reviewPolicyOwner).toBe('TAKY_LEARNING_ENGINE_CORE');
  expect(result.memorySummary.fullMissionScope).toBe(false);
  expect(result.trailSummary.totalWordCount).toBe(2);
  expect(result.reviewDirective.observationIsVerifiedProof).toBe(false);
@@ -141,10 +142,11 @@ test('mismatched task binding is rejected and local Ready directive remains supp
   task_id:'task-1',lap_id:'ready-lap-1',review_directive:JSON.stringify(local)}));
  const selected=await page.evaluate(()=>({
   directive:HideV2ReadyBridge.reviewDirective(),
-  started:HideV2App.start()
+  started:HideV2App.start(),memoryPolicyOwner:HideV2ReadyBridge.buildResult().memorySummary?.reviewPolicyOwner
  }));
  expect(selected.directive.reviewPolicyOwner).toBe('READY_LEARNING_ENGINE');
  expect(selected.started.ok).toBe(true);
+ expect(selected.memoryPolicyOwner).toBe('READY_LEARNING_ENGINE');
 });
 
 test('unapproved return target never receives scoped child learning envelope',async({page})=>{
