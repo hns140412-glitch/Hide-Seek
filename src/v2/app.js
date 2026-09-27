@@ -95,6 +95,11 @@
     if(!choice.ok)return {ok:false,reason:choice.reason||'REVIEW_TARGETS_NOT_AVAILABLE'};
     const existing=HideV2Session.current?.();
     const hasDirective=bridge?.hasReviewRequest?.()===true;
+    if(existing?.session?.stage==='COMPLETE'&&
+      (!hasDirective||bridge.matchesActiveReview(existing.session,existing.mission))){
+      HideV2Mission.setActive(existing.mission.id);
+      return {ok:true,pair:existing,reused:true};
+    }
     if(hasDirective&&existing&&existing.session.stage!=='COMPLETE'&&
       !bridge.matchesActiveReview(existing.session,existing.mission))
       return {ok:false,reason:'DIFFERENT_ACTIVE_SESSION_REQUIRES_EXPLICIT_RESOLUTION'};
