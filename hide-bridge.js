@@ -3,7 +3,7 @@
 
   const BRIDGE_VERSION = '2026.09.21-c';
   const EVENT_LIMIT = 120;
-  const SHARED_PARAM_NAMES = ['session_id', 'goal_id', 'task_id', 'lap_id', 'return_target', 'snap_target', 'child_id', 'actor_role', 'crew_member_id', 'crew_member_name', 'crew_rules_version', 'review_directive'];
+  const SHARED_PARAM_NAMES = ['session_id', 'goal_id', 'task_id', 'lap_id', 'return_target', 'snap_target', 'child_id', 'actor_role', 'crew_member_id', 'crew_member_name', 'crew_rules_version', 'review_directive', 'subject', 'concept_skill_target', 'learning_target_id'];
   const legacyTerms = [
     [/Word Detective Team/g, 'Hidden Word Trail'],
     [/사건 파일/g, '단어 탐험'],
@@ -335,6 +335,32 @@
     return event;
   }
 
+  // Preserve main's specialist memory signal in the Draft bridge. A local
+  // observation neither certifies objective recall nor allocates a Planner date.
+  function emitLearningMemorySignal(input = {}) {
+    const context=getContext();
+    return emit('LEARNING_MEMORY_SIGNAL',{
+      skill_id:input.skill_id||input.word||input.item_id||context.concept_skill_target||null,
+      word:input.word||null,item_id:input.item_id||null,
+      member_id:input.member_id||context.child_id||null,
+      subject:input.subject||context.subject||null,
+      concept_skill_target:input.concept_skill_target||context.concept_skill_target||null,
+      learning_target_id:input.learning_target_id||context.learning_target_id||null,
+      correct:typeof input.correct==='boolean'?input.correct:null,
+      assisted:!!(input.assisted||input.hint_used),
+      confusion:input.confusion??null,
+      strength:input.strength??null,weakness:input.weakness??null,
+      spacedEvidence:input.spacedEvidence??input.spaced_evidence??null,
+      nextReviewPriority:input.nextReviewPriority??input.next_review_priority??null,
+      mode:input.mode||null,sourceSheetId:S.activeSheetId||null,
+      evidence_source_refs:Array.isArray(input.source_refs)?[...input.source_refs]:[],
+      evidence_provenance:Array.isArray(input.provenance)?[...input.provenance]:[],
+      observation_only:true,global_mastery_claim:false,
+      long_term_schedule_owned_by_learning_engine:true,
+      schedule_date_owned_by:'READY_SET_PLANNER'
+    });
+  }
+
   function requestImaginationCloud(word, reason = 'retrieval_support') {
     return emit('IMAGINATION_CLOUD_REQUEST', {
       word: String(word || '').trim(),
@@ -473,6 +499,7 @@
       returnToBase,
       sendToSnap,
       requestImaginationCloud,
+      emitLearningMemorySignal,
       buildMemorySummary,
       reviewDirective,
       isSafeUpdatePoint
