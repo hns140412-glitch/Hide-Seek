@@ -103,6 +103,14 @@ test('missing or invalid central target cannot silently run the full active miss
  expect(result.itemIds).toEqual([]);
  expect(result.started.ok).toBe(false);
  expect(result.active).toBe(null);
+ const unstarted=await page.evaluate(()=>{
+  const before=HideV2Store.snapshot().events.length;
+  const attempt=HideV2ReadyBridge.returnToReady();
+  return {attempt,delta:HideV2Store.snapshot().events.length-before};
+ });
+ expect(unstarted.attempt.reason).toBe('MATCHED_ACTIVE_REVIEW_SESSION_REQUIRED');
+ expect(unstarted.attempt.event).toBeUndefined();
+ expect(unstarted.delta).toBe(0);
  expect(await page.evaluate(()=>HideV2ReadyBridge.buildResult().taskState)).toBe('PARTIAL');
 });
 test('a previously finished mission and unrelated in-progress session cannot certify a new central task',async({page})=>{
