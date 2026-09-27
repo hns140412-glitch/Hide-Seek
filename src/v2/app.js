@@ -89,6 +89,31 @@
   let flash='';
 
   function mission(){return HideV2Mission.activeMission()}
+  function ensureReadyScopedSession(){
+    const bridge=globalThis.HideV2ReadyBridge;
+    const choice=bridge?.resolveTargetMission?.()||{ok:!!mission(),mission:mission(),targetItemIds:null};
+    if(!choice.ok)return {ok:false,reason:choice.reason||'REVIEW_TARGETS_NOT_AVAILABLE'};
+    const existing=HideV2Session.current?.();
+    const hasDirective=bridge?.hasReviewRequest?.()===true;
+    if(hasDirective&&existing&&existing.session.stage!=='COMPLETE'&&
+      !bridge.matchesActiveReview(existing.session,existing.mission))
+      return {ok:false,reason:'DIFFERENT_ACTIVE_SESSION_REQUIRES_EXPLICIT_RESOLUTION'};
+    if(existing&&existing.session.stage!=='COMPLETE'&&
+      (!hasDirective||bridge.matchesActiveReview(existing.session,existing.mission))){
+      HideV2Mission.setActive(existing.mission.id);
+      return {ok:true,pair:existing,reused:true};
+    }
+    if(!choice.mission)return {ok:false,reason:'MISSION_REQUIRED'};
+    HideV2Mission.setActive(choice.mission.id);
+    try{
+      const created=HideV2Session.start(choice.mission,{
+        targetItemIds:choice.targetItemIds,
+        reviewDirectiveId:choice.directive?.directiveId||null,
+        reviewAuthority:choice.directive?.authority||null
+      });
+      return {ok:true,pair:{session:created,mission:choice.mission},reused:false};
+    }catch(error){return {ok:false,reason:error?.message||'REVIEW_SESSION_START_FAILED'}}
+  }
   function setFlash(x){flash=x;setTimeout(()=>{flash='';render()},1200)}
 
   function bindThinkingTrail(missionId,w){
@@ -259,8 +284,8 @@
     $('#v2Library').onclick=()=>$('#sheetLibraryInput').click();
     if($('#v2ResumeReview'))$('#v2ResumeReview').onclick=()=>review(HideV2Capture.reviewRows());
     if($('#v2Start'))$('#v2Start').onclick=()=>{
-      const existing=globalThis.HideV2Session?.ensureActiveMission?.();
-      if(!existing){const active=mission();HideV2Session.start(active,{targetItemIds:globalThis.HideV2ReadyBridge?.targetItemIds?.(active)||null})}
+      const started=ensureReadyScopedSession();
+      if(!started.ok){setFlash(started.reason);return}
       HideV2Router.go('learn')
     };
   }
@@ -368,12 +393,15 @@
   }
 
   function learn(){
-    let pair=globalThis.HideV2Session?.ensureActiveMission?.();
-    if(!pair){
-      const active=mission();if(!active){HideV2Router.go('home');return}
-      HideV2Session.start(active,{targetItemIds:globalThis.HideV2ReadyBridge?.targetItemIds?.(active)||null});
-      pair=HideV2Session.current();
+    const resolved=ensureReadyScopedSession();
+    if(!resolved.ok){
+      view().innerHTML='<section class="card"><h2>복습 대상을 확인할 수 없어요</h2>'+
+        '<p>'+esc(resolved.reason)+'</p>'+
+        '<button id="v2ReviewReturn" class="btn secondary">탐험 지도로 돌아가기</button></section>';
+      $('#v2ReviewReturn').onclick=()=>HideV2Router.go('home');
+      return;
     }
+    const pair=resolved.pair;
     const {session,mission:m}=pair;
     if(session.stage==='COMPLETE'){complete();return}
     const w=HideV2Learning.current(session,m);const idx=session.index+1,total=session.queue?.length||m.items.length;
@@ -766,9 +794,13 @@
   function complete(){
     const m=mission(),active=HideV2Store.snapshot().activeSession;
     const scopedIds=Array.isArray(active?.queue)?active.queue:null;
-    const summary=HideV2Memory.missionSummary(m),trail=HideV2Trail.missionSummary(m,{itemIds:scopedIds});
+    const summary=HideV2Memory.missionSummary(m,{itemIds:scopedIds}),
+      trail=HideV2Trail.missionSummary(m,{itemIds:scopedIds});
     const fullMissionScope=trail.fullMissionScope===true;
-    HideV2Mission.updateMission(m.id,x=>{x.status=fullMissionScope?'COMPLETED':'PARTIAL';x.memorySummary=summary;x.trailSummary=trail});
+    HideV2Mission.updateMission(m.id,x=>{
+      x.status=fullMissionScope?'COMPLETED':(x.status==='COMPLETED'?'COMPLETED':'PARTIAL');
+      x.memorySummary=summary;x.trailSummary=trail;
+    });
     const readyContext=globalThis.HideV2ReadyBridge?.context?.()||{};
     const expressionReviews=globalThis.HideV2ReadyBridge?.expressionReviewCandidates?.(m,scopedIds)||[];
     const returnButton=readyContext.return_target?'<button id="v2ReturnReady" class="btn primary full" style="margin-top:8px">Ready & Set으로 돌아가기</button>':'';
@@ -1082,7 +1114,12 @@
     });
     HideV2Router.subscribe(render);HideV2Store.subscribe(()=>{});render();
     globalThis.HideV2Pwa?.ensureRegistered?.();
-    window.HideV2App=Object.freeze({render,review,onFiles,start:()=>{const m=mission();HideV2Session.start(m,{targetItemIds:globalThis.HideV2ReadyBridge?.targetItemIds?.(m)||null});HideV2Router.go('learn')}});
+    window.HideV2App=Object.freeze({render,review,onFiles,start:()=>{
+      const started=ensureReadyScopedSession();
+      if(!started.ok)return started;
+      HideV2Router.go('learn');
+      return started;
+    }});
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
