@@ -393,6 +393,14 @@
   }
 
   function learn(){
+    const existing=HideV2Session.current?.();
+    const bridge=globalThis.HideV2ReadyBridge;
+    if(existing?.session?.stage==='COMPLETE'&&
+      (bridge?.hasReviewRequest?.()!==true||
+       bridge.matchesActiveReview(existing.session,existing.mission))){
+      HideV2Mission.setActive(existing.mission.id);
+      complete();return;
+    }
     const resolved=ensureReadyScopedSession();
     if(!resolved.ok){
       view().innerHTML='<section class="card"><h2>복습 대상을 확인할 수 없어요</h2>'+
