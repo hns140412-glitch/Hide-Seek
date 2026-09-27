@@ -71,3 +71,16 @@ assert(familyOcr.includes('TakyHttpJson'));
 assert(familyOcr.includes('HttpJson.request'));
 assert(familyOcr.includes("credentials:'same-origin'"));
 console.log('PASS: Hide consumes shared HTTP transport while Family OCR retains endpoint/domain semantics');
+
+const codeRedApp=fs.readFileSync(path.join(__dirname,'..','app.js'),'utf8');
+assert(codeRedApp.includes('function emitCodeRedRetrievalCandidate'));
+assert(codeRedApp.includes('emitCodeRedRetrievalCandidate(type,w,attempt,sh)'));
+for(const marker of ['RETRIEVAL_ATTEMPT_RESULT','verification_candidate',
+  'RETRIEVAL_EXACT_MATCH','UNASSISTED_EXACT_RETRIEVAL','DETERMINISTIC_LOCAL_MATCH',
+  "'CORRECT','SLOW_CORRECT'"])assert(codeRedApp.includes(marker), 'missing Code Red marker: '+marker);
+assert(!codeRedApp.includes('caseMastery:100,verified_outcome'));
+assert(bridge.includes('function emitLearningMemorySignal'));
+assert(bridge.includes("'learning_target_id'"));
+assert(bridge.includes("observation_only:true,global_mastery_claim:false"));
+assert(bridge.includes("schedule_date_owned_by:'READY_SET_PLANNER'"));
+console.log('PASS: main Code Red candidate and child-scoped advisory memory signal are retained without manufacturing server verification or a Planner date');
