@@ -85,8 +85,12 @@
   }
   function matchesActiveReview(session,mission){
     if(!hasReviewRequest())return true;
-    const d=reviewDirective(),expected=targetItemIds(mission);
-    return !!(d&&session&&mission&&session.missionId===mission.id&&
+    const d=reviewDirective(),expected=targetItemIds(mission),ctx=context();
+    const central=d?.authority==='EXPLICIT_CENTRAL_PLANNER_REVIEW_DIRECTIVE';
+    const sameRun=!central||(!!ctx.session_id&&!!ctx.task_id&&!!ctx.lap_id&&
+      session.readySessionId===ctx.session_id&&session.readyTaskId===ctx.task_id&&
+      session.readyLapId===ctx.lap_id);
+    return !!(sameRun&&d&&session&&mission&&session.missionId===mission.id&&
       (session.reviewDirectiveId===d.directiveId||
         (d.authority==='EXPLICIT_READY_PLANNER_REVIEW_DIRECTIVE'&&
          !session.reviewDirectiveId))&&
