@@ -355,7 +355,7 @@
       "action": "NO_MODIFICATION; four labels currently informational"
     },
     {
-      "path": "assets/visual/mossfall-home.binding.json",
+      "path": "assets/visual/hide-mossfall.binding.json",
       "role": "APPROVED_HOME_ART_POINTER",
       "action": "NO_OVERRIDE; original SHA + review gates remain"
     },
