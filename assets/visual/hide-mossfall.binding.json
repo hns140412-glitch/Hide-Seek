@@ -1,0 +1,24 @@
+{
+  "schema": "TAKY.visual-binding.v1",
+  "app": "Hide & Seek",
+  "visual_id": "TAKY-LAF-HIDE-HOME-MOSSFALL-20260927-A",
+  "authority": "USER_APPROVED_2026-09-27",
+  "library_source": "/TAKY/LEARNING_APP_FAMILY_VISUAL_BINDINGS/assets/hide_seek_forest_asset.png",
+  "app_relative_asset": "assets/visual/hide_seek_forest_asset.png",
+  "width": 941,
+  "height": 1672,
+  "mime_type": "image/png",
+  "sha256": "1f7aa500a177e25820649cc485355297cbc4fb89909df1f7f43e4ff7ddbe2419",
+  "policy": {
+    "binary_immutable": true,
+    "asset_scope": "HOME_ENVIRONMENT",
+    "characters": "EXCLUDED_FROM_BACKGROUND",
+    "ui_controls": "LIVE_HTML_CSS_ONLY",
+    "full_island_panorama": false,
+    "card_dashboard": false,
+    "rejected_reference": "expedition.html",
+    "ui_candidate_approval": "NOT_GRANTED"
+  },
+  "source_binary_status": "REQUIRED_FOR_GITHUB_RUNTIME_BINDING",
+  "run_gate": "node tools/verify-approved-mossfall.js"
+}
