@@ -1,4 +1,5 @@
 const {test,expect}=require('@playwright/test');
+const {bindVisionFixture}=require('./ocr-fixture-response');
 
 test('printed handout becomes Hide exploration mission and enters FIRST FIND',async({page})=>{
   await page.addInitScript(()=>{
@@ -26,7 +27,7 @@ test('printed handout becomes Hide exploration mission and enters FIRST FIND',as
     await route.fulfill({
       status:200,
       contentType:'application/json',
-      body:JSON.stringify({
+      body:JSON.stringify(bindVisionFixture(route,{
         ok:true,
         provider:'FIXTURE_VISION',
         model:'fixture-v1',
@@ -40,7 +41,7 @@ test('printed handout becomes Hide exploration mission and enters FIRST FIND',as
             {eng:'essential',kor:'필수적인',confidence:'low',warnings:['일부 흐림']}
           ]
         }
-      })
+      }))
     });
   });
 
@@ -146,7 +147,7 @@ test('parent can create the same Hide exploration mission intake path',async({pa
     await route.fulfill({
       status:200,
       contentType:'application/json',
-      body:JSON.stringify({
+      body:JSON.stringify(bindVisionFixture(route,{
         ok:true,
         provider:'FIXTURE_VISION',
         model:'fixture-parent-v1',
@@ -159,7 +160,7 @@ test('parent can create the same Hide exploration mission intake path',async({pa
             {eng:'challenge',kor:'도전',confidence:'high',warnings:[]}
           ]
         }
-      })
+      }))
     });
   });
 

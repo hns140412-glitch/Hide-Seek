@@ -277,6 +277,7 @@
           ${missionAction}
           <button class="btn secondary" id="v2Camera">카메라 촬영</button>
           <button class="btn ghost" id="v2Library">사진에서 가져오기</button>
+          <button class="btn ghost" id="v2OcrImport" type="button">OCR 결과 검토</button>
         </div>
       </section>
 
@@ -313,6 +314,7 @@
     $('#v2MissionList').onclick=()=>HideV2Router.go('missions');
     $('#v2Records').onclick=()=>HideV2Router.go('records');
     $('#v2Library').onclick=()=>$('#sheetLibraryInput').click();
+    $('#v2OcrImport').onclick=()=>HideV2Router.go('ocr-intake');
     if($('#v2ResumeReview'))$('#v2ResumeReview').onclick=()=>review(HideV2Capture.reviewRows());
     if($('#v2Start'))$('#v2Start').onclick=()=>{
       const started=ensureReadyScopedSession();
@@ -1137,16 +1139,117 @@
     $('#v2RecordBack').onclick=()=>HideV2Router.go('records');
   }
 
+  function ocrIntakeReview(){
+    const packet=HideV2Capture.intakePacket();
+    const snap=HideV2Store.snapshot();
+    if(!packet){
+      view().innerHTML='<section class="ocr-review-card"><h1>OCR 결과 가져오기</h1><p>이전에 확인한 OCR 결과 JSON을 이 기기에만 불러옵니다. 촬영 원본과 API 인식 정확도는 별도 검증 대상입니다.</p><button class="btn primary full" id="v2ChooseOcrJson">결과 파일 선택</button><button class="btn secondary full" id="v2OcrBack">홈으로</button></section>';
+      $('#v2ChooseOcrJson').onclick=()=>$('#ocrImportInput').click();
+      $('#v2OcrBack').onclick=()=>HideV2Router.go('home');
+      return;
+    }
+    const router=globalThis.HideOcrIntakeRouter,summary=router.summarize(packet);
+    const rows=HideV2Capture.intakeReviewDraft();
+    const roles=HideV2Capture.intakeRolePreview(rows);
+    const rolesByRow=new Map(roles.map(x=>[Number(x.sourceRowIndex),x]));
+    const committed=!!snap.ocrIntakeMissionId;
+    const dayLabel={
+      LAST_WEEK_MONDAY:'지난주 월요일 시험',
+      PREVIOUS_WEEK_WED_OR_FRI_UNRESOLVED:'그 전주 수·금 중 어느 회차인지 미확정'
+    };
+    // Historical records outlive the currently displayed intake packet.
+    const histories=snap.historicalExamDrafts||[];
+    const canAddAnother=committed||!packet.documents.some(d=>d.kind==='NEW_PRINT');
+    view().innerHTML=`<section class="ocr-review-card" aria-label="OCR 자료별 검토">
+      <div class="hero-kicker"><span>OCR SOURCE REVIEW</span><span>부모 확인 전 초안</span></div>
+      <h1>서로 다른 자료로 나누었어요</h1>
+      <p>현재 프린트 후보 ${summary.newCandidateRows}개 · 누적 보관한 지난 시험 ${histories.length}회. 서로 다른 원본은 한 미션으로 합치지 않아요.</p>
+      <p>NEW / REVIEW는 프린트 위치가 아닌 이 기기에 저장된 단어·뜻 이력과 부모 확인을 기준으로 나눕니다. 다른 기기·중앙 이력은 아직 대조되지 않았습니다.</p>
+      <p>이 파일은 확인용 문자 전사본이며 실제 OCR API 성공이나 원본 사진 첨부를 의미하지 않습니다.</p>
+      <div class="ocr-review-list" id="v2ImportedNewRows">
+        ${rows.map((r,i)=>`<div class="ocr-review-row" data-imported-row="${i}">
+          <div class="ocr-review-row__head"><b>프린트 ${r.sourceRowIndex}</b><small data-intake-role="${r.sourceRowIndex}">${esc(rolesByRow.get(Number(r.sourceRowIndex))?.role||'NEW')} · ${esc(rolesByRow.get(Number(r.sourceRowIndex))?.roleSource||'LOCAL_CHECK_REQUIRED')} · 부모 확인 전</small></div>
+          <div class="ocr-review-fields">
+            <label><span>Word</span><input class="input" data-import-eng="${i}" value="${esc(r.eng)}" aria-label="신규 단어 ${i+1}"></label>
+            <label><span>뜻</span><input class="input" data-import-kor="${i}" value="${esc(r.kor)}" aria-label="신규 뜻 ${i+1}"></label>
+          </div>
+          ${r.warnings?.length?`<small>원본과 대조 필요 · ${esc(r.warnings.join(' / '))}</small>`:''}
+          ${rolesByRow.get(Number(r.sourceRowIndex))?.senseConflict
+            ?`<label class="ocr-review-next"><input type="checkbox" data-confirm-distinct-sense="${r.sourceRowIndex}"> 같은 철자의 기존 단어와 뜻이 다릅니다. 이 뜻을 별도 의미로 추가한다고 확인합니다.</label>`
+            :''}
+        </div>`).join('')}
+      </div>
+      ${rows.length&&!committed?`<label class="ocr-review-next"><input type="checkbox" id="v2ParentVerifiedNew"> 원본과 이 기기의 기존 단어 이력을 대조한 뒤 내용을 확인했습니다.</label>
+        <button class="btn primary full" id="v2ConfirmImportedPrint" type="button">확인한 단어로 미션 만들기</button>`:''}
+      ${committed?'<p id="v2ImportCommitted">신규 단어지 확인 완료 · 기존 미션으로 저장됨</p>':''}
+      <section class="ocr-review-next" aria-label="지난 시험 기록">
+        <h2>과거 시험은 별도 기록</h2>
+        <p>아이 답안, 빨간 채점, 정답 후보를 혼동하지 않습니다. 자동 점수·기억 강도·Planner 일정에는 반영하지 않습니다.</p>
+        ${histories.map(h=>`<details data-exam-region="${esc(h.region)}"><summary>${esc(h.region)} · ${esc(dayLabel[h.dateRelation]||h.dateRelation)} · ${h.rows.length}개 · 확인 대기</summary>
+          <ol>${h.rows.map(row=>`<li>행 ${row.sourceRowIndex} · 관찰 단어 후보: ${esc(row.observedWordCandidate||'미확인')} · 연필 답: ${esc(row.childAnswerRaw||'미확인')} · 빨간 교정: ${esc(row.redCorrectionRaw||'미확인')} · 판정: 미검증</li>`).join('')}</ol>
+          <small>원본 사진의 정확한 시험일 및 채점 근거를 대조하기 전까지 평가 근거로 사용하지 않습니다.</small>
+        </details>`).join('')}
+      </section>
+      ${canAddAnother?'<button class="btn secondary full" id="v2ImportAnother" type="button">다른 OCR 결과 추가</button>':''}
+      <button class="btn secondary full" id="v2ImportBack" type="button">홈으로</button>
+    </section>`;
+    const persistEdits=()=>{
+      if(committed)return;
+      const draft=rows.map((r,i)=>({...r,
+        eng:$('[data-import-eng="'+i+'"]')?.value.trim()??r.eng,
+        kor:$('[data-import-kor="'+i+'"]')?.value.trim()??r.kor}));
+      HideV2Capture.updateIntakeReviewDraft(draft);
+    };
+    view().querySelectorAll('[data-import-eng],[data-import-kor]').forEach(el=>el.addEventListener('change',()=>{
+      persistEdits();
+      // The role preview must follow a corrected spelling/meaning, rather
+      // than retaining its stale OCR-time classification.
+      ocrIntakeReview();
+    }));
+    if($('#v2ConfirmImportedPrint'))$('#v2ConfirmImportedPrint').onclick=()=>{
+      persistEdits();
+      const checked=$('#v2ParentVerifiedNew')?.checked===true;
+      const reviewedDistinctSenseRows=[...view().querySelectorAll('[data-confirm-distinct-sense]:checked')]
+        .map(el=>Number(el.dataset.confirmDistinctSense));
+      const result=HideV2Capture.commitIntakeNewPrint(HideV2Capture.intakeReviewDraft(),{
+        parentReviewed:checked,reviewedDistinctSenseRows
+      });
+      if(!result.ok){
+        const reason={
+          PARENT_REVIEW_REQUIRED:'원본과 기존 이력을 확인한 뒤 확인 표시를 해주세요.',
+          LEXICAL_SENSE_CONFLICT_REVIEW_REQUIRED:'같은 철자의 다른 뜻은 개별 확인 표시가 필요합니다.',
+          DUPLICATE_SOURCE_LEXICAL_SENSE:'중복된 단어·뜻이 있습니다. 원본 행을 대조해 주세요.',
+          UNRESOLVED_PRINT_ROW:'철자 또는 뜻이 비어 있는 행을 확인해 주세요.'
+        }[result.reason]||'원본 행과 입력 내용을 확인해 주세요.';
+        setFlash(reason);return
+      }
+      HideV2Router.go('missions');
+    };
+    if($('#v2ImportAnother'))$('#v2ImportAnother').onclick=()=>$('#ocrImportInput').click();
+    $('#v2ImportBack').onclick=()=>HideV2Router.go('home');
+  }
+
   function render(){
     if(flash){const t=$('#toast');if(t){t.textContent=flash;t.classList.add('show')}}
     const r=HideV2Router.current();
-    if(r.name==='learn')learn();else if(r.name==='missions')missions();else if(r.name==='records')records();else if(r.name==='record-detail')recordDetail(r.params);else home();
+    if(r.name==='learn')learn();else if(r.name==='missions')missions();else if(r.name==='records')records();else if(r.name==='record-detail')recordDetail(r.params);else if(r.name==='ocr-intake')ocrIntakeReview();else home();
   }
   function boot(){
     globalThis.HideV2LegacyMigration?.migrateIfNeeded?.();
     $('#settingsBtn').hidden=true;$('#backBtn').hidden=true;$('#partnerBar').hidden=true;$('#bottomNav').hidden=true;
     const bindFileInput=id=>$(id)?.addEventListener('change',e=>{const files=[...e.target.files];e.target.value='';if(files.length)onFiles(files)});
     bindFileInput('#sheetCameraInput');bindFileInput('#sheetLibraryInput');
+    $('#ocrImportInput')?.addEventListener('change',async event=>{
+      const file=event.target.files?.[0];event.target.value='';
+      if(!file)return;
+      if(file.size>1024*1024){setFlash('OCR 결과 파일은 1MB 이하여야 합니다.');return}
+      try{
+        const parsed=JSON.parse(await file.text());
+        const imported=HideV2Capture.importLocalOcrPacket(parsed);
+        if(!imported.ok){setFlash(imported.reason);return}
+        HideV2Router.go('ocr-intake');
+      }catch{setFlash('OCR 결과 JSON을 읽을 수 없습니다. 기존 기록은 유지했어요.')}
+    });
     view().addEventListener('click',e=>{
       const btn=e.target.closest?.('[data-crew-support]');if(!btn)return;
       const pair=HideV2Session.current?.();if(!pair)return;

@@ -165,7 +165,100 @@
     HideV2Store.transaction(s=>{s.captureSession=null});
   }
 
+  // User-provided OCR transcript import. This never invokes a provider and
+  // cannot silently turn three historical exams into a learning mission.
+  function intakePacket(){return HideV2Store.snapshot().ocrIntakePacket||null}
+  function intakeReviewDraft(){
+    const snap=HideV2Store.snapshot();
+    return snap.ocrIntakeReviewDraft?.length?snap.ocrIntakeReviewDraft:
+      (globalThis.HideOcrIntakeRouter?.proposedNewRows?.(snap.ocrIntakePacket)||[]);
+  }
+  function importLocalOcrPacket(raw){
+    const router=globalThis.HideOcrIntakeRouter;
+    if(!router)return {ok:false,reason:'OCR_SOURCE_ROUTER_UNAVAILABLE'};
+    const parsed=router.normalizePacket(raw);
+    if(!parsed.ok)return parsed;
+    const before=HideV2Store.snapshot();
+    // A physical source may arrive in a separate OCR packet; ledger remains
+    // idempotent even after the screen switches from historical exam to print.
+    const packetId=parsed.packet.packetId;
+    if(before.ocrIntakePacket?.packetId===packetId||
+      (before.historicalExamDrafts||[]).some(e=>e.packetId===packetId)||
+      (before.missions||[]).some(m=>m.provenance?.packetId===packetId))
+      return {ok:false,reason:'OCR_PACKET_ALREADY_IMPORTED'};
+    // Historical-only packets have nothing to commit as a vocabulary mission.
+    // Allow the following printed list to arrive without dropping exam records.
+    const pendingPrint=before.ocrIntakePacket?.documents?.some(d=>d.kind==='NEW_PRINT');
+    if(pendingPrint&&!before.ocrIntakeMissionId)
+      return {ok:false,reason:'UNCOMMITTED_OCR_REVIEW_EXISTS'};
+    const oldIds=new Set((before.historicalExamDrafts||[]).map(x=>x.evidenceId));
+    const histories=router.historicalDrafts(parsed.packet);
+    HideV2Store.transaction(s=>{
+      s.ocrIntakePacket=parsed.packet;
+      s.ocrIntakeMissionId=null;
+      s.ocrIntakeReviewDraft=router.proposedNewRows(parsed.packet);
+      s.historicalExamDrafts=[...(s.historicalExamDrafts||[]),
+        ...histories.filter(x=>!oldIds.has(x.evidenceId))];
+    });
+    return {ok:true,packetId:parsed.packet.packetId,summary:router.summarize(parsed.packet),
+      sourceOnly:true,noAutomaticMemoryOrPlanner:true};
+  }
+  function updateIntakeReviewDraft(rows){
+    const current=HideV2Store.snapshot();
+    if(!current.ocrIntakePacket||current.ocrIntakeMissionId)
+      return {ok:false,reason:'OCR_REVIEW_NOT_ACTIVE'};
+    if(!Array.isArray(rows)||rows.length!==intakeReviewDraft().length)
+      return {ok:false,reason:'OCR_REVIEW_ROW_COVERAGE_REQUIRED'};
+    const allowed=new Set(globalThis.HideOcrIntakeRouter.proposedNewRows(current.ocrIntakePacket)
+      .map(x=>x.sourceRowIndex));
+    const seen=new Set();
+    const reviewed=rows.map(x=>({
+      ...x,sourceRowIndex:Number(x.sourceRowIndex),
+      eng:String(x.eng||'').trim(),kor:String(x.kor||'').trim()
+    }));
+    if(reviewed.some(x=>!allowed.has(x.sourceRowIndex)||seen.has(x.sourceRowIndex)||!seen.add(x.sourceRowIndex)))
+      return {ok:false,reason:'OCR_REVIEW_SOURCE_ROW_MISMATCH'};
+    HideV2Store.transaction(s=>{s.ocrIntakeReviewDraft=reviewed});
+    return {ok:true,rows:reviewed};
+  }
+  function localLexicalEntries(snapshot=HideV2Store.snapshot()){
+    return (snapshot.missions||[])
+      .filter(m=>m.provenance?.source!=='READY_SCOPED_REVIEW_BUNDLE')
+      .flatMap(m=>(m.items||[]).map(item=>({
+        token:item.token||item.eng,meaning:item.meaning||item.kor,
+        lexicalId:item.lexicalId,missionId:m.id,
+        evidenceCount:Array.isArray(item.evidence)?item.evidence.length:0
+      })));
+  }
+  function intakeRolePreview(rows=intakeReviewDraft()){
+    const router=globalThis.HideOcrIntakeRouter;
+    return router?.previewLexicalRoles?.(rows,localLexicalEntries())||[];
+  }
+  function commitIntakeNewPrint(rows,{parentReviewed=false,reviewedDistinctSenseRows=[]}={}){
+    const s=HideV2Store.snapshot(),router=globalThis.HideOcrIntakeRouter;
+    if(!s.ocrIntakePacket)return {ok:false,reason:'OCR_PACKET_REQUIRED'};
+    if(s.ocrIntakeMissionId){
+      const prior=s.missions.find(m=>m.id===s.ocrIntakeMissionId);
+      return prior?{ok:true,mission:prior,reused:true}:{ok:false,reason:'OCR_COMMIT_LEDGER_CONFLICT'};
+    }
+    const confirmed=router.confirmedMission(s.ocrIntakePacket,rows,{parentReviewed,
+      knownLexicalEntries:localLexicalEntries(s),reviewedDistinctSenseRows});
+    if(!confirmed.ok)return confirmed;
+    // A historical exam row is never passed to the mission API.
+    const mission=HideV2Mission.addMission({
+      title:'단어 '+confirmed.items.length+'개 · 확인한 프린트',
+      items:confirmed.items,sourceCount:1,provenance:confirmed.provenance
+    });
+    HideV2Store.transaction(draft=>{
+      draft.ocrIntakeMissionId=mission.id;
+      draft.ocrIntakeReviewDraft=rows;
+      if(draft.ocrIntakePacket)draft.ocrIntakePacket.importState='NEW_PRINT_PARENT_CONFIRMED';
+    });
+    return {ok:true,mission,historyCount:(s.historicalExamDrafts||[]).length,
+      historicalEvidenceUsedAsMemory:false};
+  }
+
   window.HideV2Capture=Object.freeze({
-    state,ensureSession,addFiles,analyzePending,analyzeFiles,reviewRows,reviewDraft,saveReviewDraft,hasResumableReview,markCommitted,cancel
+    state,ensureSession,addFiles,analyzePending,analyzeFiles,reviewRows,reviewDraft,saveReviewDraft,hasResumableReview,markCommitted,cancel,intakePacket,intakeReviewDraft,importLocalOcrPacket,updateIntakeReviewDraft,localLexicalEntries,intakeRolePreview,commitIntakeNewPrint
   });
 })();

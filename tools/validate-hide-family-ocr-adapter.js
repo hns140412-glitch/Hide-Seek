@@ -25,7 +25,11 @@ async function runCase(responseBody,status=200){
       status,
       url:String(url),
       headers:{get:()=>null},
-      text:async()=>JSON.stringify(responseBody)
+      text:async()=>JSON.stringify({
+        ...responseBody,
+        ...(responseBody?.vision_ingest_request_id==='__ECHO__'
+          ?{vision_ingest_request_id:options.body.map.get('vision_ingest_request_id')}:{})
+      })
     }),
     window:{}
   };
@@ -43,6 +47,7 @@ async function runCase(responseBody,status=200){
 
 (async()=>{
   const ok=await runCase({
+    vision_ingest_request_id:'__ECHO__',
     analysis_domain:'HIDE_VOCABULARY',
     provider:'fixture',
     model:'fixture-v1',
@@ -69,18 +74,21 @@ async function runCase(responseBody,status=200){
   assert(/^vision_/.test(ok.vision_ingest_request_id||''),'shared vision ingest request provenance must be preserved');
 
   const invalidRole=await runCase({
+    vision_ingest_request_id:'__ECHO__',
     analysis_domain:'HIDE_VOCABULARY',
     result:{analysis_domain:'HIDE_VOCABULARY',analysis_version:'HIDE_VOCABULARY_OCR_V1',rows:[{eng:'fresh',kor:'새로운',confidence:'high',evidence_item_id:'page-1',mission_role:'LEFT'}]}
   });
   assert(invalidRole.ok===true&&invalidRole.rows[0].missionRole==='','noncanonical OCR role must be discarded');
 
   const mismatch=await runCase({
+    vision_ingest_request_id:'__ECHO__',
     analysis_domain:'READY_ASSIGNMENT_FACT',
     result:{analysis_domain:'READY_ASSIGNMENT_FACT',rows:[{eng:'x',kor:'y'}]}
   });
   assert(mismatch.ok===false&&mismatch.reason==='ANALYSIS_DOMAIN_MISMATCH','wrong domain must fail closed');
 
   const unsupported=await runCase({
+    vision_ingest_request_id:'__ECHO__',
     analysis_domain:'HIDE_VOCABULARY',
     result:{drafts:[{group_key:'ENGLISH:HOMEWORK'}]}
   });
@@ -88,10 +96,31 @@ async function runCase(responseBody,status=200){
 
 
   const evidenceMismatch=await runCase({
+    vision_ingest_request_id:'__ECHO__',
     analysis_domain:'HIDE_VOCABULARY',
     result:{analysis_domain:'HIDE_VOCABULARY',rows:[{eng:'word',kor:'뜻',confidence:'high',evidence_item_id:'foreign-page'}]}
   });
   assert(evidenceMismatch.ok===false&&evidenceMismatch.reason==='OCR_EVIDENCE_MISMATCH','foreign OCR evidence id must fail closed');
+
+  const noResponseId=await runCase({
+    analysis_domain:'HIDE_VOCABULARY',
+    result:{rows:[{eng:'word',kor:'뜻',evidence_item_id:'page-1'}]}
+  });
+  assert(!noResponseId.ok&&noResponseId.reason==='OCR_REQUEST_BINDING_MISSING','missing server echo must fail closed');
+
+  const staleResponseId=await runCase({
+    vision_ingest_request_id:'stale-request',
+    analysis_domain:'HIDE_VOCABULARY',
+    result:{rows:[{eng:'word',kor:'뜻',evidence_item_id:'page-1'}]}
+  });
+  assert(!staleResponseId.ok&&staleResponseId.reason==='OCR_REQUEST_BINDING_MISMATCH','stale OCR response must fail closed');
+
+  const unlinkedRow=await runCase({
+    vision_ingest_request_id:'__ECHO__',analysis_domain:'HIDE_VOCABULARY',
+    result:{rows:[{eng:'word',kor:'뜻',confidence:'low'}]}
+  });
+  assert(!unlinkedRow.ok&&unlinkedRow.reason==='OCR_EVIDENCE_MISMATCH','rows missing explicit source may not silently receive current page id');
+  assert(unlinkedRow.missing?.[0]?.reason==='EVIDENCE_SOURCE_REQUIRED','missing source must remain diagnosable');
 
   const httpFail=await runCase({reason:'HIDE_VOCABULARY_UNSUPPORTED'},422);
   assert(httpFail.ok===false&&httpFail.reason==='HIDE_VOCABULARY_UNSUPPORTED','server unsupported response must remain explicit');

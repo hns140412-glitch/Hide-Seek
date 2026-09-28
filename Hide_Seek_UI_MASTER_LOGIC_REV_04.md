@@ -398,14 +398,21 @@ Memorization exposure and retrieval evidence are separate:
 `MEMORIZATION_EXPOSURE != FIRST_RECALL_CORRECT`.
 
 
-## MOCK TEST != SOURCE PRINT
-The photographed 36-word sheet used in this review is a parent-child morning mock test, not the original learning handout.
+## OCR SOURCE IDENTITY & MISSION ROLE — USER-CORRECTED SOURCE FACT (2026-09-28)
 
-Observed evidence:
-- 12 NEW + 24 REVIEW for the current routine.
-- NEW 12 are on the left only in that specific mock-test artifact.
+The actual user-provided material in this case consists of **two different photos**:
+- A separately printed 12-row `journey → voyage` word/meaning list, proposed as a new learning source. It is NOT evidence that every lexical sense is globally unseen.
+- One photographed, marked handwritten sheet containing **three independent historical 12-row examinations** when rotated to the readable orientation: LEFT = last week's Monday examination; CENTER and RIGHT = the previous week's Wednesday/Friday examinations. The exact CENTER-to-weekday and RIGHT-to-weekday mapping is unverified.
 
-Do not generalize this layout to intake:
-`PRINT POSITION != MISSION ROLE`.
+The old premise that this *specific photo* represents a single present-day 36-word mock examination (`12 NEW + 24 REVIEW` and NEW on the left) is **superseded for these sources**. Any legacy `morning-mock-test-36` fixture is an abstract fixture only, not a label or authority for the real image. Do not erase other cases where the current learner routine actually contains 12 NEW + 24 REVIEW.
 
-The source print may change format. NEW/REVIEW belongs to mission composition and learner history, with human correction available at review.
+`SOURCE DOCUMENT != EXAM EVENT != LEXICAL SENSE != MISSION ROLE`
+`PRINT POSITION != MISSION ROLE`
+
+OCR must preserve distinct physical source, rotated-view relation, column/row, printed Korean cue, the child's original pencil answer, red correction/mark and reference candidate without guessing one from another. A red circle is NOT an automatic wrong-answer or memory-strength signal. No exact calendar date or day-column mapping may be inferred from relative labels.
+
+A confirmed printed list can enter Hide V2 mission preparation. NEW means no prior matching lexical/sense encounter in the available learner record; REVIEW means an existing matching lexical/sense record. The OCR Draft currently checks **local Hide missions only**, with parent attestation; it does not prove absence in the Central Learning Engine or on another device. Exact prior match becomes REVIEW, and same spelling with a different meaning must be individually reviewed before a distinct sense can be recorded. Earlier memory evidence remains immutable. An OCR import does not produce recall evidence, an automatic test score, review quota, an award, or a Planner date.
+
+Historical examinations remain three independent ungraded evidence drafts until answers and markings have been compared with an original source and a reliable identity/authorization flow. Only reviewed evidence may later enter the central learning advisory pipeline; Central Learning decides review policy and Ready Planner assigns a date. The 24 review words for a particular mission must come from an explicit scoped directive/confirmed history, never by silently assigning the 24 old handwritten entries.
+
+The learning experience after a confirmed mission continues through the established Hide stages: `MEMORIZATION → FIRST FIND → MEANING CLUE → CONNECTION TRAIL → HIDDEN WORDS → FINAL SEEK → SEEK AGAIN`, preserving approved UI assets and ownership boundaries.

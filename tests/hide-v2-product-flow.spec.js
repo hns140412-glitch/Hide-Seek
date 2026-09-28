@@ -1,4 +1,5 @@
 const {test,expect}=require('@playwright/test');
+const {bindVisionFixture}=require('./ocr-fixture-response');
 
 test('Hide V2 boots without legacy app.js and completes a mission end-to-end',async({page})=>{
   await page.addInitScript(()=>{
@@ -1072,11 +1073,11 @@ test('Hide V2 Korean verified EVIDENCE TRAIL records evidence without claiming c
 
 test('Hide V2 OCR path uses the shared family adapter and commits reviewed rows',async({page})=>{
   await page.route('**/api/capture/analyze',async route=>{
-    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
+    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(bindVisionFixture(route,{
       ok:true,provider:'FIXTURE_VISION',model:'v2-fixture',analysis_domain:'HIDE_VOCABULARY',
       result:{analysis_domain:'HIDE_VOCABULARY',analysis_version:'HIDE_VOCABULARY_OCR_V1',
         rows:[{eng:'environment',kor:'환경',confidence:'high',evidence_item_id:null,warnings:[],mission_role:'NEW'}]}
-    })});
+    }))});
   });
   await page.goto('/v2.html');
   await page.locator('#sheetLibraryInput').setInputFiles({name:'words.jpg',mimeType:'image/jpeg',buffer:Buffer.from('v2-image')});
@@ -1098,11 +1099,11 @@ test('Hide V2 OCR path uses the shared family adapter and commits reviewed rows'
 
 test('Hide V2 OCR review explicitly merges duplicate lexical rows and preserves every source occurrence',async({page})=>{
   await page.route('**/api/capture/analyze',async route=>{
-    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
+    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(bindVisionFixture(route,{
       ok:true,provider:'FIXTURE_VISION',model:'v2-fixture',analysis_domain:'HIDE_VOCABULARY',
       result:{analysis_domain:'HIDE_VOCABULARY',analysis_version:'HIDE_VOCABULARY_OCR_V1',
         rows:[{eng:'island',kor:'섬',confidence:'high',warnings:[],mission_role:'NEW'}]}
-    })});
+    }))});
   });
   await page.goto('/v2.html');
   await page.locator('#sheetLibraryInput').setInputFiles([
@@ -1136,14 +1137,14 @@ test('Hide V2 OCR review explicitly merges duplicate lexical rows and preserves 
 
 test('Hide V2 persists editable OCR review decisions across reload',async({page})=>{
   await page.route('**/api/capture/analyze',async route=>{
-    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
+    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(bindVisionFixture(route,{
       ok:true,provider:'FIXTURE_VISION',model:'v2-fixture',analysis_domain:'HIDE_VOCABULARY',
       result:{analysis_domain:'HIDE_VOCABULARY',analysis_version:'HIDE_VOCABULARY_OCR_V1',
         rows:[
           {eng:'islan',kor:'섬',confidence:'medium',warnings:['SPELLING'],mission_role:'NEW'},
           {eng:'noise',kor:'소음',confidence:'high',warnings:[],mission_role:'NEW'}
         ]}
-    })});
+    }))});
   });
   await page.goto('/v2.html');
   await page.locator('#sheetLibraryInput').setInputFiles({name:'review-draft.jpg',mimeType:'image/jpeg',buffer:Buffer.from('persistent-review-draft')});
@@ -1557,14 +1558,14 @@ test('Hide V2 bulk mission delete blocks atomically when active-session mission 
 
 test('Hide V2 OCR review allows row correction and exclusion before commit',async({page})=>{
   await page.route('**/api/capture/analyze',async route=>{
-    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
+    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(bindVisionFixture(route,{
       ok:true,provider:'FIXTURE_VISION',model:'v2-fixture',analysis_domain:'HIDE_VOCABULARY',
       result:{analysis_domain:'HIDE_VOCABULARY',analysis_version:'HIDE_VOCABULARY_OCR_V1',
         rows:[
           {eng:'enviroment',kor:'환경',confidence:'medium',warnings:['SPELLING'],mission_role:'NEW'},
           {eng:'noise',kor:'소음',confidence:'high',warnings:[],mission_role:'NEW'}
         ]}
-    })});
+    }))});
   });
   await page.goto('/v2.html');
   await page.locator('#sheetLibraryInput').setInputFiles({name:'review.jpg',mimeType:'image/jpeg',buffer:Buffer.from('review-edit-image')});
@@ -1953,22 +1954,22 @@ test('Hide V2 retries only failed OCR pages and preserves successful page rows',
   await page.route('**/api/capture/analyze',async route=>{
     calls++;
     if(calls===1){
-      await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
+      await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(bindVisionFixture(route,{
         ok:true,provider:'FIXTURE_VISION',model:'v2-fixture',analysis_domain:'HIDE_VOCABULARY',
         result:{analysis_domain:'HIDE_VOCABULARY',analysis_version:'HIDE_VOCABULARY_OCR_V1',
           rows:[{eng:'environment',kor:'환경',confidence:'high',warnings:[],mission_role:'NEW'}]}
-      })});
+      }))});
       return;
     }
     if(calls===2){
       await route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({ok:false,reason:'TEMPORARY_PROVIDER_FAILURE'})});
       return;
     }
-    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
+    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(bindVisionFixture(route,{
       ok:true,provider:'FIXTURE_VISION',model:'v2-fixture',analysis_domain:'HIDE_VOCABULARY',
       result:{analysis_domain:'HIDE_VOCABULARY',analysis_version:'HIDE_VOCABULARY_OCR_V1',
         rows:[{eng:'island',kor:'섬',confidence:'medium',warnings:['CHECK_PRINT'],mission_role:'NEW'}]}
-    })});
+    }))});
   });
   await page.goto('/v2.html');
   await page.locator('#sheetLibraryInput').setInputFiles([

@@ -18,6 +18,9 @@
       contextEvidence:normalized.contextEvidence||null,
       soundEvidence:normalized.soundEvidence||null,
       missionRole:['NEW','REVIEW'].includes(clean(raw?.missionRole).toUpperCase())?clean(raw.missionRole).toUpperCase():'NEW',
+      // A reviewed source role must survive mission normalization independently
+      // of the learning-memory evidence ledger.
+      missionRoleSource:clean(raw?.missionRoleSource)||null,
       evidence:[],
       source:(()=>{
         const normalizeSource=(src={},fallbackIndex=index)=>({

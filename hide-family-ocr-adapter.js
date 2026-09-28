@@ -48,7 +48,7 @@
     }];
 
     const VisionIngest=globalThis.TakyVisionIngest;
-    if(!VisionIngest?.buildRequest)return {ok:false,reason:'VISION_INGEST_UNAVAILABLE'};
+    if(!VisionIngest?.buildRequest||!VisionIngest?.validateForRequest)return {ok:false,reason:'VISION_INGEST_UNAVAILABLE'};
     const ingest=VisionIngest.buildRequest({
       source:'hide-seek:family-capture-ocr',
       manifest,
@@ -84,6 +84,14 @@
       };
     }
 
+    // Require an independently returned server request ID; the outgoing ID alone
+    // cannot prove the response belongs to this page's capture request.
+    const echoedRequestId=typeof body?.vision_ingest_request_id==='string'
+      ?body.vision_ingest_request_id.trim():'';
+    if(!echoedRequestId)return {ok:false,reason:'OCR_REQUEST_BINDING_MISSING'};
+    if(echoedRequestId!==ingest.request.request_id){
+      return {ok:false,reason:'OCR_REQUEST_BINDING_MISMATCH'};
+    }
     const result=body?.result||{};
     const returnedDomain=String(body?.analysis_domain||result?.analysis_domain||'').trim();
     if(returnedDomain&&returnedDomain!==ANALYSIS_DOMAIN){
@@ -100,18 +108,23 @@
     }
 
     const normalizedEvidence=VisionIngest.normalizeResult({
-      request_id:ingest.request.request_id,
+      request_id:echoedRequestId,
       provider:body.provider||'UNKNOWN',
       model:body.model||null,
       items:rows.map((row,index)=>({
         result_id:`${page.pageId}-row-${index}`,
-        evidence_source_ids:[row.evidenceItemId||page.pageId],
+        evidence_source_ids:row.evidenceItemId?[row.evidenceItemId]:[],
         provider_payload:row
       }))
     });
-    const evidenceCheck=normalizedEvidence.ok?VisionIngest.validateEvidence(normalizedEvidence.result,[page.pageId]):{ok:false};
+    const evidenceCheck=normalizedEvidence.ok
+      ?VisionIngest.validateForRequest(normalizedEvidence.result,ingest.request):{ok:false};
     if(!normalizedEvidence.ok||!evidenceCheck.ok){
-      return {ok:false,reason:'OCR_EVIDENCE_MISMATCH',unknown:evidenceCheck.unknown||[]};
+      return {
+        ok:false,reason:'OCR_EVIDENCE_MISMATCH',
+        unknown:evidenceCheck.unknown||[],missing:evidenceCheck.missing||[],
+        duplicate_result_ids:evidenceCheck.duplicate_result_ids||[]
+      };
     }
 
     return {
@@ -121,7 +134,7 @@
       provider:body.provider||'UNKNOWN',
       model:body.model||null,
       analysis_version:result.analysis_version||'HIDE_VOCABULARY_OCR_V1',
-      vision_ingest_request_id:ingest.request.request_id,
+      vision_ingest_request_id:echoedRequestId,
       rows,
       received_at:new Date().toISOString()
     };
