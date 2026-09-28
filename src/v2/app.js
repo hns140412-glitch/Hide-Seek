@@ -263,15 +263,21 @@
     const activeCount=s.missions.filter(x=>x.status!=='ARCHIVED').length;
     const missionAction=m?`<button class="btn primary quest-main-action" id="v2Start">${resumable?'탐험 이어가기':'탐험 시작'}</button>`:'';
     view().innerHTML=`
-      <section class="quest-hero">
+      <section class="quest-hero mossfall-home" aria-label="Hide & Seek 숲과 폭포 탐험 홈">
         <div class="quest-hero__eyebrow">HIDE & SEEK · 숨은 단어 탐험</div>
         <div class="quest-hero__body">
           <div>
             <p class="quest-overline">${m?'오늘의 탐험':'새 탐험 준비'}</p>
             <h1>${m?esc(m.title):'프린트에서 숨은 단어를 찾아봐요'}</h1>
-            <p class="quest-subcopy">${m?`${m.items.length}개 단어 · ${missionStatusLabel(m.status)}`:'사진을 찍으면 단어를 확인하고 바로 탐험을 시작할 수 있어요.'}</p>
+            <p class="quest-subcopy">${m?`${m.items.length}개 단어 · ${missionStatusLabel(m.status)}`:'자료를 촬영한 뒤 부모가 단어와 뜻을 확인하면 탐험이 열려요.'}</p>
           </div>
           ${m?`<div class="quest-count"><b>${m.items.length}</b><span>숨은 단어</span></div>`:''}
+        </div>
+        <div class="mossfall-mode-signs" role="list" aria-label="Hide & Seek 학습 방식">
+          <span role="listitem">TRACE <small>흔적 찾기</small></span>
+          <span role="listitem">LINK <small>연결 찾기</small></span>
+          <span role="listitem">CORE <small>핵심 조각</small></span>
+          <span role="listitem">RECALL <small>숨은 단어</small></span>
         </div>
         <div class="quest-hero__actions">
           ${missionAction}
@@ -284,8 +290,8 @@
       ${reviewReady?`<section class="quest-alert"><div><b>확인하던 단어가 남아 있어요</b><p>${capture?.lastRows?.length||0}개 단어를 이어서 확인할 수 있어요.</p></div><button class="btn primary" id="v2ResumeReview">이어서 확인</button></section>`:''}
 
       <section class="quest-grid">
-        <button class="quest-tile" id="v2MissionList" type="button"><span class="quest-tile__icon">🧭</span><span><b>탐험 미션</b><small>${activeCount}개 미션</small></span><i>›</i></button>
-        <button class="quest-tile" id="v2Records" type="button"><span class="quest-tile__icon">🪜</span><span><b>기억 사다리</b><small>${memory.total}개 단어 기록</small></span><i>›</i></button>
+        <button class="quest-tile" id="v2MissionList" type="button"><span class="quest-tile__icon" aria-hidden="true">01</span><span><b>탐험 미션</b><small>${activeCount}개 미션</small></span><i>›</i></button>
+        <button class="quest-tile" id="v2Records" type="button"><span class="quest-tile__icon" aria-hidden="true">02</span><span><b>기억 사다리</b><small>${memory.total}개 단어 기록</small></span><i>›</i></button>
       </section>
 
       <section class="trail-bridge" aria-label="탐험과 기억의 연결">
@@ -1232,6 +1238,8 @@
   function render(){
     if(flash){const t=$('#toast');if(t){t.textContent=flash;t.classList.add('show')}}
     const r=HideV2Router.current();
+    document.body.dataset.v2Surface=r.name==='home'?'home':
+      r.name==='learn'?'focus':r.name==='ocr-intake'?'source':'other';
     if(r.name==='learn')learn();else if(r.name==='missions')missions();else if(r.name==='records')records();else if(r.name==='record-detail')recordDetail(r.params);else if(r.name==='ocr-intake')ocrIntakeReview();else home();
   }
   function boot(){
