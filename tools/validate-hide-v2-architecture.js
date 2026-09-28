@@ -5,7 +5,7 @@ const ROOT=path.join(__dirname,'..');
 const modules=[
   'src/v2/app-store.js','src/v2/mission-service.js','src/v2/memory-engine.js','src/v2/trail-engine.js',
   'src/v2/learning-session.js','src/v2/session-service.js','src/v2/capture-store.js','src/v2/capture-controller.js','src/v2/router.js',
-  'src/v2/legacy-migration.js','src/v2/ready-bridge.js','src/v2/pwa-v2.js','src/v2/mobile-shell.js','src/v2/app.js'
+  'src/v2/legacy-migration.js','src/v2/ready-bridge.js','src/v2/pwa-v2.js','src/v2/mobile-shell.js','src/v2/mossfall-world.js','src/v2/app.js'
 ];
 const fail=[];
 for(const file of modules){
@@ -116,9 +116,19 @@ for(const required of ['숨은 단어 탐험','탐험 준비','단어 만나기'
 for(const token of ['quest-hero','quest-grid','quest-status','mission-card','memory-summary','word-row','quest-progress']){
   if(!v2css.includes(token))fail.push('V2_PRODUCT_UI_SYSTEM_MISSING:'+token);
 }
-for(const token of ['오늘의 탐험','기억 사다리','quest-main-action','progressHtml','missionStatusLabel']){
+for(const token of ['오늘의 탐험','기억 사다리','progressHtml','missionStatusLabel']){
   if(!app.includes(token))fail.push('V2_PRODUCT_UI_FLOW_MISSING:'+token);
 }
+const world=fs.readFileSync(path.join(ROOT,'src/v2/mossfall-world.js'),'utf8');
+if(!app.includes('HideMossfallWorld.render('))fail.push('V2_WORLD_HOME_NOT_BOUND');
+for(const token of ['quest-main-action','v2Start','v2BeginWithMission','v2MissionList','v2Camera','v2Library','v2Records','v2OcrImport','data-world-anchor']){
+  if(!world.includes(token))fail.push('V2_WORLD_FUNCTIONAL_ENTRY_MISSING:'+token);
+}
+if(/quest-grid|quest-tile|mossfall-mode-signs|quest-hero/.test(world))
+  fail.push('V2_WORLD_CARD_DASHBOARD_REGRESSION');
+if(!html.includes('./src/v2/approved-mossfall.css'))fail.push('V2_APPROVED_ENVIRONMENT_CSS_MISSING');
+if(!html.includes('./src/v2/mossfall-world.js'))fail.push('V2_WORLD_RENDERER_NOT_LOADED');
+if(!html.includes('TAKY-LAF-HIDE-HOME-MOSSFALL-20260927-A'))fail.push('V2_APPROVED_VISUAL_ID_MISSING');
 for(const token of ['--v2-safe-bottom','max-width:390px','min-height:44px','overflow-wrap:anywhere']){
   if(!v2css.includes(token))fail.push('V2_MOBILE_CSS_GUARD_MISSING:'+token);
 }
