@@ -1,4 +1,5 @@
 const {test,expect}=require('@playwright/test');
+const {bindVisionFixture}=require('./ocr-fixture-response');
 
 async function seedEmptyExplorer(page, role='CHILD'){
   await page.addInitScript(({role})=>{
@@ -30,11 +31,11 @@ test('committed mission reanalysis updates the same mission instead of duplicati
     const rows=analyzeCount===1
       ?[{eng:'benefit',kor:'혜택',confidence:'high',warnings:[]}]
       :[{eng:'advantage',kor:'이점',confidence:'high',warnings:[]}];
-    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({
+    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(bindVisionFixture(route,{
       ok:true,provider:'FIXTURE_VISION',model:'fixture-reanalysis',
       actor_role:'CHILD',analysis_domain:'HIDE_VOCABULARY',
       result:{analysis_domain:'HIDE_VOCABULARY',analysis_version:'HIDE_VOCABULARY_OCR_V1',rows}
-    })});
+    }))});
   });
 
   await page.goto('/?actor_role=CHILD&session_id=reanalysis-session&task_id=reanalysis-task&lap_id=reanalysis-lap');
