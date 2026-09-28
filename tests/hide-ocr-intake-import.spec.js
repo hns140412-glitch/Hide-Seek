@@ -62,7 +62,7 @@ test('source-aware local OCR review creates only 12-parent-confirmed-word missio
   });
   expect(finished.mission.items).toHaveLength(12);
   expect(finished.mission.items[0].token).toBe('editedentry');
-  expect(finished.mission.items.every(x=>x.missionRole==='NEW'&&x.missionRoleSource==='PARENT_CONFIRMED_NEW_PRINT')).toBe(true);
+  expect(finished.mission.items.every(x=>x.missionRole==='NEW'&&x.missionRoleSource==='PARENT_CONFIRMED_NEW_PRINT_NO_LOCAL_MATCH')).toBe(true);
   expect(finished.mission.items.some(x=>x.token.startsWith('testcandidate'))).toBe(false);
   expect(finished.mission.provenance.source).toBe('PARENT_CONFIRMED_OCR_IMPORT');
   expect(finished.mission.provenance.noAutoPlanner).toBe(true);
@@ -90,4 +90,48 @@ test('ambiguous Wednesday/Friday mapping cannot be silently asserted by OCR JSON
   expect(s.ocrIntakePacket).toBe(null);
   expect(s.missions).toHaveLength(0);
   expect(s.historicalExamDrafts).toHaveLength(0);
+});
+
+test('printed source label does not override exact local lexical history or ambiguous sense review',async({page})=>{
+  await page.goto('/v2.html');
+  await page.evaluate(()=>{
+    HideV2Mission.addMission({title:'Synthetic earlier approved vocabulary',
+      provenance:{source:'SYNTHETIC_PRIOR_LOCAL_HISTORY'},
+      items:[{eng:'entry1',kor:'뜻1'},{eng:'entry2',kor:'다른 뜻'}],sourceCount:1});
+  });
+  await page.locator('#ocrImportInput').setInputFiles({
+    name:'synthetic-ocr.json',mimeType:'application/json',
+    buffer:Buffer.from(JSON.stringify(packet))
+  });
+  await expect(page.locator('[data-imported-row]')).toHaveCount(12);
+  await expect(page.locator('[data-intake-role="2"]')).toContainText('REVIEW');
+  await expect(page.locator('[data-intake-role="3"]')).toContainText('UNRESOLVED');
+  await expect(page.locator('[data-confirm-distinct-sense="3"]')).toHaveCount(1);
+  await page.locator('#v2ParentVerifiedNew').check();
+  await page.locator('#v2ConfirmImportedPrint').click();
+  expect(await page.evaluate(()=>HideV2Store.snapshot().missions.length)).toBe(1);
+  await page.locator('[data-confirm-distinct-sense="3"]').check();
+  await page.locator('#v2ConfirmImportedPrint').click();
+  await expect.poll(()=>page.evaluate(()=>HideV2Store.snapshot().missions.length)).toBe(2);
+  const outcome=await page.evaluate(()=>{
+    const s=HideV2Store.snapshot();
+    const m=s.missions.find(x=>x.provenance?.source==='PARENT_CONFIRMED_OCR_IMPORT');
+    const previous=s.missions.find(x=>x.title==='Synthetic earlier approved vocabulary');
+    return {mission:m,previous,
+      histories:s.historicalExamDrafts.map(x=>({region:x.region,signal:x.memorySignalEligible,grading:x.gradingState})),
+      memoryEvidence:HideV2Memory.wordbook().reduce((n,x)=>n+x.evidence.length,0),
+      plannerActions:s.events.length};
+  });
+  expect(outcome.mission.items).toHaveLength(12);
+  expect(outcome.mission.items[1].missionRole).toBe('REVIEW');
+  expect(outcome.mission.items[1].missionRoleSource).toBe('EXACT_LOCAL_LEXICAL_SENSE_MATCH');
+  expect(outcome.mission.items[2].missionRole).toBe('NEW');
+  expect(outcome.mission.items[2].missionRoleSource).toBe('PARENT_CONFIRMED_DISTINCT_SENSE');
+  expect(outcome.mission.provenance.historyScope).toBe('LOCAL_MISSIONS_ONLY');
+  expect(outcome.mission.provenance.historyNotComplete).toBe(true);
+  expect(outcome.previous.items).toHaveLength(2);
+  expect(outcome.histories).toHaveLength(3);
+  expect(outcome.histories.every(h=>h.signal===false&&h.grading==='UNVERIFIED')).toBe(true);
+  expect(outcome.memoryEvidence).toBe(0);
+  expect(outcome.plannerActions).toBe(0);
 });
