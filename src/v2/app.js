@@ -1157,11 +1157,13 @@
       LAST_WEEK_MONDAY:'지난주 월요일 시험',
       PREVIOUS_WEEK_WED_OR_FRI_UNRESOLVED:'그 전주 수·금 중 어느 회차인지 미확정'
     };
-    const histories=(snap.historicalExamDrafts||[]).filter(h=>h.packetId===packet.packetId);
+    // Historical records outlive the currently displayed intake packet.
+    const histories=snap.historicalExamDrafts||[];
+    const canAddAnother=committed||!packet.documents.some(d=>d.kind==='NEW_PRINT');
     view().innerHTML=`<section class="ocr-review-card" aria-label="OCR 자료별 검토">
       <div class="hero-kicker"><span>OCR SOURCE REVIEW</span><span>부모 확인 전 초안</span></div>
       <h1>서로 다른 자료로 나누었어요</h1>
-      <p>새 프린트에서 찾은 ${summary.newCandidateRows}개와 지난 시험 ${summary.historicalExamCount}회(${summary.historicalCandidateRows}개)는 합쳐서 학습하지 않아요.</p>
+      <p>현재 프린트 후보 ${summary.newCandidateRows}개 · 누적 보관한 지난 시험 ${histories.length}회. 서로 다른 원본은 한 미션으로 합치지 않아요.</p>
       <p>NEW / REVIEW는 프린트 위치가 아닌 이 기기에 저장된 단어·뜻 이력과 부모 확인을 기준으로 나눕니다. 다른 기기·중앙 이력은 아직 대조되지 않았습니다.</p>
       <p>이 파일은 확인용 문자 전사본이며 실제 OCR API 성공이나 원본 사진 첨부를 의미하지 않습니다.</p>
       <div class="ocr-review-list" id="v2ImportedNewRows">
@@ -1188,6 +1190,7 @@
           <small>원본 사진의 정확한 시험일 및 채점 근거를 대조하기 전까지 평가 근거로 사용하지 않습니다.</small>
         </details>`).join('')}
       </section>
+      ${canAddAnother?'<button class="btn secondary full" id="v2ImportAnother" type="button">다른 OCR 결과 추가</button>':''}
       <button class="btn secondary full" id="v2ImportBack" type="button">홈으로</button>
     </section>`;
     const persistEdits=()=>{
@@ -1222,6 +1225,7 @@
       }
       HideV2Router.go('missions');
     };
+    if($('#v2ImportAnother'))$('#v2ImportAnother').onclick=()=>$('#ocrImportInput').click();
     $('#v2ImportBack').onclick=()=>HideV2Router.go('home');
   }
 
