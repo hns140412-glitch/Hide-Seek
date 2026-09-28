@@ -164,7 +164,7 @@
   padding:0;
 }
 .v2-runtime[data-v2-surface="home"] .quest-hero__actions .btn{
-  min-height:44px;
+  min-height:48px;
   border-radius:5px 15px 5px 15px;
   font-size:12px;
   border:1px solid rgba(244,244,211,.75);
@@ -241,7 +241,7 @@
     padding:5px 8px;
   }
   .v2-runtime[data-v2-surface="home"] .quest-hero h1{font-size:20px}
-  .v2-runtime[data-v2-surface="home"] .quest-hero__actions .btn{min-height:40px}
+  .v2-runtime[data-v2-surface="home"] .quest-hero__actions .btn{min-height:48px}
   .v2-runtime[data-v2-surface="home"] .quest-grid{margin-top:5px}
 }
 /* FOCUS and SOURCE are a readable working surface, not a repeated island map.
