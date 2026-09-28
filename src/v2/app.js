@@ -1145,6 +1145,7 @@
     $('#v2RecordBack').onclick=()=>HideV2Router.go('records');
   }
 
+  let ocrIntakePageIndex=0;
   function ocrIntakeReview(){
     const packet=HideV2Capture.intakePacket();
     const snap=HideV2Store.snapshot();
@@ -1172,8 +1173,12 @@
       <p>현재 프린트 후보 ${summary.newCandidateRows}개 · 누적 보관한 지난 시험 ${histories.length}회. 서로 다른 원본은 한 미션으로 합치지 않아요.</p>
       <p>NEW / REVIEW는 프린트 위치가 아닌 이 기기에 저장된 단어·뜻 이력과 부모 확인을 기준으로 나눕니다. 다른 기기·중앙 이력은 아직 대조되지 않았습니다.</p>
       <p>이 파일은 확인용 문자 전사본이며 실제 OCR API 성공이나 원본 사진 첨부를 의미하지 않습니다.</p>
+      <div class="ocr-review-page-head" id="v2ImportedReviewPageHead" ${rows.length?'':'hidden'}>
+        <span>NEW PRINT · 원본 행을 하나씩 대조</span>
+        <output id="v2IntakePageCount" aria-live="polite">${rows.length?Math.min(ocrIntakePageIndex+1,rows.length):0}/${rows.length}</output>
+      </div>
       <div class="ocr-review-list" id="v2ImportedNewRows">
-        ${rows.map((r,i)=>`<div class="ocr-review-row" data-imported-row="${i}">
+        ${rows.map((r,i)=>`<div class="ocr-review-row" data-imported-row="${i}" ${i===Math.max(0,Math.min(ocrIntakePageIndex,rows.length-1))?'':'hidden'}>
           <div class="ocr-review-row__head"><b>프린트 ${r.sourceRowIndex}</b><small data-intake-role="${r.sourceRowIndex}">${esc(rolesByRow.get(Number(r.sourceRowIndex))?.role||'NEW')} · ${esc(rolesByRow.get(Number(r.sourceRowIndex))?.roleSource||'LOCAL_CHECK_REQUIRED')} · 부모 확인 전</small></div>
           <div class="ocr-review-fields">
             <label><span>Word</span><input class="input" data-import-eng="${i}" value="${esc(r.eng)}" aria-label="신규 단어 ${i+1}"></label>
@@ -1185,6 +1190,10 @@
             :''}
         </div>`).join('')}
       </div>
+      ${rows.length>1?`<div class="ocr-review-pager" aria-label="단어 원본 행 이동">
+        <button class="btn secondary" type="button" id="v2IntakePrev" ${ocrIntakePageIndex<=0?'disabled':''}>이전 행</button>
+        <button class="btn secondary" type="button" id="v2IntakeNext" ${ocrIntakePageIndex>=rows.length-1?'disabled':''}>다음 행</button>
+      </div>`:''}
       ${rows.length&&!committed?`<label class="ocr-review-next"><input type="checkbox" id="v2ParentVerifiedNew"> 원본과 이 기기의 기존 단어 이력을 대조한 뒤 내용을 확인했습니다.</label>
         <button class="btn primary full" id="v2ConfirmImportedPrint" type="button">확인한 단어로 미션 만들기</button>`:''}
       ${committed?'<p id="v2ImportCommitted">신규 단어지 확인 완료 · 기존 미션으로 저장됨</p>':''}
@@ -1199,6 +1208,20 @@
       ${canAddAnother?'<button class="btn secondary full" id="v2ImportAnother" type="button">다른 OCR 결과 추가</button>':''}
       <button class="btn secondary full" id="v2ImportBack" type="button">홈으로</button>
     </section>`;
+    const showIntakePage=()=>{
+      ocrIntakePageIndex=Math.max(0,Math.min(ocrIntakePageIndex,rows.length-1));
+      view().querySelectorAll('[data-imported-row]').forEach((el,i)=>{el.hidden=i!==ocrIntakePageIndex});
+      const count=$('#v2IntakePageCount');
+      if(count)count.textContent=(ocrIntakePageIndex+1)+'/'+rows.length;
+      if($('#v2IntakePrev'))$('#v2IntakePrev').disabled=ocrIntakePageIndex<=0;
+      if($('#v2IntakeNext'))$('#v2IntakeNext').disabled=ocrIntakePageIndex>=rows.length-1;
+    };
+    if($('#v2IntakePrev'))$('#v2IntakePrev').onclick=()=>{
+      ocrIntakePageIndex--;showIntakePage();
+    };
+    if($('#v2IntakeNext'))$('#v2IntakeNext').onclick=()=>{
+      ocrIntakePageIndex++;showIntakePage();
+    };
     const persistEdits=()=>{
       if(committed)return;
       const draft=rows.map((r,i)=>({...r,
