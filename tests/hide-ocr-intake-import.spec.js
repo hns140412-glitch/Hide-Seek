@@ -118,6 +118,7 @@ test('printed source label does not override exact local lexical history or ambi
   await page.locator('#v2ParentVerifiedNew').check();
   await page.locator('#v2ConfirmImportedPrint').click();
   expect(await page.evaluate(()=>HideV2Store.snapshot().missions.length)).toBe(1);
+  await expect(page.locator('#v2IntakePageCount')).toHaveText('3/12');
   await page.locator('[data-confirm-distinct-sense="3"]').check();
   await page.locator('#v2ConfirmImportedPrint').click();
   await expect.poll(()=>page.evaluate(()=>HideV2Store.snapshot().missions.length)).toBe(2);
