@@ -1395,7 +1395,7 @@ test('Hide V2 mission lifecycle supports selection rename archive and blocks act
     }));
   });
   await page.goto('/v2.html');
-  await page.getByRole('button',{name:'탐험 미션'}).click();
+  await page.getByRole('button',{name:'탐험 미션',exact:true}).click();
   await expect(page.getByRole('heading',{name:'오늘의 탐험 지도'})).toBeVisible();
 
   await page.locator('[data-mission-id="m-b"] summary').click();
@@ -1406,7 +1406,7 @@ test('Hide V2 mission lifecycle supports selection rename archive and blocks act
   await page.locator('[data-action="open"][data-id="m-b"]').click();
   await expect(page.getByRole('heading',{name:'둘 미션 수정'})).toBeVisible();
 
-  await page.getByRole('button',{name:'탐험 미션'}).click();
+  await page.getByRole('button',{name:'탐험 미션',exact:true}).click();
   await page.locator('[data-mission-id="m-a"] summary').click();
   page.once('dialog',async d=>{expect(d.type()).toBe('confirm');await d.accept()});
   await page.locator('[data-action="delete"][data-id="m-a"]').click();
@@ -1428,7 +1428,7 @@ test('Hide V2 mission map filters open completed and archived journeys without c
     }));
   });
   await page.goto('/v2.html');
-  await page.getByRole('button',{name:'탐험 미션'}).click();
+  await page.getByRole('button',{name:'탐험 미션',exact:true}).click();
   await expect(page.getByRole('heading',{name:'오늘의 탐험 지도'})).toBeVisible();
   await expect(page.getByText('4개 탐험 보기',{exact:true})).toBeVisible();
   await expect(page.getByLabel('탐험 미션 검색')).toBeVisible();
@@ -1483,7 +1483,7 @@ test('Hide V2 mission map supports user sorting without mutating mission evidenc
     }));
   });
   await page.goto('/v2.html');
-  await page.getByRole('button',{name:'탐험 미션'}).click();
+  await page.getByRole('button',{name:'탐험 미션',exact:true}).click();
 
   const order=()=>page.locator('.mission-map-card').evaluateAll(nodes=>nodes.map(x=>x.dataset.missionId));
   expect(await order()).toEqual(['m-active','m-recent','m-alpha','m-archive']);
@@ -1514,7 +1514,7 @@ test('Hide V2 bulk mission archive updates selected missions atomically',async({
     }));
   });
   await page.goto('/v2.html');
-  await page.getByRole('button',{name:'탐험 미션'}).click();
+  await page.getByRole('button',{name:'탐험 미션',exact:true}).click();
 
   await page.getByLabel('첫 미션 선택').check();
   await page.getByLabel('둘 미션 선택').check();
@@ -1544,7 +1544,7 @@ test('Hide V2 bulk mission delete blocks atomically when active-session mission 
     }));
   });
   await page.goto('/v2.html');
-  await page.getByRole('button',{name:'탐험 미션'}).click();
+  await page.getByRole('button',{name:'탐험 미션',exact:true}).click();
 
   await page.getByLabel('진행 미션 선택').check();
   await page.getByLabel('다른 미션 선택').check();
@@ -1910,7 +1910,7 @@ test('Hide V2 registers its isolated service worker and can reopen cached shell 
   await context.setOffline(true);
   await page.reload();
   await expect(page.locator('.brand-copy small')).toHaveText('숨은 단어 탐험');
-  await expect(page.getByRole('button',{name:'탐험 미션'})).toBeVisible();
+  await expect(page.getByRole('button',{name:'탐험 미션',exact:true})).toBeVisible();
   await context.setOffline(false);
 });
 
@@ -2447,7 +2447,7 @@ test('Hide V2 product home prioritizes active mission and keeps secondary tools 
   await expect(page.locator('.mossfall-intro__overline')).toContainText('HIDE & SEEK');
   await expect(page.getByRole('heading',{name:'오늘 영어 탐험'})).toBeVisible();
   await expect(page.getByRole('button',{name:'탐험 시작'})).toBeVisible();
-  await expect(page.getByRole('button',{name:'탐험 미션'})).toBeVisible();
+  await expect(page.getByRole('button',{name:'탐험 미션',exact:true})).toBeVisible();
   await expect(page.getByRole('button',{name:'기억 사다리'})).toBeVisible();
 
   const metrics=await page.evaluate(()=>({
@@ -2623,7 +2623,7 @@ test('Hide V2 mission and memory surfaces use product cards instead of raw statu
     }));
   });
   await page.goto('/v2.html');
-  await page.getByRole('button',{name:'탐험 미션'}).click();
+  await page.getByRole('button',{name:'탐험 미션',exact:true}).click();
   await expect(page.locator('.mission-card')).toHaveCount(1);
   await expect(page.getByText('완료',{exact:true})).toBeVisible();
   await page.getByRole('button',{name:'홈으로'}).click();
