@@ -88,17 +88,53 @@
       sourceRowIndex:r.sourceRowIndex,confidence:r.confidence,warnings:[...r.warnings],
       reviewState:'PENDING_PARENT',missionRole:'NEW',missionRoleSource:'PARENT_REVIEW_REQUIRED'})):[];
   }
-  function confirmedMission(packet,correctedRows,{parentReviewed=false}={}){
+  // The paper's title or printed location does not establish first encounter.
+  // Match a lexical *sense* against existing local missions; do not import
+  // historical OCR drafts into the learner history or assign Planner's 24.
+  const lexicalKey=(eng,kor)=>clean(eng).toLowerCase()+'::'+clean(kor).replace(/\\s+/g,' ');
+  function previewLexicalRoles(rows,knownLexicalEntries=[]){
+    const history=(Array.isArray(knownLexicalEntries)?knownLexicalEntries:[])
+      .filter(x=>x&&clean(x.token||x.eng)&&clean(x.meaning||x.kor))
+      .map(x=>({key:lexicalKey(x.token||x.eng,x.meaning||x.kor),
+        token:clean(x.token||x.eng).toLowerCase()}));
+    return (Array.isArray(rows)?rows:[]).map(row=>{
+      const key=lexicalKey(row.eng,row.kor),token=clean(row.eng).toLowerCase();
+      if(history.some(x=>x.key===key))
+        return {sourceRowIndex:Number(row.sourceRowIndex),role:'REVIEW',
+          roleSource:'EXACT_LOCAL_LEXICAL_SENSE_MATCH',senseConflict:false};
+      const senseConflict=history.some(x=>x.token===token);
+      return {sourceRowIndex:Number(row.sourceRowIndex),
+        role:senseConflict?'UNRESOLVED':'NEW',
+        roleSource:senseConflict?'LOCAL_SENSE_COLLISION_REVIEW':'PARENT_CONFIRMED_NEW_PRINT_NO_LOCAL_MATCH',
+        senseConflict};
+    });
+  }
+  function confirmedMission(packet,correctedRows,{parentReviewed=false,knownLexicalEntries=[],reviewedDistinctSenseRows=[]}={}){
     const doc=(packet?.documents||[]).find(d=>d.kind==='NEW_PRINT');
     if(!doc)return fail('NEW_PRINT_SOURCE_REQUIRED');
     if(parentReviewed!==true)return fail('PARENT_REVIEW_REQUIRED');
     if(!Array.isArray(correctedRows)||correctedRows.length!==doc.rows.length)return fail('SOURCE_ROW_COVERAGE_REQUIRED');
-    const ids=new Set(doc.rows.map(r=>r.sourceRowIndex)),seen=new Set(),items=[];
+    const ids=new Set(doc.rows.map(r=>r.sourceRowIndex)),seen=new Set(),items=[],seenLexical=new Set();
+    const roleByRow=new Map(previewLexicalRoles(correctedRows,knownLexicalEntries)
+      .map(x=>[x.sourceRowIndex,x]));
+    const acknowledged=new Set((Array.isArray(reviewedDistinctSenseRows)?reviewedDistinctSenseRows:[])
+      .map(Number));
     for(const row of correctedRows){
       const idx=Number(row?.sourceRowIndex),eng=clean(row.eng),kor=clean(row.kor);
       if(!ids.has(idx)||seen.has(idx))return fail('SOURCE_ROW_COVERAGE_REQUIRED');
       seen.add(idx);if(!eng||!kor)return fail('UNRESOLVED_PRINT_ROW',String(idx));
-      items.push({eng,kor,missionRole:'NEW',missionRoleSource:'PARENT_CONFIRMED_NEW_PRINT',
+      const lexicalId=lexicalKey(eng,kor);
+      if(seenLexical.has(lexicalId))return fail('DUPLICATE_SOURCE_LEXICAL_SENSE',String(idx));
+      seenLexical.add(lexicalId);
+      const observed=roleByRow.get(idx);
+      if(!observed)return fail('SOURCE_ROW_COVERAGE_REQUIRED',String(idx));
+      if(observed.senseConflict&&!acknowledged.has(idx))
+        return fail('LEXICAL_SENSE_CONFLICT_REVIEW_REQUIRED',String(idx));
+      const missionRole=observed.role==='REVIEW'?'REVIEW':'NEW';
+      const missionRoleSource=observed.senseConflict
+        ?'PARENT_CONFIRMED_DISTINCT_SENSE'
+        :observed.roleSource;
+      items.push({eng,kor,lexicalId,missionRole,missionRoleSource,
         sourcePageId:doc.documentId,sourceRowIndex:idx,confidence:'manual',
         warnings:doc.rows.find(r=>r.sourceRowIndex===idx)?.warnings||[],
         source:{pageId:doc.documentId,rowIndex:idx,confidence:'manual',
@@ -107,7 +143,8 @@
     items.sort((a,b)=>a.sourceRowIndex-b.sourceRowIndex);
     return {ok:true,items,provenance:{source:'PARENT_CONFIRMED_OCR_IMPORT',
       packetId:packet.packetId,documentId:doc.documentId,sourceKind:doc.kind,
-      photoIncluded:false,roleSource:'PARENT_CONFIRMED_NEW_PRINT',
+      photoIncluded:false,roleSource:'PARENT_CONFIRMED_LOCAL_SENSE_RECONCILIATION',
+      historyScope:'LOCAL_MISSIONS_ONLY',historyNotComplete:true,
       noAutoPlanner:true,noHistoricalExamScore:true},testDate:doc.testDate||''};
   }
   function historicalDrafts(packet){
@@ -123,5 +160,5 @@
       rows:clone(d.rows.filter(r=>r.region===region))
     })));
   }
-  return Object.freeze({SCHEMA,REGIONS,normalizePacket,summarize,proposedNewRows,confirmedMission,historicalDrafts});
+  return Object.freeze({SCHEMA,REGIONS,normalizePacket,summarize,proposedNewRows,previewLexicalRoles,confirmedMission,historicalDrafts});
 });
