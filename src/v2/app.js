@@ -261,63 +261,11 @@
       ?(memory.needsRecall>0?('다시 찾아볼 단어가 '+memory.needsRecall+'개 있어요. 오늘은 그 단어부터 만나도 좋아요.'):'지금은 기억이 꽤 안정적이에요. 다음 탐험에서도 스스로 떠오르는지 확인해봐요.')
       :'첫 탐험을 마치면 기억 사다리가 여기서 이어져요.';
     const activeCount=s.missions.filter(x=>x.status!=='ARCHIVED').length;
-    const missionAction=m?`<button class="btn primary quest-main-action" id="v2Start">${resumable?'탐험 이어가기':'탐험 시작'}</button>`:'';
-    view().innerHTML=`
-      <section class="quest-hero mossfall-home" aria-label="Hide & Seek 숲과 폭포 탐험 홈">
-        <div class="quest-hero__eyebrow">HIDE & SEEK · 숨은 단어 탐험</div>
-        <div class="quest-hero__body">
-          <div>
-            <p class="quest-overline">${m?'오늘의 탐험':'새 탐험 준비'}</p>
-            <h1>${m?esc(m.title):'프린트에서 숨은 단어를 찾아봐요'}</h1>
-            <p class="quest-subcopy">${m?`${m.items.length}개 단어 · ${missionStatusLabel(m.status)}`:'자료를 촬영한 뒤 부모가 단어와 뜻을 확인하면 탐험이 열려요.'}</p>
-          </div>
-          ${m?`<div class="quest-count"><b>${m.items.length}</b><span>숨은 단어</span></div>`:''}
-        </div>
-        <div class="mossfall-mode-signs" role="list" aria-label="Hide & Seek 학습 방식">
-          <span role="listitem">TRACE <small>흔적 찾기</small></span>
-          <span role="listitem">LINK <small>연결 찾기</small></span>
-          <span role="listitem">CORE <small>핵심 조각</small></span>
-          <span role="listitem">RECALL <small>숨은 단어</small></span>
-        </div>
-        <div class="quest-hero__actions">
-          ${missionAction}
-          <button class="btn secondary" id="v2Camera">카메라 촬영</button>
-          <button class="btn ghost" id="v2Library">사진에서 가져오기</button>
-          <button class="btn ghost" id="v2OcrImport" type="button">OCR 결과 검토</button>
-        </div>
-      </section>
-
-      ${reviewReady?`<section class="quest-alert"><div><b>확인하던 단어가 남아 있어요</b><p>${capture?.lastRows?.length||0}개 단어를 이어서 확인할 수 있어요.</p></div><button class="btn primary" id="v2ResumeReview">이어서 확인</button></section>`:''}
-
-      <section class="quest-grid">
-        <button class="quest-tile" id="v2MissionList" type="button"><span class="quest-tile__icon" aria-hidden="true">01</span><span><b>탐험 미션</b><small>${activeCount}개 미션</small></span><i>›</i></button>
-        <button class="quest-tile" id="v2Records" type="button"><span class="quest-tile__icon" aria-hidden="true">02</span><span><b>기억 사다리</b><small>${memory.total}개 단어 기록</small></span><i>›</i></button>
-      </section>
-
-      <section class="trail-bridge" aria-label="탐험과 기억의 연결">
-        <div class="trail-bridge__step"><span>1</span><b>미션 고르기</b><small>오늘 찾을 단어</small></div>
-        <i aria-hidden="true">→</i>
-        <div class="trail-bridge__step"><span>2</span><b>단어 찾기</b><small>생각하고 꺼내기</small></div>
-        <i aria-hidden="true">→</i>
-        <div class="trail-bridge__step"><span>3</span><b>기억 사다리</b><small>다음 탐험 준비</small></div>
-      </section>
-
-      <section class="quest-status quest-status--story">
-        <div class="section-title"><div><p class="quest-overline">MY TRAIL</p><h2>다음 탐험은 이렇게 이어져요</h2></div><span>${memory.total?'기억 사다리 연결':'첫 탐험 전'}</span></div>
-        <p class="quest-status__story">${esc(memoryMessage)}</p>
-        <aside class="home-crew" aria-label="홈 탐험대원">
-          <span class="crew-strip__avatar">${esc(homeCrew.avatarText)}</span>
-          <span><b>${esc(homeCrew.displayName)}</b><small>${esc(homeCrew.supportText)}</small></span>
-        </aside>
-        <div class="quest-stat-row quest-stat-row--quiet" aria-label="기억 상태 보조 정보">
-          <div class="quest-stat"><b>${memory.averageStrength||0}%</b><span>기억 힘</span></div>
-          <div class="quest-stat"><b>${memory.needsRecall||0}</b><span>다시 찾기</span></div>
-          <div class="quest-stat"><b>${memory.stable||0}</b><span>안정 단어</span></div>
-        </div>
-      </section>`;
+    view().innerHTML=HideMossfallWorld.render({m,resumable,activeCount,memory,reviewReady,capture,memoryMessage,missionStatusLabel,esc});
 
     $('#v2Camera').onclick=()=>$('#sheetCameraInput').click();
     $('#v2MissionList').onclick=()=>HideV2Router.go('missions');
+    if($('#v2BeginWithMission'))$('#v2BeginWithMission').onclick=()=>HideV2Router.go('missions');
     $('#v2Records').onclick=()=>HideV2Router.go('records');
     $('#v2Library').onclick=()=>$('#sheetLibraryInput').click();
     $('#v2OcrImport').onclick=()=>HideV2Router.go('ocr-intake');
