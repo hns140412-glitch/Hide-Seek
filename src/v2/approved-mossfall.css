@@ -16,6 +16,7 @@
 .v2-runtime .mossfall-intro__overline{display:block;font-size:10px;font-weight:800;letter-spacing:.22em;color:#f0efcf}
 .v2-runtime .mossfall-intro h1{font-size:clamp(22px,6.1vw,31px);line-height:1.15;margin:7px 0 3px;font-weight:850;color:#fffced;letter-spacing:-.055em;max-width:92%}
 .v2-runtime .mossfall-intro p{margin:0;font-size:11px;line-height:1.45;color:#f6f9ec}
+.v2-runtime .mossfall-intro__state{display:block;margin-top:3px;font-size:10px;color:#f4f5cd}
 .v2-runtime .mossfall-landmarks{position:absolute;z-index:2;inset:0}
 .v2-runtime .mossfall-spot{appearance:none;position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:0;min-width:76px;min-height:66px;max-width:150px;color:#fff9e9;background:transparent;border:0;box-shadow:none;border-radius:0;transform:translate(-50%,-50%);text-shadow:0 2px 4px rgba(6,31,26,.96),0 1px 10px rgba(8,42,32,.82);cursor:pointer;font-size:12px;line-height:1.15;-webkit-tap-highlight-color:transparent}
 .v2-runtime .mossfall-spot::after{content:"";position:absolute;top:27px;left:50%;transform:translateX(-50%);height:15px;border-left:1px solid rgba(255,244,186,.73);pointer-events:none}
@@ -34,6 +35,9 @@
 .v2-runtime .mossfall-spot--library{left:27%;top:77%}
 .v2-runtime .mossfall-spot--record{left:81%;top:65%}
 .v2-runtime .mossfall-spot--ocr{left:72%;top:79%}
+.v2-runtime .mossfall-resume{position:absolute;z-index:4;left:50%;bottom:9%;transform:translateX(-50%);display:flex;align-items:center;flex-direction:column;gap:2px;white-space:nowrap;text-align:center;text-shadow:0 2px 6px #0c3126}
+.v2-runtime .mossfall-resume p{font-size:11px;color:#fff7de;font-weight:800;margin:0}
+.v2-runtime .mossfall-resume .mossfall-return-trail{position:static;left:auto;bottom:auto;transform:none;min-height:48px;padding:4px 11px}
 .v2-runtime .mossfall-return-trail{position:absolute;z-index:3;left:50%;bottom:9.5%;transform:translateX(-50%);color:#fff6d7;background:transparent;border:0;border-bottom:1px solid #fff2b8;border-radius:0;min-height:48px;padding:6px 5px;font-weight:800;font-size:12px;white-space:nowrap;text-shadow:0 2px 5px #123829}
 .v2-runtime .mossfall-world__footnote{position:absolute;z-index:2;bottom:2.8%;left:6%;right:6%;margin:0;text-align:center;font-size:10px;line-height:1.4;font-weight:750;color:#fbf7dc;text-shadow:0 2px 8px rgba(7,29,22,.96);pointer-events:none}
 @media(max-height:735px){.v2-runtime .mossfall-intro{top:12%}.v2-runtime .mossfall-spot__beacon{width:25px;height:25px}.v2-runtime .mossfall-spot__copy{margin-top:5px}.v2-runtime .mossfall-spot__copy strong{font-size:11px}.v2-runtime .mossfall-spot__copy small{font-size:8px}.v2-runtime .mossfall-spot--bridge .mossfall-spot__beacon{width:34px;height:34px}.v2-runtime .mossfall-spot--bridge{top:39%}}
