@@ -34,15 +34,23 @@ test('Hide V2 presents one continuous child journey and a completion moment', as
   });
 
   await page.goto('/v2.html');
-  await expect(page.getByRole('heading', { name: '다음 탐험은 이렇게 이어져요' })).toBeVisible();
-  await expect(page.locator('.home-crew')).toBeVisible();
-  await expect(page.locator('.quest-stat-row--quiet')).toBeVisible();
+  // Approved forest HOME prioritizes child choice and hides secondary metric
+  // dashboard. The old memory information remains in the document and the
+  // functional Memory Ladder is reached through a live sign, not a fake card.
+  await expect(page.locator('.mossfall-mode-signs [role="listitem"]')).toHaveCount(4);
+  await expect(page.getByRole('button', { name: '기억 사다리' })).toBeVisible();
+  expect(await page.locator('.home-crew').count()).toBe(1);
+  expect(await page.locator('.quest-stat').count()).toBe(3);
   const worldArt=await page.evaluate(()=>({
-    bodyBackground:getComputedStyle(document.body).backgroundImage,
-    heroInset:getComputedStyle(document.querySelector('.quest-hero'),'::before').inset
+    visualId:document.body.dataset.visualId,
+    homeSurface:document.body.dataset.v2Surface,
+    scene:getComputedStyle(document.querySelector('.app-shell')).backgroundImage,
+    heroButtonHeight:document.querySelector('.quest-main-action')?.getBoundingClientRect().height
   }));
-  expect(worldArt.bodyBackground).not.toBe('none');
-  expect(worldArt.heroInset).not.toBe('auto');
+  expect(worldArt.visualId).toBe('TAKY-LAF-HIDE-HOME-MOSSFALL-20260927-A');
+  expect(worldArt.homeSurface).toBe('home');
+  expect(worldArt.scene).toContain('hide_seek_forest_asset.png');
+  expect(worldArt.heroButtonHeight).toBeGreaterThanOrEqual(48);
   await page.getByRole('button', { name: '탐험 미션' }).click();
   await expect(page.getByRole('heading', { name: '오늘의 탐험 지도' })).toBeVisible();
   await expect(page.locator('.mission-path')).toBeVisible();
