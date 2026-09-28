@@ -1,420 +1,80 @@
 /*
-  Hide & Seek / TAKY-LAF-HIDE-HOME-MOSSFALL-20260927-A
-  Exact immutable environmental PNG (941 × 1672):
-  assets/visual/hide_seek_forest_asset.png
-  Original SHA-256 1f7aa500a177e25820649cc485355297cbc4fb89909df1f7f43e4ff7ddbe2419
-  This live DOM layer does NOT assert approval of a new screen layout.
-  No characters or lettering are baked into the painting. Task screens keep
-  artwork subordinate to the learning task; only HOME shows the full scene.
-*/
-.v2-runtime {
-  --hide-mossfall: url("../../assets/visual/hide_seek_forest_asset.png");
-  --hide-paper:#f9f7e8;
-  --hide-pine:#214b3e;
-  --hide-river:#28796d;
-  --hide-border:rgba(58,89,56,.16);
-}
-.v2-runtime[data-v2-surface="home"]{
-  background:#bedcbd;
-  --v2-ink:#fdfef6;
-}
-.v2-runtime[data-v2-surface="home"] .app-shell{
-  position:relative;
-  isolation:isolate;
-  min-height:100svh;
-  background:linear-gradient(180deg,rgba(8,37,28,.47),rgba(8,37,28,.08) 37%,rgba(15,54,39,.28) 65%,rgba(8,38,27,.67)),var(--hide-mossfall) center center/cover no-repeat;
-}
-.v2-runtime[data-v2-surface="home"] .app-shell::before{
-  content:none;
-}
-.v2-runtime[data-v2-surface="home"] .top-safe{
-  position:relative;
-  z-index:5;
-  color:#fffef4;
-  border:0;
-  box-shadow:none;
-  background:transparent;
-  -webkit-backdrop-filter:none;
-  backdrop-filter:none;
-}
-.v2-runtime[data-v2-surface="home"] .brand-mark{
-  color:#fffced;
-  background:rgba(17,61,42,.55);
-  border:1px solid rgba(255,254,234,.55);
-  box-shadow:none;
-}
-.v2-runtime[data-v2-surface="home"] .brand-copy small{
-  color:#f7f9df;
-}
-.v2-runtime[data-v2-surface="home"] #view{
-  display:flex;
-  flex-direction:column;
-  width:100%;
-  max-width:520px;
-  flex:1;
-  min-height:calc(100svh - 73px);
-  padding:0 16px max(12px,env(safe-area-inset-bottom));
-  overflow:visible;
-}
-.v2-runtime[data-v2-surface="home"] .quest-hero.mossfall-home{
-  display:flex;
-  flex-direction:column;
-  justify-content:flex-end;
-  min-height:0;
-  flex:1 0 auto;
-  margin:0;
-  padding:0;
-  border:0;
-  border-radius:0;
-  box-shadow:none;
-  background:none;
-  -webkit-backdrop-filter:none;
-  backdrop-filter:none;
-  color:#fffdf4;
-}
-.v2-runtime[data-v2-surface="home"] .quest-hero.mossfall-home::before,
-.v2-runtime[data-v2-surface="home"] .quest-hero.mossfall-home::after{
-  content:none;
-}
-.v2-runtime[data-v2-surface="home"] .quest-hero__eyebrow{
-  align-self:flex-start;
-  margin:0 0 auto;
-  padding:6px 12px;
-  border:1px solid rgba(255,251,221,.52);
-  border-radius:99px;
-  background:rgba(16,62,42,.55);
-  color:#f9fbe6;
-  letter-spacing:.095em;
-  font-size:10px;
-  font-weight:850;
-}
-.v2-runtime[data-v2-surface="home"] .quest-hero__body{
-  display:flex;
-  align-items:end;
-  justify-content:space-between;
-  gap:9px;
-  margin:8px 0;
-  color:white;
-  text-shadow:0 2px 9px rgba(8,30,20,.64);
-}
-.v2-runtime[data-v2-surface="home"] .quest-overline{
-  color:#eaf5d8;
-}
-.v2-runtime[data-v2-surface="home"] .quest-hero h1{
-  font-size:clamp(21px,5.6vw,28px);
-  line-height:1.18;
-  color:#fffdf6;
-  max-width:16em;
-  text-wrap:balance;
-}
-.v2-runtime[data-v2-surface="home"] .quest-subcopy{
-  font-size:11px;
-  color:#fff9e8;
-  line-height:1.4;
-  margin-bottom:3px;
-}
-.v2-runtime[data-v2-surface="home"] .quest-count{
-  flex:0 0 auto;
-  width:62px;
-  height:62px;
-  border:1px solid rgba(255,252,230,.74);
-  border-radius:50%;
-  background:rgba(20,71,51,.65);
-  box-shadow:0 6px 18px rgba(18,45,31,.25);
-}
-.v2-runtime[data-v2-surface="home"] .quest-count b{
-  color:#fffdf4;
-}
-.v2-runtime[data-v2-surface="home"] .quest-count span{color:#eaf4d9}
-.v2-runtime[data-v2-surface="home"] .mossfall-mode-signs{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:6px 9px;
-  margin:9px 0;
-  padding:0;
-}
-.v2-runtime[data-v2-surface="home"] .mossfall-mode-signs span{
-  display:flex;
-  align-items:baseline;
-  justify-content:space-between;
-  gap:5px;
-  padding:8px 12px;
-  min-height:34px;
-  font-size:12px;
-  font-weight:850;
-  line-height:1.2;
-  color:#fffdf4;
-  border:1px solid rgba(255,246,214,.69);
-  border-radius:6px 15px 6px 15px;
-  background:linear-gradient(110deg,rgba(43,75,51,.87),rgba(31,89,65,.75));
-  box-shadow:0 3px 8px rgba(20,41,25,.25);
-  text-shadow:0 1px 4px rgba(7,28,18,.35);
-}
-.v2-runtime[data-v2-surface="home"] .mossfall-mode-signs small{
-  font-size:10px;
-  color:#e9f6db;
-  white-space:nowrap;
-  font-weight:700;
-}
-.v2-runtime[data-v2-surface="home"] .quest-hero__actions{
-  display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:7px;
-  margin:0;
-  padding:0;
-}
-.v2-runtime[data-v2-surface="home"] .quest-hero__actions .btn{
-  min-height:48px;
-  border-radius:5px 15px 5px 15px;
-  font-size:12px;
-  border:1px solid rgba(244,244,211,.75);
-  color:#fcfff3;
-  background:linear-gradient(130deg,rgba(23,80,55,.93),rgba(30,102,77,.89));
-  box-shadow:0 4px 0 rgba(14,52,34,.5),0 8px 16px rgba(6,31,21,.24);
-  backdrop-filter:none;
-}
-.v2-runtime[data-v2-surface="home"] .quest-hero__actions .quest-main-action{
-  grid-column:1/-1;
-  background:linear-gradient(125deg,#245747,#297f69);
-}
-.v2-runtime[data-v2-surface="home"] .quest-hero__actions #v2OcrImport{
-  grid-column:1/-1;
-}
-.v2-runtime[data-v2-surface="home"] .quest-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:8px;
-  margin:9px 0 0;
-  padding:0;
-}
-.v2-runtime[data-v2-surface="home"] .quest-tile{
-  min-height:49px;
-  display:flex;
-  align-items:center;
-  gap:7px;
-  padding:6px 10px;
-  border:1px solid rgba(248,252,221,.72);
-  border-radius:5px 15px 5px 15px;
-  background:rgba(239,248,217,.92);
-  box-shadow:0 5px 12px rgba(10,42,23,.16);
-  color:#244a38;
-  text-align:left;
-}
-.v2-runtime[data-v2-surface="home"] .quest-tile__icon{
-  display:grid;place-items:center;
-  flex:0 0 auto;
-  width:25px;height:25px;
-  border-radius:50%;
-  border:1px solid #8cab86;
-  color:#315841;
-  font-size:12px;
-}
-.v2-runtime[data-v2-surface="home"] .quest-tile b{display:block;font-size:11px}
-.v2-runtime[data-v2-surface="home"] .quest-tile small{display:block;font-size:9px}
-.v2-runtime[data-v2-surface="home"] .trail-bridge,
-.v2-runtime[data-v2-surface="home"] .quest-status--story{
-  display:none;
-}
-.v2-runtime[data-v2-surface="home"] .quest-alert{
-  padding:10px 12px;
-  margin:7px 0;
-  border-radius:10px;
-  background:rgba(248,252,236,.93);
-  color:#264d39;
-}
-@media(min-width:720px){
-  .v2-runtime[data-v2-surface="home"] .app-shell{
-    background-size:cover;
-    background-position:center 45%;
-  }
-  .v2-runtime[data-v2-surface="home"] .quest-hero{
-    max-width:520px;
-  }
-}
-@media(max-height:760px) and (max-width:700px){
-  .v2-runtime[data-v2-surface="home"] .mossfall-mode-signs{
-    margin:4px 0;
-    gap:4px;
-  }
-  .v2-runtime[data-v2-surface="home"] .mossfall-mode-signs span{
-    min-height:29px;
-    padding:5px 8px;
-  }
-  .v2-runtime[data-v2-surface="home"] .quest-hero h1{font-size:20px}
-  .v2-runtime[data-v2-surface="home"] .quest-hero__actions .btn{min-height:48px}
-  .v2-runtime[data-v2-surface="home"] .quest-grid{margin-top:5px}
-}
-/* FOCUS and SOURCE are a readable working surface, not a repeated island map.
-   Original art is used as a shallow regional header only. */
-.v2-runtime:not([data-v2-surface="home"]){
-  color:var(--hide-pine);
-  background:var(--hide-paper);
-}
-.v2-runtime:not([data-v2-surface="home"]) .app-shell{
-  position:relative;
-  isolation:isolate;
-  min-height:100dvh;
-  background:linear-gradient(180deg,rgba(235,245,225,.35),#f9f7e8 220px,#f9f7e8);
-}
-.v2-runtime:not([data-v2-surface="home"]) .app-shell::before{
-  content:"";
-  display:block;
-  position:absolute;
-  inset:0 0 auto;
-  height:172px;
-  opacity:1;
-  pointer-events:none;
-  background:linear-gradient(180deg,rgba(10,56,39,.20),rgba(10,56,39,.10) 50%,#f9f7e8 99%),var(--hide-mossfall) center 34%/cover no-repeat;
-  z-index:0;
-}
-.v2-runtime:not([data-v2-surface="home"]) .top-safe{
-  position:relative;
-  z-index:2;
-  border:0;
-  background:rgba(249,248,235,.93);
-  color:#214b3e;
-  box-shadow:0 4px 13px rgba(36,64,38,.05);
-}
-.v2-runtime:not([data-v2-surface="home"]) #view{
-  position:relative;
-  z-index:1;
-  width:min(100%,720px);
-  padding:16px 14px max(24px,env(safe-area-inset-bottom));
-}
-.v2-runtime:not([data-v2-surface="home"]) .learning-shell,
-.v2-runtime:not([data-v2-surface="home"]) .ocr-review-card,
-.v2-runtime:not([data-v2-surface="home"]) .capture-shell{
-  position:relative;
-  border:1px solid var(--hide-border);
-  background:rgba(251,249,235,.97);
-  border-radius:18px;
-  box-shadow:0 8px 22px rgba(48,69,45,.07);
-  -webkit-backdrop-filter:none;
-  backdrop-filter:none;
-}
-.v2-runtime:not([data-v2-surface="home"]) .learning-shell>.card{
-  border:0;
-  border-top:1px solid rgba(82,106,70,.12);
-  border-radius:0;
-  box-shadow:none;
-  background:transparent;
-  -webkit-backdrop-filter:none;
-  backdrop-filter:none;
-}
-.v2-runtime:not([data-v2-surface="home"]) .learning-shell::before{
-  display:none;
-}
-.v2-runtime:not([data-v2-surface="home"]) .ocr-review-card{
-  padding:17px 15px;
-}
-/* Compact source ledger: one 12-row candidate visible at a time.
-   Proof/exam history remains a user-openable subordinate region. */
-.v2-runtime[data-v2-surface="source"] .ocr-review-card h1{
-  font-size:clamp(20px,5.4vw,24px);
-  line-height:1.24;
-  margin:9px 0 10px;
-  letter-spacing:-.035em;
-}
-.v2-runtime[data-v2-surface="source"] .ocr-review-card>p.ocr-brief{
-  margin:0 0 6px;
-  font-size:12px;
-  line-height:1.45;
-}
-.v2-runtime[data-v2-surface="source"] .ocr-source-policy{
-  margin:4px 0 8px;
-  padding:2px 0 6px;
-  border-bottom:1px solid var(--hide-border);
-  font-size:11px;
-  color:var(--hide-pine);
-}
-.v2-runtime[data-v2-surface="source"] .ocr-source-policy summary{
-  cursor:pointer;
-  min-height:38px;
-  display:flex;
-  align-items:center;
-  font-weight:800;
-}
-.v2-runtime[data-v2-surface="source"] .ocr-source-policy p{
-  font-size:11px;line-height:1.45;
-}
-.v2-runtime[data-v2-surface="source"] .ocr-review-history{
-  margin:9px 0 10px;
-  padding:0;
-  border-top:1px solid var(--hide-border);
-}
-.v2-runtime[data-v2-surface="source"] .ocr-review-history>summary{
-  cursor:pointer;
-  min-height:48px;
-  display:flex;
-  align-items:center;
-  font-size:12px;
-  font-weight:850;
-}
-.v2-runtime[data-v2-surface="source"] .ocr-review-history[open] .ocr-review-next{
-  margin:4px 0;
-  padding:8px 0;
-  border:0;
-  background:transparent;
-}
-.v2-runtime .ocr-review-row[hidden]{
-  display:none!important;
-}
-.v2-runtime .ocr-review-page-head{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:8px;
-  margin:15px 2px 4px;
-  color:var(--hide-pine);
-  font-size:11px;
-  font-weight:800;
-}
-.v2-runtime .ocr-review-page-head output{
-  min-width:46px;
-  text-align:right;
-  font-size:13px;
-  font-variant-numeric:tabular-nums;
-}
-.v2-runtime .ocr-review-pager{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:9px;
-  margin:8px 0 14px;
-}
-.v2-runtime .ocr-review-pager button{
-  min-height:48px;
-}
-.v2-runtime:not([data-v2-surface="home"]) .ocr-review-row{
-  background:transparent;
-  border:0;
-  border-top:1px solid var(--hide-border);
-  border-radius:0;
-  box-shadow:none;
-  padding:12px 2px;
-}
-.v2-runtime:not([data-v2-surface="home"]) .ocr-review-row__head>b{
-  background:transparent;
-  border-radius:0;
-  padding:0;
-  color:var(--hide-pine);
-}
-.v2-runtime:not([data-v2-surface="home"]) .ocr-review-fields .input{
-  background:#fffdf2;
-}
-.v2-runtime:not([data-v2-surface="home"]) [data-exam-region]{
-  border-top:1px solid var(--hide-border);
-  margin-top:5px;
-  padding:10px 2px;
-}
-.v2-runtime .btn:focus-visible,
-.v2-runtime .quest-tile:focus-visible{
-  outline:3px solid #e7c878;
-  outline-offset:3px;
-}
-@media(prefers-reduced-motion:reduce){
-  .v2-runtime .mossfall-mode-signs *,
-  .v2-runtime .quest-hero__actions *{
-    animation:none!important;
-    transition:none!important;
-  }
-}
+ * Hide & Seek / TAKY-LAF-HIDE-HOME-MOSSFALL-20260927-A
+ * Approved 941x1672 PNG, SHA256 1f7aa500a177e25820649cc485355297cbc4fb89909df1f7f43e4ff7ddbe2419.
+ * One illustrated world and live landmark controls; no art redraw, fake modes or cards.
+ */
+.v2-runtime{--hide-mossfall:url("../../assets/visual/hide_seek_forest_asset.png");--hide-paper:#f8f5e6;--hide-pine:#214b3e;--hide-river:#28796d;--hide-border:rgba(58,89,56,.16)}
+.v2-runtime[data-v2-surface="home"]{color:#fffdf2;background:#32634f;overflow:hidden}
+.v2-runtime[data-v2-surface="home"] .app-shell{position:relative;isolation:isolate;height:var(--v2-visual-height,100svh);min-height:var(--v2-visual-height,100svh);background:var(--hide-mossfall) center center/cover no-repeat,#4b806a;overflow:hidden}
+.v2-runtime[data-v2-surface="home"] .app-shell::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:linear-gradient(180deg,rgba(8,32,25,.56) 0%,rgba(13,43,29,.24) 15%,transparent 31%,transparent 60%,rgba(7,38,31,.14) 78%,rgba(6,32,29,.58) 100%)}
+.v2-runtime[data-v2-surface="home"] .top-safe{position:absolute;z-index:10;inset:env(safe-area-inset-top,0px) 0 auto;min-height:66px;border:0;box-shadow:none;color:#fffae9;background:transparent;-webkit-backdrop-filter:none;backdrop-filter:none}
+.v2-runtime[data-v2-surface="home"] .brand-mark{background:rgba(16,60,41,.32);color:#fff9dc;border:1px solid rgba(255,248,210,.5);box-shadow:none}
+.v2-runtime[data-v2-surface="home"] .brand-copy small{color:#f5f8df}
+.v2-runtime[data-v2-surface="home"] #view{position:relative;z-index:1;display:block;width:100%;max-width:none;height:var(--v2-visual-height,100svh);min-height:var(--v2-visual-height,100svh);margin:0;padding:0;overflow:hidden}
+.v2-runtime .mossfall-world{position:relative;height:100%;width:min(100%,520px);margin:0 auto;overflow:hidden}
+.v2-runtime .mossfall-intro{position:absolute;z-index:2;left:6%;right:5%;top:12.7%;text-shadow:0 2px 12px rgba(4,33,25,.74);pointer-events:none}
+.v2-runtime .mossfall-intro__overline{display:block;font-size:10px;font-weight:800;letter-spacing:.22em;color:#f0efcf}
+.v2-runtime .mossfall-intro h1{font-size:clamp(22px,6.1vw,31px);line-height:1.15;margin:7px 0 3px;font-weight:850;color:#fffced;letter-spacing:-.055em;max-width:92%}
+.v2-runtime .mossfall-intro p{margin:0;font-size:11px;line-height:1.45;color:#f6f9ec}
+.v2-runtime .mossfall-landmarks{position:absolute;z-index:2;inset:0}
+.v2-runtime .mossfall-spot{appearance:none;position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:0;min-width:76px;min-height:66px;max-width:150px;color:#fff9e9;background:transparent;border:0;box-shadow:none;border-radius:0;transform:translate(-50%,-50%);text-shadow:0 2px 4px rgba(6,31,26,.96),0 1px 10px rgba(8,42,32,.82);cursor:pointer;font-size:12px;line-height:1.15;-webkit-tap-highlight-color:transparent}
+.v2-runtime .mossfall-spot::after{content:"";position:absolute;top:27px;left:50%;transform:translateX(-50%);height:15px;border-left:1px solid rgba(255,244,186,.73);pointer-events:none}
+.v2-runtime .mossfall-spot__beacon{position:relative;display:block;flex:0 0 auto;width:29px;height:29px;border-radius:50%;border:1px solid rgba(255,251,221,.9);background:radial-gradient(circle at center,#f9eab6 0 13%,#d6aa61 16% 23%,rgba(20,76,58,.92) 27% 60%,rgba(16,58,41,.42) 65% 100%);box-shadow:0 0 0 3px rgba(244,236,181,.25),0 0 19px 3px rgba(249,227,134,.69),0 3px 8px #15352580}
+.v2-runtime .mossfall-spot__copy{display:block;margin-top:9px;white-space:nowrap;line-height:1.14;font-weight:700}
+.v2-runtime .mossfall-spot__copy strong{display:block;font-size:12px;font-weight:900;color:#fffdf0}
+.v2-runtime .mossfall-spot__copy small{display:block;margin-top:3px;color:#f7f0d2;font-size:9px;font-weight:650;letter-spacing:.025em}
+.v2-runtime .mossfall-spot:focus-visible{outline:2px solid #fff5c0;outline-offset:6px;border-radius:12px}
+.v2-runtime .mossfall-spot:is(:hover,:focus-visible) .mossfall-spot__beacon{box-shadow:0 0 0 5px #ffedbb62,0 0 26px 6px #ffe9a8bf}
+.v2-runtime .mossfall-spot--bridge{left:61%;top:40%}
+.v2-runtime .mossfall-spot--bridge .mossfall-spot__beacon{width:39px;height:39px}
+.v2-runtime .mossfall-spot--bridge::after{top:37px}
+.v2-runtime .mossfall-spot--bridge .mossfall-spot__copy strong{font-size:14px}
+.v2-runtime .mossfall-spot--mission{left:19%;top:47%}
+.v2-runtime .mossfall-spot--camera{left:21%;top:64%}
+.v2-runtime .mossfall-spot--library{left:27%;top:77%}
+.v2-runtime .mossfall-spot--record{left:81%;top:65%}
+.v2-runtime .mossfall-spot--ocr{left:72%;top:79%}
+.v2-runtime .mossfall-return-trail{position:absolute;z-index:3;left:50%;bottom:9.5%;transform:translateX(-50%);color:#fff6d7;background:transparent;border:0;border-bottom:1px solid #fff2b8;border-radius:0;min-height:48px;padding:6px 5px;font-weight:800;font-size:12px;white-space:nowrap;text-shadow:0 2px 5px #123829}
+.v2-runtime .mossfall-world__footnote{position:absolute;z-index:2;bottom:2.8%;left:6%;right:6%;margin:0;text-align:center;font-size:10px;line-height:1.4;font-weight:750;color:#fbf7dc;text-shadow:0 2px 8px rgba(7,29,22,.96);pointer-events:none}
+@media(max-height:735px){.v2-runtime .mossfall-intro{top:12%}.v2-runtime .mossfall-spot__beacon{width:25px;height:25px}.v2-runtime .mossfall-spot__copy{margin-top:5px}.v2-runtime .mossfall-spot__copy strong{font-size:11px}.v2-runtime .mossfall-spot__copy small{font-size:8px}.v2-runtime .mossfall-spot--bridge .mossfall-spot__beacon{width:34px;height:34px}.v2-runtime .mossfall-spot--bridge{top:39%}}
+@media(min-width:720px){.v2-runtime[data-v2-surface="home"] .app-shell{background-position:center 45%}}
+/* Task surfaces share the same world provenance; the source becomes one full paper, not a card dashboard. */
+.v2-runtime:not([data-v2-surface="home"]) .app-shell{position:relative;isolation:isolate;background:#f8f5e6}
+.v2-runtime:not([data-v2-surface="home"]) .app-shell::before{content:"";position:absolute;inset:0 0 auto;height:170px;z-index:0;pointer-events:none;background:linear-gradient(to bottom,rgba(7,41,29,.22),rgba(248,245,230,.6) 70%,#f8f5e6),var(--hide-mossfall) center 35%/cover no-repeat}
+.v2-runtime:not([data-v2-surface="home"]) .top-safe{position:relative;z-index:2;background:rgba(248,245,230,.92);box-shadow:none;border:0}
+.v2-runtime:not([data-v2-surface="home"]) #view{position:relative;z-index:1;width:min(100%,720px);padding:14px 16px max(28px,env(safe-area-inset-bottom))}
+.v2-runtime:not([data-v2-surface="home"]) .ocr-review-card,.v2-runtime:not([data-v2-surface="home"]) .learning-shell,.v2-runtime:not([data-v2-surface="home"]) .mission-map-card{border:0;border-radius:0;box-shadow:none;background:rgba(249,247,235,.96);-webkit-backdrop-filter:none;backdrop-filter:none}
+.v2-runtime[data-v2-surface="source"] #view{padding:14px 0 max(30px,env(safe-area-inset-bottom))}
+.v2-runtime[data-v2-surface="source"] .ocr-review-card{display:flex;flex-direction:column;align-items:stretch;gap:14px;width:100%;min-height:calc(100svh - 95px);margin:0;padding:20px 20px 24px;border:0;border-radius:0;box-shadow:none;background:linear-gradient(to bottom,rgba(248,245,227,.93),rgba(251,249,235,.98) 62px,#faf8ed 100%)}
+.v2-runtime[data-v2-surface="source"] .ocr-review-card h1{font-size:clamp(20px,5.4vw,24px);line-height:1.22;margin:9px 0}
+.v2-runtime[data-v2-surface="source"] .ocr-review-card>p.ocr-brief{margin:0 0 6px;font-size:12px;line-height:1.45}
+.v2-runtime[data-v2-surface="source"] .ocr-source-policy{margin:4px 0 8px;padding:2px 0 6px;border-bottom:1px solid var(--hide-border);font-size:11px}
+.v2-runtime[data-v2-surface="source"] .ocr-source-policy summary{cursor:pointer;min-height:38px;display:flex;align-items:center;font-weight:800}
+.v2-runtime[data-v2-surface="source"] .ocr-source-policy p{font-size:11px;line-height:1.45}
+.v2-runtime .ocr-review-row[hidden]{display:none!important}
+.v2-runtime .ocr-review-page-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:15px 2px 4px;font-size:11px;font-weight:800}
+.v2-runtime .ocr-review-page-head output{min-width:46px;text-align:right;font-size:13px;font-variant-numeric:tabular-nums}
+.v2-runtime[data-v2-surface="source"] .ocr-review-row{padding:12px 2px;border:0;border-top:1px solid var(--hide-border);border-radius:0;box-shadow:none;background:transparent}
+.v2-runtime[data-v2-surface="source"] .ocr-review-fields .input{background:rgba(255,253,241,.72);border:0;border-bottom:2px solid #94a58f;border-radius:0;box-shadow:none;min-height:48px}
+.v2-runtime .ocr-review-pager{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:8px 0 14px}
+.v2-runtime .ocr-review-pager button{min-height:48px}
+.v2-runtime[data-v2-surface="source"] .ocr-review-history{margin:9px 0 10px;padding:0;border-top:1px solid var(--hide-border)}
+.v2-runtime[data-v2-surface="source"] .ocr-review-history>summary{cursor:pointer;min-height:48px;display:flex;align-items:center;font-size:12px;font-weight:850}
+.v2-runtime[data-v2-surface="source"] .ocr-review-history[open] .ocr-review-next{margin:4px 0;padding:8px 0;border:0;background:transparent}
+.v2-runtime[data-v2-surface="source"] [data-exam-region]{border-top:1px solid var(--hide-border);padding:10px 0}
+.v2-runtime:not([data-v2-surface="home"]) .learning-shell>.card{border:0;border-radius:0;box-shadow:none;background:transparent;border-top:1px solid var(--hide-border)}
+.v2-runtime .btn:focus-visible,.v2-runtime .mossfall-return-trail:focus-visible{outline:3px solid #e7c878;outline-offset:3px}
+@media(prefers-reduced-motion:reduce){.v2-runtime .mossfall-spot__beacon{animation:none!important}}
+/* Focus is a field journal, no nested floating card surfaces. */
+.v2-runtime[data-v2-surface="focus"] #view{padding:12px 14px max(24px,env(safe-area-inset-bottom))}
+.v2-runtime[data-v2-surface="focus"] .learning-shell{width:100%;max-width:620px;margin:0 auto;padding:6px 2px 14px;border:0;border-radius:0;box-shadow:none;background:rgba(250,248,234,.95);overflow:visible}
+.v2-runtime[data-v2-surface="focus"] .learning-shell::before{display:none}
+.v2-runtime[data-v2-surface="focus"] .crew-strip{margin:9px 0;padding:8px 0;border:0;border-top:1px solid var(--hide-border);border-bottom:1px solid var(--hide-border);border-radius:0;box-shadow:none;background:transparent}
+.v2-runtime[data-v2-surface="focus"] .crew-strip__avatar{border-radius:50%;background:#e7eed9}
+.v2-runtime[data-v2-surface="focus"] .crew-support-btn{background:transparent;border:0;border-bottom:1px solid var(--hide-border);border-radius:0;box-shadow:none}
+.v2-runtime[data-v2-surface="focus"] .learning-shell>.card,.v2-runtime[data-v2-surface="focus"] .learning-shell>.thinking-map-card{border:0;border-top:1px solid var(--hide-border);border-radius:0;box-shadow:none;background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;padding:15px 2px}
+.v2-runtime[data-v2-surface="focus"] .word-card{margin:10px 0 0}
+.v2-runtime[data-v2-surface="focus"] .thinking-map-card::before,.v2-runtime[data-v2-surface="focus"] .learning-shell>.card::before{display:none}
+.v2-runtime[data-v2-surface="focus"] .thinking-map-card .inference-row,.v2-runtime[data-v2-surface="focus"] .thinking-map-card .thinking-trail{background:transparent;box-shadow:none;border-radius:0}
+.v2-runtime[data-v2-surface="focus"] .learning-shell .input{border-radius:8px}
+.v2-runtime[data-v2-surface="focus"] .learning-shell>.btn.primary{margin-top:8px}
