@@ -9,6 +9,8 @@ on:
       - 'manifest-v2.json'
       - 'sw-v2.js'
       - 'src/v2/**'
+      - 'tests/hide-ocr-intake-import.spec.js'
+      - 'tests/hide-ocr-source-routing.test.js'
       - 'tests/hide-v2-product-flow.spec.js'
       - 'tests/hide-v2-central-review.spec.js'
       - 'tests/hide-v2-ready-run-isolation.spec.js'
@@ -33,6 +35,8 @@ jobs:
       - name: Check V2 JavaScript syntax
         run: |
           for f in src/v2/*.js; do node --check "$f"; done
+      - name: Validate OCR source separation
+        run: node tests/hide-ocr-source-routing.test.js
       - name: Validate V2 architecture isolation
         run: node tools/validate-hide-v2-architecture.js
       - name: Check main learning producer contract on Draft
@@ -40,4 +44,4 @@ jobs:
       - name: Install browser test harness
         run: npm install
       - name: Verify V2 product flows
-        run: npx playwright test tests/hide-v2-product-flow.spec.js tests/hide-v2-central-review.spec.js tests/hide-v2-ready-run-isolation.spec.js tests/hide-code-red-verification.spec.js --project=chromium
+        run: npx playwright test tests/hide-v2-product-flow.spec.js tests/hide-v2-central-review.spec.js tests/hide-v2-ready-run-isolation.spec.js tests/hide-code-red-verification.spec.js tests/hide-ocr-intake-import.spec.js --project=chromium
