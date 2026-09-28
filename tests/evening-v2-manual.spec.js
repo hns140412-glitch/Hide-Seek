@@ -22,7 +22,8 @@ test('Hide V2 evening: direct 12 new + 24 review -> local mission -> learning',a
   expect(saved.mission.provenance.parentFactConfirmed).toBe(false);
   expect(saved.activeSession).toBeNull();
   await page.locator('[data-action="open"]').first().click();
-  await expect(page.locator('#view')).not.toContainText('아직 탐험 길이 없어요');
+  await expect(page.locator('#v2Start')).toBeVisible();
+  await page.locator('#v2Start').click();
   const active=await page.evaluate(()=>window.HideV2Store.snapshot().activeSession);
   expect(active).toBeTruthy();
 });
