@@ -38,9 +38,36 @@ assert.equal(router.confirmedMission(packet,words).reason,'PARENT_REVIEW_REQUIRE
 const confirmed=router.confirmedMission(packet,words,{parentReviewed:true});
 assert.equal(confirmed.ok,true);
 assert.equal(confirmed.items.length,12);
-assert(confirmed.items.every(x=>x.missionRole==='NEW'&&x.missionRoleSource==='PARENT_CONFIRMED_NEW_PRINT'));
+assert(confirmed.items.every(x=>x.missionRole==='NEW'&&x.missionRoleSource==='PARENT_CONFIRMED_NEW_PRINT_NO_LOCAL_MATCH'));
 assert.equal(confirmed.provenance.photoIncluded,false);
 assert.equal(confirmed.items.some(x=>x.eng.startsWith('candidate')),false);
+const localPrior=[{token:'WORD1',meaning:'뜻1'},{token:'word2',meaning:'동일 철자의 다른 뜻'}];
+const preview=router.previewLexicalRoles(words,localPrior);
+assert.equal(preview[1].role,'REVIEW');
+assert.equal(preview[1].roleSource,'EXACT_LOCAL_LEXICAL_SENSE_MATCH');
+assert.equal(preview[2].role,'UNRESOLVED');
+assert.equal(preview[2].senseConflict,true);
+assert.equal(preview[0].role,'NEW');
+assert.equal(router.confirmedMission(packet,words,{
+  parentReviewed:true,knownLexicalEntries:localPrior
+}).reason,'LEXICAL_SENSE_CONFLICT_REVIEW_REQUIRED');
+const reconciled=router.confirmedMission(packet,words,{
+  parentReviewed:true,knownLexicalEntries:localPrior,reviewedDistinctSenseRows:[3]
+});
+assert.equal(reconciled.ok,true,reconciled.reason);
+assert.equal(reconciled.items[1].missionRole,'REVIEW');
+assert.equal(reconciled.items[1].missionRoleSource,'EXACT_LOCAL_LEXICAL_SENSE_MATCH');
+assert.equal(reconciled.items[2].missionRole,'NEW');
+assert.equal(reconciled.items[2].missionRoleSource,'PARENT_CONFIRMED_DISTINCT_SENSE');
+assert.equal(reconciled.provenance.historyScope,'LOCAL_MISSIONS_ONLY');
+assert.equal(reconciled.provenance.historyNotComplete,true);
+assert.equal(reconciled.provenance.noAutoPlanner,true);
+const exactWhitespace=router.previewLexicalRoles([{sourceRowIndex:1,eng:'WORD',kor:'뜻   두개'}],
+  [{token:'word',meaning:'뜻 두개'}]);
+assert.equal(exactWhitespace[0].role,'REVIEW');
+const duplicateSense=[{...words[0]},{...words[1],eng:words[0].eng,kor:words[0].kor},...words.slice(2)];
+assert.equal(router.confirmedMission(packet,duplicateSense,{parentReviewed:true}).reason,
+  'DUPLICATE_SOURCE_LEXICAL_SENSE');
 assert.equal(router.confirmedMission(packet,words.slice(1),{parentReviewed:true}).reason,'SOURCE_ROW_COVERAGE_REQUIRED');
 assert.equal(router.confirmedMission(packet,[{...words[0],eng:''},...words.slice(1)],{parentReviewed:true}).reason,'UNRESOLVED_PRINT_ROW');
 const historical=router.historicalDrafts(packet);
@@ -57,4 +84,4 @@ assert.equal(router.normalizePacket(assignedUnverified).reason,'EXAM_WEEKDAY_NOT
 const duplicated=JSON.parse(JSON.stringify(example));
 duplicated.documents[1].rows.push({...duplicated.documents[1].rows[0]});
 assert.equal(router.normalizePacket(duplicated).reason,'INTAKE_DUPLICATE_SOURCE_ROW');
-console.log('PASS: OCR source routing keeps 12 new-print candidates distinct from 3 historical 12-row exam drafts; Parent review and no-score gates');
+console.log('PASS: OCR source routing preserves three historical exams; source print NEW vs local lexical/sense REVIEW reconciled, ambiguous senses require Parent review');
