@@ -1,0 +1,35 @@
+name: Hide V2 Evening Manual Pilot
+on:
+  push:
+    branches:
+      - preview/evening-v2-manual-20260928
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  manual-36-word-journey:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Check V2 and manual input source
+        run: |
+          node --check src/v2/evening-manual.js
+          node --check src/v2/app.js
+          node --check src/v2/mission-service.js
+      - name: Validate V2 isolation
+        run: node tools/validate-hide-v2-architecture.js
+      - name: Install browser tools
+        run: |
+          npm install
+          npx playwright install --with-deps chromium
+      - name: Start localhost-only static V2 preview
+        run: python3 -m http.server 4174 --bind 127.0.0.1 > /tmp/hide-evening-http.log 2>&1 &
+      - name: Verify manual input without OCR or full Ready federation
+        run: npx playwright test tests/evening-v2-manual.spec.js --reporter=line --workers=1
