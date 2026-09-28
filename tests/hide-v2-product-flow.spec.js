@@ -2444,7 +2444,7 @@ test('Hide V2 product home prioritizes active mission and keeps secondary tools 
     }));
   });
   await page.goto('/v2.html');
-  await expect(page.getByText('오늘의 탐험',{exact:true})).toBeVisible();
+  await expect(page.locator('.mossfall-intro__overline')).toContainText('HIDE & SEEK');
   await expect(page.getByRole('heading',{name:'오늘 영어 탐험'})).toBeVisible();
   await expect(page.getByRole('button',{name:'탐험 시작'})).toBeVisible();
   await expect(page.getByRole('button',{name:'탐험 미션'})).toBeVisible();
@@ -2453,15 +2453,15 @@ test('Hide V2 product home prioritizes active mission and keeps secondary tools 
   const metrics=await page.evaluate(()=>({
     scrollWidth:document.documentElement.scrollWidth,
     innerWidth:window.innerWidth,
-    hero:!!document.querySelector('.quest-hero'),
-    grid:!!document.querySelector('.quest-grid'),
-    stats:document.querySelectorAll('.quest-stat').length,
+    world:!!document.querySelector('.mossfall-world'),
+    legacyCards:document.querySelectorAll('.quest-hero,.quest-grid,.quest-tile,.mossfall-mode-signs').length,
+    liveAnchors:document.querySelectorAll('[data-world-anchor]').length,
     mainActionHeight:document.querySelector('.quest-main-action')?.getBoundingClientRect().height||0
   }));
   expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.innerWidth+1);
-  expect(metrics.hero).toBe(true);
-  expect(metrics.grid).toBe(true);
-  expect(metrics.stats).toBe(3);
+  expect(metrics.world).toBe(true);
+  expect(metrics.legacyCards).toBe(0);
+  expect(metrics.liveAnchors).toBe(6);
   expect(metrics.mainActionHeight).toBeGreaterThanOrEqual(48);
 });
 
