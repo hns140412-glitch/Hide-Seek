@@ -1150,6 +1150,8 @@
     }
     const router=globalThis.HideOcrIntakeRouter,summary=router.summarize(packet);
     const rows=HideV2Capture.intakeReviewDraft();
+    const roles=HideV2Capture.intakeRolePreview(rows);
+    const rolesByRow=new Map(roles.map(x=>[Number(x.sourceRowIndex),x]));
     const committed=!!snap.ocrIntakeMissionId;
     const dayLabel={
       LAST_WEEK_MONDAY:'지난주 월요일 시험',
@@ -1159,20 +1161,24 @@
     view().innerHTML=`<section class="ocr-review-card" aria-label="OCR 자료별 검토">
       <div class="hero-kicker"><span>OCR SOURCE REVIEW</span><span>부모 확인 전 초안</span></div>
       <h1>서로 다른 자료로 나누었어요</h1>
-      <p>신규 단어지 ${summary.newCandidateRows}개와 지난 시험 ${summary.historicalExamCount}회(${summary.historicalCandidateRows}개)는 합쳐서 학습하지 않아요.</p>
+      <p>새 프린트에서 찾은 ${summary.newCandidateRows}개와 지난 시험 ${summary.historicalExamCount}회(${summary.historicalCandidateRows}개)는 합쳐서 학습하지 않아요.</p>
+      <p>NEW / REVIEW는 프린트 위치가 아닌 이 기기에 저장된 단어·뜻 이력과 부모 확인을 기준으로 나눕니다. 다른 기기·중앙 이력은 아직 대조되지 않았습니다.</p>
       <p>이 파일은 확인용 문자 전사본이며 실제 OCR API 성공이나 원본 사진 첨부를 의미하지 않습니다.</p>
       <div class="ocr-review-list" id="v2ImportedNewRows">
         ${rows.map((r,i)=>`<div class="ocr-review-row" data-imported-row="${i}">
-          <div class="ocr-review-row__head"><b>신규 후보 ${r.sourceRowIndex}</b><small>${esc(r.confidence||'unknown')} · 확인 전</small></div>
+          <div class="ocr-review-row__head"><b>프린트 ${r.sourceRowIndex}</b><small data-intake-role="${r.sourceRowIndex}">${esc(rolesByRow.get(Number(r.sourceRowIndex))?.role||'NEW')} · ${esc(rolesByRow.get(Number(r.sourceRowIndex))?.roleSource||'LOCAL_CHECK_REQUIRED')} · 부모 확인 전</small></div>
           <div class="ocr-review-fields">
             <label><span>Word</span><input class="input" data-import-eng="${i}" value="${esc(r.eng)}" aria-label="신규 단어 ${i+1}"></label>
             <label><span>뜻</span><input class="input" data-import-kor="${i}" value="${esc(r.kor)}" aria-label="신규 뜻 ${i+1}"></label>
           </div>
           ${r.warnings?.length?`<small>원본과 대조 필요 · ${esc(r.warnings.join(' / '))}</small>`:''}
+          ${rolesByRow.get(Number(r.sourceRowIndex))?.senseConflict
+            ?`<label class="ocr-review-next"><input type="checkbox" data-confirm-distinct-sense="${r.sourceRowIndex}"> 같은 철자의 기존 단어와 뜻이 다릅니다. 이 뜻을 별도 의미로 추가한다고 확인합니다.</label>`
+            :''}
         </div>`).join('')}
       </div>
-      ${rows.length&&!committed?`<label class="ocr-review-next"><input type="checkbox" id="v2ParentVerifiedNew"> 위 단어와 뜻을 원본 기준으로 확인했습니다.</label>
-        <button class="btn primary full" id="v2ConfirmImportedPrint" type="button">확인한 신규 단어로 미션 만들기</button>`:''}
+      ${rows.length&&!committed?`<label class="ocr-review-next"><input type="checkbox" id="v2ParentVerifiedNew"> 원본과 이 기기의 기존 단어 이력을 대조한 뒤 내용을 확인했습니다.</label>
+        <button class="btn primary full" id="v2ConfirmImportedPrint" type="button">확인한 단어로 미션 만들기</button>`:''}
       ${committed?'<p id="v2ImportCommitted">신규 단어지 확인 완료 · 기존 미션으로 저장됨</p>':''}
       <section class="ocr-review-next" aria-label="지난 시험 기록">
         <h2>과거 시험은 별도 기록</h2>
@@ -1191,12 +1197,29 @@
         kor:$('[data-import-kor="'+i+'"]')?.value.trim()??r.kor}));
       HideV2Capture.updateIntakeReviewDraft(draft);
     };
-    view().querySelectorAll('[data-import-eng],[data-import-kor]').forEach(el=>el.addEventListener('change',persistEdits));
+    view().querySelectorAll('[data-import-eng],[data-import-kor]').forEach(el=>el.addEventListener('change',()=>{
+      persistEdits();
+      // The role preview must follow a corrected spelling/meaning, rather
+      // than retaining its stale OCR-time classification.
+      ocrIntakeReview();
+    }));
     if($('#v2ConfirmImportedPrint'))$('#v2ConfirmImportedPrint').onclick=()=>{
       persistEdits();
       const checked=$('#v2ParentVerifiedNew')?.checked===true;
-      const result=HideV2Capture.commitIntakeNewPrint(HideV2Capture.intakeReviewDraft(),{parentReviewed:checked});
-      if(!result.ok){setFlash(result.reason==='PARENT_REVIEW_REQUIRED'?'원본과 대조한 뒤 확인 표시를 해주세요.':'빈 칸 또는 원본 행을 확인해 주세요.');return}
+      const reviewedDistinctSenseRows=[...view().querySelectorAll('[data-confirm-distinct-sense]:checked')]
+        .map(el=>Number(el.dataset.confirmDistinctSense));
+      const result=HideV2Capture.commitIntakeNewPrint(HideV2Capture.intakeReviewDraft(),{
+        parentReviewed:checked,reviewedDistinctSenseRows
+      });
+      if(!result.ok){
+        const reason={
+          PARENT_REVIEW_REQUIRED:'원본과 기존 이력을 확인한 뒤 확인 표시를 해주세요.',
+          LEXICAL_SENSE_CONFLICT_REVIEW_REQUIRED:'같은 철자의 다른 뜻은 개별 확인 표시가 필요합니다.',
+          DUPLICATE_SOURCE_LEXICAL_SENSE:'중복된 단어·뜻이 있습니다. 원본 행을 대조해 주세요.',
+          UNRESOLVED_PRINT_ROW:'철자 또는 뜻이 비어 있는 행을 확인해 주세요.'
+        }[result.reason]||'원본 행과 입력 내용을 확인해 주세요.';
+        setFlash(reason);return
+      }
       HideV2Router.go('missions');
     };
     $('#v2ImportBack').onclick=()=>HideV2Router.go('home');
