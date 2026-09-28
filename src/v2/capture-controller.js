@@ -238,7 +238,7 @@
     if(!confirmed.ok)return confirmed;
     // A historical exam row is never passed to the mission API.
     const mission=HideV2Mission.addMission({
-      title:'신규 단어 '+confirmed.items.length+'개 · 확인한 프린트',
+      title:'단어 '+confirmed.items.length+'개 · 확인한 프린트',
       items:confirmed.items,sourceCount:1,provenance:confirmed.provenance
     });
     HideV2Store.transaction(draft=>{
