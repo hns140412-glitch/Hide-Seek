@@ -307,6 +307,55 @@
 .v2-runtime:not([data-v2-surface="home"]) .ocr-review-card{
   padding:17px 15px;
 }
+/* Compact source ledger: one 12-row candidate visible at a time.
+   Proof/exam history remains a user-openable subordinate region. */
+.v2-runtime[data-v2-surface="source"] .ocr-review-card h1{
+  font-size:clamp(20px,5.4vw,24px);
+  line-height:1.24;
+  margin:9px 0 10px;
+  letter-spacing:-.035em;
+}
+.v2-runtime[data-v2-surface="source"] .ocr-review-card>p.ocr-brief{
+  margin:0 0 6px;
+  font-size:12px;
+  line-height:1.45;
+}
+.v2-runtime[data-v2-surface="source"] .ocr-source-policy{
+  margin:4px 0 8px;
+  padding:2px 0 6px;
+  border-bottom:1px solid var(--hide-border);
+  font-size:11px;
+  color:var(--hide-pine);
+}
+.v2-runtime[data-v2-surface="source"] .ocr-source-policy summary{
+  cursor:pointer;
+  min-height:38px;
+  display:flex;
+  align-items:center;
+  font-weight:800;
+}
+.v2-runtime[data-v2-surface="source"] .ocr-source-policy p{
+  font-size:11px;line-height:1.45;
+}
+.v2-runtime[data-v2-surface="source"] .ocr-review-history{
+  margin:9px 0 10px;
+  padding:0;
+  border-top:1px solid var(--hide-border);
+}
+.v2-runtime[data-v2-surface="source"] .ocr-review-history>summary{
+  cursor:pointer;
+  min-height:48px;
+  display:flex;
+  align-items:center;
+  font-size:12px;
+  font-weight:850;
+}
+.v2-runtime[data-v2-surface="source"] .ocr-review-history[open] .ocr-review-next{
+  margin:4px 0;
+  padding:8px 0;
+  border:0;
+  background:transparent;
+}
 .v2-runtime .ocr-review-row[hidden]{
   display:none!important;
 }
