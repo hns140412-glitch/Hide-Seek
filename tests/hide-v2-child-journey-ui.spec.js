@@ -37,10 +37,12 @@ test('Hide V2 presents one continuous child journey and a completion moment', as
   // Approved forest HOME prioritizes child choice and hides secondary metric
   // dashboard. The old memory information remains in the document and the
   // functional Memory Ladder is reached through a live sign, not a fake card.
-  await expect(page.locator('.mossfall-mode-signs [role="listitem"]')).toHaveCount(4);
+  await expect(page.locator('.mossfall-world')).toBeVisible();
+  await expect(page.locator('[data-world-anchor]')).toHaveCount(6);
   await expect(page.getByRole('button', { name: '기억 사다리' })).toBeVisible();
-  expect(await page.locator('.home-crew').count()).toBe(1);
-  expect(await page.locator('.quest-stat').count()).toBe(3);
+  expect(await page.locator('.quest-grid,.quest-tile,.mossfall-mode-signs,.quest-hero').count()).toBe(0);
+  // The approved art has no baked-in character. Crew support stays live in the journey.
+  expect(await page.locator('.home-crew').count()).toBe(0);
   const worldArt=await page.evaluate(()=>({
     visualId:document.body.dataset.visualId,
     homeSurface:document.body.dataset.v2Surface,
