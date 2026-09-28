@@ -1170,9 +1170,11 @@
     view().innerHTML=`<section class="ocr-review-card" aria-label="OCR 자료별 검토">
       <div class="hero-kicker"><span>OCR SOURCE REVIEW</span><span>부모 확인 전 초안</span></div>
       <h1>서로 다른 자료로 나누었어요</h1>
-      <p>현재 프린트 후보 ${summary.newCandidateRows}개 · 누적 보관한 지난 시험 ${histories.length}회. 서로 다른 원본은 한 미션으로 합치지 않아요.</p>
-      <p>NEW / REVIEW는 프린트 위치가 아닌 이 기기에 저장된 단어·뜻 이력과 부모 확인을 기준으로 나눕니다. 다른 기기·중앙 이력은 아직 대조되지 않았습니다.</p>
-      <p>이 파일은 확인용 문자 전사본이며 실제 OCR API 성공이나 원본 사진 첨부를 의미하지 않습니다.</p>
+      <p class="ocr-brief">확인할 단어 ${summary.newCandidateRows}개 · 이전 시험 ${histories.length}회. 출처별로 따로 보관합니다.</p>
+      <details class="ocr-source-policy"><summary>OCR·NEW/REVIEW 검증 기준</summary>
+        <p>NEW / REVIEW는 프린트 위치가 아닌 이 기기의 단어·뜻 이력과 부모 확인을 기준으로 나눕니다. 다른 기기·중앙 이력은 아직 대조되지 않았습니다.</p>
+        <p>가져오기 파일은 확인용 문자 전사본으로, 실제 OCR API 성공이나 원본 사진 첨부를 의미하지 않습니다.</p>
+      </details>
       <div class="ocr-review-page-head" id="v2ImportedReviewPageHead" ${rows.length?'':'hidden'}>
         <span>NEW PRINT · 원본 행을 하나씩 대조</span>
         <output id="v2IntakePageCount" aria-live="polite">${rows.length?Math.min(ocrIntakePageIndex+1,rows.length):0}/${rows.length}</output>
@@ -1197,14 +1199,17 @@
       ${rows.length&&!committed?`<label class="ocr-review-next"><input type="checkbox" id="v2ParentVerifiedNew"> 원본과 이 기기의 기존 단어 이력을 대조한 뒤 내용을 확인했습니다.</label>
         <button class="btn primary full" id="v2ConfirmImportedPrint" type="button">확인한 단어로 미션 만들기</button>`:''}
       ${committed?'<p id="v2ImportCommitted">신규 단어지 확인 완료 · 기존 미션으로 저장됨</p>':''}
-      <section class="ocr-review-next" aria-label="지난 시험 기록">
-        <h2>과거 시험은 별도 기록</h2>
-        <p>아이 답안, 빨간 채점, 정답 후보를 혼동하지 않습니다. 자동 점수·기억 강도·Planner 일정에는 반영하지 않습니다.</p>
+      <details class="ocr-review-history" id="v2PastExams" ${rows.length?'':'open'}>
+        <summary>과거 시험 ${histories.length}회 · 독립 기록 · 미채점</summary>
+        <section class="ocr-review-next" aria-label="지난 시험 기록">
+          <h2>과거 시험은 별도 기록</h2>
+          <p>아이 답안·빨간 채점·정답 후보는 별도이며 자동 점수·기억 강도·Planner 일정에 반영하지 않습니다.</p>
         ${histories.map(h=>`<details data-exam-region="${esc(h.region)}"><summary>${esc(h.region)} · ${esc(dayLabel[h.dateRelation]||h.dateRelation)} · ${h.rows.length}개 · 확인 대기</summary>
           <ol>${h.rows.map(row=>`<li>행 ${row.sourceRowIndex} · 관찰 단어 후보: ${esc(row.observedWordCandidate||'미확인')} · 연필 답: ${esc(row.childAnswerRaw||'미확인')} · 빨간 교정: ${esc(row.redCorrectionRaw||'미확인')} · 판정: 미검증</li>`).join('')}</ol>
           <small>원본 사진의 정확한 시험일 및 채점 근거를 대조하기 전까지 평가 근거로 사용하지 않습니다.</small>
         </details>`).join('')}
-      </section>
+        </section>
+      </details>
       ${canAddAnother?'<button class="btn secondary full" id="v2ImportAnother" type="button">다른 OCR 결과 추가</button>':''}
       <button class="btn secondary full" id="v2ImportBack" type="button">홈으로</button>
     </section>`;
