@@ -1244,6 +1244,13 @@
         parentReviewed:checked,reviewedDistinctSenseRows
       });
       if(!result.ok){
+        // When a specific source row needs human confirmation, take the
+        // reviewer straight to it instead of leaving an unseen hidden input.
+        const neededRow=Number(result.detail);
+        if(Number.isInteger(neededRow)&&neededRow>0){
+          const targetIndex=rows.findIndex(x=>Number(x.sourceRowIndex)===neededRow);
+          if(targetIndex>=0){ocrIntakePageIndex=targetIndex;showIntakePage()}
+        }
         const reason={
           PARENT_REVIEW_REQUIRED:'원본과 기존 이력을 확인한 뒤 확인 표시를 해주세요.',
           LEXICAL_SENSE_CONFLICT_REVIEW_REQUIRED:'같은 철자의 다른 뜻은 개별 확인 표시가 필요합니다.',
