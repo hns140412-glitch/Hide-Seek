@@ -135,3 +135,44 @@ test('printed source label does not override exact local lexical history or ambi
   expect(outcome.memoryEvidence).toBe(0);
   expect(outcome.plannerActions).toBe(0);
 });
+
+test('separate photo packet sequence preserves three old exams before the fresh printed list',async({page})=>{
+  await page.goto('/v2.html');
+  const historicalOnly={schema:packet.schema,packetId:'synthetic_hist_first',
+    documents:[packet.documents[1]]};
+  const printedOnly={schema:packet.schema,packetId:'synthetic_print_second',
+    documents:[packet.documents[0]]};
+  await page.locator('#ocrImportInput').setInputFiles({
+    name:'older-exams.json',mimeType:'application/json',
+    buffer:Buffer.from(JSON.stringify(historicalOnly))
+  });
+  await expect(page.locator('[data-exam-region]')).toHaveCount(3);
+  expect(await page.evaluate(()=>HideV2Store.snapshot().missions.length)).toBe(0);
+  await page.locator('#v2ImportAnother').click();
+  await page.locator('#ocrImportInput').setInputFiles({
+    name:'new-list.json',mimeType:'application/json',
+    buffer:Buffer.from(JSON.stringify(printedOnly))
+  });
+  await expect(page.locator('[data-imported-row]')).toHaveCount(12);
+  await expect(page.locator('[data-exam-region]')).toHaveCount(3);
+  await page.locator('#v2ParentVerifiedNew').check();
+  await page.locator('#v2ConfirmImportedPrint').click();
+  await expect.poll(()=>page.evaluate(()=>HideV2Store.snapshot().missions.length)).toBe(1);
+  await page.reload();
+  await page.locator('#v2OcrImport').click();
+  await page.locator('#v2ImportAnother').click();
+  await page.locator('#ocrImportInput').setInputFiles({
+    name:'older-exams-duplicate.json',mimeType:'application/json',
+    buffer:Buffer.from(JSON.stringify(historicalOnly))
+  });
+  const status=await page.evaluate(()=>{
+    const s=HideV2Store.snapshot();
+    return {activePacket:s.ocrIntakePacket.packetId,
+      missions:s.missions.length,
+      historical:s.historicalExamDrafts.map(h=>({region:h.region,packetId:h.packetId,rows:h.rows.length}))};
+  });
+  expect(status.activePacket).toBe('synthetic_print_second');
+  expect(status.missions).toBe(1);
+  expect(status.historical.map(x=>x.region)).toEqual(['LEFT','CENTER','RIGHT']);
+  expect(status.historical.every(x=>x.packetId==='synthetic_hist_first'&&x.rows===12)).toBe(true);
+});
