@@ -1,0 +1,8 @@
+/* Minimal utility embedded in existing Hide V2 hero, not a replacement scene. */
+.eveningManualEntry{margin-top:12px;padding-top:10px;border-top:1px solid rgba(47,76,35,.24)}
+.eveningManualEntry summary{cursor:pointer;color:#244c29;font-size:13px;font-weight:800}
+.eveningManualEntry p{font-size:11px;line-height:1.55;margin:9px 0;color:#3e5840}
+.eveningManualEntry label{display:block;margin:10px 0;font-size:11px;font-weight:800;color:#264f29}
+.eveningManualEntry textarea{display:block;width:100%;min-height:80px;box-sizing:border-box;resize:vertical;margin-top:5px;border:1px solid #94b388;border-radius:10px;padding:10px;color:#223823;background:rgba(255,255,255,.76);font:13px/1.5 system-ui}
+.eveningManualEntry button{width:100%;min-height:43px}
+#eveningManualStatus{min-height:17px}
