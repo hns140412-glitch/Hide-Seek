@@ -179,9 +179,17 @@
     const parsed=router.normalizePacket(raw);
     if(!parsed.ok)return parsed;
     const before=HideV2Store.snapshot();
-    if(before.ocrIntakePacket?.packetId===parsed.packet.packetId)
+    // A physical source may arrive in a separate OCR packet; ledger remains
+    // idempotent even after the screen switches from historical exam to print.
+    const packetId=parsed.packet.packetId;
+    if(before.ocrIntakePacket?.packetId===packetId||
+      (before.historicalExamDrafts||[]).some(e=>e.packetId===packetId)||
+      (before.missions||[]).some(m=>m.provenance?.packetId===packetId))
       return {ok:false,reason:'OCR_PACKET_ALREADY_IMPORTED'};
-    if(before.ocrIntakePacket&&!before.ocrIntakeMissionId)
+    // Historical-only packets have nothing to commit as a vocabulary mission.
+    // Allow the following printed list to arrive without dropping exam records.
+    const pendingPrint=before.ocrIntakePacket?.documents?.some(d=>d.kind==='NEW_PRINT');
+    if(pendingPrint&&!before.ocrIntakeMissionId)
       return {ok:false,reason:'UNCOMMITTED_OCR_REVIEW_EXISTS'};
     const oldIds=new Set((before.historicalExamDrafts||[]).map(x=>x.evidenceId));
     const histories=router.historicalDrafts(parsed.packet);
