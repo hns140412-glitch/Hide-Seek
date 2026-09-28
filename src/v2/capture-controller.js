@@ -213,14 +213,28 @@
     HideV2Store.transaction(s=>{s.ocrIntakeReviewDraft=reviewed});
     return {ok:true,rows:reviewed};
   }
-  function commitIntakeNewPrint(rows,{parentReviewed=false}={}){
+  function localLexicalEntries(snapshot=HideV2Store.snapshot()){
+    return (snapshot.missions||[])
+      .filter(m=>m.provenance?.source!=='READY_SCOPED_REVIEW_BUNDLE')
+      .flatMap(m=>(m.items||[]).map(item=>({
+        token:item.token||item.eng,meaning:item.meaning||item.kor,
+        lexicalId:item.lexicalId,missionId:m.id,
+        evidenceCount:Array.isArray(item.evidence)?item.evidence.length:0
+      })));
+  }
+  function intakeRolePreview(rows=intakeReviewDraft()){
+    const router=globalThis.HideOcrIntakeRouter;
+    return router?.previewLexicalRoles?.(rows,localLexicalEntries())||[];
+  }
+  function commitIntakeNewPrint(rows,{parentReviewed=false,reviewedDistinctSenseRows=[]}={}){
     const s=HideV2Store.snapshot(),router=globalThis.HideOcrIntakeRouter;
     if(!s.ocrIntakePacket)return {ok:false,reason:'OCR_PACKET_REQUIRED'};
     if(s.ocrIntakeMissionId){
       const prior=s.missions.find(m=>m.id===s.ocrIntakeMissionId);
       return prior?{ok:true,mission:prior,reused:true}:{ok:false,reason:'OCR_COMMIT_LEDGER_CONFLICT'};
     }
-    const confirmed=router.confirmedMission(s.ocrIntakePacket,rows,{parentReviewed});
+    const confirmed=router.confirmedMission(s.ocrIntakePacket,rows,{parentReviewed,
+      knownLexicalEntries:localLexicalEntries(s),reviewedDistinctSenseRows});
     if(!confirmed.ok)return confirmed;
     // A historical exam row is never passed to the mission API.
     const mission=HideV2Mission.addMission({
@@ -237,6 +251,6 @@
   }
 
   window.HideV2Capture=Object.freeze({
-    state,ensureSession,addFiles,analyzePending,analyzeFiles,reviewRows,reviewDraft,saveReviewDraft,hasResumableReview,markCommitted,cancel,intakePacket,intakeReviewDraft,importLocalOcrPacket,updateIntakeReviewDraft,commitIntakeNewPrint
+    state,ensureSession,addFiles,analyzePending,analyzeFiles,reviewRows,reviewDraft,saveReviewDraft,hasResumableReview,markCommitted,cancel,intakePacket,intakeReviewDraft,importLocalOcrPacket,updateIntakeReviewDraft,localLexicalEntries,intakeRolePreview,commitIntakeNewPrint
   });
 })();
