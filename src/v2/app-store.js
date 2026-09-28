@@ -4,7 +4,7 @@
   const VERSION=1;
   const clone=x=>JSON.parse(JSON.stringify(x));
   const now=()=>new Date().toISOString();
-  const initial=()=>({version:VERSION,profile:{displayName:'탐험가'},missions:[],activeMissionId:null,activeSession:null,captureSession:null,ocrIntakePacket:null,ocrIntakeMissionId:null,historicalExamDrafts:[],events:[],updatedAt:now()});
+  const initial=()=>({version:VERSION,profile:{displayName:'탐험가'},missions:[],activeMissionId:null,activeSession:null,captureSession:null,ocrIntakePacket:null,ocrIntakeReviewDraft:[],ocrIntakeMissionId:null,historicalExamDrafts:[],events:[],updatedAt:now()});
   function migrate(raw){
     const s={...initial(),...(raw||{})};
     s.version=VERSION;
@@ -14,6 +14,7 @@
     s.captureSession=raw?.captureSession&&typeof raw.captureSession==='object'?raw.captureSession:null;
     s.ocrIntakePacket=raw?.ocrIntakePacket&&typeof raw.ocrIntakePacket==='object'?raw.ocrIntakePacket:null;
     s.ocrIntakeMissionId=typeof raw?.ocrIntakeMissionId==='string'?raw.ocrIntakeMissionId:null;
+    s.ocrIntakeReviewDraft=Array.isArray(raw?.ocrIntakeReviewDraft)?raw.ocrIntakeReviewDraft:[];
     s.historicalExamDrafts=Array.isArray(raw?.historicalExamDrafts)?raw.historicalExamDrafts:[];
     return s;
   }
