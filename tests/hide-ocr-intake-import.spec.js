@@ -57,7 +57,8 @@ test('source-aware local OCR review creates only 12-parent-confirmed-word missio
     const s=HideV2Store.snapshot();
     return {packet:s.ocrIntakePacket.packetId,missions:s.missions.length,
       mission:s.missions[0],history:s.historicalExamDrafts,
-      memory:HideV2Memory.dashboard().total,activeSession:s.activeSession,events:s.events.length};
+      memory:HideV2Memory.wordbook().map(x=>({token:x.token,evidence:x.evidence.length})),
+      activeSession:s.activeSession,events:s.events.length};
   });
   expect(finished.mission.items).toHaveLength(12);
   expect(finished.mission.items[0].token).toBe('editedentry');
@@ -67,7 +68,10 @@ test('source-aware local OCR review creates only 12-parent-confirmed-word missio
   expect(finished.mission.provenance.noAutoPlanner).toBe(true);
   expect(finished.history).toHaveLength(3);
   expect(finished.history.every(x=>x.gradingState==='UNVERIFIED'&&x.memorySignalEligible===false)).toBe(true);
-  expect(finished.memory).toBe(0);
+  // An imported mission appears in the wordbook, but it has no recall evidence:
+  // historical OCR must never become a scored memory/learning event.
+  expect(finished.memory).toHaveLength(12);
+  expect(finished.memory.every(x=>x.evidence===0&&!x.token.startsWith('testcandidate'))).toBe(true);
   expect(finished.activeSession).toBe(null);
   expect(finished.events).toBe(0);
   await page.reload();
