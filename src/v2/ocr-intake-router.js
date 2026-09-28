@@ -91,7 +91,7 @@
   // The paper's title or printed location does not establish first encounter.
   // Match a lexical *sense* against existing local missions; do not import
   // historical OCR drafts into the learner history or assign Planner's 24.
-  const lexicalKey=(eng,kor)=>clean(eng).toLowerCase()+'::'+clean(kor).replace(/\\s+/g,' ');
+  const lexicalKey=(eng,kor)=>clean(eng).toLowerCase()+'::'+clean(kor).replace(/\s+/g,' ');
   function previewLexicalRoles(rows,knownLexicalEntries=[]){
     const history=(Array.isArray(knownLexicalEntries)?knownLexicalEntries:[])
       .filter(x=>x&&clean(x.token||x.eng)&&clean(x.meaning||x.kor))
