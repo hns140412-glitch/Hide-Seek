@@ -117,7 +117,11 @@ test('printed source label does not override exact local lexical history or ambi
     const s=HideV2Store.snapshot();
     const m=s.missions.find(x=>x.provenance?.source==='PARENT_CONFIRMED_OCR_IMPORT');
     const previous=s.missions.find(x=>x.title==='Synthetic earlier approved vocabulary');
+    const firstNew=HideV2Learning.create(m,{targetItemIds:[m.items[0].id]});
+    const priorSenseReview=HideV2Learning.create(m,{targetItemIds:[m.items[1].id]});
+    const distinctNewSense=HideV2Learning.create(m,{targetItemIds:[m.items[2].id]});
     return {mission:m,previous,
+      firstStages:[firstNew.stage,priorSenseReview.stage,distinctNewSense.stage],
       histories:s.historicalExamDrafts.map(x=>({region:x.region,signal:x.memorySignalEligible,grading:x.gradingState})),
       memoryEvidence:HideV2Memory.wordbook().reduce((n,x)=>n+x.evidence.length,0),
       plannerActions:s.events.length};
@@ -127,6 +131,7 @@ test('printed source label does not override exact local lexical history or ambi
   expect(outcome.mission.items[1].missionRoleSource).toBe('EXACT_LOCAL_LEXICAL_SENSE_MATCH');
   expect(outcome.mission.items[2].missionRole).toBe('NEW');
   expect(outcome.mission.items[2].missionRoleSource).toBe('PARENT_CONFIRMED_DISTINCT_SENSE');
+  expect(outcome.firstStages).toEqual(['MEMORIZE','FIRST_FIND','MEMORIZE']);
   expect(outcome.mission.provenance.historyScope).toBe('LOCAL_MISSIONS_ONLY');
   expect(outcome.mission.provenance.historyNotComplete).toBe(true);
   expect(outcome.previous.items).toHaveLength(2);
