@@ -27,6 +27,14 @@ test('source-aware local OCR review creates only 12-parent-confirmed-word missio
   });
   await expect(page.getByRole('heading',{name:'서로 다른 자료로 나누었어요'})).toBeVisible();
   await expect(page.locator('[data-imported-row]')).toHaveCount(12);
+  await expect(page.locator('[data-imported-row]:visible')).toHaveCount(1);
+  await expect(page.locator('#v2IntakePageCount')).toHaveText('1/12');
+  await page.locator('#v2IntakeNext').click();
+  await expect(page.locator('#v2IntakePageCount')).toHaveText('2/12');
+  await expect(page.locator('[data-imported-row="1"]')).toBeVisible();
+  await expect(page.locator('[data-imported-row="0"]')).toBeHidden();
+  await page.locator('#v2IntakePrev').click();
+  await expect(page.locator('#v2IntakePageCount')).toHaveText('1/12');
   await expect(page.locator('[data-exam-region]')).toHaveCount(3);
   const staged=await page.evaluate(()=>{
     const s=HideV2Store.snapshot();
