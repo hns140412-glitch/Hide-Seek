@@ -134,7 +134,7 @@
   margin:0 auto;
   padding:10px 8px 18px;
   border:0;border-radius:0;box-shadow:none;backdrop-filter:none;
-  background:linear-gradient(180deg,rgba(251,249,235,.90),rgba(251,249,235,.95) 41%,rgba(251,249,235,.96));
+  background:linear-gradient(180deg,rgba(251,249,235,.78),rgba(251,249,235,.86) 41%,rgba(251,249,235,.88));
 }
 @media(max-width:430px){
   .v2-runtime[data-v2-surface="focus"] #view{padding-left:0;padding-right:0}
