@@ -127,10 +127,10 @@
 .v2-runtime[data-v2-surface="focus"] .brand-copy small{color:#f5f5db}
 .v2-runtime[data-v2-surface="focus"] #view{
   width:min(100%,720px);
-  padding:0 12px max(24px,env(safe-area-inset-bottom));
+  padding:0 12px env(safe-area-inset-bottom,0px);
 }
 .v2-runtime[data-v2-surface="focus"] .learning-shell{
-  min-height:calc(100svh - 68px);
+  min-height:calc(100svh - 68px - env(safe-area-inset-bottom,0px));
   margin:0 auto;
   padding:10px 8px 18px;
   border:0;border-radius:0;box-shadow:none;backdrop-filter:none;
