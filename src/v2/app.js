@@ -1125,7 +1125,7 @@
       </details>
       <div class="ocr-review-page-head" id="v2ImportedReviewPageHead" ${rows.length?'':'hidden'}>
         <span>NEW PRINT · 원본 행을 하나씩 대조</span>
-        <output id="v2IntakePageCount" aria-live="polite">${rows.length?Math.min(ocrIntakePageIndex+1,rows.length):0}/${rows.length}</output>
+        <span id="v2IntakePageCount" role="status" aria-live="polite">${rows.length?Math.min(ocrIntakePageIndex+1,rows.length):0}/${rows.length}</span>
       </div>
       <div class="ocr-review-list" id="v2ImportedNewRows">
         ${rows.map((r,i)=>`<div class="ocr-review-row" data-imported-row="${i}" ${i===Math.max(0,Math.min(ocrIntakePageIndex,rows.length-1))?'':'hidden'}>
