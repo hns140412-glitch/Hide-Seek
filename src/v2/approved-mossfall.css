@@ -85,3 +85,24 @@
 .v2-runtime[data-v2-surface="focus"] .thinking-map-card .inference-row{border:0;border-radius:0;box-shadow:none;background:transparent}
 .v2-runtime[data-v2-surface="focus"] .learning-shell .input{border-radius:8px}
 .v2-runtime[data-v2-surface="focus"] .learning-shell>.btn.primary{margin-top:8px}
+
+/* TAKY OCR single-paper label gate 20260929. A parent verification line is a
+   native part of the one source sheet, never a floating confirmation card. */
+.v2-runtime[data-v2-surface="source"] .ocr-review-row__head{
+  display:flex;align-items:center;justify-content:space-between;gap:9px;min-width:0;
+}
+.v2-runtime[data-v2-surface="source"] .ocr-review-row__head>b{
+  min-width:max-content;white-space:nowrap;padding:0;border:0;border-radius:0;
+  font-size:12px;background:transparent;color:#204f3b;
+}
+.v2-runtime[data-v2-surface="source"] .ocr-review-row__head>small{
+  min-width:0;flex:1;text-align:right;overflow-wrap:normal;font-size:10px;color:#57715d;
+}
+.v2-runtime[data-v2-surface="source"] .ocr-review-card>.ocr-review-next{
+  display:flex;align-items:center;gap:9px;min-height:48px;margin:0;padding:8px 0;
+  border:0;border-top:1px solid var(--hide-border);border-radius:0;
+  background:transparent;box-shadow:none;font-size:12px;line-height:1.4;
+}
+.v2-runtime[data-v2-surface="source"] .ocr-review-card>.ocr-review-next>input[type="checkbox"]{
+  flex:0 0 18px;width:18px;height:18px;margin:0;accent-color:#34704e;
+}
