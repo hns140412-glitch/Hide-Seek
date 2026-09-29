@@ -23,6 +23,11 @@
     if(!s)return false;
     if(s.captureSession&&['CAPTURING','REVIEW'].includes(s.captureSession.status))return false;
     if(s.activeSession&&s.activeSession.stage!=='COMPLETE')return false;
+    // Parent's OCR row editing is active work even though captureSession can
+    // be null. Do not activate/reload a service worker in the middle of it.
+    if(globalThis.HideV2Router?.current?.()?.name==='ocr-intake')return false;
+    if(s.ocrIntakePacket?.documents?.some(d=>d.kind==='NEW_PRINT')&&!s.ocrIntakeMissionId)
+      return false;
     return true;
   }
   async function evaluateWaiting(reason='ACTIVE_V2_WORK'){
