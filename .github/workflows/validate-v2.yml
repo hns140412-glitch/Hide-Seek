@@ -14,6 +14,9 @@ on:
       - 'tests/hide-approved-mossfall.spec.js'
       - 'tests/hide-ocr-intake-import.spec.js'
       - 'tests/hide-ocr-source-routing.test.js'
+      - 'tests/hide-release-visual-gate.test.js'
+      - 'tools/verify-v2-offline-dependencies.js'
+      - '.github/workflows/pages.yml'
       - 'tests/hide-v2-product-flow.spec.js'
       - 'tests/hide-v2-central-review.spec.js'
       - 'tests/hide-v2-ready-run-isolation.spec.js'
@@ -42,6 +45,10 @@ jobs:
           for f in src/v2/*.js; do node --check "$f"; done
       - name: Approved visual authority / exact-art preflight
         run: node tools/verify-approved-mossfall.js
+      - name: Gate future release against missing approved binary
+        run: |
+          node tests/hide-release-visual-gate.test.js
+          node tools/verify-v2-offline-dependencies.js
       - name: Validate OCR source separation
         run: node tests/hide-ocr-source-routing.test.js
       - name: Validate V2 architecture isolation
