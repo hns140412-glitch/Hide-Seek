@@ -113,6 +113,12 @@ test('focus keeps the approved environmental scene, compact accessible evidence 
   expect(view.assistHeight).toBeGreaterThanOrEqual(44);
   expect(view.width).toBeLessThanOrEqual(view.viewportWidth+1);
   expect(view.height).toBeLessThanOrEqual(view.viewportHeight+10);
+  await page.setViewportSize({width:430,height:932});
+  const tall=await page.evaluate(()=>({width:document.documentElement.scrollWidth,
+    height:document.documentElement.scrollHeight,vw:innerWidth,vh:innerHeight}));
+  expect(tall.width).toBeLessThanOrEqual(tall.vw+1);
+  expect(tall.height).toBeLessThanOrEqual(tall.vh+1);
+  await page.setViewportSize({width:390,height:844});
   await page.getByRole('button',{name:'짧은 응원'}).click();
   await expect(page.locator('.crew-support-copy')).not.toBeEmpty();
   await page.getByRole('button',{name:'기억하고 찾아보기'}).click();
