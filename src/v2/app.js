@@ -1129,7 +1129,7 @@
       </div>
       <div class="ocr-review-list" id="v2ImportedNewRows">
         ${rows.map((r,i)=>`<div class="ocr-review-row" data-imported-row="${i}" ${i===Math.max(0,Math.min(ocrIntakePageIndex,rows.length-1))?'':'hidden'}>
-          <div class="ocr-review-row__head"><b>프린트 ${r.sourceRowIndex}</b><small data-intake-role="${r.sourceRowIndex}">${esc(rolesByRow.get(Number(r.sourceRowIndex))?.role||'NEW')} · ${esc(rolesByRow.get(Number(r.sourceRowIndex))?.roleSource||'LOCAL_CHECK_REQUIRED')} · 부모 확인 전</small></div>
+          <div class="ocr-review-row__head"><b>프린트 ${r.sourceRowIndex}</b><small data-intake-role="${r.sourceRowIndex}">${esc(rolesByRow.get(Number(r.sourceRowIndex))?.role==='REVIEW'?'REVIEW · 기존 학습':rolesByRow.get(Number(r.sourceRowIndex))?.role==='UNRESOLVED'?'뜻 확인 필요':'NEW 후보 · 이 기기 기준')}</small></div>
           <div class="ocr-review-fields">
             <label><span>Word</span><input class="input" data-import-eng="${i}" value="${esc(r.eng)}" aria-label="신규 단어 ${i+1}"></label>
             <label><span>뜻</span><input class="input" data-import-kor="${i}" value="${esc(r.kor)}" aria-label="신규 뜻 ${i+1}"></label>
