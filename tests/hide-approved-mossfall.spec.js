@@ -59,3 +59,61 @@ test('exact original PNG is bound in-browser, environment distinct from focused 
   expect(shallow).toContain('hide_seek_forest_asset.png');
   await page.screenshot({path:'test-results/mossfall-source-review.png',fullPage:true});
 });
+
+
+test('focus keeps the approved environmental scene, compact accessible evidence journal and existing learning controls',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await page.addInitScript(()=>{
+    const iso='2026-09-29T00:00:00.000Z';
+    localStorage.setItem('hide_seek_v2_state',JSON.stringify({
+      version:1,profile:{displayName:'synthetic learner'},
+      missions:[{id:'focus-visual-fixture',title:'Synthetic focus sample',
+        status:'READY',createdAt:iso,updatedAt:iso,
+        items:[{id:'w1',lexicalId:'island::섬',token:'island',meaning:'섬',
+          languageDomain:'ENGLISH',missionRole:'NEW',evidence:[],source:{}}],
+        sourceCount:0,provenance:{}}],
+      activeMissionId:'focus-visual-fixture',activeSession:null,
+      captureSession:null,events:[],updatedAt:iso
+    }));
+  });
+  await page.goto('/v2.html');
+  await page.getByRole('button',{name:'탐험 시작'}).click();
+  await expect(page.locator('body')).toHaveAttribute('data-v2-surface','focus');
+  await expect(page.locator('.journey-path li.is-current small')).toHaveText('01 만나기');
+  await expect(page.locator('.thinking-map-card')).toBeVisible();
+  const view=await page.evaluate(()=>{
+    const app=document.querySelector('.app-shell');
+    const journal=document.querySelector('.learning-shell');
+    const assist=document.querySelector('.crew-support-btn');
+    const selectors=document.querySelector('.inference-row');
+    return {
+      scene:getComputedStyle(app).backgroundImage,
+      header:getComputedStyle(document.querySelector('.top-safe')).backgroundImage,
+      oldTopSlice:getComputedStyle(app,'::before').display,
+      journalRadius:getComputedStyle(journal).borderRadius,
+      journalShadow:getComputedStyle(journal).boxShadow,
+      journalBackground:getComputedStyle(journal).backgroundImage,
+      selectorColumns:getComputedStyle(selectors).gridTemplateColumns.trim().split(/\s+/).length,
+      assistHeight:Math.round(assist.getBoundingClientRect().height),
+      width:document.documentElement.scrollWidth,height:document.documentElement.scrollHeight,
+      viewportWidth:innerWidth,viewportHeight:innerHeight
+    };
+  });
+  // This verifies the source-level CSS binding; actual image bytes must pass
+  // the independent --require-asset gate, not this text-only GitHub CI.
+  expect(view.scene).toContain('hide_seek_forest_asset.png');
+  expect(view.header).toContain('gradient');
+  expect(view.oldTopSlice).toBe('none');
+  expect(view.journalRadius).toBe('0px');
+  expect(view.journalShadow).toBe('none');
+  expect(view.journalBackground).toContain('gradient');
+  expect(view.selectorColumns).toBe(2);
+  expect(view.assistHeight).toBeGreaterThanOrEqual(44);
+  expect(view.width).toBeLessThanOrEqual(view.viewportWidth+1);
+  expect(view.height).toBeLessThanOrEqual(view.viewportHeight+10);
+  await page.getByRole('button',{name:'짧은 응원'}).click();
+  await expect(page.locator('.crew-support-copy')).not.toBeEmpty();
+  await page.getByRole('button',{name:'기억하고 찾아보기'}).click();
+  await expect(page.locator('.journey-path li.is-current small')).toHaveText('02 첫 찾기');
+  await expect(page.getByLabel('회상 답 입력')).toBeVisible();
+});
