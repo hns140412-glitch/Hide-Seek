@@ -23,6 +23,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      # Release must not publish a text-only UI with a missing/mismatched
+      # user-approved illustration even when source-only PR CI is green.
+      - name: Verify original Hide art is in the deploy source
+        run: node tools/verify-approved-mossfall.js --require-asset
+      - name: Verify approved art is available to the offline PWA
+        run: node tools/verify-v2-offline-dependencies.js
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload static site
