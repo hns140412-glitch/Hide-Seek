@@ -107,8 +107,8 @@ test('focus keeps the approved environmental scene, compact accessible evidence 
   expect(view.journalRadius).toBe('0px');
   expect(view.journalShadow).toBe('none');
   expect(view.journalBackground).toContain('gradient');
-  expect(view.journalBackground).toMatch(/rgba\(251,\s*249,\s*235,\s*0\.78\)/);
-  expect(view.journalBackground).toMatch(/rgba\(251,\s*249,\s*235,\s*0\.88\)/);
+  expect(view.journalBackground).toMatch(/rgba\(251,\s*249,\s*235,\s*0\.66\)/);
+  expect(view.journalBackground).toMatch(/rgba\(251,\s*249,\s*235,\s*0\.79\)/);
   expect(view.selectorColumns).toBe(2);
   expect(view.assistHeight).toBeGreaterThanOrEqual(44);
   expect(view.width).toBeLessThanOrEqual(view.viewportWidth+1);
