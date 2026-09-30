@@ -41,22 +41,26 @@
         {
           "id": "BASE_REVIEW",
           "fixture_path": "design/fixtures/home.json",
-          "fixture_sha256": "7158f661d3e287aa115f53866cda0d57b71dbd2c4195632e7917cd109b51d022"
+          "fixture_sha256": "7158f661d3e287aa115f53866cda0d57b71dbd2c4195632e7917cd109b51d022",
+          "visual_policy": "GOLDEN_PARITY"
         },
         {
           "id": "EMPTY_CASE",
           "fixture_path": "design/fixtures/home.json",
-          "fixture_sha256": "7158f661d3e287aa115f53866cda0d57b71dbd2c4195632e7917cd109b51d022"
+          "fixture_sha256": "7158f661d3e287aa115f53866cda0d57b71dbd2c4195632e7917cd109b51d022",
+          "visual_policy": "LAYOUT_GUARD"
         },
         {
           "id": "PARTNER_ACTIVE",
           "fixture_path": "design/fixtures/home.json",
-          "fixture_sha256": "7158f661d3e287aa115f53866cda0d57b71dbd2c4195632e7917cd109b51d022"
+          "fixture_sha256": "7158f661d3e287aa115f53866cda0d57b71dbd2c4195632e7917cd109b51d022",
+          "visual_policy": "LAYOUT_GUARD"
         },
         {
           "id": "OFFLINE",
           "fixture_path": "design/fixtures/home.json",
-          "fixture_sha256": "7158f661d3e287aa115f53866cda0d57b71dbd2c4195632e7917cd109b51d022"
+          "fixture_sha256": "7158f661d3e287aa115f53866cda0d57b71dbd2c4195632e7917cd109b51d022",
+          "visual_policy": "LAYOUT_GUARD"
         }
       ]
     }
