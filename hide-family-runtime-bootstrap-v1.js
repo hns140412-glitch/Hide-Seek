@@ -19,5 +19,6 @@ function boot(){
   return {state:'BOUND'};
 }
 window.HideFamilyRuntimeBootstrapV1={version:VERSION,boot,status:()=>document.documentElement.dataset.familyRuntime||'NOT_BOOTED'};
+window.addEventListener('taky-central-auth-ready',()=>boot());
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
