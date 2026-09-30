@@ -170,3 +170,11 @@
   }
   .v2-runtime[data-v2-surface="focus"] .learning-shell{padding-bottom:10px}
 }
+
+/* TAKY Living Background V5 — exact approved Mossfall PNG remains the fallback.
+   Reviewed V5 motion: low-intensity rays, internal waterfall light travel, quiet pool ripple. */
+.v2-runtime .mossfall-motion{position:absolute;z-index:0;inset:0;width:100%;height:100%;object-fit:cover;object-position:center center;opacity:0;pointer-events:none;transition:opacity .18s ease}
+.v2-runtime .mossfall-motion.is-ready{opacity:1}
+html[data-hide-living-motion="off"] .mossfall-motion{display:none!important}
+@media(prefers-reduced-motion:reduce){.v2-runtime .mossfall-motion{display:none!important}}
+.v2-runtime .mossfall-intro,.v2-runtime .mossfall-landmarks,.v2-runtime .mossfall-resume,.v2-runtime .mossfall-world__footnote{position:absolute;z-index:2}
