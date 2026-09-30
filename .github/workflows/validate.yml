@@ -25,8 +25,14 @@ jobs:
           node --check hide-pwa-update-v01.js
           node --check vendor/taky/release-contract.js
           node --check vendor/taky/pwa-update-state.js
+          node --check hide-explorer-crew-authority-consumer-v2.js
+          for f in vendor/taky/explorer-crew/*.js; do node --check "$f"; done
       - name: Validate shared runtime contract
         run: node tests/shared-runtime-contract.test.js
+      - name: Validate Explorer Crew Runtime V2 main consumer
+        run: |
+          node tests/explorer-crew-v2-source-lock.test.js
+          node tests/explorer-crew-v2-authority.test.js
       - name: Install Playwright
         run: |
           npm install --no-save @playwright/test@1.55.0
@@ -36,4 +42,4 @@ jobs:
           python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/hide-http.log 2>&1 &
           echo $! > /tmp/hide-http.pid
       - name: Run shared runtime browser regression
-        run: npx playwright test tests/shared-runtime.spec.js --reporter=line
+        run: npx playwright test tests/shared-runtime.spec.js tests/explorer-crew-v2-authority.spec.js --reporter=line

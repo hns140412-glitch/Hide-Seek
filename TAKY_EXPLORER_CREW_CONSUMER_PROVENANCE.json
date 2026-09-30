@@ -1,0 +1,41 @@
+{
+  "version": "2026-10-01.1",
+  "role": "HIDE_READ_ONLY_EXPLORER_CREW_RUNTIME_V2_CONSUMER",
+  "canonical_authority": {
+    "repository": "hns140412-glitch/TAKY",
+    "commit": "bdc6aeb94aaf82dffbcee4f47c170110b7eff959",
+    "canonical_path": "OS/EXPLORATION_CREW_CANONICAL.md",
+    "relationship_path": "OS/GUIDE_CHARACTER_RELATIONSHIP.md",
+    "runtime_schema_version": "CREW_RUNTIME_TRACE_V2",
+    "runtime_system_version": "EXPLORER_CREW_SYSTEM_V2"
+  },
+  "common_runtime_source_lock": {
+    "version": "EXPLORER_CREW_V2_SOURCE_LOCK_20261001",
+    "file_count": 34,
+    "algorithm": "sha256",
+    "normalization": "utf8_crlf_lf_to_lf",
+    "reference_repository": "hns140412-glitch/Snap-Pop",
+    "reference_pr": 17,
+    "reference_head": "e928067cd8f79b954b4072bfabe13e891fb6d07e"
+  },
+  "consumer": {
+    "path": "hide-explorer-crew-authority-consumer-v2.js",
+    "policy": "Read canonical Main projection/handoff only; bind approved Core6 static art and restore local guide presentation when canonical art is unavailable.",
+    "ownership": {
+      "relation_write": false,
+      "affinity_write": false,
+      "memory_write": false,
+      "behavior_owner": false,
+      "asset_resolver": false,
+      "runtime_owner": false,
+      "renderer": false
+    }
+  },
+  "release_boundary": {
+    "root_activation": false,
+    "netlify": "HOLD",
+    "image_generation": "HOLD",
+    "composable_production": "HOLD",
+    "motion_release": "HOLD"
+  }
+}
