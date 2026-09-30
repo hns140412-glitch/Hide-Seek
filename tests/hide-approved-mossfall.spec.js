@@ -11,6 +11,16 @@ test('environment-first HOME never regresses to cards or fake selectable learnin
   await expect(page.locator('body')).toHaveAttribute('data-visual-id','TAKY-LAF-HIDE-HOME-MOSSFALL-20260927-A');
   await expect(page.locator('body')).toHaveAttribute('data-v2-surface','home');
   await expect(page.locator('.mossfall-world')).toBeVisible();
+  await expect(page.locator('.mossfall-live-fx')).toHaveCount(1);
+  await expect(page.locator('.mossfall-fx--fall')).toHaveCount(4);
+  const livingFx=await page.locator('.mossfall-live-fx').evaluate(el=>({
+    display:getComputedStyle(el).display,
+    shaftAnimation:getComputedStyle(el,'::before').animationName,
+    poolAnimation:getComputedStyle(el.querySelector('.mossfall-fx--pool')).animationName
+  }));
+  expect(livingFx.display).not.toBe('none');
+  expect(livingFx.shaftAnimation).toBe('mossfallShaftDrift');
+  expect(livingFx.poolAnimation).toBe('mossfallPoolRipple');
   expect(await page.locator('.quest-grid,.quest-tile,.mossfall-mode-signs,.quest-hero').count()).toBe(0);
   const spots=page.locator('[data-world-anchor]');
   await expect(spots).toHaveCount(6);
