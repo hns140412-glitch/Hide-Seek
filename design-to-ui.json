@@ -1,7 +1,7 @@
 {
   "schema": "TAKY_DESIGN_TO_UI_PIPELINE_V1",
   "project": "Hide-Seek",
-  "source_commit": "28d861b17bdf8b3345358d7ee869f8e461a703bf",
+  "source_commit": "4b96981888d86de0f3d1f65be4a4ce27cffda9c7",
   "pipeline_contract_source": "TAKY_PR_194_DRAFT",
   "scope_note": "Initial HOME adoption only. Mode screens remain PER_SCREEN_GOLDEN_FREEZE_OPEN.",
   "policy": {
@@ -27,7 +27,7 @@
       },
       "layer_contract": {
         "path": "design/layers/home.json",
-        "sha256": "89cb6629a7a3fd0e2166d02c63107c98c7beeb3b934a25785670fd4fd0614813"
+        "sha256": "acf185d8a63a90bccecec1944d7151a41552e824c4b20124d9f15f243411d321"
       },
       "viewports": [
         {
