@@ -7,6 +7,8 @@ on:
       - 'v2.html'
       - 'assets/visual/**'
       - 'tests/hide-approved-mossfall.spec.js'
+      - 'tests/hide-living-background-v5.spec.js'
+      - 'tests/hide-living-background-v5.test.js'
       - 'tests/hide-ocr-intake-import.spec.js'
       - 'playwright.visual-webkit.config.cjs'
       - '.github/workflows/hide-mossfall-webkit.yml'
@@ -30,6 +32,8 @@ jobs:
       - name: Install Playwright WebKit
         run: npx playwright install --with-deps webkit
       - name: Check source visual authority (missing binary remains HOLD)
-        run: node tools/verify-approved-mossfall.js
+        run: |
+          node tools/verify-approved-mossfall.js --require-asset
+          node tests/hide-living-background-v5.test.js
       - name: Exercise mobile WebKit world, focus and OCR source review
-        run: npx playwright test tests/hide-approved-mossfall.spec.js tests/hide-ocr-intake-import.spec.js --config=playwright.visual-webkit.config.cjs --reporter=line
+        run: npx playwright test tests/hide-approved-mossfall.spec.js tests/hide-living-background-v5.spec.js tests/hide-ocr-intake-import.spec.js --config=playwright.visual-webkit.config.cjs --reporter=line
