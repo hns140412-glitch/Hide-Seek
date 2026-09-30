@@ -1,0 +1,45 @@
+{
+  "schema": "tky.living-background.binding.v5",
+  "rule_id": "TKY-ASSET-001",
+  "app": "Hide & Seek",
+  "visual_id": "TAKY-LAF-HIDE-HOME-MOSSFALL-20260927-A",
+  "master": {
+    "path": "assets/visual/hide_seek_forest_asset.png",
+    "sha256": "1f7aa500a177e25820649cc485355297cbc4fb89909df1f7f43e4ff7ddbe2419",
+    "git_blob_sha": "68458a8ff21b5ccd55529b604d478a2b6cb07264",
+    "width": 941,
+    "height": 1672,
+    "immutable": true
+  },
+  "motion": {
+    "path": "assets/visual/hide_seek_forest_motion_v5.mp4",
+    "sha256": "4a531bf3726d9994803eb91924428621ee64f0d3c415f7b3bbd999482c1b5ca9",
+    "git_blob_sha": "25ca86b02f62b3c23832eee5c4129b53a766f918",
+    "source_review": "TAKY Living Background V5",
+    "loop_seconds": 8,
+    "enabled": [
+      "low intensity rays",
+      "stationary fall silhouette with internal downward light motion",
+      "source-colored pool ripple"
+    ],
+    "hold": [
+      "true independent canopy silhouette sway"
+    ]
+  },
+  "runtime": {
+    "surface": "v2 home Mossfall world",
+    "static_fallback": "EXACT_APPROVED_MASTER",
+    "reduced_motion": "STATIC_MASTER",
+    "video_failure": "STATIC_MASTER",
+    "offline_cache": "REQUIRED",
+    "remote_fetch": false
+  },
+  "gates": {
+    "app_binding": "DRAFT_BOUND",
+    "technical_ci": "PENDING",
+    "visual_signoff": "OPEN",
+    "physical_iphone_safari": "OPEN",
+    "main_merge": "HOLD",
+    "netlify": "HOLD"
+  }
+}
