@@ -336,10 +336,38 @@
     if (!S.sharedLearningContext) S.sharedLearningContext = {};
   }
 
+  async function syncFamilyCharacterProfile() {
+    const memberId = getContext().child_id || null;
+    const adapter = window.HideFamilyCharacterProfileAdapterV1;
+    if (!memberId || !adapter) return { state:'NO_BINDING' };
+    try {
+      const resolved = await adapter.resolve(memberId);
+      const p = resolved?.projection;
+      if (!p) return { state:'NO_PROFILE' };
+      S.profile = {
+        ...(S.profile || {}),
+        memberId: p.member_id,
+        characterId: p.character_id,
+        characterIdentityVersion: p.identity_version,
+        characterMasterAssetRef: p.master_asset_ref,
+        characterMasterSha256: p.master_sha256 || null,
+        characterAssetVersion: p.asset_version || null,
+        characterProjectionSource: resolved.source,
+        characterProjectionUpdatedAt: p.updated_at || iso()
+      };
+      persistBridgeState();
+      try { render(); } catch {}
+      return { state:'BOUND', source:resolved.source, character_id:p.character_id };
+    } catch (error) {
+      return { state:'FAILED', error:String(error?.message || error) };
+    }
+  }
+
   function bootBridge() {
     document.documentElement.dataset.hideBridge = BRIDGE_VERSION;
     bootContext();
     wrapSaveForBridge();
+    void syncFamilyCharacterProfile();
     ensureCaptureResumeChip();
     ensureBaseCampChip();
     normalizeBrandAttributes();
@@ -358,6 +386,7 @@
       returnToBase,
       sendToSnap,
       requestImaginationCloud,
+      syncFamilyCharacterProfile,
       isSafeUpdatePoint
     });
   }
