@@ -1,0 +1,38 @@
+#!/usr/bin/env node
+'use strict';
+const fs=require('node:fs');
+const path=require('node:path');
+const assert=require('node:assert/strict');
+const root=path.resolve(__dirname,'..');
+const get=(p)=>fs.readFileSync(path.join(root,p),'utf8');
+const contract=JSON.parse(get('docs/hide-subject-activity-binding.v1.json'));
+const document=get('docs/HIDE_SUBJECT_ACTIVITY_UI_CONTRACT_2026-09-28.md');
+const approved=JSON.parse(get('assets/visual/hide-mossfall.binding.json'));
+function eq(a,b,label){assert.deepEqual(a,b,label);}
+eq(contract.schema,'hide.subject-activity-ui-binding.v1','schema');
+eq(contract.status,'DRAFT_REVIEW_REQUIRED_NOT_RUNTIME_ACTIVE','status');
+eq(Object.keys(contract.modes),['TRACE','LINK','CORE','RECALL'],'free modes');
+eq(Object.keys(contract.subjects),['ENGLISH','KOREAN','HANJA','SOCIAL','SCIENCE'],'five subject axes');
+assert.equal(contract.modePolicy.freeChoice,true);
+assert.equal(contract.modePolicy.noForcedLinearProgression,true);
+assert.match(contract.modePolicy.currentRuntimeModeSelector,/NOT_VERIFIED/);
+assert.match(contract.modePolicy.legacyRuntimeStages,/MEMORIZE/);
+for(const s of ['SOCIAL','SCIENCE'])assert.match(contract.subjects[s].state,/NOT_LANGUAGE_MODEL_BOUND/);
+for(const s of ['ENGLISH','KOREAN','HANJA'])assert.equal(contract.subjects[s].state,'EXISTING_LANGUAGE_MODEL');
+eq(contract.upstream.approvedVisualId,approved.visual_id,'approved visual id');
+eq(contract.upstream.approvedAssetSha256,approved.sha256,'approved visual SHA pointer');
+eq(contract.upstream.approvedVisualScope,'HOME_ENVIRONMENT_ONLY','scope');
+assert.equal(contract.upstream.assetBinaryInPR22,'NOT_YET_BOUND');
+assert.equal(contract.upstream.rejectedReference,'expedition.html');
+assert.equal(contract.ownership.Hide.includes('no mastery or date allocation'),true);
+assert.equal(contract.observationContract.mandatoryFlags.observation_only,true);
+assert.equal(contract.observationContract.mandatoryFlags.global_mastery_claim,false);
+for(const f of ['assisted','unassisted','objective_verified','subject','concept_skill_target','source_ref','event_id'])assert(contract.observationContract.required.includes(f),'missing evidence field '+f);
+for(const [mode,v] of Object.entries(contract.modes))for(const renderer of v.allowed)assert(contract.renderers[renderer],'unknown renderer '+mode+'/'+renderer);
+for(const [s,v] of Object.entries(contract.subjects))for(const renderer of v.preferred)assert(contract.renderers[renderer],'unknown subject renderer '+s+'/'+renderer);
+for(const file of ['Hide_Seek_UI_MASTER_LOGIC_REV_04.md','hide-language-model.js','hide-learning-basis-v01.js','src/v2/learning-session.js','src/v2/app.js','src/v2/mossfall-world.js'])assert(fs.existsSync(path.join(root,file)),'missing source '+file);
+for(const term of ['영어','국어','한자','사회','과학','TRACE','LINK','CORE','RECALL','그룹핑','이미징','ASSISTED_RECOVERY','NOT_RUNTIME_ACTIVE'])assert(document.includes(term),'missing doc trace '+term);
+assert(!document.includes('UI 구현 완료'),'false implementation claim');
+assert(contract.gates.length>=12,'insufficient regression gates');
+console.log('PASS Hide subject/activity design binding: 5 subjects, 4 modes, '+Object.keys(contract.renderers).length+' renderer specs, asset pointer, ownership, evidence, source paths and '+contract.gates.length+' gates');
+console.log('NOTE design binding only; actual mode UI, approved binary asset, device QA and release are NOT verified by this check');

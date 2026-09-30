@@ -1,0 +1,23 @@
+name: Validate Hide subject/activity design binding
+on:
+  pull_request:
+    branches:
+      - taky/hide-mossfall-approved-art-ui-20260928
+    paths:
+      - docs/HIDE_SUBJECT_ACTIVITY_UI_CONTRACT_2026-09-28.md
+      - docs/hide-subject-activity-binding.v1.json
+      - tools/validate-hide-subject-activity-binding.js
+      - .github/workflows/validate-hide-subject-activity-binding.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate-design-binding:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Contract validation only (not visual/runtime/release PASS)
+        run: node tools/validate-hide-subject-activity-binding.js
