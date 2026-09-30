@@ -1,6 +1,7 @@
 ﻿{
     "version":  "EXPLORER_CREW_V2_SOURCE_LOCK_20261001",
     "algorithm":  "sha256",
+    "normalization":  "lf",
     "source":  "SNAP_V2_VERIFIED_COMMON_RUNTIME",
     "file_count":  34,
     "files":  {
