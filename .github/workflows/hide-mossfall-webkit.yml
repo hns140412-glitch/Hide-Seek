@@ -41,3 +41,14 @@ jobs:
           path: test-results/mossfall-environment-home-*.png
           if-no-files-found: error
           retention-days: 7
+
+      - name: Upload Hide Mossfall living-background visual gate frames
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hide-mossfall-living-background-visual-gate
+          path: |
+            test-results/hide-mossfall-live-390x844.png
+            test-results/hide-mossfall-reduced-motion-390x844.png
+          if-no-files-found: error
+          retention-days: 7
