@@ -1,0 +1,54 @@
+name: Hide Mobile WebKit Visual and OCR Gate
+
+on:
+  pull_request:
+    paths:
+      - 'src/v2/**'
+      - 'v2.html'
+      - 'assets/visual/**'
+      - 'tests/hide-approved-mossfall.spec.js'
+      - 'tests/hide-ocr-intake-import.spec.js'
+      - 'playwright.visual-webkit.config.cjs'
+      - '.github/workflows/hide-mossfall-webkit.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  webkit-mobile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install browser harness
+        run: npm install --no-audit --no-fund
+      - name: Install Playwright WebKit
+        run: npx playwright install --with-deps webkit
+      - name: Require exact approved Mossfall binary and visual authority
+        run: node tools/verify-approved-mossfall.js --require-asset
+      - name: Exercise mobile WebKit world, focus and OCR source review
+        run: npx playwright test tests/hide-approved-mossfall.spec.js tests/hide-ocr-intake-import.spec.js --config=playwright.visual-webkit.config.cjs --reporter=line
+      - name: Upload Hide living-background visual gate evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hide-living-background-visual-gate
+          path: test-results/mossfall-environment-home-*.png
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload Hide Mossfall living-background visual gate frames
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hide-mossfall-living-background-visual-gate
+          path: |
+            test-results/hide-mossfall-live-390x844.png
+            test-results/hide-mossfall-reduced-motion-390x844.png
+          if-no-files-found: error
+          retention-days: 7

@@ -27,6 +27,17 @@ test('source-aware local OCR review creates only 12-parent-confirmed-word missio
   });
   await expect(page.getByRole('heading',{name:'서로 다른 자료로 나누었어요'})).toBeVisible();
   await expect(page.locator('[data-imported-row]')).toHaveCount(12);
+  expect(await page.evaluate(()=>HideV2Pwa.safePoint())).toBe(false);
+  await expect(page.locator('[data-imported-row]:visible')).toHaveCount(1);
+  await expect(page.locator('#v2IntakePageCount')).toHaveText('1/12');
+  await expect(page.locator('[data-intake-role="1"]')).toContainText('NEW 후보 · 이 기기 기준');
+  await expect(page.locator('.ocr-review-card>.ocr-review-next')).toHaveCSS('border-radius','0px');
+  await page.locator('#v2IntakeNext').click();
+  await expect(page.locator('#v2IntakePageCount')).toHaveText('2/12');
+  await expect(page.locator('[data-imported-row="1"]')).toBeVisible();
+  await expect(page.locator('[data-imported-row="0"]')).toBeHidden();
+  await page.locator('#v2IntakePrev').click();
+  await expect(page.locator('#v2IntakePageCount')).toHaveText('1/12');
   await expect(page.locator('[data-exam-region]')).toHaveCount(3);
   const staged=await page.evaluate(()=>{
     const s=HideV2Store.snapshot();
@@ -105,11 +116,13 @@ test('printed source label does not override exact local lexical history or ambi
   });
   await expect(page.locator('[data-imported-row]')).toHaveCount(12);
   await expect(page.locator('[data-intake-role="2"]')).toContainText('REVIEW');
-  await expect(page.locator('[data-intake-role="3"]')).toContainText('UNRESOLVED');
+  await expect(page.locator('[data-intake-role="3"]')).toContainText('뜻 확인 필요');
   await expect(page.locator('[data-confirm-distinct-sense="3"]')).toHaveCount(1);
+  expect(await page.evaluate(()=>HideV2Pwa.safePoint())).toBe(false);
   await page.locator('#v2ParentVerifiedNew').check();
   await page.locator('#v2ConfirmImportedPrint').click();
   expect(await page.evaluate(()=>HideV2Store.snapshot().missions.length)).toBe(1);
+  await expect(page.locator('#v2IntakePageCount')).toHaveText('3/12');
   await page.locator('[data-confirm-distinct-sense="3"]').check();
   await page.locator('#v2ConfirmImportedPrint').click();
   await expect.poll(()=>page.evaluate(()=>HideV2Store.snapshot().missions.length)).toBe(2);

@@ -261,57 +261,11 @@
       ?(memory.needsRecall>0?('다시 찾아볼 단어가 '+memory.needsRecall+'개 있어요. 오늘은 그 단어부터 만나도 좋아요.'):'지금은 기억이 꽤 안정적이에요. 다음 탐험에서도 스스로 떠오르는지 확인해봐요.')
       :'첫 탐험을 마치면 기억 사다리가 여기서 이어져요.';
     const activeCount=s.missions.filter(x=>x.status!=='ARCHIVED').length;
-    const missionAction=m?`<button class="btn primary quest-main-action" id="v2Start">${resumable?'탐험 이어가기':'탐험 시작'}</button>`:'';
-    view().innerHTML=`
-      <section class="quest-hero">
-        <div class="quest-hero__eyebrow">HIDE & SEEK · 숨은 단어 탐험</div>
-        <div class="quest-hero__body">
-          <div>
-            <p class="quest-overline">${m?'오늘의 탐험':'새 탐험 준비'}</p>
-            <h1>${m?esc(m.title):'프린트에서 숨은 단어를 찾아봐요'}</h1>
-            <p class="quest-subcopy">${m?`${m.items.length}개 단어 · ${missionStatusLabel(m.status)}`:'사진을 찍으면 단어를 확인하고 바로 탐험을 시작할 수 있어요.'}</p>
-          </div>
-          ${m?`<div class="quest-count"><b>${m.items.length}</b><span>숨은 단어</span></div>`:''}
-        </div>
-        <div class="quest-hero__actions">
-          ${missionAction}
-          <button class="btn secondary" id="v2Camera">카메라 촬영</button>
-          <button class="btn ghost" id="v2Library">사진에서 가져오기</button>
-          <button class="btn ghost" id="v2OcrImport" type="button">OCR 결과 검토</button>
-        </div>
-      </section>
-
-      ${reviewReady?`<section class="quest-alert"><div><b>확인하던 단어가 남아 있어요</b><p>${capture?.lastRows?.length||0}개 단어를 이어서 확인할 수 있어요.</p></div><button class="btn primary" id="v2ResumeReview">이어서 확인</button></section>`:''}
-
-      <section class="quest-grid">
-        <button class="quest-tile" id="v2MissionList" type="button"><span class="quest-tile__icon">🧭</span><span><b>탐험 미션</b><small>${activeCount}개 미션</small></span><i>›</i></button>
-        <button class="quest-tile" id="v2Records" type="button"><span class="quest-tile__icon">🪜</span><span><b>기억 사다리</b><small>${memory.total}개 단어 기록</small></span><i>›</i></button>
-      </section>
-
-      <section class="trail-bridge" aria-label="탐험과 기억의 연결">
-        <div class="trail-bridge__step"><span>1</span><b>미션 고르기</b><small>오늘 찾을 단어</small></div>
-        <i aria-hidden="true">→</i>
-        <div class="trail-bridge__step"><span>2</span><b>단어 찾기</b><small>생각하고 꺼내기</small></div>
-        <i aria-hidden="true">→</i>
-        <div class="trail-bridge__step"><span>3</span><b>기억 사다리</b><small>다음 탐험 준비</small></div>
-      </section>
-
-      <section class="quest-status quest-status--story">
-        <div class="section-title"><div><p class="quest-overline">MY TRAIL</p><h2>다음 탐험은 이렇게 이어져요</h2></div><span>${memory.total?'기억 사다리 연결':'첫 탐험 전'}</span></div>
-        <p class="quest-status__story">${esc(memoryMessage)}</p>
-        <aside class="home-crew" aria-label="홈 탐험대원">
-          <span class="crew-strip__avatar">${esc(homeCrew.avatarText)}</span>
-          <span><b>${esc(homeCrew.displayName)}</b><small>${esc(homeCrew.supportText)}</small></span>
-        </aside>
-        <div class="quest-stat-row quest-stat-row--quiet" aria-label="기억 상태 보조 정보">
-          <div class="quest-stat"><b>${memory.averageStrength||0}%</b><span>기억 힘</span></div>
-          <div class="quest-stat"><b>${memory.needsRecall||0}</b><span>다시 찾기</span></div>
-          <div class="quest-stat"><b>${memory.stable||0}</b><span>안정 단어</span></div>
-        </div>
-      </section>`;
+    view().innerHTML=HideMossfallWorld.render({m,resumable,activeCount,memory,reviewReady,capture,memoryMessage,missionStatusLabel,esc});
 
     $('#v2Camera').onclick=()=>$('#sheetCameraInput').click();
     $('#v2MissionList').onclick=()=>HideV2Router.go('missions');
+    if($('#v2BeginWithMission'))$('#v2BeginWithMission').onclick=()=>HideV2Router.go('missions');
     $('#v2Records').onclick=()=>HideV2Router.go('records');
     $('#v2Library').onclick=()=>$('#sheetLibraryInput').click();
     $('#v2OcrImport').onclick=()=>HideV2Router.go('ocr-intake');
@@ -1139,6 +1093,7 @@
     $('#v2RecordBack').onclick=()=>HideV2Router.go('records');
   }
 
+  let ocrIntakePageIndex=0;
   function ocrIntakeReview(){
     const packet=HideV2Capture.intakePacket();
     const snap=HideV2Store.snapshot();
@@ -1163,12 +1118,18 @@
     view().innerHTML=`<section class="ocr-review-card" aria-label="OCR 자료별 검토">
       <div class="hero-kicker"><span>OCR SOURCE REVIEW</span><span>부모 확인 전 초안</span></div>
       <h1>서로 다른 자료로 나누었어요</h1>
-      <p>현재 프린트 후보 ${summary.newCandidateRows}개 · 누적 보관한 지난 시험 ${histories.length}회. 서로 다른 원본은 한 미션으로 합치지 않아요.</p>
-      <p>NEW / REVIEW는 프린트 위치가 아닌 이 기기에 저장된 단어·뜻 이력과 부모 확인을 기준으로 나눕니다. 다른 기기·중앙 이력은 아직 대조되지 않았습니다.</p>
-      <p>이 파일은 확인용 문자 전사본이며 실제 OCR API 성공이나 원본 사진 첨부를 의미하지 않습니다.</p>
+      <p class="ocr-brief">확인할 단어 ${summary.newCandidateRows}개 · 이전 시험 ${histories.length}회. 출처별로 따로 보관합니다.</p>
+      <details class="ocr-source-policy"><summary>OCR·NEW/REVIEW 검증 기준</summary>
+        <p>NEW / REVIEW는 프린트 위치가 아닌 이 기기의 단어·뜻 이력과 부모 확인을 기준으로 나눕니다. 다른 기기·중앙 이력은 아직 대조되지 않았습니다.</p>
+        <p>가져오기 파일은 확인용 문자 전사본으로, 실제 OCR API 성공이나 원본 사진 첨부를 의미하지 않습니다.</p>
+      </details>
+      <div class="ocr-review-page-head" id="v2ImportedReviewPageHead" ${rows.length?'':'hidden'}>
+        <span>NEW PRINT · 원본 행을 하나씩 대조</span>
+        <span id="v2IntakePageCount" role="status" aria-live="polite">${rows.length?Math.min(ocrIntakePageIndex+1,rows.length):0}/${rows.length}</span>
+      </div>
       <div class="ocr-review-list" id="v2ImportedNewRows">
-        ${rows.map((r,i)=>`<div class="ocr-review-row" data-imported-row="${i}">
-          <div class="ocr-review-row__head"><b>프린트 ${r.sourceRowIndex}</b><small data-intake-role="${r.sourceRowIndex}">${esc(rolesByRow.get(Number(r.sourceRowIndex))?.role||'NEW')} · ${esc(rolesByRow.get(Number(r.sourceRowIndex))?.roleSource||'LOCAL_CHECK_REQUIRED')} · 부모 확인 전</small></div>
+        ${rows.map((r,i)=>`<div class="ocr-review-row" data-imported-row="${i}" ${i===Math.max(0,Math.min(ocrIntakePageIndex,rows.length-1))?'':'hidden'}>
+          <div class="ocr-review-row__head"><b>프린트 ${r.sourceRowIndex}</b><small data-intake-role="${r.sourceRowIndex}">${esc(rolesByRow.get(Number(r.sourceRowIndex))?.role==='REVIEW'?'REVIEW · 기존 학습':rolesByRow.get(Number(r.sourceRowIndex))?.role==='UNRESOLVED'?'뜻 확인 필요':'NEW 후보 · 이 기기 기준')}</small></div>
           <div class="ocr-review-fields">
             <label><span>Word</span><input class="input" data-import-eng="${i}" value="${esc(r.eng)}" aria-label="신규 단어 ${i+1}"></label>
             <label><span>뜻</span><input class="input" data-import-kor="${i}" value="${esc(r.kor)}" aria-label="신규 뜻 ${i+1}"></label>
@@ -1179,20 +1140,41 @@
             :''}
         </div>`).join('')}
       </div>
+      ${rows.length>1?`<div class="ocr-review-pager" aria-label="단어 원본 행 이동">
+        <button class="btn secondary" type="button" id="v2IntakePrev" ${ocrIntakePageIndex<=0?'disabled':''}>이전 행</button>
+        <button class="btn secondary" type="button" id="v2IntakeNext" ${ocrIntakePageIndex>=rows.length-1?'disabled':''}>다음 행</button>
+      </div>`:''}
       ${rows.length&&!committed?`<label class="ocr-review-next"><input type="checkbox" id="v2ParentVerifiedNew"> 원본과 이 기기의 기존 단어 이력을 대조한 뒤 내용을 확인했습니다.</label>
         <button class="btn primary full" id="v2ConfirmImportedPrint" type="button">확인한 단어로 미션 만들기</button>`:''}
       ${committed?'<p id="v2ImportCommitted">신규 단어지 확인 완료 · 기존 미션으로 저장됨</p>':''}
-      <section class="ocr-review-next" aria-label="지난 시험 기록">
-        <h2>과거 시험은 별도 기록</h2>
-        <p>아이 답안, 빨간 채점, 정답 후보를 혼동하지 않습니다. 자동 점수·기억 강도·Planner 일정에는 반영하지 않습니다.</p>
+      <details class="ocr-review-history" id="v2PastExams" ${rows.length?'':'open'}>
+        <summary>과거 시험 ${histories.length}회 · 독립 기록 · 미채점</summary>
+        <section class="ocr-review-next" aria-label="지난 시험 기록">
+          <h2>과거 시험은 별도 기록</h2>
+          <p>아이 답안·빨간 채점·정답 후보는 별도이며 자동 점수·기억 강도·Planner 일정에 반영하지 않습니다.</p>
         ${histories.map(h=>`<details data-exam-region="${esc(h.region)}"><summary>${esc(h.region)} · ${esc(dayLabel[h.dateRelation]||h.dateRelation)} · ${h.rows.length}개 · 확인 대기</summary>
           <ol>${h.rows.map(row=>`<li>행 ${row.sourceRowIndex} · 관찰 단어 후보: ${esc(row.observedWordCandidate||'미확인')} · 연필 답: ${esc(row.childAnswerRaw||'미확인')} · 빨간 교정: ${esc(row.redCorrectionRaw||'미확인')} · 판정: 미검증</li>`).join('')}</ol>
           <small>원본 사진의 정확한 시험일 및 채점 근거를 대조하기 전까지 평가 근거로 사용하지 않습니다.</small>
         </details>`).join('')}
-      </section>
+        </section>
+      </details>
       ${canAddAnother?'<button class="btn secondary full" id="v2ImportAnother" type="button">다른 OCR 결과 추가</button>':''}
       <button class="btn secondary full" id="v2ImportBack" type="button">홈으로</button>
     </section>`;
+    const showIntakePage=()=>{
+      ocrIntakePageIndex=Math.max(0,Math.min(ocrIntakePageIndex,rows.length-1));
+      view().querySelectorAll('[data-imported-row]').forEach((el,i)=>{el.hidden=i!==ocrIntakePageIndex});
+      const count=$('#v2IntakePageCount');
+      if(count)count.textContent=(ocrIntakePageIndex+1)+'/'+rows.length;
+      if($('#v2IntakePrev'))$('#v2IntakePrev').disabled=ocrIntakePageIndex<=0;
+      if($('#v2IntakeNext'))$('#v2IntakeNext').disabled=ocrIntakePageIndex>=rows.length-1;
+    };
+    if($('#v2IntakePrev'))$('#v2IntakePrev').onclick=()=>{
+      ocrIntakePageIndex--;showIntakePage();
+    };
+    if($('#v2IntakeNext'))$('#v2IntakeNext').onclick=()=>{
+      ocrIntakePageIndex++;showIntakePage();
+    };
     const persistEdits=()=>{
       if(committed)return;
       const draft=rows.map((r,i)=>({...r,
@@ -1215,6 +1197,13 @@
         parentReviewed:checked,reviewedDistinctSenseRows
       });
       if(!result.ok){
+        // When a specific source row needs human confirmation, take the
+        // reviewer straight to it instead of leaving an unseen hidden input.
+        const neededRow=Number(result.detail);
+        if(Number.isInteger(neededRow)&&neededRow>0){
+          const targetIndex=rows.findIndex(x=>Number(x.sourceRowIndex)===neededRow);
+          if(targetIndex>=0){ocrIntakePageIndex=targetIndex;showIntakePage()}
+        }
         const reason={
           PARENT_REVIEW_REQUIRED:'원본과 기존 이력을 확인한 뒤 확인 표시를 해주세요.',
           LEXICAL_SENSE_CONFLICT_REVIEW_REQUIRED:'같은 철자의 다른 뜻은 개별 확인 표시가 필요합니다.',
@@ -1232,6 +1221,8 @@
   function render(){
     if(flash){const t=$('#toast');if(t){t.textContent=flash;t.classList.add('show')}}
     const r=HideV2Router.current();
+    document.body.dataset.v2Surface=r.name==='home'?'home':
+      r.name==='learn'?'focus':r.name==='ocr-intake'?'source':'other';
     if(r.name==='learn')learn();else if(r.name==='missions')missions();else if(r.name==='records')records();else if(r.name==='record-detail')recordDetail(r.params);else if(r.name==='ocr-intake')ocrIntakeReview();else home();
   }
   function boot(){

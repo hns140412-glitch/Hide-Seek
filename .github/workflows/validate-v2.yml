@@ -9,8 +9,14 @@ on:
       - 'manifest-v2.json'
       - 'sw-v2.js'
       - 'src/v2/**'
+      - 'assets/visual/**'
+      - 'tools/verify-approved-mossfall.js'
+      - 'tests/hide-approved-mossfall.spec.js'
       - 'tests/hide-ocr-intake-import.spec.js'
       - 'tests/hide-ocr-source-routing.test.js'
+      - 'tests/hide-release-visual-gate.test.js'
+      - 'tools/verify-v2-offline-dependencies.js'
+      - '.github/workflows/pages.yml'
       - 'tests/hide-v2-product-flow.spec.js'
       - 'tests/hide-v2-central-review.spec.js'
       - 'tests/hide-v2-ready-run-isolation.spec.js'
@@ -29,12 +35,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
       - name: Check V2 JavaScript syntax
         run: |
           for f in src/v2/*.js; do node --check "$f"; done
+      - name: Approved visual authority / exact-art preflight
+        run: node tools/verify-approved-mossfall.js
+      - name: Gate future release against missing approved binary
+        run: |
+          node tests/hide-release-visual-gate.test.js
+          node tools/verify-v2-offline-dependencies.js
       - name: Validate OCR source separation
         run: node tests/hide-ocr-source-routing.test.js
       - name: Validate V2 architecture isolation
@@ -45,3 +59,12 @@ jobs:
         run: npm install
       - name: Verify V2 product flows
         run: npx playwright test tests/hide-v2-product-flow.spec.js tests/hide-v2-central-review.spec.js tests/hide-v2-ready-run-isolation.spec.js tests/hide-code-red-verification.spec.js tests/hide-ocr-intake-import.spec.js --project=chromium
+      - name: Check approved background browser binding when exact image is present
+        run: npx playwright test tests/hide-approved-mossfall.spec.js --project=chromium
+      - name: Archive exact HEAD source (not a deployment)
+        run: git archive --format=zip --output=hide-v2-exact-source.zip HEAD
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hide-v2-exact-source
+          path: hide-v2-exact-source.zip
+          retention-days: 3

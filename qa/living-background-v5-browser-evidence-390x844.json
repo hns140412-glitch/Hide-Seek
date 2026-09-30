@@ -1,0 +1,42 @@
+{
+  "schema": "TAKY_LIVING_BACKGROUND_BROWSER_EVIDENCE_V1",
+  "app": "Hide & Seek",
+  "verified_head": "3e4646444891d3df380a3cddb7bacbecf5fb7217",
+  "viewport": {"width":390,"height":844},
+  "browser": "local Chromium via system Chrome, service workers blocked",
+  "visual_id": "TAKY-LAF-HIDE-HOME-MOSSFALL-20260927-A",
+  "asset": {
+    "path": "assets/visual/hide_seek_forest_asset.png",
+    "sha256": "1f7aa500a177e25820649cc485355297cbc4fb89909df1f7f43e4ff7ddbe2419",
+    "loaded": true
+  },
+  "effects": {
+    "shaft_animation": "mossfallShaftDrift",
+    "fall_animation": "mossfallWaterLight",
+    "pool_animation": "mossfallPoolRipple",
+    "display": "block",
+    "t1_fall_background_position": "0px -17.4758%",
+    "t5_fall_background_position": "0px 115.355%",
+    "t1_pool_transform": "matrix(0.962431,0,0,0.923553,0,0)",
+    "t5_pool_transform": "matrix(1.01585,0,0,1.00163,0,0)"
+  },
+  "frame_diff": {
+    "changed_pixels": 120964,
+    "changed_ratio": 0.367493,
+    "bbox_px": [16,0,390,712],
+    "mean_abs_rgb": [0.7644,0.6779,0.695]
+  },
+  "screenshots": {
+    "t1_sha256": "fa70fc7e1bc292babb01c96be14f7c1e37e011fb3955a4b5916f233016729636",
+    "t5_sha256": "8db95697edcff8372b81a2ce9e86e6a4e273b2b840772d7b61588db1d897574f"
+  },
+  "assessment": {
+    "source_image_identity": "PASS",
+    "runtime_effect_motion": "PASS_LOCAL_BROWSER",
+    "effect_scope": "LIGHT_SHAFTS_WATERFALL_INTERIOR_POOL",
+    "rejected_v4_raster_copy_ghosting": "NOT_OBSERVED_IN_390x844_LOCAL_RENDER",
+    "human_visual_approval": "OPEN",
+    "physical_device_verification": "OPEN",
+    "release": "HOLD"
+  }
+}
