@@ -103,7 +103,8 @@ function setPartner(msg,mood="default",speakIt=false){
  let routed=false;
  if(rt?.legacyCharacter&&rt?.emit){
    const ch=rt.legacyCharacter(S.guide.id,{role:"MAIN",action:actionMap[mood]||"IDLE",dialogue:dialogueMap[mood]||"SHORT",utterance:msg,evidenceRef:"HIDE_LOCAL_LEARNING_EVENT",reason:"HIDE_PARTNER_INTERVENTION"});
-   rt.emit({sceneId:"global-partner",surface:"global-partner",characters:[ch],foregroundId:ch.character_id,speakingOrder:[ch.character_id],visibleOrder:[ch.character_id]});
+   const behaviorState=mood==="hint"?{needs_hint:true}:mood==="cheer"?{just_completed:true}:mood==="radio"?{user_requested:true}:speakIt?{explicit_intervention:true}:{silence_by_default:true,child_working_well:true};
+   rt.emit({sceneId:"global-partner",surface:"global-partner",characters:[ch],foregroundId:ch.character_id,speakingOrder:[ch.character_id],visibleOrder:[ch.character_id],behaviorState});
    routed=true;
  }
  if(!routed&&text)text.textContent=msg;
