@@ -1,0 +1,70 @@
+{
+  "schema": "TAKY_SCREEN_CONTRACT_V2",
+  "screen_id": "home",
+  "authority_ref": "APPROVED_HIDE_HOME_MOCKUP",
+  "regions": [
+    {
+      "id": "mossfall-world",
+      "role": "environment"
+    },
+    {
+      "id": "mode-entry",
+      "role": "primary-navigation"
+    },
+    {
+      "id": "partner",
+      "role": "companion"
+    }
+  ],
+  "typography": {
+    "mode": "LIVE_DOM",
+    "hierarchy": [
+      "brand",
+      "mode-name",
+      "mode-description",
+      "navigation"
+    ]
+  },
+  "components": [
+    {
+      "id": "current-home-consumer",
+      "selector": "#view",
+      "owner": "HIDE_SEEK_UI"
+    },
+    {
+      "id": "partner-slot",
+      "selector": "#partnerAvatar",
+      "owner": "HIDE_CHARACTER_BINDING"
+    }
+  ],
+  "responsive": {
+    "primary": "phone390",
+    "safe_area": "required",
+    "tablet": "AUTHORITY_REVIEW_OPEN"
+  },
+  "interactions": [
+    {
+      "id": "TRACE_ENTRY",
+      "target_authority": "PER_SCREEN_GOLDEN_FREEZE_OPEN"
+    },
+    {
+      "id": "LINK_ENTRY",
+      "target_authority": "PER_SCREEN_GOLDEN_FREEZE_OPEN"
+    },
+    {
+      "id": "CORE_ENTRY",
+      "target_authority": "PER_SCREEN_GOLDEN_FREEZE_OPEN"
+    },
+    {
+      "id": "RECALL_ENTRY",
+      "target_authority": "PER_SCREEN_GOLDEN_FREEZE_OPEN"
+    }
+  ],
+  "states": [
+    "BASE_REVIEW",
+    "EMPTY_CASE",
+    "PARTNER_ACTIVE",
+    "OFFLINE"
+  ],
+  "implementation_note": "Current renderHome does not match the approved fantasy Home composition. Preserve the approved environment and do not promote mode-board composites to runtime art."
+}
