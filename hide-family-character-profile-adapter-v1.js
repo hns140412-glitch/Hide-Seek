@@ -45,6 +45,26 @@ function registerProvider(next) {
   return { provider_id: String(next.id || 'custom'), version: VERSION };
 }
 
+function registerHttpProvider({baseUrl,getToken,getFamilyId,fetchImpl=fetch}={}) {
+  const base = new URL(String(baseUrl || ''), globalThis.location?.href || 'http://localhost/');
+  const local = ['localhost','127.0.0.1'].includes(base.hostname);
+  if ((!local && base.protocol !== 'https:') || typeof getToken !== 'function' || typeof getFamilyId !== 'function' || typeof fetchImpl !== 'function') {
+    throw new Error('FAMILY_CHARACTER_HTTP_PROVIDER_INVALID');
+  }
+  const endpoint = new URL('/api/family/character-profile', base).href;
+  return registerProvider({
+    id:'central-family-character-http-v1',
+    get: async member_id => {
+      const token=String(await getToken()||''),family_id=String(await getFamilyId()||'');
+      if(!token||!family_id)throw new Error('FAMILY_CHARACTER_AUTH_CONTEXT_REQUIRED');
+      const res=await fetchImpl(endpoint,{method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+token},body:JSON.stringify({action:'GET',family_id,member_id})});
+      const body=await res.json().catch(()=>({ok:false,reason:'INVALID_PROFILE_RESPONSE'}));
+      if(!res.ok||body.ok===false)throw Object.assign(new Error(body.reason||('PROFILE_HTTP_'+res.status)),{status:res.status,body});
+      return body.found?body.projection:null;
+    }
+  });
+}
+
 async function resolve(memberId) {
   const id = String(memberId || '');
   if (!id) return { source: 'NONE', projection: null };
@@ -59,6 +79,7 @@ async function resolve(memberId) {
 window.HideFamilyCharacterProfileAdapterV1 = {
   version: VERSION,
   registerProvider,
+  registerHttpProvider,
   resolve,
   cached,
   status: () => ({ provider_available: !!provider, cached: !!cached() })
