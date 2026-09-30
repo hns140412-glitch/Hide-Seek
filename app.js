@@ -86,7 +86,22 @@ function esc(v=""){return String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt
 function shuffle(a){const x=[...a];for(let i=x.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[x[i],x[j]]=[x[j],x[i]]}return x}
 function toast(msg){const t=$("#toast");if(!t)return;t.textContent=msg;t.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("show"),1900)}
 function guideAsset(mood="default"){const m={default:"guide_default",smile:"guide_smile",think:"guide_think",play:"guide_play",focus:"guide_focus",cheer:"guide_cheer",hint:"guide_hint",note:"guide_note",radio:"guide_radio",fever:"guide_fever"}[mood]||"guide_default";return `./assets/characters/${m}.png`}
-function setPartner(msg,mood="default",speakIt=false){const text=$("#partnerText"),name=$("#partnerName"),img=$("#partnerAvatar");if(text)text.textContent=msg;if(name)name.textContent=S.guide.name||"나의 길잡이";if(img)img.src=guideAsset(mood);if(speakIt)partnerSpeak(msg)}
+function setPartner(msg,mood="default",speakIt=false){
+ const text=$("#partnerText"),name=$("#partnerName"),img=$("#partnerAvatar");
+ if(name)name.textContent=S.guide.name||"나의 길잡이";
+ if(img)img.src=guideAsset(mood);
+ const rt=globalThis.TakyCrewLiveRuntime;
+ const actionMap={hint:"POINT",cheer:"CHEER",radio:"USE_RADIO",think:"THINK",note:"WRITE_NOTE",focus:"IDLE",smile:"IDLE",default:"IDLE"};
+ const dialogueMap={hint:"HINT",cheer:"CELEBRATE",radio:"SHORT",think:"SHORT",note:"SHORT",focus:"SHORT",smile:"SHORT",default:"SHORT"};
+ let routed=false;
+ if(rt?.legacyCharacter&&rt?.emit){
+   const ch=rt.legacyCharacter(S.guide.id,{role:"MAIN",action:actionMap[mood]||"IDLE",dialogue:dialogueMap[mood]||"SHORT",utterance:msg,evidenceRef:"HIDE_LOCAL_LEARNING_EVENT",reason:"HIDE_PARTNER_INTERVENTION"});
+   rt.emit({sceneId:"global-partner",surface:"global-partner",characters:[ch],foregroundId:ch.character_id,speakingOrder:[ch.character_id],visibleOrder:[ch.character_id]});
+   routed=true;
+ }
+ if(!routed&&text)text.textContent=msg;
+ if(speakIt)partnerSpeak(msg)
+}
 function partnerSpeak(text=$("#partnerText")?.textContent||""){if(!S.settings.partnerVoice||!S.guide.voice||!("speechSynthesis" in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang="ko-KR";u.rate=.96;speechSynthesis.speak(u)}
 function speakWord(word){if(!("speechSynthesis" in window))return toast("이 기기에서는 음성 기능을 사용할 수 없어요.");speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(word);u.lang="en-US";u.rate=.82;speechSynthesis.speak(u)}
 function markStudy(xp=2){const d=today();if(S.lastStudy!==d){S.streak=S.lastStudy?S.streak+1:1;S.lastStudy=d;S.sessions.push({date:d,count:0})}const r=S.sessions.find(x=>x.date===d);if(r)r.count++;S.xp+=xp;save()}
