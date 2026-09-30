@@ -4,11 +4,13 @@
   "layers": [
     {
       "role": "BACKGROUND",
-      "status": "ASSET_IMPORT_OPEN",
+      "status": "BOUND",
+      "path": "assets/world/hide_seek_forest_asset.png",
       "sha256": "1f7aa500a177e25820649cc485355297cbc4fb89909df1f7f43e4ff7ddbe2419",
+      "owner": "HIDE_VISUAL",
       "source_receipt": "TAKY-LAF-HIDE-HOME-MOSSFALL-20260927-A",
-      "target_path": "assets/hide_seek_forest_asset.png",
-      "owner": "HIDE_VISUAL"
+      "runtime_consumer": ".world-hero",
+      "runtime_source": "assets/world/hide_seek_forest_asset.png"
     },
     {
       "role": "FOREGROUND",
