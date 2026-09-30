@@ -63,7 +63,14 @@ test('exact original PNG is bound in-browser, environment distinct from focused 
   await page.goto('/v2.html');
   const bg=await page.locator('.app-shell').evaluate(el=>getComputedStyle(el).backgroundImage);
   expect(bg).toContain('hide_seek_forest_asset.png');
-  await page.screenshot({path:'test-results/mossfall-environment-home.png',fullPage:true});
+  await page.screenshot({path:'test-results/mossfall-environment-home-phase-a.png',fullPage:true});
+  await page.waitForTimeout(3900);
+  await page.screenshot({path:'test-results/mossfall-environment-home-phase-b.png',fullPage:true});
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.reload();
+  await page.screenshot({path:'test-results/mossfall-environment-home-reduced-motion.png',fullPage:true});
+  await page.emulateMedia({reducedMotion:'no-preference'});
+  await page.reload();
   await page.locator('#v2OcrImport').click();
   const shallow=await page.locator('.app-shell').evaluate(el=>getComputedStyle(el,'::before').backgroundImage);
   expect(shallow).toContain('hide_seek_forest_asset.png');
