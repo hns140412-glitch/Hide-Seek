@@ -1,0 +1,64 @@
+{
+  "schema": "TAKY_DESIGN_TO_UI_PIPELINE_V1",
+  "project": "Hide-Seek",
+  "source_commit": "28d861b17bdf8b3345358d7ee869f8e461a703bf",
+  "pipeline_contract_source": "TAKY_PR_194_DRAFT",
+  "scope_note": "Initial HOME adoption only. Mode screens remain PER_SCREEN_GOLDEN_FREEZE_OPEN.",
+  "policy": {
+    "runtime_must_not_auto_become_golden": true,
+    "flattened_mockup_runtime_forbidden": true,
+    "evidence_files_required": true,
+    "image_generation_optional": true
+  },
+  "screens": [
+    {
+      "id": "home",
+      "authority_ref": "APPROVED_HIDE_HOME_MOCKUP",
+      "golden": {
+        "status": "IMPORT_OPEN",
+        "source_receipt": "HIDE_HOME_BOARD_CROP_VERIFIED",
+        "path": "design/golden/home.png",
+        "sha256": "6b3f0fac9b5ac098d05d40b9b2cd0a2f38a22ad139b629210d4a697b9cfc5b4a",
+        "use": "REFERENCE_ONLY"
+      },
+      "screen_contract": {
+        "path": "design/screens/home.json",
+        "sha256": "6edd446cef9dc737d502ca8f508f871d368b4622a533c77bf8630be3c16246df"
+      },
+      "layer_contract": {
+        "path": "design/layers/home.json",
+        "sha256": "89cb6629a7a3fd0e2166d02c63107c98c7beeb3b934a25785670fd4fd0614813"
+      },
+      "viewports": [
+        {
+          "id": "phone390",
+          "width": 390,
+          "height": 844,
+          "dpr": 2
+        }
+      ],
+      "states": [
+        {
+          "id": "BASE_REVIEW",
+          "fixture_path": "design/fixtures/home.json",
+          "fixture_sha256": "7158f661d3e287aa115f53866cda0d57b71dbd2c4195632e7917cd109b51d022"
+        },
+        {
+          "id": "EMPTY_CASE",
+          "fixture_path": "design/fixtures/home.json",
+          "fixture_sha256": "7158f661d3e287aa115f53866cda0d57b71dbd2c4195632e7917cd109b51d022"
+        },
+        {
+          "id": "PARTNER_ACTIVE",
+          "fixture_path": "design/fixtures/home.json",
+          "fixture_sha256": "7158f661d3e287aa115f53866cda0d57b71dbd2c4195632e7917cd109b51d022"
+        },
+        {
+          "id": "OFFLINE",
+          "fixture_path": "design/fixtures/home.json",
+          "fixture_sha256": "7158f661d3e287aa115f53866cda0d57b71dbd2c4195632e7917cd109b51d022"
+        }
+      ]
+    }
+  ]
+}
