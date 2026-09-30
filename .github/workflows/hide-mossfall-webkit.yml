@@ -33,3 +33,11 @@ jobs:
         run: node tools/verify-approved-mossfall.js --require-asset
       - name: Exercise mobile WebKit world, focus and OCR source review
         run: npx playwright test tests/hide-approved-mossfall.spec.js tests/hide-ocr-intake-import.spec.js --config=playwright.visual-webkit.config.cjs --reporter=line
+      - name: Upload Hide living-background visual gate evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hide-living-background-visual-gate
+          path: test-results/mossfall-environment-home-*.png
+          if-no-files-found: error
+          retention-days: 7
