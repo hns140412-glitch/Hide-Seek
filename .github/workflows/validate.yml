@@ -42,6 +42,9 @@ jobs:
           node --check vendor/taky/event-envelope.js
           node --check vendor/taky/vision-ingest.js
           node --check vendor/taky/http-json.js
+          node --check hide-explorer-crew-adapter-v1.js
+          node --check hide-explorer-crew-ui-bridge-v1.js
+          for f in vendor/taky/explorer-crew/*.js; do node --check "$f"; done
           node --check src/v2/app-store.js
           node --check src/v2/mission-service.js
           node --check src/v2/memory-engine.js
@@ -57,6 +60,12 @@ jobs:
         run: node tools/validate-hide-v2-architecture.js
       - name: Validate shared runtime contract
         run: node tests/shared-runtime-contract.test.js
+      - name: Validate Explorer Crew Runtime V2 consumer
+        run: |
+          node tests/explorer-crew-v2-source-lock.test.js
+          node tests/hide-explorer-crew-adapter.test.js
+          node tests/hide-explorer-crew-ui-bridge.test.js
+          node tests/explorer-crew-v2-consumer.test.js
       - name: Install browser test harness
         run: npm install
       - name: Verify Hide browser product flows
