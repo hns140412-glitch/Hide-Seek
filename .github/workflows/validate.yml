@@ -39,6 +39,15 @@ jobs:
         run: node tests/surface-scene-policy.spec.js
       - name: Validate live Crew semantic runtime
         run: node tests/live-crew-semantic-runtime.spec.js
+      - name: Pre-Gate JavaScript syntax check
+        run: |
+          node --check app.js
+          node --check hide-runtime.js
+          node --check hide-crew-live-runtime-v1.js
+          node --check hide-crew-dialogue-consumer-v1.js
+          node --check hide-character-runtime-adapter-v1.js
+          node --check hide-character-scene-bridge-v1.js
+          node --check hide-character-ui-binding-bridge-v1.js
       - name: Validate TAKY Design Gate authority
         run: node tools/validate-design-gate.mjs
       - name: Guard product identity
