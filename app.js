@@ -87,6 +87,12 @@ function shuffle(a){const x=[...a];for(let i=x.length-1;i>0;i--){const j=Math.fl
 function toast(msg){const t=$("#toast");if(!t)return;t.textContent=msg;t.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("show"),1900)}
 function guideAsset(mood="default"){const m={default:"guide_default",smile:"guide_smile",think:"guide_think",play:"guide_play",focus:"guide_focus",cheer:"guide_cheer",hint:"guide_hint",note:"guide_note",radio:"guide_radio",fever:"guide_fever"}[mood]||"guide_default";return `./assets/characters/${m}.png`}
 function hideCrewCharacterId(){const localId=S.guide.id||'guide';return globalThis.TakyCrewIdentityBridge?.resolve?.(localId)?.character_id||'LEGACY_HIDE_SEEK:'+String(localId)}
+function applyHideGuidePatch(patch,authorityRef='HIDE_USER_UI'){
+ const guard=globalThis.TakyCrewIdentityChangeV1;
+ S=guard?.apply?guard.apply(S,patch,{authority_ref:authorityRef}):{...S,guide:{...S.guide,...patch}};
+ save();
+ return S.guide;
+}
 function appendHideCrewEvidence(eventId,type,evidenceRef,context={}){
  const ev=globalThis.TakyCrewEvidenceRuntime;
  if(!ev?.append)return {ok:false,reason:'CREW_EVIDENCE_RUNTIME_UNAVAILABLE'};
@@ -162,7 +168,7 @@ function bindOnboarding(){
  $('#confirmAvatar')?.addEventListener('click',async()=>{if(selectedProfileFile){const blob=await stylizePhoto(selectedProfileFile);await dbSet('profile-avatar',blob);S.profile.avatarMode='illustrated';S.profile.avatarAssetRef='indexeddb:profile-avatar'}S.onboardingStep=2;save();render()});
 }
 async function profilePicked(file){if(!file||!file.type.startsWith('image/'))return toast('이미지 파일을 선택해 주세요.');selectedProfileFile=file;const blob=await stylizePhoto(file),url=URL.createObjectURL(blob),box=$('#photoPreview');if(box)box.innerHTML=`<img src="${url}" alt="프로필 미리보기">`}
-function finishOnboard(name=selectedGuideName){S.guide.id=selectedGuide;S.guide.name=name||'길잡이';S.guide.style=GUIDE_OPTIONS.find(x=>x.id===selectedGuide)?.style||'curious';S.onboardingDone=true;S.onboardingStep=4;S.profile.createdAt=S.profile.createdAt||nowISO();save();currentTab='home';viewStack=[];render();setPartner(`${S.profile.displayName||'탐험가'}, 새 사건이 들어왔어. 시험지부터 볼까?`,'smile')}
+function finishOnboard(name=selectedGuideName){applyHideGuidePatch({id:selectedGuide,name:name||'길잡이',style:GUIDE_OPTIONS.find(x=>x.id===selectedGuide)?.style||'curious'});S.onboardingDone=true;S.onboardingStep=4;S.profile.createdAt=S.profile.createdAt||nowISO();save();currentTab='home';viewStack=[];render();setPartner(`${S.profile.displayName||'탐험가'}, 새 사건이 들어왔어. 시험지부터 볼까?`,'smile')}
 async function renderHome(){
  const av=await avatarURL(),sh=sheet(),ws=validWords(),weak=ws.filter(w=>weakScore(w)>0).length,progress=learningProgress(),remain=Math.max(0,ws.length-Object.keys(S.codeRed.results||{}).length),first=(S.profile.displayName||'나').slice(0,1);
  $('#view').innerHTML=`<section class="world-hero"><div class="hero-profile"><div class="user-chip">${av?`<img class="avatar-circle" src="${av}" alt="사용자 프로필">`:`<div class="avatar-circle avatar-fallback">${esc(first)}</div>`}<div><b>${esc(S.profile.displayName||'탐험가')}</b><small>Lv.${Math.floor(S.xp/100)+1} · ${S.xp} XP</small></div></div><img class="guide-peek" src="${guideAsset('smile')}" alt="${esc(S.guide.name||'길잡이')}"></div><div class="hero-case"><div class="hero-kicker"><span>ACTIVE CASE</span><span>${stateLabel(sh.status)}</span></div><h1>${esc(sh.title)}</h1><p>${ws.length}단어 · 취약 ${weak}개 · CODE RED 남은 ${remain}개</p><div class="progress" style="margin-top:8px"><span style="width:${progress}%"></span></div><div class="hero-actions"><button class="btn primary" id="photoFirst" type="button">사진으로 시험지 만들기</button><button class="btn secondary" id="continueCase" type="button">이어하기</button></div></div></section>
