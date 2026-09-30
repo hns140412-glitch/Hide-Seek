@@ -16,6 +16,13 @@
       </button>`;
     return `
       <section class="mossfall-world" aria-label="Hide & Seek 숲과 폭포 탐험 홈">
+        <div class="mossfall-live-fx" aria-hidden="true" data-motion-contract="TAKY-LAF-LIVING-BG-V5">
+          <span class="mossfall-fx mossfall-fx--fall mossfall-fx--fall-a"></span>
+          <span class="mossfall-fx mossfall-fx--fall mossfall-fx--fall-b"></span>
+          <span class="mossfall-fx mossfall-fx--fall mossfall-fx--fall-c"></span>
+          <span class="mossfall-fx mossfall-fx--fall mossfall-fx--fall-d"></span>
+          <span class="mossfall-fx mossfall-fx--pool"></span>
+        </div>
         <div class="mossfall-intro">
           <span class="mossfall-intro__overline">HIDE & SEEK <span aria-hidden="true">·</span> THE HIDDEN TRAIL</span>
           <h1>${m?esc(m.title):'단어가 숨어 있는 숲'}</h1>
