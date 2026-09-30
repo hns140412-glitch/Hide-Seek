@@ -1,6 +1,6 @@
 const CACHE="hide-seek-runtime-20260930-family-character-v1";
 const CORE=[
-  "./","./index.html","./styles.css","./hide-runtime.css","./hide-bridge.css","./app.js","./hide-runtime.js","./hide-family-character-profile-adapter-v1.js","./hide-character-asset-read-adapter-v1.js","./taky-family-auth-runtime-v1.js","./hide-family-runtime-bootstrap-v1.js","./hide-bridge.js","./hide-brand-current.js","./manifest.json","./assets/asset-map.json",
+  "./","./index.html","./styles.css","./hide-runtime.css","./hide-bridge.css","./app.js","./hide-runtime.js","./hide-family-character-profile-adapter-v1.js","./hide-character-asset-read-adapter-v1.js","./taky-family-auth-runtime-v1.js","./taky-google-account-auth-v1.js","./hide-family-runtime-bootstrap-v1.js","./hide-bridge.js","./hide-brand-current.js","./manifest.json","./assets/asset-map.json",
   "./assets/icons/icon-180x180.png","./assets/icons/icon-192x192.png","./assets/icons/icon-512x512.png",
   "./assets/backgrounds/academy.png","./assets/backgrounds/park.png","./assets/backgrounds/bookstore.png","./assets/backgrounds/cafe.png","./assets/backgrounds/classroom.png","./assets/backgrounds/station.png",
   "./assets/characters/guide_default.png","./assets/characters/guide_smile.png","./assets/characters/guide_hint.png","./assets/characters/guide_note.png","./assets/characters/guide_radio.png","./assets/characters/guide_fever.png","./assets/characters/guide_focus.png","./assets/characters/guide_cheer.png","./assets/characters/rabbit.png","./assets/characters/fennec.png","./assets/characters/sloth.png",
