@@ -170,3 +170,27 @@
   }
   .v2-runtime[data-v2-surface="focus"] .learning-shell{padding-bottom:10px}
 }
+
+
+/* TAKY LIVING BACKGROUND V5 — HIDE MOSSFALL
+   Source lock: TAKY-LAF-HIDE-HOME-MOSSFALL-20260927-A
+   Exact approved PNG remains the base. FX are transparent overlays only.
+   V4 copied-waterfall raster ghosting and rejected tree-silhouette repair are forbidden. */
+.v2-runtime .mossfall-live-fx{position:absolute;inset:0;z-index:1;overflow:hidden;pointer-events:none;isolation:isolate}
+.v2-runtime .mossfall-live-fx::before{content:"";position:absolute;inset:-8% -18% 18% 8%;opacity:.085;background:
+ linear-gradient(116deg,transparent 0 27%,rgba(255,252,210,.46) 31%,rgba(255,252,210,.08) 37%,transparent 42%),
+ linear-gradient(111deg,transparent 0 50%,rgba(243,255,219,.35) 54%,rgba(243,255,219,.06) 61%,transparent 66%);
+ filter:blur(8px);mix-blend-mode:screen;transform-origin:20% 0;animation:mossfallShaftDrift 10s ease-in-out infinite}
+.v2-runtime .mossfall-fx{position:absolute;display:block;pointer-events:none}
+.v2-runtime .mossfall-fx--fall{overflow:hidden;opacity:.18;border-radius:42% 46% 50% 48%;mix-blend-mode:screen;filter:blur(.45px);background:linear-gradient(180deg,transparent 0 4%,rgba(235,255,246,.18) 16%,rgba(250,255,236,.56) 37%,rgba(222,253,244,.12) 53%,transparent 69%);background-size:100% 210%;animation:mossfallWaterLight 6.6s linear infinite}
+.v2-runtime .mossfall-fx--fall-a{left:75.4%;top:10.5%;width:19.6%;height:20.8%;animation-delay:-1.2s}
+.v2-runtime .mossfall-fx--fall-b{left:49%;top:16.6%;width:16.5%;height:20.2%;animation-delay:-3.4s}
+.v2-runtime .mossfall-fx--fall-c{left:66.3%;top:31.5%;width:14.8%;height:13.4%;animation-delay:-4.8s}
+.v2-runtime .mossfall-fx--fall-d{left:36.5%;top:38.8%;width:13.9%;height:10.7%;animation-delay:-2.5s}
+.v2-runtime .mossfall-fx--pool{left:30.5%;top:49%;width:39%;height:14%;opacity:.15;border-radius:50%;background:
+ repeating-radial-gradient(ellipse at center,transparent 0 8%,rgba(226,255,245,.48) 9% 10%,transparent 11% 18%);
+ transform:scale(.96);mix-blend-mode:screen;filter:blur(.6px);animation:mossfallPoolRipple 7.8s ease-in-out infinite}
+@keyframes mossfallShaftDrift{0%,100%{transform:translate3d(-1.5%,0,0) rotate(-.35deg);opacity:.065}50%{transform:translate3d(1.2%,1%,0) rotate(.3deg);opacity:.105}}
+@keyframes mossfallWaterLight{0%{background-position:0 -70%;opacity:.11}42%{opacity:.21}100%{background-position:0 130%;opacity:.11}}
+@keyframes mossfallPoolRipple{0%,100%{transform:scale(.96,.92);opacity:.09}50%{transform:scale(1.025,1.015);opacity:.17}}
+@media(prefers-reduced-motion:reduce){.v2-runtime .mossfall-live-fx{display:none!important}}
