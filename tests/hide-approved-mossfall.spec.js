@@ -42,6 +42,11 @@ test('environment-first HOME never regresses to cards or fake selectable learnin
   expect(metrics.width).toBeLessThanOrEqual(metrics.viewportWidth+1);
   expect(metrics.height).toBeLessThanOrEqual(metrics.viewportHeight+1);
   expect(metrics.background).toContain('hide_seek_forest_asset.png');
+  await page.screenshot({path:'test-results/hide-mossfall-live-390x844.png',fullPage:true});
+  await page.emulateMedia({reducedMotion:'reduce'});
+  expect(await page.locator('.mossfall-live-fx').evaluate(el=>getComputedStyle(el).display)).toBe('none');
+  await page.screenshot({path:'test-results/hide-mossfall-reduced-motion-390x844.png',fullPage:true});
+  await page.emulateMedia({reducedMotion:'no-preference'});
   await page.locator('#v2BeginWithMission').click();
   await expect(page.getByRole('heading',{name:'오늘의 탐험 지도'})).toBeVisible();
   await page.getByRole('button',{name:'홈으로'}).click();
