@@ -1,6 +1,7 @@
 importScripts('./src/v2/release-v2.js');
 const RELEASE=globalThis.HideSeekV2ReleaseDescriptor;
 const CACHE='hide-seek-v2:'+RELEASE.release_id;
+const APPROVED_ART='./assets/visual/hide_seek_forest_asset.png';
 const CORE=[
   './v2.html','./manifest-v2.json',
   './styles.css','./hide-runtime.css','./hide-bridge.css','./src/v2/v2.css','./src/v2/approved-mossfall.css',
@@ -10,7 +11,7 @@ const CORE=[
   './src/v2/learning-session.js','./src/v2/session-service.js','./src/v2/capture-store.js','./src/v2/capture-controller.js','./src/v2/ocr-intake-router.js',
   './src/v2/router.js','./src/v2/legacy-migration.js','./src/v2/ready-bridge.js','./src/v2/pwa-v2.js','./src/v2/mobile-shell.js','./src/v2/mossfall-world.js','./src/v2/app.js',
   './assets/icons/icon-192x192.png','./assets/icons/icon-512x512.png',
-  './assets/visual/hide_seek_forest_asset.png','./assets/visual/hide_seek_forest_motion_v5.mp4','./assets/visual/hide-living-background.v5.json'
+  APPROVED_ART,'./assets/visual/hide_seek_forest_motion_v5.mp4','./assets/visual/hide-living-background.v5.json'
 ];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE))));
 self.addEventListener('message',event=>{
