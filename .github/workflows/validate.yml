@@ -61,6 +61,8 @@ jobs:
         run: python3 -m pip install --disable-pip-version-check pillow==11.3.0
       - name: Compare runtime renders to approved Golden references
         run: python3 tools/compare-golden.py
+      - name: Issue Design Gate receipt
+        run: python3 tools/issue-design-gate-receipt.py --app HIDE_SEEK --interaction-pass --responsive-pass --asset-integrity-pass
       - name: Upload TAKY visual audit evidence
         if: always()
         uses: actions/upload-artifact@v4
