@@ -10,6 +10,8 @@ on:
       - 'design/authority-open.json'
       - 'tools/taky-design-to-ui-*.py'
       - 'tests/design-to-ui-contract.spec.py'
+      - 'styles.css'
+      - 'assets/world/hide_seek_forest_asset.png'
       - '.github/workflows/design-to-ui-contract.yml'
   push:
     branches: ['taky/design-gate-v1']
