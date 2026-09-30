@@ -1,0 +1,38 @@
+{
+  "schema": "TAKY_LAYER_CONTRACT_V1",
+  "screen_id": "home",
+  "layers": [
+    {
+      "role": "BACKGROUND",
+      "status": "BOUND",
+      "path": "assets/world/hide_seek_forest_asset.png",
+      "sha256": "1f7aa500a177e25820649cc485355297cbc4fb89909df1f7f43e4ff7ddbe2419",
+      "owner": "HIDE_VISUAL",
+      "source_receipt": "TAKY-LAF-HIDE-HOME-MOSSFALL-20260927-A",
+      "runtime_consumer": ".world-hero",
+      "runtime_source": "assets/world/hide_seek_forest_asset.png"
+    },
+    {
+      "role": "FOREGROUND",
+      "status": "NOT_APPLICABLE",
+      "note": "No separately approved foreground art is required by the current production background authority."
+    },
+    {
+      "role": "OBJECT",
+      "status": "IMPLEMENTATION_OPEN",
+      "issue": "Approved spatial mode-entry controls/signposts are not implemented as contract-aligned live UI."
+    },
+    {
+      "role": "CHARACTER_SLOT",
+      "status": "RUNTIME_SLOT",
+      "selector": "#partnerAvatar",
+      "owner": "HIDE_CHARACTER_BINDING",
+      "resolver_contract": "hide-approved-asset-resolver-v1.js + hide-character-dom-binder-v1.js"
+    },
+    {
+      "role": "FUNCTION_UI",
+      "status": "IMPLEMENTATION_OPEN",
+      "issue": "Current renderHome layout/content does not match the approved Hide Home composition."
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "schema": "TAKY_DESIGN_GATE_V1",
+  "rule_id": "TKY-ASSET-001",
+  "project": "Hide-Seek",
+  "policy": {
+    "current_runtime_must_not_auto_become_golden": true,
+    "approved_reference_required": true,
+    "hash_pin_required": true,
+    "visual_diff_required": true
+  },
+  "screens": [
+    {
+      "id": "home",
+      "authority_ref": "APPROVED_HIDE_HOME_MOCKUP",
+      "approved_reference": "design/golden/home.png",
+      "approved_sha256": "",
+      "snapshot_name": "home.png",
+      "actual_snapshot": "01-home.png"
+    }
+  ],
+  "status": "BLOCKED_PENDING_APPROVED_REFERENCE_IMPORT",
+  "source_receipts": {
+    "home": {
+      "source_file_id": "file_0000000040788206873bb1bf11068818",
+      "source_name": "스냅 앤 팝과 하이드 앤 시크 UI 여정.png",
+      "source_sha256": "143f5bb698fd1b7c38bc069bab8c24c4efb9303bb55c1d22496caf6c6327c145",
+      "crop_reference_px": [
+        261,
+        512,
+        555,
+        979
+      ],
+      "crop_sha256_local_verified": "6b3f0fac9b5ac098d05d40b9b2cd0a2f38a22ad139b629210d4a697b9cfc5b4a",
+      "status": "SOURCE_BYTES_VERIFIED_GOLDEN_CROP_IMPORT_OPEN",
+      "use": "REFERENCE_ONLY_NOT_RUNTIME_BACKGROUND"
+    }
+  },
+  "visual_distance_max": 0.18
+}

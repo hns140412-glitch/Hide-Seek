@@ -1,0 +1,33 @@
+{
+  "schema": "TAKY_STATE_FIXTURE_V1",
+  "screen_id": "home",
+  "synthetic": true,
+  "states": {
+    "BASE_REVIEW": {
+      "case_status": "READY",
+      "mode_entries": [
+        "TRACE",
+        "LINK",
+        "CORE",
+        "RECALL"
+      ]
+    },
+    "EMPTY_CASE": {
+      "case_status": "EMPTY",
+      "mode_entries": [
+        "TRACE",
+        "LINK",
+        "CORE",
+        "RECALL"
+      ]
+    },
+    "PARTNER_ACTIVE": {
+      "case_status": "READY",
+      "partner_present": true
+    },
+    "OFFLINE": {
+      "case_status": "READY",
+      "offline": true
+    }
+  }
+}
