@@ -86,7 +86,7 @@ function esc(v=""){return String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt
 function shuffle(a){const x=[...a];for(let i=x.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[x[i],x[j]]=[x[j],x[i]]}return x}
 function toast(msg){const t=$("#toast");if(!t)return;t.textContent=msg;t.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("show"),1900)}
 function guideAsset(mood="default"){const m={default:"guide_default",smile:"guide_smile",think:"guide_think",play:"guide_play",focus:"guide_focus",cheer:"guide_cheer",hint:"guide_hint",note:"guide_note",radio:"guide_radio",fever:"guide_fever"}[mood]||"guide_default";return `./assets/characters/${m}.png`}
-function hideCrewCharacterId(){return 'LEGACY_HIDE_SEEK:'+String(S.guide.id||'guide')}
+function hideCrewCharacterId(){const localId=S.guide.id||'guide';return globalThis.TakyCrewIdentityBridge?.resolve?.(localId)?.character_id||'LEGACY_HIDE_SEEK:'+String(localId)}
 function appendHideCrewEvidence(eventId,type,evidenceRef,context={}){
  const ev=globalThis.TakyCrewEvidenceRuntime;
  if(!ev?.append)return {ok:false,reason:'CREW_EVIDENCE_RUNTIME_UNAVAILABLE'};
