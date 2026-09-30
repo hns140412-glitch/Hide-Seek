@@ -1,0 +1,15 @@
+{
+  "schema": "TAKY_DESIGN_GATE_V1",
+  "rule_id": "TKY-ASSET-001",
+  "project": "Hide-Seek",
+  "policy": {
+    "current_runtime_must_not_auto_become_golden": true,
+    "approved_reference_required": true,
+    "hash_pin_required": true,
+    "visual_diff_required": true
+  },
+  "screens": [
+    {"id":"home","authority_ref":"APPROVED_HIDE_HOME_MOCKUP","approved_reference":"design/golden/home.png","approved_sha256":"","snapshot_name":"home.png"}
+  ],
+  "status": "BLOCKED_PENDING_APPROVED_REFERENCE_IMPORT"
+}
