@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Validate TAKY Design Gate authority
+        run: node tools/validate-design-gate.mjs
       - name: Guard product identity
         run: python tools/validate-hide-seek-name-purge.py
       - name: Check JavaScript syntax
