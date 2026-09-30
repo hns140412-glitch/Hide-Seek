@@ -262,6 +262,7 @@
       :'첫 탐험을 마치면 기억 사다리가 여기서 이어져요.';
     const activeCount=s.missions.filter(x=>x.status!=='ARCHIVED').length;
     view().innerHTML=HideMossfallWorld.render({m,resumable,activeCount,memory,reviewReady,capture,memoryMessage,missionStatusLabel,esc});
+    HideMossfallWorld.syncMotion?.(view());
 
     $('#v2Camera').onclick=()=>$('#sheetCameraInput').click();
     $('#v2MissionList').onclick=()=>HideV2Router.go('missions');
