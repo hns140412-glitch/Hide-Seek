@@ -344,20 +344,31 @@
       const resolved = await adapter.resolve(memberId);
       const p = resolved?.projection;
       if (!p) return { state:'NO_PROFILE' };
+      let runtimeRef = null, assetSource = 'POINTER_ONLY';
+      const assetAdapter = window.HideCharacterAssetReadAdapterV1;
+      if (assetAdapter?.status?.().available) {
+        try {
+          const read = await assetAdapter.resolveRead({ member_id:p.member_id, character_id:p.character_id, asset_ref:p.master_asset_ref });
+          runtimeRef = read?.read_url || null;
+          if (runtimeRef) assetSource = 'SIGNED_READ';
+        } catch {}
+      }
       S.profile = {
         ...(S.profile || {}),
         memberId: p.member_id,
         characterId: p.character_id,
         characterIdentityVersion: p.identity_version,
-        characterMasterAssetRef: p.master_asset_ref,
+        characterMasterPrivateRef: p.master_asset_ref,
+        characterMasterAssetRef: runtimeRef,
         characterMasterSha256: p.master_sha256 || null,
         characterAssetVersion: p.asset_version || null,
+        characterAssetResolution: assetSource,
         characterProjectionSource: resolved.source,
         characterProjectionUpdatedAt: p.updated_at || iso()
       };
       persistBridgeState();
       try { render(); } catch {}
-      return { state:'BOUND', source:resolved.source, character_id:p.character_id };
+      return { state:runtimeRef?'BOUND':'BOUND_POINTER_ONLY', source:resolved.source, character_id:p.character_id };
     } catch (error) {
       return { state:'FAILED', error:String(error?.message || error) };
     }
