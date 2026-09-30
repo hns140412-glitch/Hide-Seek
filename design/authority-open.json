@@ -1,0 +1,37 @@
+{
+  "schema": "TAKY_DESIGN_AUTHORITY_OPEN_V1",
+  "project": "Hide-Seek",
+  "rule": "Composite/concept boards are evidence only. Do not substitute HOME Golden or infer per-screen crops.",
+  "screens": [
+    {
+      "id": "word_input",
+      "status": "PER_SCREEN_GOLDEN_FREEZE_OPEN",
+      "evidence": "스냅 앤 팝과 하이드 앤 시크 UI 여정.png"
+    },
+    {
+      "id": "mode_select",
+      "status": "PER_SCREEN_GOLDEN_FREEZE_OPEN",
+      "evidence": "숲과 폭포의 단어 탐험 UI.png"
+    },
+    {
+      "id": "trace",
+      "status": "PER_SCREEN_GOLDEN_FREEZE_OPEN",
+      "evidence": "숲과 폭포의 단어 탐험 UI.png"
+    },
+    {
+      "id": "link",
+      "status": "PER_SCREEN_GOLDEN_FREEZE_OPEN",
+      "evidence": "숲과 폭포의 단어 탐험 UI.png"
+    },
+    {
+      "id": "core",
+      "status": "PER_SCREEN_GOLDEN_FREEZE_OPEN",
+      "evidence": "숲과 폭포의 단어 탐험 UI.png"
+    },
+    {
+      "id": "recall",
+      "status": "PER_SCREEN_GOLDEN_FREEZE_OPEN",
+      "evidence": "숲과 폭포의 단어 탐험 UI.png"
+    }
+  ]
+}
