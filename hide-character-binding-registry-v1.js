@@ -10,22 +10,13 @@
     slots:Object.freeze([
   {
     "slot_id": "partner-primary",
-    "surface": "#partnerBar/#partnerAvatar/#partnerName/#partnerText",
+    "surface": "global-partner",
+    "selector": "#partnerAvatar",
+    "name_selector": "#partnerName",
+    "text_selector": "#partnerText",
     "allowed_presence_roles": [
       "MAIN",
       "CHAPTER_OWNER"
-    ],
-    "approved_only": true,
-    "design_gate_required": true,
-    "allow_generation": false
-  },
-  {
-    "slot_id": "scene-companion",
-    "surface": "#view character slot when screen contract allows",
-    "allowed_presence_roles": [
-      "GUEST",
-      "ACTING_CREW",
-      "AMBIENT"
     ],
     "approved_only": true,
     "design_gate_required": true,
