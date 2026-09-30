@@ -9,17 +9,10 @@ const CORE=[
   './src/v2/release-v2.js','./src/v2/app-store.js','./src/v2/mission-service.js','./src/v2/memory-engine.js','./src/v2/trail-engine.js','./src/v2/crew-adapter.js',
   './src/v2/learning-session.js','./src/v2/session-service.js','./src/v2/capture-store.js','./src/v2/capture-controller.js','./src/v2/ocr-intake-router.js',
   './src/v2/router.js','./src/v2/legacy-migration.js','./src/v2/ready-bridge.js','./src/v2/pwa-v2.js','./src/v2/mobile-shell.js','./src/v2/mossfall-world.js','./src/v2/app.js',
-  './assets/icons/icon-192x192.png','./assets/icons/icon-512x512.png'
+  './assets/icons/icon-192x192.png','./assets/icons/icon-512x512.png',
+  './assets/visual/hide_seek_forest_asset.png','./assets/visual/hide_seek_forest_motion_v5.mp4','./assets/visual/hide-living-background.v5.json'
 ];
-// The visual binary is mandatory at release packaging (verify-approved-mossfall
-// --require-asset), but a source-only draft cannot be falsely treated as a
-// deployed image. Preserve existing offline shell during a draft without it.
-const APPROVED_ART='./assets/visual/hide_seek_forest_asset.png';
-self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(async cache=>{
-  await cache.addAll(CORE);
-  const response=await fetch(APPROVED_ART).catch(()=>null);
-  if(response?.ok)await cache.put(APPROVED_ART,response.clone());
-})));
+self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE))));
 self.addEventListener('message',event=>{
   if(event.data?.type==='APPLY_UPDATE') event.waitUntil(self.skipWaiting());
 });
