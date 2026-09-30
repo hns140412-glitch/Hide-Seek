@@ -3,6 +3,17 @@
  * The approved PNG itself is loaded unchanged by approved-mossfall.css. */
 (() => {
   'use strict';
+  const motionMedia=globalThis.matchMedia?.('(prefers-reduced-motion: reduce)')||{matches:false,addEventListener(){}};
+  function syncMotion(root=document){
+    const video=root.querySelector?.('#hideMossfallMotion');
+    if(!video)return;
+    const reduce=motionMedia.matches;
+    document.documentElement.dataset.hideLivingMotion=reduce?'off':'on';
+    if(reduce){video.classList.remove('is-ready');video.pause();return}
+    const p=video.play();
+    if(p?.then)p.then(()=>video.classList.add('is-ready')).catch(()=>video.classList.remove('is-ready'));
+  }
+  motionMedia.addEventListener?.('change',()=>syncMotion(document));
   function render({m,resumable,activeCount,memory,reviewReady,capture,memoryMessage,missionStatusLabel,esc}){
     // Home is a single continuous world. Every live hotspot is anchored to a
     // visible landmark of the exact approved painting; none is a menu card.
@@ -16,6 +27,7 @@
       </button>`;
     return `
       <section class="mossfall-world" aria-label="Hide & Seek 숲과 폭포 탐험 홈">
+        <video id="hideMossfallMotion" class="mossfall-motion" muted autoplay loop playsinline preload="metadata" poster="../../assets/visual/hide_seek_forest_asset.png" aria-hidden="true"><source src="../../assets/visual/hide_seek_forest_motion_v5.mp4" type="video/mp4"></video>
         <div class="mossfall-intro">
           <span class="mossfall-intro__overline">HIDE & SEEK <span aria-hidden="true">·</span> THE HIDDEN TRAIL</span>
           <h1>${m?esc(m.title):'단어가 숨어 있는 숲'}</h1>
@@ -45,5 +57,5 @@
       </section>`;
 
   }
-  globalThis.HideMossfallWorld=Object.freeze({render});
+  globalThis.HideMossfallWorld=Object.freeze({render,syncMotion});
 })();
