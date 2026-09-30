@@ -53,6 +53,8 @@ jobs:
         run: node tests/shared-crew-browser-relation.spec.js
       - name: Validate Crew evidence handoff
         run: node tests/crew-evidence-handoff.spec.js
+      - name: Validate Crew browser provider
+        run: node tests/crew-browser-provider.spec.js
       - name: Pre-Gate JavaScript syntax check
         run: |
           node --check app.js
