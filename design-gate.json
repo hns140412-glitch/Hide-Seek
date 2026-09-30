@@ -14,7 +14,8 @@
       "authority_ref": "APPROVED_HIDE_HOME_MOCKUP",
       "approved_reference": "design/golden/home.png",
       "approved_sha256": "",
-      "snapshot_name": "home.png"
+      "snapshot_name": "home.png",
+      "actual_snapshot": "01-home.png"
     }
   ],
   "status": "BLOCKED_PENDING_APPROVED_REFERENCE_IMPORT",
@@ -33,5 +34,6 @@
       "status": "SOURCE_BYTES_VERIFIED_GOLDEN_CROP_IMPORT_OPEN",
       "use": "REFERENCE_ONLY_NOT_RUNTIME_BACKGROUND"
     }
-  }
+  },
+  "visual_distance_max": 0.18
 }
