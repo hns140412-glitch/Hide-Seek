@@ -135,8 +135,8 @@ test('Authenticated Learning Engine vocabulary policy is consumed without local 
             receipt_scope:{family_id:'F',member_id:'A'},runtime_result:{specialist_policy:{
               hide_seek_vocabulary:{authority:'BROWSER_FORGED_POLICY'}}}})};
           return {status:200,json:async()=>({ok:true,authenticated_server_response:true,
-            receipt_scope:{family_id:'F',member_id:'A'},runtime_result:{specialist_policy:{
-              hide_seek_vocabulary:{
+            receipt_scope:{family_id:'F',member_id:'A'},runtime_result:{
+              specialist_policy:{hide_seek_vocabulary:{
                 ok:true,version:'TAKY_HIDE_VOCABULARY_ROUTING_POLICY_V1',
                 authority:'LEARNING_ENGINE_SPECIALIST_POLICY_INTENT_ONLY',
                 word_policies:[
@@ -154,7 +154,29 @@ test('Authenticated Learning Engine vocabulary policy is consumed without local 
                 guards:{current_words_never_dropped:true,ratio_is_prompt_mix_not_assignment_mutation:true,
                   delayed_recall_has_no_calendar_date:true,planner_owns_dated_allocation:true,
                   hide_executes_interaction_only:true,no_mastery_claim:true}
-              }}}})};
+              }},
+              growth_next_step:{
+                ok:true,version:'TAKY_GROWTH_NEXT_STEP_POLICY_V1',
+                authority:'LEARNING_ENGINE_GROWTH_INTENT_ONLY',
+                support_phase:'ELICIT_PULL',
+                question_depth:{level:3},
+                language_support:{
+                  easy_english_definitions:['to say yes to something or receive it'],
+                  expression_chunks:['accept an idea'],
+                  grammar_patterns:['accept + noun']
+                },
+                hide_to_snap_handoff:{
+                  eligible:true,to_app:'snap-pop',
+                  task_intent:'USE_IN_OWN_SHORT_SENTENCE_OR_SPEECH',
+                  support_phase:'ELICIT_PULL',
+                  prompt_language:'ENGLISH_FIRST_KOREAN_FALLBACK',
+                  material:{expression_chunks:['accept an idea'],grammar_patterns:['accept + noun']},
+                  child_authorship_required:true,
+                  final_answer_generation_forbidden:true
+                },
+                guards:{engine_guides_growth_not_answers:true}
+              }
+            }})};
         }
         throw Error('EVIDENCE_ENDPOINT_SHOULD_NOT_BE_CALLED_FOR_POLICY_READ');
       }
@@ -169,13 +191,14 @@ test('Authenticated Learning Engine vocabulary policy is consumed without local 
     );
     const route=HideSeekBridge.nextAdaptiveLearningRoute();
     const delayed=HideSeekBridge.delayedRecallQueue();
+    const growth=HideSeekBridge.getLearningGrowthDecision();
     malformed=true;
     const rejected=await HideSeekBridge.requestLearningVocabularyPolicy({
       current_word_ids:['new-1'],past_word_ids:['past-1']
     });
     const status=HideSeekBridge.vocabularyPolicyStatus();
     await HideSeekBridge.closeCentralEvidence();
-    return {accepted,options:options.map(x=>x.id),route,delayed,rejected,status,calls:window.__decisionCalls};
+    return {accepted,options:options.map(x=>x.id),route,delayed,growth,rejected,status,calls:window.__decisionCalls};
   });
   expect(result.accepted.ok).toBe(true);
   expect(result.calls[0].credentials).toBe('omit');
@@ -186,6 +209,37 @@ test('Authenticated Learning Engine vocabulary policy is consumed without local 
   expect(result.options.filter(x=>x.startsWith('past-'))).toHaveLength(2);
   expect(result.route).toMatchObject({learning_target_id:'new-1',recommended_mode:'RECALL'});
   expect(result.delayed[0]).toMatchObject({learning_target_id:'new-1',kind:'AFTER_INTERVENING_ITEMS'});
+  expect(result.growth).toMatchObject({authority:'LEARNING_ENGINE_GROWTH_INTENT_ONLY',support_phase:'ELICIT_PULL'});
+  expect(result.growth.hide_to_snap_handoff.final_answer_generation_forbidden).toBe(true);
   expect(result.rejected).toEqual({ok:false,reason:'CENTRAL_HIDE_POLICY_INVALID'});
   expect(result.status).toMatchObject({status:'HOLD',reason:'CENTRAL_HIDE_POLICY_INVALID',policy:null});
+});
+
+
+test('Hide -> Snap navigation carries only continuity scope and learning target, not growth authority',async({page})=>{
+  const snap='https://snap.example.test/';
+  const ready='https://ready.example.test/';
+  const p=new URLSearchParams({
+    session_id:'S1',goal_id:'G1',task_id:'T1',lap_id:'L1',
+    return_target:ready,snap_target:snap,child_id:'A',
+    subject:'english',concept_skill_target:'vocabulary',
+    learning_target_id:'word:accept'
+  });
+  await page.goto(URL+'?'+p.toString());
+  await page.route('https://snap.example.test/**',route=>route.abort());
+  const outbound=page.waitForRequest(r=>r.url().startsWith(snap));
+  await page.evaluate(()=>HideSeekBridge.sendToSnap('accept','new context','word:accept'));
+  const u=new URL((await outbound).url());
+  expect(u.searchParams.get('from_app')).toBe('hide-seek');
+  expect(u.searchParams.get('session_id')).toBe('S1');
+  expect(u.searchParams.get('return_target')).toBe(ready);
+  expect(u.searchParams.get('child_id')).toBe('A');
+  expect(u.searchParams.get('subject')).toBe('english');
+  expect(u.searchParams.get('concept_skill_target')).toBe('vocabulary');
+  expect(u.searchParams.get('learning_target_id')).toBe('word:accept');
+  expect(u.searchParams.get('word')).toBe('accept');
+  expect(u.searchParams.has('support_phase')).toBe(false);
+  expect(u.searchParams.has('question_depth')).toBe(false);
+  expect(u.searchParams.has('expression_chunk')).toBe(false);
+  expect(u.searchParams.has('grammar_pattern')).toBe(false);
 });
