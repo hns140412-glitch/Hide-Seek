@@ -4,10 +4,13 @@ on:
   push:
     branches:
       - taky/current-learning-runtime-bridge-2026-09-26
+      - taky/hide-memory-routing-learning-engine-2026-10-02
   pull_request:
     paths:
       - 'ready-integration-v1.js'
       - 'hide-bridge.js'
+      - 'app.js'
+      - 'tests/central-evidence.spec.js'
       - 'snap-bridge.js'
       - 'scripts/validate-learning-runtime-bridge.mjs'
       - '.github/workflows/learning-runtime-bridge.yml'
