@@ -170,7 +170,14 @@
   // background flush, or claim of central sync from the legacy bounded event list.
   // The authenticated host supplies its actual session + central Bearer providers.
   let centralEvidencePipeline = null;
+  let centralDecisionConfig = null;
   let centralEvidenceState = { status:'UNBOUND', event_id:null, reason:'TRUSTED_CENTRAL_SESSION_NOT_CONFIGURED' };
+  let vocabularyPolicyState = {
+    status:'UNBOUND',
+    received_at:null,
+    policy:null,
+    reason:'CENTRAL_DECISION_NOT_CONFIGURED'
+  };
   function centralEvidenceStatus() { return { ...centralEvidenceState }; }
   function reportCentralEvidence(status, event_id, reason) {
     centralEvidenceState = { status, event_id:event_id || null, reason:reason || null };
@@ -179,7 +186,7 @@
         { detail:centralEvidenceStatus() }));
     } catch {}
   }
-  function configureCentralEvidence({ endpointUrl, sessionProvider, tokenProvider,
+  function configureCentralEvidence({ endpointUrl, decisionEndpointUrl, sessionProvider, tokenProvider,
     fetchImpl, indexedDB:database, dbName } = {}) {
     if (centralEvidencePipeline) throw new Error('CENTRAL_EVIDENCE_ALREADY_CONFIGURED');
     if (typeof sessionProvider !== 'function' || typeof tokenProvider !== 'function')
@@ -193,8 +200,22 @@
       indexedDB:database || globalThis.indexedDB, dbName,
       cryptoProvider:globalThis.crypto });
     centralEvidencePipeline = pipeline;
+    const normalizedEvidenceUrl=new URL(endpointUrl,location.href);
+    const resolvedDecisionUrl=decisionEndpointUrl
+      ?new URL(decisionEndpointUrl,location.href)
+      :new URL('/api/learning/decision',normalizedEvidenceUrl.origin);
+    centralDecisionConfig={
+      endpointUrl:resolvedDecisionUrl.href,
+      sessionProvider,
+      tokenProvider,
+      fetchImpl:fetchImpl || globalThis.fetch.bind(globalThis)
+    };
+    vocabularyPolicyState={
+      status:'READY',received_at:null,policy:null,reason:null
+    };
     reportCentralEvidence('READY', null, null);
-    return Object.freeze({ configured:true, version:pipeline.version });
+    return Object.freeze({ configured:true, version:pipeline.version,
+      decision_endpoint_configured:true });
   }
   async function flushCentralEvidenceOnce(owner) {
     if (!centralEvidencePipeline) throw new Error('CENTRAL_EVIDENCE_NOT_CONFIGURED');
@@ -208,6 +229,8 @@
     if (!centralEvidencePipeline) return;
     const pipeline=centralEvidencePipeline;
     centralEvidencePipeline=null;
+    centralDecisionConfig=null;
+    vocabularyPolicyState={status:'UNBOUND',received_at:null,policy:null,reason:'CENTRAL_DECISION_CLOSED'};
     await pipeline.close();
     reportCentralEvidence('UNBOUND',null,'CENTRAL_EVIDENCE_CLOSED');
   }
@@ -232,6 +255,194 @@
         String(error?.message || 'CENTRAL_ENQUEUE_UNAVAILABLE')));
   }
 
+  function vocabularyPolicyStatus() {
+    return {
+      status:vocabularyPolicyState.status,
+      received_at:vocabularyPolicyState.received_at,
+      reason:vocabularyPolicyState.reason,
+      policy:vocabularyPolicyState.policy
+        ?JSON.parse(JSON.stringify(vocabularyPolicyState.policy)):null
+    };
+  }
+
+  function currentVocabularyIds() {
+    try { return validWords().map(w=>String(w.id||'').trim()).filter(Boolean); }
+    catch { return []; }
+  }
+
+  function pastVocabularyWords() {
+    const currentSheetId=S.activeSheetId;
+    const currentIds=new Set(currentVocabularyIds());
+    const byId=new Map();
+    for(const sh of (Array.isArray(S.sheets)?S.sheets:[])){
+      if(!sh||sh.sheetId===currentSheetId)continue;
+      for(const w of (Array.isArray(sh.items)?sh.items:[])){
+        const id=String(w?.id||'').trim();
+        if(!id||currentIds.has(id)||!w?.eng||!w?.kor||w?.needsReview)continue;
+        if(!byId.has(id))byId.set(id,w);
+      }
+    }
+    return [...byId.values()];
+  }
+
+  function pastVocabularyIds() {
+    return pastVocabularyWords().map(w=>String(w.id||'').trim()).filter(Boolean);
+  }
+
+  async function requestLearningVocabularyPolicy({ current_word_ids, past_word_ids } = {}) {
+    if(!centralDecisionConfig){
+      vocabularyPolicyState={status:'UNBOUND',received_at:null,policy:null,
+        reason:'CENTRAL_DECISION_NOT_CONFIGURED'};
+      return {ok:false,reason:vocabularyPolicyState.reason};
+    }
+    const session=await centralDecisionConfig.sessionProvider();
+    const memberId=String(session?.selected_member_id||'').trim();
+    const familyId=String(session?.family_id||'').trim();
+    if(session?.authenticated!==true||!familyId||!memberId){
+      vocabularyPolicyState={status:'HOLD',received_at:null,policy:null,
+        reason:'TRUSTED_CENTRAL_SESSION_REQUIRED'};
+      return {ok:false,reason:vocabularyPolicyState.reason};
+    }
+    const context=getContext();
+    const subject=String(context.subject||'english').trim().toLowerCase();
+    const concept=String(context.concept_skill_target||'vocabulary').trim().toLowerCase();
+    const current=[...new Set((Array.isArray(current_word_ids)?current_word_ids:currentVocabularyIds())
+      .map(v=>String(v||'').trim()).filter(Boolean))].slice(0,120);
+    const currentSet=new Set(current);
+    const past=[...new Set((Array.isArray(past_word_ids)?past_word_ids:pastVocabularyIds())
+      .map(v=>String(v||'').trim()).filter(v=>v&&!currentSet.has(v)))].slice(0,120);
+    let token;
+    try{token=await centralDecisionConfig.tokenProvider();}
+    catch{
+      vocabularyPolicyState={status:'HOLD',received_at:null,policy:null,
+        reason:'CENTRAL_DECISION_TOKEN_UNAVAILABLE'};
+      return {ok:false,reason:vocabularyPolicyState.reason};
+    }
+    if(!String(token||'').trim()){
+      vocabularyPolicyState={status:'HOLD',received_at:null,policy:null,
+        reason:'CENTRAL_DECISION_TOKEN_UNAVAILABLE'};
+      return {ok:false,reason:vocabularyPolicyState.reason};
+    }
+    let response;
+    try{
+      response=await centralDecisionConfig.fetchImpl(centralDecisionConfig.endpointUrl,{
+        method:'POST',
+        credentials:'omit',
+        headers:{
+          'Authorization':'Bearer '+String(token).trim(),
+          'Content-Type':'application/json'
+        },
+        body:JSON.stringify({
+          family_id:familyId,member_id:memberId,subject,
+          concept_skill_target:concept,
+          hide_vocabulary_context:{current_word_ids:current,past_word_ids:past}
+        })
+      });
+    }catch{
+      vocabularyPolicyState={status:'HOLD',received_at:null,policy:null,
+        reason:'CENTRAL_DECISION_REQUEST_FAILED'};
+      return {ok:false,reason:vocabularyPolicyState.reason};
+    }
+    let body=null;
+    try{body=await response.json();}catch{}
+    const policy=body?.runtime_result?.specialist_policy?.hide_seek_vocabulary;
+    const valid=response.status===200&&body?.ok===true&&
+      body?.authenticated_server_response===true&&
+      body?.receipt_scope?.member_id===memberId&&
+      policy?.authority==='LEARNING_ENGINE_SPECIALIST_POLICY_INTENT_ONLY'&&
+      policy?.guards?.planner_owns_dated_allocation===true&&
+      policy?.guards?.current_words_never_dropped===true&&
+      Array.isArray(policy?.word_policies)&&
+      Array.isArray(policy?.delayed_recall_queue);
+    if(!valid){
+      vocabularyPolicyState={status:'HOLD',received_at:null,policy:null,
+        reason:'CENTRAL_HIDE_POLICY_INVALID'};
+      return {ok:false,reason:vocabularyPolicyState.reason};
+    }
+    vocabularyPolicyState={
+      status:'READY',
+      received_at:iso(),
+      policy:JSON.parse(JSON.stringify(policy)),
+      reason:null
+    };
+    S.learningEngineVocabularyPolicy={
+      receivedAt:vocabularyPolicyState.received_at,
+      authority:policy.authority,
+      policy:vocabularyPolicyState.policy
+    };
+    persistBridgeState();
+    try{window.dispatchEvent(new CustomEvent('hide-learning-policy-updated',
+      {detail:vocabularyPolicyStatus()}));}catch{}
+    return {ok:true,policy:vocabularyPolicyState.policy};
+  }
+
+  function getLearningVocabularyPolicy() {
+    const live=vocabularyPolicyState.policy;
+    if(live)return JSON.parse(JSON.stringify(live));
+    const stored=S.learningEngineVocabularyPolicy?.policy;
+    if(stored?.authority==='LEARNING_ENGINE_SPECIALIST_POLICY_INTENT_ONLY'&&
+       stored?.guards?.planner_owns_dated_allocation===true)
+      return JSON.parse(JSON.stringify(stored));
+    return null;
+  }
+
+  function wordLearningRoute(wordId) {
+    const id=String(wordId||'').trim();
+    const policy=getLearningVocabularyPolicy();
+    return policy?.word_policies?.find(x=>x.learning_target_id===id)||null;
+  }
+
+  function nextAdaptiveLearningRoute() {
+    const policy=getLearningVocabularyPolicy();
+    if(!policy)return null;
+    const ranked=[...(policy.word_policies||[])];
+    const p={HIGH:3,MEDIUM:2,LOW:1};
+    ranked.sort((a,b)=>(p[b.priority]||0)-(p[a.priority]||0)||
+      (a.origin==='CURRENT'?0:1)-(b.origin==='CURRENT'?0:1));
+    const selected=ranked[0]||null;
+    return selected?{
+      learning_target_id:selected.learning_target_id,
+      origin:selected.origin,
+      recommended_mode:selected.recommended_mode,
+      memory_state:selected.memory_state,
+      priority:selected.priority,
+      delayed_recall:selected.delayed_recall||null
+    }:null;
+  }
+
+  function composeTraceOptions(correct,currentWords=[],pastWords=[],size=4) {
+    const target=correct;
+    const current=(Array.isArray(currentWords)?currentWords:[])
+      .filter(w=>w&&w.id!==target?.id);
+    const past=(Array.isArray(pastWords)?pastWords:[])
+      .filter(w=>w&&w.id!==target?.id);
+    const policy=getLearningVocabularyPolicy();
+    if(!policy||!target){
+      const base=[target,...shuffle(current).slice(0,Math.max(0,size-1))].filter(Boolean);
+      return shuffle(base).slice(0,size);
+    }
+    const share=Math.max(0,Math.min(1,Number(policy.past_word_mix?.past_word_share)||0));
+    const distractorCount=Math.max(0,size-1);
+    const desiredPast=Math.min(past.length,Math.round(distractorCount*share));
+    const desiredCurrent=Math.max(0,distractorCount-desiredPast);
+    const chosen=[
+      ...shuffle(past).slice(0,desiredPast),
+      ...shuffle(current).slice(0,desiredCurrent)
+    ];
+    if(chosen.length<distractorCount){
+      const used=new Set(chosen.map(w=>w.id));
+      const fill=[...current,...past].filter(w=>!used.has(w.id));
+      chosen.push(...shuffle(fill).slice(0,distractorCount-chosen.length));
+    }
+    return shuffle([target,...chosen]).slice(0,size);
+  }
+
+  function delayedRecallQueue() {
+    const policy=getLearningVocabularyPolicy();
+    return Array.isArray(policy?.delayed_recall_queue)
+      ?JSON.parse(JSON.stringify(policy.delayed_recall_queue)):[];
+  }
+
   function emitLearningMemorySignal(input = {}) {
     const context = getContext();
     const payload = {
@@ -250,6 +461,7 @@
       spacedEvidence: input.spacedEvidence ?? input.spaced_evidence ?? null,
       nextReviewPriority: input.nextReviewPriority ?? input.next_review_priority ?? null,
       mode: input.mode || null,
+      word_origin: input.word_origin || input.wordOrigin || 'CURRENT',
       sourceSheetId: S.activeSheetId || null,
       evidence_source_refs: Array.isArray(input.source_refs) ? [...input.source_refs] : [],
       evidence_provenance: Array.isArray(input.provenance) ? [...input.provenance] : [],
@@ -604,6 +816,14 @@
       sendToSnap,
       requestImaginationCloud,
       emitLearningMemorySignal,
+      requestLearningVocabularyPolicy,
+      getLearningVocabularyPolicy,
+      vocabularyPolicyStatus,
+      wordLearningRoute,
+      nextAdaptiveLearningRoute,
+      composeTraceOptions,
+      delayedRecallQueue,
+      pastVocabularyWords,
       configureCentralEvidence,
       flushCentralEvidenceOnce,
       closeCentralEvidence,
