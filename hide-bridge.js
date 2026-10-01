@@ -144,7 +144,7 @@
     else toast('베이스캠프 연결 주소가 없어요. 현재 결과는 기기에 보존했어요.');
   }
 
-  function sendToSnap(word, contextText = '') {
+  function sendToSnap(word, contextText = '', learningTargetId = null) {
     const context = getContext();
     const event = emit('HANDOFF_TO_SNAP', {
       word: String(word || '').trim(),
@@ -156,23 +156,18 @@
       const url = new URL(context.snap_target, location.href);
       if (!['http:', 'https:'].includes(url.protocol)) return event;
       if (context.session_id) url.searchParams.set('session_id', context.session_id);
+      if (context.goal_id) url.searchParams.set('goal_id', context.goal_id);
       if (context.task_id) url.searchParams.set('task_id', context.task_id);
       if (context.lap_id) url.searchParams.set('lap_id', context.lap_id);
+      if (context.return_target) url.searchParams.set('return_target', context.return_target);
+      if (context.child_id) url.searchParams.set('child_id', context.child_id);
+      if (context.subject) url.searchParams.set('subject', context.subject);
+      if (context.concept_skill_target) url.searchParams.set('concept_skill_target', context.concept_skill_target);
+      const targetId=String(learningTargetId||context.learning_target_id||'').trim();
+      if(targetId)url.searchParams.set('learning_target_id',targetId);
       url.searchParams.set('from_app', 'hide-seek');
       url.searchParams.set('word', event.payload.word);
       if (event.payload.context) url.searchParams.set('word_context', event.payload.context);
-      const growth=getLearningGrowthDecision();
-      const handoff=growth?.hide_to_snap_handoff;
-      if(handoff?.eligible===true&&handoff?.to_app==='snap-pop'){
-        url.searchParams.set('growth_intent',String(handoff.task_intent||'').slice(0,128));
-        url.searchParams.set('support_phase',String(handoff.support_phase||growth.support_phase||'').slice(0,64));
-        url.searchParams.set('question_depth',String(growth.question_depth?.level||''));
-        url.searchParams.set('prompt_language',String(handoff.prompt_language||'').slice(0,64));
-        const chunk=handoff.material?.expression_chunks?.[0];
-        const grammar=handoff.material?.grammar_patterns?.[0];
-        if(chunk)url.searchParams.set('expression_chunk',String(chunk).slice(0,180));
-        if(grammar)url.searchParams.set('grammar_pattern',String(grammar).slice(0,180));
-      }
       location.href = url.href;
     } catch {}
     return event;
