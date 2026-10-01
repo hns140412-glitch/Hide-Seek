@@ -3,7 +3,7 @@ name: Validate Hide & Seek
 on:
   pull_request:
   push:
-    branches: ["main"]
+    branches: ["main", "taky/hide-memory-routing-learning-engine-2026-10-02"]
 
 permissions:
   contents: read
