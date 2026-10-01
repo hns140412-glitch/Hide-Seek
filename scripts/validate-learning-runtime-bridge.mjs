@@ -1,6 +1,13 @@
 import fs from 'node:fs';
 const s=fs.readFileSync('hide-bridge.js','utf8');
 const required=[
+  'responseLatencyMs:',
+  'spelling_evidence:',
+  'connection_evidence:',
+  'hint_stage:',
+  'lap_id:',
+  'task_id:',
+  'session_id:',
   "'child_id', 'subject', 'concept_skill_target', 'learning_target_id'",
   'function emitLearningMemorySignal',
   'evidence_source_refs',
