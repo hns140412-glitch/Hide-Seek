@@ -161,6 +161,18 @@
       url.searchParams.set('from_app', 'hide-seek');
       url.searchParams.set('word', event.payload.word);
       if (event.payload.context) url.searchParams.set('word_context', event.payload.context);
+      const growth=getLearningGrowthDecision();
+      const handoff=growth?.hide_to_snap_handoff;
+      if(handoff?.eligible===true&&handoff?.to_app==='snap-pop'){
+        url.searchParams.set('growth_intent',String(handoff.task_intent||'').slice(0,128));
+        url.searchParams.set('support_phase',String(handoff.support_phase||growth.support_phase||'').slice(0,64));
+        url.searchParams.set('question_depth',String(growth.question_depth?.level||''));
+        url.searchParams.set('prompt_language',String(handoff.prompt_language||'').slice(0,64));
+        const chunk=handoff.material?.expression_chunks?.[0];
+        const grammar=handoff.material?.grammar_patterns?.[0];
+        if(chunk)url.searchParams.set('expression_chunk',String(chunk).slice(0,180));
+        if(grammar)url.searchParams.set('grammar_pattern',String(grammar).slice(0,180));
+      }
       location.href = url.href;
     } catch {}
     return event;
@@ -172,6 +184,7 @@
   let centralEvidencePipeline = null;
   let centralDecisionConfig = null;
   let centralEvidenceState = { status:'UNBOUND', event_id:null, reason:'TRUSTED_CENTRAL_SESSION_NOT_CONFIGURED' };
+  let growthDecisionState = {status:'UNBOUND',received_at:null,decision:null,reason:'CENTRAL_DECISION_NOT_CONFIGURED'};
   let vocabularyPolicyState = {
     status:'UNBOUND',
     received_at:null,
@@ -210,9 +223,8 @@
       tokenProvider,
       fetchImpl:fetchImpl || globalThis.fetch.bind(globalThis)
     };
-    vocabularyPolicyState={
-      status:'READY',received_at:null,policy:null,reason:null
-    };
+    vocabularyPolicyState={status:'READY',received_at:null,policy:null,reason:null};
+    growthDecisionState={status:'READY',received_at:null,decision:null,reason:null};
     reportCentralEvidence('READY', null, null);
     return Object.freeze({ configured:true, version:pipeline.version,
       decision_endpoint_configured:true });
@@ -231,6 +243,7 @@
     centralEvidencePipeline=null;
     centralDecisionConfig=null;
     vocabularyPolicyState={status:'UNBOUND',received_at:null,policy:null,reason:'CENTRAL_DECISION_CLOSED'};
+    growthDecisionState={status:'UNBOUND',received_at:null,decision:null,reason:'CENTRAL_DECISION_CLOSED'};
     await pipeline.close();
     reportCentralEvidence('UNBOUND',null,'CENTRAL_EVIDENCE_CLOSED');
   }
@@ -345,8 +358,23 @@
     }
     let body=null;
     try{body=await response.json();}catch{}
+    const growth=body?.runtime_result?.growth_next_step||null;
+    const growthValid=!growth||(growth?.authority==='LEARNING_ENGINE_GROWTH_INTENT_ONLY'&&
+      growth?.guards?.engine_guides_growth_not_answers===true&&
+      growth?.hide_to_snap_handoff?.final_answer_generation_forbidden===true);
+    if(growth&&growthValid){
+      growthDecisionState={status:'READY',received_at:iso(),
+        decision:JSON.parse(JSON.stringify(growth)),reason:null};
+      S.learningEngineGrowthDecision={
+        receivedAt:growthDecisionState.received_at,
+        authority:growth.authority,
+        decision:growthDecisionState.decision
+      };
+    }else if(growth&&!growthValid){
+      growthDecisionState={status:'HOLD',received_at:null,decision:null,reason:'CENTRAL_GROWTH_DECISION_INVALID'};
+    }
     const policy=body?.runtime_result?.specialist_policy?.hide_seek_vocabulary;
-    const valid=response.status===200&&body?.ok===true&&
+    const valid=response.status===200&&body?.ok===true&&growthValid&&
       body?.authenticated_server_response===true&&
       body?.receipt_scope?.member_id===memberId&&
       policy?.authority==='LEARNING_ENGINE_SPECIALIST_POLICY_INTENT_ONLY'&&
@@ -374,6 +402,25 @@
     try{window.dispatchEvent(new CustomEvent('hide-learning-policy-updated',
       {detail:vocabularyPolicyStatus()}));}catch{}
     return {ok:true,policy:vocabularyPolicyState.policy};
+  }
+
+  function getLearningGrowthDecision() {
+    if(growthDecisionState.decision)return JSON.parse(JSON.stringify(growthDecisionState.decision));
+    const stored=S.learningEngineGrowthDecision?.decision;
+    if(stored?.authority==='LEARNING_ENGINE_GROWTH_INTENT_ONLY'&&
+       stored?.guards?.engine_guides_growth_not_answers===true&&
+       stored?.hide_to_snap_handoff?.final_answer_generation_forbidden===true)
+      return JSON.parse(JSON.stringify(stored));
+    return null;
+  }
+
+  function growthDecisionStatus() {
+    return {
+      status:growthDecisionState.status,
+      received_at:growthDecisionState.received_at,
+      reason:growthDecisionState.reason,
+      decision:growthDecisionState.decision?JSON.parse(JSON.stringify(growthDecisionState.decision)):null
+    };
   }
 
   function getLearningVocabularyPolicy() {
@@ -819,6 +866,8 @@
       requestLearningVocabularyPolicy,
       getLearningVocabularyPolicy,
       vocabularyPolicyStatus,
+      getLearningGrowthDecision,
+      growthDecisionStatus,
       wordLearningRoute,
       nextAdaptiveLearningRoute,
       composeTraceOptions,
