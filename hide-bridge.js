@@ -492,6 +492,9 @@
       word: input.word || null,
       item_id: input.item_id || null,
       member_id: input.member_id || context.child_id || null,
+      session_id: input.session_id || context.session_id || null,
+      task_id: input.task_id || context.task_id || null,
+      lap_id: input.lap_id || context.lap_id || null,
       subject: input.subject || context.subject || null,
       concept_skill_target: input.concept_skill_target || context.concept_skill_target || null,
       learning_target_id: input.learning_target_id || context.learning_target_id || null,
@@ -502,6 +505,16 @@
       weakness: input.weakness ?? null,
       spacedEvidence: input.spacedEvidence ?? input.spaced_evidence ?? null,
       nextReviewPriority: input.nextReviewPriority ?? input.next_review_priority ?? null,
+      hint_stage:Number.isFinite(Number(input.hint_stage??input.hintStage))
+        ?Number(input.hint_stage??input.hintStage):null,
+      helped:input.helped===true?true:input.helped===false?false:null,
+      self_corrected:input.self_corrected===true?true:input.self_corrected===false?false:null,
+      recall_degree:Number.isFinite(Number(input.recall_degree??input.recallDegree))
+        ?Number(input.recall_degree??input.recallDegree):null,
+      connection_evidence:input.connection_evidence??input.connectionEvidence??null,
+      spelling_evidence:input.spelling_evidence??input.spellingEvidence??null,
+      responseLatencyMs:Number.isFinite(Number(input.responseLatencyMs??input.response_latency_ms))
+        ?Math.max(0,Number(input.responseLatencyMs??input.response_latency_ms)):null,
       mode: input.mode || null,
       word_origin: input.word_origin || input.wordOrigin || 'CURRENT',
       growth_signals:Array.isArray(input.growth_signals)
