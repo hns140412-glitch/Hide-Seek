@@ -504,6 +504,17 @@
       nextReviewPriority: input.nextReviewPriority ?? input.next_review_priority ?? null,
       mode: input.mode || null,
       word_origin: input.word_origin || input.wordOrigin || 'CURRENT',
+      growth_signals:Array.isArray(input.growth_signals)
+        ?input.growth_signals.slice(0,8).map(x=>({
+          dimension:String(x?.dimension||'').toUpperCase(),
+          outcome:String(x?.outcome||'UNKNOWN').toUpperCase(),
+          assisted:x?.assisted===true,
+          transfer:x?.transfer===true,
+          direct_english:x?.direct_english===true?true:x?.direct_english===false?false:null,
+          kind:x?.kind||null,
+          target_id:x?.target_id||input.learning_target_id||context.learning_target_id||null,
+          depth:Number.isFinite(Number(x?.depth))?Math.max(0,Math.min(5,Number(x.depth))):null
+        })):[],
       sourceSheetId: S.activeSheetId || null,
       evidence_source_refs: Array.isArray(input.source_refs) ? [...input.source_refs] : [],
       evidence_provenance: Array.isArray(input.provenance) ? [...input.provenance] : [],
