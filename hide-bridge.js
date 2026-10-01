@@ -409,6 +409,28 @@
     return null;
   }
 
+  function learningReferenceRefs(){
+    const d=getLearningGrowthDecision();
+    const out={curriculum_refs:[],lexical_refs:[],usage_refs:[],pedagogical_refs:[]};
+    const add=(key,ref)=>{
+      const v=String(ref||'').trim();
+      if(v&&!out[key].includes(v))out[key].push(v);
+    };
+    for(const ref of (d?.curriculum_grounding?.source_refs||[]))
+      add('curriculum_refs',ref);
+    const prov=d?.language_resource_provenance||{};
+    for(const rows of Object.values(prov)){
+      for(const row of (Array.isArray(rows)?rows:[])){
+        const role=String(row?.source_role||'').toUpperCase();
+        if(role==='LEXICAL_SEMANTICS')add('lexical_refs',row.source_ref);
+        else if(role==='LANGUAGE_USAGE')add('usage_refs',row.source_ref);
+        else if(role==='PEDAGOGICAL_USAGE')add('pedagogical_refs',row.source_ref);
+        else if(role==='CURRICULUM_ALIGNMENT')add('curriculum_refs',row.source_ref);
+      }
+    }
+    return out;
+  }
+
   function growthDecisionStatus() {
     return {
       status:growthDecisionState.status,
@@ -487,6 +509,7 @@
 
   function emitLearningMemorySignal(input = {}) {
     const context = getContext();
+    const referenceRefs=learningReferenceRefs();
     const payload = {
       skill_id: input.skill_id || input.word || input.item_id || context.concept_skill_target || null,
       word: input.word || null,
@@ -498,6 +521,12 @@
       subject: input.subject || context.subject || null,
       concept_skill_target: input.concept_skill_target || context.concept_skill_target || null,
       learning_target_id: input.learning_target_id || context.learning_target_id || null,
+      instrumentVersion:input.instrumentVersion||'HIDE_MEMORY_SIGNAL_V1',
+      interactionMode:input.mode||'UNKNOWN',
+      curriculum_refs:referenceRefs.curriculum_refs,
+      lexical_refs:referenceRefs.lexical_refs,
+      usage_refs:referenceRefs.usage_refs,
+      pedagogical_refs:referenceRefs.pedagogical_refs,
       correct: typeof input.correct === 'boolean' ? input.correct : null,
       assisted: !!(input.assisted || input.hint_used),
       confusion: input.confusion ?? null,
