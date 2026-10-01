@@ -9,6 +9,11 @@ const required=[
   'global_mastery_claim: false',
   'review_need_owned_by_learning_engine: true',
   'dated_allocation_owned_by_planner: true',
+  'function requestLearningVocabularyPolicy',
+  "'LEARNING_ENGINE_SPECIALIST_POLICY_INTENT_ONLY'",
+  'function nextAdaptiveLearningRoute',
+  'function composeTraceOptions',
+  'function delayedRecallQueue',
   'emitLearningMemorySignal,'
 ];
 for(const token of required){if(!s.includes(token))throw new Error('MISSING:'+token);}
