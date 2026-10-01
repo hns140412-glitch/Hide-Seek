@@ -74,3 +74,21 @@ test('Hide loads shared HTTP transport without moving API key ownership',async({
   expect(out.rate.category).toBe('RATE_LIMITED');
   expect(out.rate.retry_after_ms).toBe(2000);
 });
+
+
+test('Hide memory signal delegates review need to Learning Engine and dated allocation to Planner',async({page})=>{
+  await page.goto('http://127.0.0.1:4173/');
+  await expect.poll(()=>page.evaluate(()=>!!globalThis.HideSeekBridge)).toBe(true);
+  const signal=await page.evaluate(()=>globalThis.HideSeekBridge.emitLearningMemorySignal({
+    member_id:'test-member',subject:'English',concept_skill_target:'vocabulary',
+    word:'accept',correct:false,assisted:true
+  }));
+  expect(signal.type).toBe('LEARNING_MEMORY_SIGNAL');
+  expect(signal.payload.observation_only).toBe(true);
+  expect(signal.payload.global_mastery_claim).toBe(false);
+  expect(signal.payload.review_need_owned_by_learning_engine).toBe(true);
+  expect(signal.payload.dated_allocation_owned_by_planner).toBe(true);
+  expect(signal.payload).not.toHaveProperty('long_term_schedule_owned_by_learning_engine');
+  expect(signal.payload).not.toHaveProperty('planner_date');
+  expect(signal.payload.member_id).toBe('test-member');
+});
