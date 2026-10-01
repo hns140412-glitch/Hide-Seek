@@ -181,11 +181,13 @@ function choiceOptions(correct,field){
   shuffle([correct,...shuffle(current.filter(x=>x.id!==correct.id)).slice(0,3)]);
  return chosen.map(x=>({id:x.id,label:field==='kor'?x.kor:x.eng}))
 }
-function renderMeaningCheck(){const ws=validWords(),i=S.learning.meaningIndex%ws.length,w=ws[i],reverse=i%2===1,field=reverse?'eng':'kor',prompt=reverse?w.kor:w.eng,opts=choiceOptions(w,field);S.learning.phase='meaning';sheet().status='LEARNING';save();$('#view').innerHTML=`<section class="learning-shell"><div class="learn-head"><div><span class="phase-chip">MEANING CHECK</span><h2 style="margin:5px 0 0">${reverse?'뜻 → 영어':'영어 → 뜻'}</h2></div><b>${i+1}/${ws.length}</b></div><section class="card word-card"><div class="eng" style="font-size:${reverse?'23px':'31px'}">${esc(prompt)}</div><div class="choice-grid">${opts.map(o=>`<button class="choice" data-choice="${esc(o.id)}" type="button">${esc(o.label)}</button>`).join('')}</div></section></section>`;$$('[data-choice]').forEach(b=>b.onclick=()=>meaningAnswer(b,w,b.dataset.choice===w.id));setPartner('정답을 외워 찍기보다, 영어와 뜻의 연결을 빠르게 확인해보자.','focus')}
+function renderMeaningCheck(){const ws=validWords(),i=S.learning.meaningIndex%ws.length,w=ws[i],reverse=i%2===1,field=reverse?'eng':'kor',prompt=reverse?w.kor:w.eng,opts=choiceOptions(w,field);S.learning.promptStartedAt=Date.now();S.learning.phase='meaning';sheet().status='LEARNING';save();$('#view').innerHTML=`<section class="learning-shell"><div class="learn-head"><div><span class="phase-chip">MEANING CHECK</span><h2 style="margin:5px 0 0">${reverse?'뜻 → 영어':'영어 → 뜻'}</h2></div><b>${i+1}/${ws.length}</b></div><section class="card word-card"><div class="eng" style="font-size:${reverse?'23px':'31px'}">${esc(prompt)}</div><div class="choice-grid">${opts.map(o=>`<button class="choice" data-choice="${esc(o.id)}" type="button">${esc(o.label)}</button>`).join('')}</div></section></section>`;$$('[data-choice]').forEach(b=>b.onclick=()=>meaningAnswer(b,w,b.dataset.choice===w.id));setPartner('정답을 외워 찍기보다, 영어와 뜻의 연결을 빠르게 확인해보자.','focus')}
 function meaningAnswer(btn,w,ok){$('[data-choice]').forEach(b=>b.disabled=true);btn.classList.add(ok?'correct':'wrong');if(!ok){w.wrong=(w.wrong||0)+1;setPartner('이 단어는 추적 목록에 넣어둘게. 뒤에서 더 자주 만나자.','note')}else{S.learning.combo++;S.learning.flow=Math.min(6,S.learning.flow+1)}
  globalThis.HideSeekBridge?.emitLearningMemorySignal?.({
   learning_target_id:w.id,item_id:w.id,word:w.eng,correct:ok,assisted:false,
   mode:'TRACE',word_origin:'CURRENT',
+  responseLatencyMs:Math.max(0,Date.now()-Number(S.learning.promptStartedAt||Date.now())),
+  helped:false,
   weakness:ok?null:'RECOGNITION',
   growth_signals:[{
    dimension:'VOCABULARY',outcome:ok?'SUCCESS':'FAIL',assisted:false,
@@ -194,17 +196,21 @@ function meaningAnswer(btn,w,ok){$('[data-choice]').forEach(b=>b.disabled=true);
  });
  S.learning.history.push({at:nowISO(),mode:'meaning',wordId:w.id,result:ok?'CORRECT':'WRONG'});markStudy(ok?3:1);setTimeout(()=>{S.learning.meaningIndex++;if(S.learning.meaningIndex>=validWords().length){S.learning.meaningIndex=0;S.learning.phase='connection';save();renderConnection()}else{save();if(ok&&S.learning.combo>0&&S.learning.combo%5===0)triggerFever(()=>renderMeaningCheck());else renderMeaningCheck()}},350)}
 function connectionSet(){const ordered=[...validWords()].sort((a,b)=>weakScore(b)-weakScore(a));const start=(S.learning.connectionRound*4)%ordered.length,chosen=[];for(let i=0;i<Math.min(4,ordered.length);i++)chosen.push(ordered[(start+i)%ordered.length]);return chosen}
-function renderConnection(){const set=connectionSet();selectedTile=null;S.learning.phase='connection';save();const left=shuffle(set),right=shuffle(set);$('#view').innerHTML=`<section class="learning-shell"><div class="learn-head"><div><span class="phase-chip">CONNECTION</span><h2 style="margin:5px 0 0">단어와 뜻 연결</h2></div><b>Round ${S.learning.connectionRound+1}</b></div><section class="card"><p>왼쪽 영어 하나와 오른쪽 뜻 하나를 차례로 선택하세요.</p><div class="tile-board"><div>${left.map(w=>`<button class="tile tile-eng" data-id="${w.id}" data-side="eng" type="button">${esc(w.eng)}</button>`).join('')}</div><div>${right.map(w=>`<button class="tile tile-kor" data-id="${w.id}" data-side="kor" type="button">${esc(w.kor)}</button>`).join('')}</div></div><button class="btn primary full" id="connectionNext" style="margin-top:12px" type="button" disabled>다음 라운드</button></section></section>`;$$('.tile').forEach(b=>b.onclick=()=>tilePick(b));setPartner('이번엔 단어와 뜻을 빠르게 연결해보자. 틀려도 바로 다음 단서로 가면 돼.','play')}
+function renderConnection(){const set=connectionSet();selectedTile=null;S.learning.connectionPromptStartedAt=Date.now();S.learning.phase='connection';save();const left=shuffle(set),right=shuffle(set);$('#view').innerHTML=`<section class="learning-shell"><div class="learn-head"><div><span class="phase-chip">CONNECTION</span><h2 style="margin:5px 0 0">단어와 뜻 연결</h2></div><b>Round ${S.learning.connectionRound+1}</b></div><section class="card"><p>왼쪽 영어 하나와 오른쪽 뜻 하나를 차례로 선택하세요.</p><div class="tile-board"><div>${left.map(w=>`<button class="tile tile-eng" data-id="${w.id}" data-side="eng" type="button">${esc(w.eng)}</button>`).join('')}</div><div>${right.map(w=>`<button class="tile tile-kor" data-id="${w.id}" data-side="kor" type="button">${esc(w.kor)}</button>`).join('')}</div></div><button class="btn primary full" id="connectionNext" style="margin-top:12px" type="button" disabled>다음 라운드</button></section></section>`;$$('.tile').forEach(b=>b.onclick=()=>tilePick(b));setPartner('이번엔 단어와 뜻을 빠르게 연결해보자. 틀려도 바로 다음 단서로 가면 돼.','play')}
 function tilePick(btn){if(btn.classList.contains('matched'))return;if(!selectedTile){selectedTile=btn;btn.classList.add('selected');return}if(selectedTile.dataset.side===btn.dataset.side){selectedTile.classList.remove('selected');selectedTile=btn;btn.classList.add('selected');return}const firstId=selectedTile.dataset.id,secondId=btn.dataset.id,ok=firstId===secondId,id=btn.dataset.id;const target=validWords().find(x=>x.id===firstId)||validWords().find(x=>x.id===secondId);if(ok){$(`.tile[data-id="${id}"]`).forEach(x=>x.classList.add('matched'));S.learning.combo++;S.learning.flow=Math.min(6,S.learning.flow+1);markStudy(2)}else{const w=validWords().find(x=>x.id===firstId);if(w)w.wrong=(w.wrong||0)+1;markStudy(1);setPartner('연결이 살짝 엇갈렸네. 두 단서를 다시 보고 이어가자.','think')}
  if(target)globalThis.HideSeekBridge?.emitLearningMemorySignal?.({
   learning_target_id:target.id,item_id:target.id,word:target.eng,correct:ok,assisted:false,
   mode:'LINK',word_origin:'CURRENT',
+  responseLatencyMs:Math.max(0,Date.now()-Number(S.learning.connectionPromptStartedAt||Date.now())),
+  helped:false,
+  connection_evidence:{left_id:firstId,right_id:secondId,matched:ok},
   confusion:ok?null:[firstId,secondId],
   growth_signals:[{
    dimension:'VOCABULARY',outcome:ok?'SUCCESS':'FAIL',assisted:false,
    transfer:false,kind:'MEANING_LINK',target_id:target.id
   }]
  });
+ S.learning.connectionPromptStartedAt=Date.now();
  selectedTile.classList.remove('selected');selectedTile=null;if($('.tile:not(.matched)').length===0){$('#connectionNext').disabled=false;$('#connectionNext').onclick=()=>{S.learning.connectionRound++;if(S.learning.connectionRound>=Math.ceil(validWords().length/4)){S.learning.connectionRound=0;S.learning.phase='weak';save();renderWeak()}else{save();renderConnection()}}}}
 function renderWeak(){const ordered=[...validWords()].sort((a,b)=>weakScore(b)-weakScore(a)),weak=ordered.filter(w=>weakScore(w)>0),top=(weak.length?weak:ordered).slice(0,Math.min(6,ordered.length));S.learning.phase='weak';save();$('#view').innerHTML=`<section class="learning-shell"><div class="learn-head"><div><span class="phase-chip">WEAK WORD PRIORITY</span><h2 style="margin:5px 0 0">어려운 단어 집중</h2></div><b>${top.length}개</b></div><section class="card"><div class="flow-gauge">${[0,1,2,3,4,5].map(i=>`<i class="${i<S.learning.flow?'on':''}"></i>`).join('')}</div><div class="weak-list" style="margin-top:13px">${top.map(w=>`<div class="weak-item"><div><b>${esc(w.eng)}</b><div style="font-size:10px;color:#66736a">${esc(w.kor)}</div></div><span class="badge ${weakScore(w)>=8?'weak':'mid'}">${weakScore(w)>=8?'집중':'확인'}</span></div>`).join('')}</div><div class="btn-row" style="margin-top:13px"><button class="btn secondary" id="weakReplay" type="button">취약 단어 다시 보기</button><button class="btn danger" id="weakToCode" type="button">CODE RED</button></div></section></section>`;$('#weakReplay').onclick=()=>{const first=top[0];S.learning.firstIndex=Math.max(0,validWords().findIndex(w=>w.id===first.id));save();renderFirstContact()};$('#weakToCode').onclick=()=>startCodeRed(false);setPartner('약한 단어에 시간을 더 쓰되, 전체 단어를 마지막 CODE RED에서 전부 확인할게.','focus')}
 function triggerFever(next){S.learning.fever=true;save();$('#view').innerHTML=`<section class="card fever-stage"><div class="food-rain"><i class="food" style="left:8%">PIZZA</i><i class="food">DONUT</i><i class="food">JUICE</i><i class="food">BURGER</i><i class="food">FRUIT</i></div><div style="position:relative;z-index:2;text-align:center;padding-top:54px"><h1 style="font-size:35px;margin:0;color:#4d783e">FEVER TIME</h1><p>연속 성공 보너스 · 학습 판정은 그대로</p><div class="flow-gauge" style="max-width:290px;margin:17px auto">${[0,1,2,3,4,5].map(()=>'<i class="on"></i>').join('')}</div><button class="btn primary" id="leaveFever" type="button">계속 학습</button></div></section>`;setPartner('흐름 좋네. 잠깐 축제다. 문제는 그대로 차분하게 가자.','fever',true);$('#leaveFever').onclick=()=>{S.learning.fever=false;S.learning.flow=0;save();next()}}
@@ -248,7 +254,17 @@ function recordCodeResult(type){
   learning_target_id:w.id,item_id:w.id,word:w.eng,
   correct:type==='CORRECT',
   assisted:type==='HINT_USED'||codeSession.hintLevel>0,
+  hint_stage:codeSession.hintLevel,
+  helped:type==='HINT_USED'||codeSession.hintLevel>0,
+  responseLatencyMs:Math.max(0,Date.now()-(codeSession.start||Date.now())),
   mode:'CORE',word_origin:'CURRENT',
+  spelling_evidence:{
+   instrument:'HIDE_CODE_RED_V1',
+   result_type:type,
+   wrong_attempts:codeSession.wrongAttempts,
+   hint_level:codeSession.hintLevel,
+   blank_count:codeSession.blankIdx.length
+  },
   weakness:type==='CORRECT'?null:'ORTHOGRAPHIC'
  });
  S.codeRed.results[w.id]=attempt;S.codeRed.history.push(attempt);w.learningStats=w.learningStats||{};w.learningStats.codeRedAttempts=(w.learningStats.codeRedAttempts||0)+1;if(['WRONG','PASS','TIMEOUT','HINT_USED'].includes(type)){if(!S.codeRed.retrace.includes(w.id))S.codeRed.retrace.push(w.id);if(type==='WRONG')w.wrong=(w.wrong||0)+1;if(type==='PASS')w.pass=(w.pass||0)+1;if(type==='TIMEOUT')w.learningStats.timeout=(w.learningStats.timeout||0)+1;if(type==='HINT_USED')w.hint=(w.hint||0)+1}else{S.learning.combo++;S.learning.flow=Math.min(6,S.learning.flow+1)}S.codeRed.index++;markStudy(type==='CORRECT'?5:1);save();if(S.codeRed.index<codeTargets().length)renderCodeRed();else finishCodeRed()}
