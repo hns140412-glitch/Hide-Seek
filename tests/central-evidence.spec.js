@@ -114,3 +114,78 @@ test('Browser IndexedDB serializes competing same-packet enqueue across two actu
   expect(b.count).toBe(1);
   await other.close();
 });
+
+
+test('Authenticated Learning Engine vocabulary policy is consumed without local authority',async({page})=>{
+  await page.goto(URL+'?child_id=A&subject=english&concept_skill_target=vocabulary');
+  const result=await page.evaluate(async()=>{
+    window.__decisionCalls=[];
+    let malformed=false;
+    HideSeekBridge.configureCentralEvidence({
+      dbName:'hide-policy-consumer-v1',
+      endpointUrl:'https://central.example.test/api/learning/evidence',
+      decisionEndpointUrl:'https://central.example.test/api/learning/decision',
+      sessionProvider:async()=>({authenticated:true,family_id:'F',selected_member_id:'A'}),
+      tokenProvider:async()=> 'fixture-bearer-token-1234567890',
+      fetchImpl:async(url,opts)=>{
+        if(String(url).includes('/decision')){
+          const input=JSON.parse(opts.body);
+          window.__decisionCalls.push({url,credentials:opts.credentials,input});
+          if(malformed)return {status:200,json:async()=>({ok:true,authenticated_server_response:true,
+            receipt_scope:{family_id:'F',member_id:'A'},runtime_result:{specialist_policy:{
+              hide_seek_vocabulary:{authority:'BROWSER_FORGED_POLICY'}}}})};
+          return {status:200,json:async()=>({ok:true,authenticated_server_response:true,
+            receipt_scope:{family_id:'F',member_id:'A'},runtime_result:{specialist_policy:{
+              hide_seek_vocabulary:{
+                ok:true,version:'TAKY_HIDE_VOCABULARY_ROUTING_POLICY_V1',
+                authority:'LEARNING_ENGINE_SPECIALIST_POLICY_INTENT_ONLY',
+                word_policies:[
+                  {learning_target_id:'new-1',origin:'CURRENT',recommended_mode:'RECALL',
+                   memory_state:'RECENT_UNASSISTED_SUCCESS',priority:'MEDIUM',
+                   delayed_recall:{kind:'AFTER_INTERVENING_ITEMS',min_intervening_items:3,max_intervening_items:5}},
+                  {learning_target_id:'past-1',origin:'PAST',recommended_mode:'RECALL',
+                   memory_state:'SPACED_UNASSISTED_STABLE',priority:'LOW',delayed_recall:null}
+                ],
+                past_word_mix:{past_word_share:0.75,current_word_share:0.25,
+                  baseline_past_word_share:2/3,current_words_mandatory:true},
+                delayed_recall_queue:[{learning_target_id:'new-1',origin:'CURRENT',
+                  priority:'MEDIUM',recommended_mode:'RECALL',kind:'AFTER_INTERVENING_ITEMS',
+                  min_intervening_items:3,max_intervening_items:5}],
+                guards:{current_words_never_dropped:true,ratio_is_prompt_mix_not_assignment_mutation:true,
+                  delayed_recall_has_no_calendar_date:true,planner_owns_dated_allocation:true,
+                  hide_executes_interaction_only:true,no_mastery_claim:true}
+              }}}})};
+        }
+        throw Error('EVIDENCE_ENDPOINT_SHOULD_NOT_BE_CALLED_FOR_POLICY_READ');
+      }
+    });
+    const accepted=await HideSeekBridge.requestLearningVocabularyPolicy({
+      current_word_ids:['new-1'],past_word_ids:['past-1','past-2']
+    });
+    const options=HideSeekBridge.composeTraceOptions(
+      {id:'new-1',eng:'accept',kor:'받아들이다'},
+      [{id:'new-1',eng:'accept',kor:'받아들이다'},{id:'new-2',eng:'allow',kor:'허용하다'}],
+      [{id:'past-1',eng:'except',kor:'제외하고'},{id:'past-2',eng:'expect',kor:'기대하다'}],4
+    );
+    const route=HideSeekBridge.nextAdaptiveLearningRoute();
+    const delayed=HideSeekBridge.delayedRecallQueue();
+    malformed=true;
+    const rejected=await HideSeekBridge.requestLearningVocabularyPolicy({
+      current_word_ids:['new-1'],past_word_ids:['past-1']
+    });
+    const status=HideSeekBridge.vocabularyPolicyStatus();
+    await HideSeekBridge.closeCentralEvidence();
+    return {accepted,options:options.map(x=>x.id),route,delayed,rejected,status,calls:window.__decisionCalls};
+  });
+  expect(result.accepted.ok).toBe(true);
+  expect(result.calls[0].credentials).toBe('omit');
+  expect(result.calls[0].input.hide_vocabulary_context).toEqual({
+    current_word_ids:['new-1'],past_word_ids:['past-1','past-2']
+  });
+  expect(result.options).toContain('new-1');
+  expect(result.options.filter(x=>x.startsWith('past-'))).toHaveLength(2);
+  expect(result.route).toMatchObject({learning_target_id:'new-1',recommended_mode:'RECALL'});
+  expect(result.delayed[0]).toMatchObject({learning_target_id:'new-1',kind:'AFTER_INTERVENING_ITEMS'});
+  expect(result.rejected).toEqual({ok:false,reason:'CENTRAL_HIDE_POLICY_INVALID'});
+  expect(result.status).toMatchObject({status:'HOLD',reason:'CENTRAL_HIDE_POLICY_INVALID',policy:null});
+});
