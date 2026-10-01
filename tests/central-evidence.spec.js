@@ -229,7 +229,7 @@ test('Hide -> Snap navigation carries only continuity scope and learning target,
   await page.route('https://snap.example.test/**',route=>route.abort());
   const outbound=page.waitForRequest(r=>r.url().startsWith(snap));
   await page.evaluate(()=>HideSeekBridge.sendToSnap('accept','new context','word:accept'));
-  const u=new URL((await outbound).url());
+  const u=new global.URL((await outbound).url());
   expect(u.searchParams.get('from_app')).toBe('hide-seek');
   expect(u.searchParams.get('session_id')).toBe('S1');
   expect(u.searchParams.get('return_target')).toBe(ready);
