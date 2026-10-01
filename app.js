@@ -186,7 +186,11 @@ function meaningAnswer(btn,w,ok){$('[data-choice]').forEach(b=>b.disabled=true);
  globalThis.HideSeekBridge?.emitLearningMemorySignal?.({
   learning_target_id:w.id,item_id:w.id,word:w.eng,correct:ok,assisted:false,
   mode:'TRACE',word_origin:'CURRENT',
-  weakness:ok?null:'RECOGNITION'
+  weakness:ok?null:'RECOGNITION',
+  growth_signals:[{
+   dimension:'VOCABULARY',outcome:ok?'SUCCESS':'FAIL',assisted:false,
+   transfer:false,kind:'MEANING_RECOGNITION',target_id:w.id
+  }]
  });
  S.learning.history.push({at:nowISO(),mode:'meaning',wordId:w.id,result:ok?'CORRECT':'WRONG'});markStudy(ok?3:1);setTimeout(()=>{S.learning.meaningIndex++;if(S.learning.meaningIndex>=validWords().length){S.learning.meaningIndex=0;S.learning.phase='connection';save();renderConnection()}else{save();if(ok&&S.learning.combo>0&&S.learning.combo%5===0)triggerFever(()=>renderMeaningCheck());else renderMeaningCheck()}},350)}
 function connectionSet(){const ordered=[...validWords()].sort((a,b)=>weakScore(b)-weakScore(a));const start=(S.learning.connectionRound*4)%ordered.length,chosen=[];for(let i=0;i<Math.min(4,ordered.length);i++)chosen.push(ordered[(start+i)%ordered.length]);return chosen}
@@ -195,7 +199,11 @@ function tilePick(btn){if(btn.classList.contains('matched'))return;if(!selectedT
  if(target)globalThis.HideSeekBridge?.emitLearningMemorySignal?.({
   learning_target_id:target.id,item_id:target.id,word:target.eng,correct:ok,assisted:false,
   mode:'LINK',word_origin:'CURRENT',
-  confusion:ok?null:[firstId,secondId]
+  confusion:ok?null:[firstId,secondId],
+  growth_signals:[{
+   dimension:'VOCABULARY',outcome:ok?'SUCCESS':'FAIL',assisted:false,
+   transfer:false,kind:'MEANING_LINK',target_id:target.id
+  }]
  });
  selectedTile.classList.remove('selected');selectedTile=null;if($('.tile:not(.matched)').length===0){$('#connectionNext').disabled=false;$('#connectionNext').onclick=()=>{S.learning.connectionRound++;if(S.learning.connectionRound>=Math.ceil(validWords().length/4)){S.learning.connectionRound=0;S.learning.phase='weak';save();renderWeak()}else{save();renderConnection()}}}}
 function renderWeak(){const ordered=[...validWords()].sort((a,b)=>weakScore(b)-weakScore(a)),weak=ordered.filter(w=>weakScore(w)>0),top=(weak.length?weak:ordered).slice(0,Math.min(6,ordered.length));S.learning.phase='weak';save();$('#view').innerHTML=`<section class="learning-shell"><div class="learn-head"><div><span class="phase-chip">WEAK WORD PRIORITY</span><h2 style="margin:5px 0 0">어려운 단어 집중</h2></div><b>${top.length}개</b></div><section class="card"><div class="flow-gauge">${[0,1,2,3,4,5].map(i=>`<i class="${i<S.learning.flow?'on':''}"></i>`).join('')}</div><div class="weak-list" style="margin-top:13px">${top.map(w=>`<div class="weak-item"><div><b>${esc(w.eng)}</b><div style="font-size:10px;color:#66736a">${esc(w.kor)}</div></div><span class="badge ${weakScore(w)>=8?'weak':'mid'}">${weakScore(w)>=8?'집중':'확인'}</span></div>`).join('')}</div><div class="btn-row" style="margin-top:13px"><button class="btn secondary" id="weakReplay" type="button">취약 단어 다시 보기</button><button class="btn danger" id="weakToCode" type="button">CODE RED</button></div></section></section>`;$('#weakReplay').onclick=()=>{const first=top[0];S.learning.firstIndex=Math.max(0,validWords().findIndex(w=>w.id===first.id));save();renderFirstContact()};$('#weakToCode').onclick=()=>startCodeRed(false);setPartner('약한 단어에 시간을 더 쓰되, 전체 단어를 마지막 CODE RED에서 전부 확인할게.','focus')}
