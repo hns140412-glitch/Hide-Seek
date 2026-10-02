@@ -196,6 +196,40 @@
   }
 
 
+  function recordRootCauseFound({state,sheetId,wordId,errorAttempt,causeText,causeActionRef,at}={}){
+    if(!state||errorAttempt?.type!=='WRONG')return null;
+    const sheet=clean(sheetId,160),word=clean(wordId,160),cause=clean(causeText,240),action=clean(causeActionRef,180);
+    const errorAt=clean(errorAttempt?.at,80),attemptSheet=clean(errorAttempt?.sheetId,160),attemptWord=clean(errorAttempt?.wordId,160);
+    const rejected=errorAttempt?.rejectedSelection;
+    const sheetRow=Array.isArray(state.sheets)?state.sheets.find(x=>x?.sheetId===sheet):null;
+    const wordRow=Array.isArray(sheetRow?.items)?sheetRow.items.find(x=>x?.id===word):null;
+    const target=String(wordRow?.eng||'').trim().toLowerCase();
+    if(!sheet||!word||!cause||!action||!errorAt||attemptSheet!==sheet||attemptWord!==word||!target)return null;
+    if(!rejected||rejected.target!==target||!Number.isInteger(rejected.position)||rejected.position<0||rejected.position>=target.length||
+      typeof rejected.selected!=='string'||rejected.selected.length!==1||rejected.selected===target[rejected.position])return null;
+    const inHistory=Array.isArray(state.codeRed?.history)&&state.codeRed.history.some(x=>
+      x?.wordId===word&&x?.sheetId===sheet&&x?.type==='WRONG'&&x?.at===errorAt&&
+      x?.rejectedSelection?.target===rejected.target&&x?.rejectedSelection?.position===rejected.position&&x?.rejectedSelection?.selected===rejected.selected);
+    if(!inHistory)return null;
+    const occurredAt=clean(at,80)||new Date().toISOString();
+    return record(state,{
+      event_id:`hide_badge_root_cause_${sheet}_${word}_${errorAt}`,
+      event_family:'ERROR_ANALYSIS',
+      behavior_code:'ROOT_CAUSE_FOUND',
+      occurred_at:occurredAt,
+      source_contract_id:'HIDE_ERROR_ARTIFACT_ROOT_CAUSE_V1',
+      evidence_ref:`hide-root-cause:${sheet}:${word}:${errorAt}`,
+      explicit_child_action:true,
+      payload:{
+        sheetId:sheet,wordId:word,
+        errorArtifactRef:`hide-code-result:${sheet}:${word}:${errorAt}:rejectedSelection`,
+        causeActionRef:action,causeText:cause,
+        rejectedPosition:rejected.position,rejectedSelection:rejected.selected,
+        verificationBasis:'BOUND_TO_CAPTURED_CODE_RED_ERROR_ARTIFACT_V1',interactionMode:'CORE'
+      }
+    });
+  }
+
   function recordVerifiedImprovement({state,comparison}={}){
     if(!state||!comparison||typeof comparison!=='object')return null;
     if(comparison.contract_version!=='TAKY_LEARNING_BADGE_IMPROVEMENT_COMPARISON_V1'||
@@ -235,6 +269,6 @@
   globalThis.HideBadgeSourceObservationV01=Object.freeze({
     VERSION,CONTRACT,
     families:Object.freeze([...ALLOWED_FAMILIES]),
-    normalize,record,recordErrorReview,recordRetraceCorrection,recordCorrectionCourage,recordVerifiedImprovement,hasForbiddenKeyDeep
+    normalize,record,recordErrorReview,recordRetraceCorrection,recordCorrectionCourage,recordRootCauseFound,recordVerifiedImprovement,hasForbiddenKeyDeep
   });
 })();
