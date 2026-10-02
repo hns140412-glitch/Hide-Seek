@@ -1,0 +1,30 @@
+const {test,expect}=require('@playwright/test');
+
+test('Hide badge source runtime stays observation-only and records verified retrace correction',async({page})=>{
+  await page.goto('http://127.0.0.1:4173/');
+  await expect.poll(()=>page.evaluate(()=>!!globalThis.HideBadgeSourceObservationV01)).toBe(true);
+  const out=await page.evaluate(()=>{
+    const state={badgeSourceObservations:[]};
+    const observation=globalThis.HideBadgeSourceObservationV01.recordRetraceCorrection({
+      state,
+      sheetId:'sample',
+      wordId:'w1',
+      priorAttempt:{wordId:'w1',type:'WRONG',at:'2026-10-02T00:00:00.000Z'},
+      currentAttempt:{wordId:'w1',type:'CORRECT',at:'2026-10-02T00:01:00.000Z'}
+    });
+    return {observation,count:state.badgeSourceObservations.length};
+  });
+  expect(out.count).toBe(1);
+  expect(out.observation).toMatchObject({
+    contract_version:'TAKY_BADGE_SOURCE_OBSERVATION_V1',
+    app_id:'HIDE_SEEK',
+    event_family:'ERROR_CORRECTION',
+    behavior_code:'ERROR_CORRECTED_COMPLETE',
+    source_contract_id:'HIDE_RETRACE_CORRECTION_V1',
+    explicit_child_action:true,
+    disposition:'OBSERVATION_ONLY',
+    badge_award_authorized:false,
+    economy_mutation_authorized:false,
+    catalog_activation_allowed:false
+  });
+});
