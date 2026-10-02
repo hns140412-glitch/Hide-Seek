@@ -154,3 +154,54 @@ test('Hide root cause producer requires a captured Code Red error artifact and e
     }
   });
 });
+
+
+test('Hide persistent breakthrough requires explicit retrace between wrong and exact solve',async({page})=>{
+  await page.goto('http://127.0.0.1:4173/');
+  await expect.poll(()=>page.evaluate(()=>!!globalThis.HideBadgeSourceObservationV01)).toBe(true);
+  const out=await page.evaluate(()=>{
+    const priorAttempt={
+      wordId:'w1',sheetId:'sample',type:'WRONG',at:'2026-10-02T00:00:00.000Z',
+      rejectedSelection:{target:'cat',position:0,selected:'b'}
+    };
+    const currentAttempt={
+      wordId:'w1',sheetId:'sample',type:'CORRECT',at:'2026-10-02T00:01:00.000Z',
+      verificationBasis:'RETRIEVAL_EXACT_MATCH_V1',
+      answerArtifact:{target:'cat',positions:[0],letters:['c']}
+    };
+    const state={
+      sheets:[{sheetId:'sample',items:[{id:'w1',eng:'cat'}]}],
+      badgeSourceObservations:[],
+      codeRed:{history:[priorAttempt,currentAttempt]}
+    };
+    const review=globalThis.HideBadgeSourceObservationV01.recordErrorReview({
+      state,sheetId:'sample',targetWordIds:['w1'],at:'2026-10-02T00:00:30.000Z'
+    });
+    const observation=globalThis.HideBadgeSourceObservationV01.recordPersistentBreakthrough({
+      state,sheetId:'sample',wordId:'w1',priorAttempt,currentAttempt,reviewObservation:review
+    });
+    const noReview=globalThis.HideBadgeSourceObservationV01.recordPersistentBreakthrough({
+      state,sheetId:'sample',wordId:'w1',priorAttempt,currentAttempt,reviewObservation:null
+    });
+    return {observation,noReview};
+  });
+  expect(out.noReview).toBeNull();
+  expect(out.observation).toMatchObject({
+    contract_version:'TAKY_BADGE_SOURCE_OBSERVATION_V1',
+    app_id:'HIDE_SEEK',
+    event_family:'BREAKTHROUGH',
+    behavior_code:'PERSISTENT_BREAKTHROUGH',
+    source_contract_id:'HIDE_BLOCKED_CONTINUE_SOLVE_V1',
+    explicit_child_action:true,
+    disposition:'OBSERVATION_ONLY',
+    badge_award_authorized:false,
+    economy_mutation_authorized:false,
+    catalog_activation_allowed:false,
+    payload:{
+      sheetId:'sample',
+      wordId:'w1',
+      verificationBasis:'RETRIEVAL_EXACT_MATCH_V1',
+      interactionMode:'CORE'
+    }
+  });
+});
