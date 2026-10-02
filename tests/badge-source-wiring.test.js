@@ -173,3 +173,43 @@ assert('improvement-requires-action-linkage',api.recordVerifiedImprovement({stat
 assert('improvement-requires-fail-to-success',api.recordVerifiedImprovement({state:{badgeSourceObservations:[]},comparison:{...improvementComparison,prior_verified_outcome:1}})===null);
 assert('improvement-has-no-weak-proxy-payload',!api.hasForbiddenKeyDeep(improvement.payload));
 console.log('HIDE_VERIFIED_IMPROVEMENT_CONTRACT_PASS');
+
+
+const rootCauseState={
+  sheets:[{sheetId:'sample',items:[{id:'w1',eng:'cat'}]}],
+  badgeSourceObservations:[],
+  codeRed:{history:[{
+    wordId:'w1',sheetId:'sample',type:'WRONG',at:'2026-10-02T00:00:00.000Z',
+    rejectedSelection:{target:'cat',position:0,selected:'b'}
+  }]}
+};
+const rootError=rootCauseState.codeRed.history[0];
+const rootCause=api.recordRootCauseFound({
+  state:rootCauseState,sheetId:'sample',wordId:'w1',errorAttempt:rootError,
+  causeText:'발음이 비슷해서 헷갈렸어요',
+  causeActionRef:'hide-root-cause-action:sample:w1:1',
+  at:'2026-10-02T00:00:30.000Z'
+});
+assert('root-cause-binds-captured-error-artifact',
+  rootCause?.event_family==='ERROR_ANALYSIS'&&
+  rootCause?.behavior_code==='ROOT_CAUSE_FOUND'&&
+  rootCause?.source_contract_id==='HIDE_ERROR_ARTIFACT_ROOT_CAUSE_V1'&&
+  rootCause?.payload?.errorArtifactRef==='hide-code-result:sample:w1:2026-10-02T00:00:00.000Z:rejectedSelection');
+assert('root-cause-is-observation-only',
+  rootCause?.explicit_child_action===true&&rootCause?.badge_award_authorized===false&&
+  rootCause?.economy_mutation_authorized===false&&rootCause?.catalog_activation_allowed===false);
+assert('root-cause-rejects-missing-error-history',
+  api.recordRootCauseFound({state:{...rootCauseState,codeRed:{history:[]}},sheetId:'sample',wordId:'w1',
+    errorAttempt:rootError,causeText:'헷갈렸어요',causeActionRef:'a'})===null);
+assert('root-cause-rejects-generic-label-without-artifact',
+  api.recordRootCauseFound({state:rootCauseState,sheetId:'sample',wordId:'w1',
+    errorAttempt:{wordId:'w1',sheetId:'sample',type:'WRONG',at:'2026-10-02T00:00:00.000Z'},
+    causeText:'헷갈렸어요',causeActionRef:'a'})===null);
+assert('root-cause-rejects-empty-child-explanation',
+  api.recordRootCauseFound({state:rootCauseState,sheetId:'sample',wordId:'w1',
+    errorAttempt:rootError,causeText:'',causeActionRef:'a'})===null);
+assert('app-wires-root-cause-action-to-retrace-error-artifact',
+  app.includes('root-cause-retrace')&&app.includes('openRootCauseModal')&&
+  app.includes('recordRootCauseFound')&&app.includes("x?.type==='WRONG'")&&
+  app.includes('x?.rejectedSelection'));
+console.log('HIDE_ROOT_CAUSE_ARTIFACT_PASS');
