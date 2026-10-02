@@ -83,6 +83,29 @@
     return observation;
   }
 
+  function recordErrorReview({state,sheetId,targetWordIds,at}={}){
+    if(!state)return null;
+    const sheet=clean(sheetId,160);
+    const targets=Array.isArray(targetWordIds)?targetWordIds.map(x=>clean(x,160)).filter(Boolean):[];
+    if(!sheet||!targets.length)return null;
+    const occurredAt=clean(at,80)||new Date().toISOString();
+    const eventId=`hide_badge_error_review_${sheet}_${occurredAt}`;
+    return record(state,{
+      event_id:eventId,
+      event_family:'ERROR_DISCOVERY',
+      behavior_code:'ERROR_REVIEW',
+      occurred_at:occurredAt,
+      source_contract_id:'HIDE_EXPLICIT_RETRACE_REVIEW_V1',
+      evidence_ref:`hide-retrace-review:${sheet}:${occurredAt}`,
+      explicit_child_action:true,
+      payload:{
+        sheetId:sheet,
+        targetWordIds:targets,
+        reviewMode:'RETRACE'
+      }
+    });
+  }
+
   function recordRetraceCorrection({state,sheetId,wordId,priorAttempt,currentAttempt}={}){
     if(!state||priorAttempt?.type!=='WRONG'||currentAttempt?.type!=='CORRECT')return null;
     const sheet=clean(sheetId,160);
@@ -114,6 +137,6 @@
   globalThis.HideBadgeSourceObservationV01=Object.freeze({
     VERSION,CONTRACT,
     families:Object.freeze([...ALLOWED_FAMILIES]),
-    normalize,record,recordRetraceCorrection,hasForbiddenKeyDeep
+    normalize,record,recordErrorReview,recordRetraceCorrection,hasForbiddenKeyDeep
   });
 })();
