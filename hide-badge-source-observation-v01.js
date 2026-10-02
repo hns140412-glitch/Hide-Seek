@@ -196,6 +196,51 @@
   }
 
 
+  function recordPersistentBreakthrough({state,sheetId,wordId,priorAttempt,currentAttempt,reviewObservation}={}){
+    if(!state||priorAttempt?.type!=='WRONG'||currentAttempt?.type!=='CORRECT')return null;
+    const sheet=clean(sheetId,160),word=clean(wordId,160);
+    const priorAt=clean(priorAttempt?.at,80),currentAt=clean(currentAttempt?.at,80);
+    const priorSheet=clean(priorAttempt?.sheetId,160),currentSheet=clean(currentAttempt?.sheetId,160);
+    const priorWord=clean(priorAttempt?.wordId,160),currentWord=clean(currentAttempt?.wordId,160);
+    const rejected=priorAttempt?.rejectedSelection,answer=currentAttempt?.answerArtifact;
+    const reviewId=clean(reviewObservation?.event_id,160),reviewAt=clean(reviewObservation?.occurred_at,80);
+    const reviewSheet=clean(reviewObservation?.payload?.sheetId,160);
+    const reviewTargets=Array.isArray(reviewObservation?.payload?.targetWordIds)?reviewObservation.payload.targetWordIds.map(x=>clean(x,160)):[];
+    const sheetRow=Array.isArray(state.sheets)?state.sheets.find(x=>x?.sheetId===sheet):null;
+    const wordRow=Array.isArray(sheetRow?.items)?sheetRow.items.find(x=>x?.id===word):null;
+    const target=String(wordRow?.eng||'').trim().toLowerCase();
+    if(!sheet||!word||!priorAt||!currentAt||priorSheet!==sheet||currentSheet!==sheet||priorWord!==word||currentWord!==word||!target)return null;
+    if(reviewObservation?.event_family!=='ERROR_DISCOVERY'||reviewObservation?.behavior_code!=='ERROR_REVIEW'||
+      reviewObservation?.source_contract_id!=='HIDE_EXPLICIT_RETRACE_REVIEW_V1'||reviewObservation?.explicit_child_action!==true||
+      reviewSheet!==sheet||!reviewTargets.includes(word)||!reviewId||!reviewAt)return null;
+    if(!rejected||rejected.target!==target||!Number.isInteger(rejected.position)||rejected.position<0||rejected.position>=target.length||
+      typeof rejected.selected!=='string'||rejected.selected.length!==1||rejected.selected===target[rejected.position])return null;
+    if(currentAttempt.verificationBasis!=='RETRIEVAL_EXACT_MATCH_V1'||answer?.target!==target||!Array.isArray(answer.positions)||!answer.positions.length||
+      !Array.isArray(answer.letters)||answer.positions.length!==answer.letters.length||
+      !answer.positions.every((position,i)=>Number.isInteger(position)&&position>=0&&position<target.length&&answer.letters[i]===target[position]))return null;
+    const p=Date.parse(priorAt),r=Date.parse(reviewAt),n=Date.parse(currentAt);
+    if(!Number.isFinite(p)||!Number.isFinite(r)||!Number.isFinite(n)||p>r||r>n)return null;
+    const history=Array.isArray(state.codeRed?.history)?state.codeRed.history:[];
+    if(!history.some(x=>x?.wordId===word&&x?.sheetId===sheet&&x?.type==='WRONG'&&x?.at===priorAt)||
+       !history.some(x=>x?.wordId===word&&x?.sheetId===sheet&&x?.type==='CORRECT'&&x?.at===currentAt))return null;
+    return record(state,{
+      event_id:`hide_badge_persistent_breakthrough_${sheet}_${word}_${currentAt}`,
+      event_family:'BREAKTHROUGH',
+      behavior_code:'PERSISTENT_BREAKTHROUGH',
+      occurred_at:currentAt,
+      source_contract_id:'HIDE_BLOCKED_CONTINUE_SOLVE_V1',
+      evidence_ref:`hide-persistent-breakthrough:${sheet}:${word}:${currentAt}`,
+      explicit_child_action:true,
+      payload:{
+        sheetId:sheet,wordId:word,
+        blockedArtifactRef:`hide-code-result:${sheet}:${word}:${priorAt}:rejectedSelection`,
+        continueActionRef:reviewId,
+        solvedArtifactRef:`hide-code-result:${sheet}:${word}:${currentAt}:answerArtifact`,
+        verificationBasis:'RETRIEVAL_EXACT_MATCH_V1',interactionMode:'CORE'
+      }
+    });
+  }
+
   function recordRootCauseFound({state,sheetId,wordId,errorAttempt,causeText,causeActionRef,at}={}){
     if(!state||errorAttempt?.type!=='WRONG')return null;
     const sheet=clean(sheetId,160),word=clean(wordId,160),cause=clean(causeText,240),action=clean(causeActionRef,180);
@@ -269,6 +314,6 @@
   globalThis.HideBadgeSourceObservationV01=Object.freeze({
     VERSION,CONTRACT,
     families:Object.freeze([...ALLOWED_FAMILIES]),
-    normalize,record,recordErrorReview,recordRetraceCorrection,recordCorrectionCourage,recordRootCauseFound,recordVerifiedImprovement,hasForbiddenKeyDeep
+    normalize,record,recordErrorReview,recordRetraceCorrection,recordCorrectionCourage,recordPersistentBreakthrough,recordRootCauseFound,recordVerifiedImprovement,hasForbiddenKeyDeep
   });
 })();
