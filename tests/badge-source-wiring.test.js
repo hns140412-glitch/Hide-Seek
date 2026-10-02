@@ -213,3 +213,47 @@ assert('app-wires-root-cause-action-to-retrace-error-artifact',
   app.includes('recordRootCauseFound')&&app.includes("x?.type==='WRONG'")&&
   app.includes('x?.rejectedSelection'));
 console.log('HIDE_ROOT_CAUSE_ARTIFACT_PASS');
+
+
+const persistenceState={
+  sheets:[{sheetId:'sample',items:[{id:'w1',eng:'cat'}]}],
+  badgeSourceObservations:[],
+  codeRed:{history:[]}
+};
+const persistencePrior={
+  wordId:'w1',sheetId:'sample',type:'WRONG',at:'2026-10-02T00:00:00.000Z',
+  rejectedSelection:{target:'cat',position:0,selected:'b'}
+};
+persistenceState.codeRed.history.push(persistencePrior);
+const persistenceReview=api.recordErrorReview({
+  state:persistenceState,sheetId:'sample',targetWordIds:['w1'],at:'2026-10-02T00:00:30.000Z'
+});
+const persistenceCurrent={
+  wordId:'w1',sheetId:'sample',type:'CORRECT',at:'2026-10-02T00:01:00.000Z',
+  verificationBasis:'RETRIEVAL_EXACT_MATCH_V1',
+  answerArtifact:{target:'cat',positions:[0],letters:['c']}
+};
+persistenceState.codeRed.history.push(persistenceCurrent);
+const persistence=api.recordPersistentBreakthrough({
+  state:persistenceState,sheetId:'sample',wordId:'w1',
+  priorAttempt:persistencePrior,currentAttempt:persistenceCurrent,reviewObservation:persistenceReview
+});
+assert('persistent-breakthrough-requires-error-retrace-solve-chain',
+  persistence?.event_family==='BREAKTHROUGH'&&
+  persistence?.behavior_code==='PERSISTENT_BREAKTHROUGH'&&
+  persistence?.source_contract_id==='HIDE_BLOCKED_CONTINUE_SOLVE_V1');
+assert('persistent-breakthrough-links-three-direct-evidence-points',
+  !!persistence?.payload?.blockedArtifactRef&&
+  persistence?.payload?.continueActionRef===persistenceReview.event_id&&
+  !!persistence?.payload?.solvedArtifactRef);
+assert('persistent-breakthrough-stays-observation-only',
+  persistence?.explicit_child_action===true&&persistence?.badge_award_authorized===false&&
+  persistence?.economy_mutation_authorized===false&&persistence?.catalog_activation_allowed===false);
+assert('persistent-breakthrough-rejects-missing-retrace',
+  api.recordPersistentBreakthrough({
+    state:persistenceState,sheetId:'sample',wordId:'w1',
+    priorAttempt:persistencePrior,currentAttempt:persistenceCurrent,reviewObservation:null
+  })===null);
+assert('app-wires-persistent-breakthrough-after-retrace',
+  app.includes('recordPersistentBreakthrough')&&app.includes('priorAttempt:priorWrong,currentAttempt:attempt,reviewObservation:review'));
+console.log('HIDE_PERSISTENT_BREAKTHROUGH_PASS');
