@@ -150,3 +150,26 @@ assert('real-child-action-to-verified-outcome',produced.length===1&&produced[0].
 assert('equal-timestamps-no-duration-evidence',produced[0].payload.priorWrongAt===produced[0].payload.correctedAt);
 assert('no-counter-or-score-in-observation',!api.hasForbiddenKeyDeep(produced[0].payload));
 console.log('HIDE_CORRECTION_COURAGE_RUNTIME_PASS');
+
+
+
+const improvementState={badgeSourceObservations:[]};
+const improvementComparison={
+  contract_version:'TAKY_LEARNING_BADGE_IMPROVEMENT_COMPARISON_V1',
+  authority:'LEARNING_VERIFICATION_RECEIPT_COMPARISON',
+  comparison_id:'improvement:word:a:a1:a2',
+  source_app:'hide-seek',learning_target_id:'word:a',
+  prior_event_id:'a1',current_event_id:'a2',
+  prior_receipt_id:'vr-a1',current_receipt_id:'vr-a2',
+  prior_verified_outcome:0,current_verified_outcome:1,
+  prior_child_action_ref:'hide-action:a1',current_child_action_ref:'hide-action:a2',
+  verified_improvement:true,explicit_child_action:true
+};
+const improvement=api.recordVerifiedImprovement({state:improvementState,comparison:improvementComparison});
+assert('verified-same-target-improvement-emits-source',improvement?.event_family==='IMPROVEMENT'&&improvement?.behavior_code==='IMPROVEMENT'&&improvement?.source_contract_id==='HIDE_VERIFIED_SAME_TARGET_IMPROVEMENT_V1');
+assert('improvement-observation-is-observation-only',improvement?.badge_award_authorized===false&&improvement?.economy_mutation_authorized===false);
+assert('improvement-requires-comparison-authority',api.recordVerifiedImprovement({state:{badgeSourceObservations:[]},comparison:{...improvementComparison,authority:'BROWSER_SELF_REPORT'}})===null);
+assert('improvement-requires-action-linkage',api.recordVerifiedImprovement({state:{badgeSourceObservations:[]},comparison:{...improvementComparison,current_child_action_ref:''}})===null);
+assert('improvement-requires-fail-to-success',api.recordVerifiedImprovement({state:{badgeSourceObservations:[]},comparison:{...improvementComparison,prior_verified_outcome:1}})===null);
+assert('improvement-has-no-weak-proxy-payload',!api.hasForbiddenKeyDeep(improvement.payload));
+console.log('HIDE_VERIFIED_IMPROVEMENT_CONTRACT_PASS');

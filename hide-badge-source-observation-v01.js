@@ -195,9 +195,46 @@
     });
   }
 
+
+  function recordVerifiedImprovement({state,comparison}={}){
+    if(!state||!comparison||typeof comparison!=='object')return null;
+    if(comparison.contract_version!=='TAKY_LEARNING_BADGE_IMPROVEMENT_COMPARISON_V1'||
+      comparison.authority!=='LEARNING_VERIFICATION_RECEIPT_COMPARISON'||
+      comparison.source_app!=='hide-seek'||comparison.verified_improvement!==true||
+      comparison.explicit_child_action!==true)return null;
+    const target=clean(comparison.learning_target_id,180);
+    const comparisonId=clean(comparison.comparison_id,220);
+    const priorEvent=clean(comparison.prior_event_id,180),currentEvent=clean(comparison.current_event_id,180);
+    const priorReceipt=clean(comparison.prior_receipt_id,180),currentReceipt=clean(comparison.current_receipt_id,180);
+    const priorAction=clean(comparison.prior_child_action_ref,180),currentAction=clean(comparison.current_child_action_ref,180);
+    if(!target||!comparisonId||!priorEvent||!currentEvent||!priorReceipt||!currentReceipt||!priorAction||!currentAction)return null;
+    if(comparison.prior_verified_outcome!==0||comparison.current_verified_outcome!==1)return null;
+    if(priorEvent===currentEvent||priorReceipt===currentReceipt)return null;
+    return record(state,{
+      event_id:`hide_badge_improvement_${target}_${currentEvent}`,
+      event_family:'IMPROVEMENT',
+      behavior_code:'IMPROVEMENT',
+      occurred_at:new Date().toISOString(),
+      source_contract_id:'HIDE_VERIFIED_SAME_TARGET_IMPROVEMENT_V1',
+      evidence_ref:`hide-verified-improvement:${comparisonId}`,
+      explicit_child_action:true,
+      payload:{
+        learningTargetId:target,
+        comparisonId,
+        priorEventRef:priorEvent,
+        currentEventRef:currentEvent,
+        priorReceiptRef:priorReceipt,
+        currentReceiptRef:currentReceipt,
+        priorChildActionRef:priorAction,
+        currentChildActionRef:currentAction,
+        comparisonContract:'TAKY_LEARNING_BADGE_IMPROVEMENT_COMPARISON_V1'
+      }
+    });
+  }
+
   globalThis.HideBadgeSourceObservationV01=Object.freeze({
     VERSION,CONTRACT,
     families:Object.freeze([...ALLOWED_FAMILIES]),
-    normalize,record,recordErrorReview,recordRetraceCorrection,recordCorrectionCourage,hasForbiddenKeyDeep
+    normalize,record,recordErrorReview,recordRetraceCorrection,recordCorrectionCourage,recordVerifiedImprovement,hasForbiddenKeyDeep
   });
 })();
