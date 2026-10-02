@@ -35,7 +35,7 @@ const DEFAULT_STATE={
  guide:{id:"fox",name:"",style:"curious",voice:true},
  settings:{sound:true,partnerVoice:true,reducedMotion:false,pressureReduced:false,geminiModel:"gemini-2.5-flash"},
  sheets:[{sheetId:"sample",title:"이번 주 시험",createdAt:nowISO(),updatedAt:nowISO(),testDate:"",sourceType:"sample",sourceCount:0,status:"LEARNING",caseMastery:0,items:clone(DEFAULT_WORDS),recognitionMeta:{}}],
- activeSheetId:"sample",sessions:[],xp:0,streak:0,lastStudy:"",memory:{},ocrDraft:null,
+ activeSheetId:"sample",sessions:[],xp:0,streak:0,lastStudy:"",memory:{},ocrDraft:null,badgeSourceObservations:[],
  learning:{phase:"first",firstIndex:0,meaningIndex:0,connectionRound:0,weakRound:0,combo:0,flow:0,fever:false,history:[]},
  codeRed:{index:0,results:{},history:[],retrace:[],retryOnly:false,targetIds:[]},
  onboardingStep:0,onboardingDone:false
@@ -45,7 +45,7 @@ function migrate(raw){
  const s=Object.assign(clone(DEFAULT_STATE),raw||{});
  s.schemaVersion=SCHEMA_VERSION;s.appRevision=APP_REV;
  s.profile=Object.assign({},DEFAULT_STATE.profile,raw?.profile||{});s.guide=Object.assign({},DEFAULT_STATE.guide,raw?.guide||{});s.settings=Object.assign({},DEFAULT_STATE.settings,raw?.settings||{});
- s.learning=Object.assign({},DEFAULT_STATE.learning,raw?.learning||raw?.study||{});s.codeRed=Object.assign({},DEFAULT_STATE.codeRed,raw?.codeRed||{});s.memory=raw?.memory||{};
+ s.learning=Object.assign({},DEFAULT_STATE.learning,raw?.learning||raw?.study||{});s.codeRed=Object.assign({},DEFAULT_STATE.codeRed,raw?.codeRed||{});s.memory=raw?.memory||{};s.badgeSourceObservations=Array.isArray(raw?.badgeSourceObservations)?raw.badgeSourceObservations:[];
  if(!Array.isArray(s.sheets)||!s.sheets.length)s.sheets=clone(DEFAULT_STATE.sheets);
  s.sheets=s.sheets.map((sh,si)=>({...sh,sheetId:sh.sheetId||`sheet-${si}`,updatedAt:sh.updatedAt||sh.createdAt||nowISO(),status:sh.status||"READY",caseMastery:Number(sh.caseMastery||0),items:(sh.items||[]).map(normalizeWord),recognitionMeta:sh.recognitionMeta||{}}));
  if(!s.sheets.find(x=>x.sheetId===s.activeSheetId))s.activeSheetId=s.sheets[0].sheetId;
@@ -197,6 +197,9 @@ function checkCodeAnswer(){const built=codeSession.blankIdx.map((_,slot)=>codeSe
 function recordCodeResult(type){
  stopCodeTimer();
  const w=codeSession.word,attempt={wordId:w.id,type,at:nowISO(),hintLevel:codeSession.hintLevel,wrongAttempts:codeSession.wrongAttempts};
+ const priorWrong=S.codeRed.retryOnly&&type==='CORRECT'
+  ?[...(S.codeRed.history||[])].reverse().find(x=>x?.wordId===w.id&&x?.type==='WRONG')||null
+  :null;
  if(['CORRECT','WRONG','HINT_USED','TIMEOUT'].includes(type)&&globalThis.HideSeekBridge?.emit){
   globalThis.HideSeekBridge.emit('RETRIEVAL_ATTEMPT_RESULT',{
    word_id:w.id,
@@ -217,7 +220,14 @@ function recordCodeResult(type){
    }
   });
  }
- S.codeRed.results[w.id]=attempt;S.codeRed.history.push(attempt);w.learningStats=w.learningStats||{};w.learningStats.codeRedAttempts=(w.learningStats.codeRedAttempts||0)+1;if(['WRONG','PASS','TIMEOUT','HINT_USED'].includes(type)){if(!S.codeRed.retrace.includes(w.id))S.codeRed.retrace.push(w.id);if(type==='WRONG')w.wrong=(w.wrong||0)+1;if(type==='PASS')w.pass=(w.pass||0)+1;if(type==='TIMEOUT')w.learningStats.timeout=(w.learningStats.timeout||0)+1;if(type==='HINT_USED')w.hint=(w.hint||0)+1}else{S.learning.combo++;S.learning.flow=Math.min(6,S.learning.flow+1)}S.codeRed.index++;markStudy(type==='CORRECT'?5:1);save();if(S.codeRed.index<codeTargets().length)renderCodeRed();else finishCodeRed()}
+ S.codeRed.results[w.id]=attempt;S.codeRed.history.push(attempt);
+ if(priorWrong){
+  globalThis.HideBadgeSourceObservationV01?.recordRetraceCorrection?.({
+   state:S,sheetId:sheet()?.sheetId||'unknown',wordId:w.id,
+   priorAttempt:priorWrong,currentAttempt:attempt
+  });
+ }
+ w.learningStats=w.learningStats||{};w.learningStats.codeRedAttempts=(w.learningStats.codeRedAttempts||0)+1;if(['WRONG','PASS','TIMEOUT','HINT_USED'].includes(type)){if(!S.codeRed.retrace.includes(w.id))S.codeRed.retrace.push(w.id);if(type==='WRONG')w.wrong=(w.wrong||0)+1;if(type==='PASS')w.pass=(w.pass||0)+1;if(type==='TIMEOUT')w.learningStats.timeout=(w.learningStats.timeout||0)+1;if(type==='HINT_USED')w.hint=(w.hint||0)+1}else{S.learning.combo++;S.learning.flow=Math.min(6,S.learning.flow+1)}S.codeRed.index++;markStudy(type==='CORRECT'?5:1);save();if(S.codeRed.index<codeTargets().length)renderCodeRed();else finishCodeRed()}
 function startCodeTimer(){const total=codeSession.seconds;codeTimer=setInterval(()=>{const left=Math.max(0,total-(Date.now()-codeSession.start)/1000),pct=Math.round(left/total*100),ring=$('#timeRing'),txt=$('#timeText');if(!ring||!txt)return;ring.style.setProperty('--p',pct);txt.textContent=Math.ceil(left);ring.classList.toggle('warn',pct<=45&&pct>20);ring.classList.toggle('alert',pct<=20);if(left<=0)recordCodeResult('TIMEOUT')},150)}
 function stopCodeTimer(){if(codeTimer){clearInterval(codeTimer);codeTimer=null}}
 function finishCodeRed(){stopCodeTimer();const currentTargets=codeTargets(),passed=currentTargets.filter(w=>S.codeRed.results[w.id]?.type==='CORRECT').map(w=>w.id);if(S.codeRed.retryOnly)S.codeRed.retrace=S.codeRed.retrace.filter(id=>!passed.includes(id));if(S.codeRed.retrace.length){sheet().status='RETRACE_REQUIRED';save();return renderRetrace()}sheet().caseMastery=100;sheet().status='TEST_READY';S.learning.phase='done';save();renderComplete()}
