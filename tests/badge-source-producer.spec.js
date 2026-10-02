@@ -71,6 +71,10 @@ test('Hide correction courage requires explicit RETRACE review between wrong and
       state,sheetId:'sample',targetWordIds:['w1'],at:'2026-10-02T00:00:30.000Z'
     });
     const currentAttempt={wordId:'w1',type:'CORRECT',at:'2026-10-02T00:01:00.000Z'};
+    Object.assign(priorAttempt,{sheetId:'sample',rejectedSelection:{target:'cat',position:0,selected:'b'}});
+    Object.assign(currentAttempt,{sheetId:'sample',verificationBasis:'RETRIEVAL_EXACT_MATCH_V1',answerArtifact:{target:'cat',positions:[0],letters:['c']}});
+    state.sheets=[{sheetId:'sample',items:[{id:'w1',eng:'cat'}]}];
+    state.codeRed={history:[priorAttempt,currentAttempt]};
     const observation=globalThis.HideBadgeSourceObservationV01.recordCorrectionCourage({
       state,sheetId:'sample',wordId:'w1',priorAttempt,currentAttempt,reviewObservation:review
     });

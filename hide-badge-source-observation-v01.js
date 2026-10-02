@@ -146,6 +146,28 @@
     const reviewId=clean(reviewObservation?.event_id,160);
     if(!sheet||!word||!priorAt||!currentAt||!reviewAt||!reviewId)return null;
     if(reviewSheet!==sheet||!targets.includes(word))return null;
+    // Resolve persisted child actions and exact-match artifacts; result labels alone are insufficient.
+    if(reviewObservation.contract_version!==CONTRACT||reviewObservation.app_id!=='HIDE_SEEK'||
+      reviewObservation.source_contract_id!=='HIDE_EXPLICIT_RETRACE_REVIEW_V1'||
+      reviewObservation.explicit_child_action!==true||reviewObservation.payload?.reviewMode!=='RETRACE'||
+      !state.badgeSourceObservations?.includes(reviewObservation))return null;
+    const history=state.codeRed?.history;
+    if(!Array.isArray(history)||!history.includes(priorAttempt)||!history.includes(currentAttempt)||
+      history.indexOf(priorAttempt)>=history.indexOf(currentAttempt))return null;
+    if(priorAttempt.sheetId!==sheet||currentAttempt.sheetId!==sheet||
+      priorAttempt.wordId!==word||currentAttempt.wordId!==word)return null;
+    const target=state.sheets?.find(x=>x.sheetId===sheet)?.items?.find(x=>x.id===word)?.eng?.toLowerCase();
+    const rejected=priorAttempt.rejectedSelection,answer=currentAttempt.answerArtifact;
+    if(!target||rejected?.target!==target||!Number.isInteger(rejected.position)||
+      rejected.position<0||rejected.position>=target.length||
+      typeof rejected.selected!=='string'||rejected.selected.length!==1||
+      rejected.selected===target[rejected.position])return null;
+    if(currentAttempt.verificationBasis!=='RETRIEVAL_EXACT_MATCH_V1'||answer?.target!==target||
+      !Array.isArray(answer.positions)||!answer.positions.length||!Array.isArray(answer.letters)||
+      answer.positions.length!==answer.letters.length||new Set(answer.positions).size!==answer.positions.length||
+      !answer.positions.every((position,i)=>Number.isInteger(position)&&position>=0&&position<target.length&&
+        answer.letters[i]===target[position]))return null;
+
     const p=Date.parse(priorAt),r=Date.parse(reviewAt),n=Date.parse(currentAt);
     if(!Number.isFinite(p)||!Number.isFinite(r)||!Number.isFinite(n)||p>r||r>n)return null;
     return record(state,{
@@ -160,6 +182,9 @@
         sheetId:sheet,
         wordId:word,
         priorWrongAt:priorAt,
+        errorArtifactRef:`hide-code-result:${sheet}:${word}:${priorAt}:rejectedSelection`,
+        correctedArtifactRef:`hide-code-result:${sheet}:${word}:${currentAt}:answerArtifact`,
+        verificationBasis:'RETRIEVAL_EXACT_MATCH_V1',
         explicitRetraceReviewEventId:reviewId,
         explicitRetraceReviewAt:reviewAt,
         correctedAt:currentAt,

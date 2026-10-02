@@ -63,6 +63,10 @@ const courageReview=api.recordErrorReview({
   state:courageState,sheetId:'sample',targetWordIds:['w1'],at:'2026-10-02T00:00:30.000Z'
 });
 const courageCurrent={wordId:'w1',type:'CORRECT',at:'2026-10-02T00:01:00.000Z'};
+Object.assign(couragePrior,{sheetId:'sample',rejectedSelection:{target:'cat',position:0,selected:'b'}});
+Object.assign(courageCurrent,{sheetId:'sample',verificationBasis:'RETRIEVAL_EXACT_MATCH_V1',answerArtifact:{target:'cat',positions:[0],letters:['c']}});
+courageState.sheets=[{sheetId:'sample',items:[{id:'w1',eng:'cat'}]}];
+courageState.codeRed={history:[couragePrior,courageCurrent]};
 const courage=api.recordCorrectionCourage({
   state:courageState,sheetId:'sample',wordId:'w1',
   priorAttempt:couragePrior,currentAttempt:courageCurrent,reviewObservation:courageReview
@@ -86,3 +90,63 @@ assert('source-runtime-loads-before-app',
 assert('source-runtime-is-precached',sw.includes("'./hide-badge-source-observation-v01.js'"));
 
 console.log('HIDE_BADGE_SOURCE_PRODUCER_PASS');
+
+const args={state:courageState,sheetId:'sample',wordId:'w1',priorAttempt:couragePrior,currentAttempt:courageCurrent,reviewObservation:courageReview};
+function rejects(name,change){
+  const copy=JSON.parse(JSON.stringify(args));
+  copy.priorAttempt=copy.state.codeRed.history[0];copy.currentAttempt=copy.state.codeRed.history[1];
+  copy.reviewObservation=copy.state.badgeSourceObservations.find(x=>x.behavior_code==='ERROR_REVIEW');
+  change(copy);
+  const before=copy.state.badgeSourceObservations.length;
+  assert(name,api.recordCorrectionCourage(copy)===null&&copy.state.badgeSourceObservations.length===before);
+}
+rejects('labels-without-error-artifact',x=>delete x.priorAttempt.rejectedSelection);
+rejects('counter-is-not-error-artifact',x=>{delete x.priorAttempt.rejectedSelection;x.priorAttempt.wrongAttempts=10});
+rejects('missing-answer-artifact',x=>delete x.currentAttempt.answerArtifact);
+rejects('unverified-correct-label',x=>delete x.currentAttempt.verificationBasis);
+rejects('incorrect-answer',x=>x.currentAttempt.answerArtifact.letters=['b']);
+rejects('empty-answer',x=>{x.currentAttempt.answerArtifact.positions=[];x.currentAttempt.answerArtifact.letters=[]});
+rejects('non-error-selection',x=>x.priorAttempt.rejectedSelection.selected='c');
+rejects('different-prior-word',x=>x.priorAttempt.wordId='w2');
+rejects('different-prior-sheet',x=>x.priorAttempt.sheetId='other');
+rejects('changed-target',x=>x.state.sheets[0].items[0].eng='dog');
+rejects('missing-history',x=>x.state.codeRed.history=[]);
+rejects('unrecorded-review',x=>x.state.badgeSourceObservations=[]);
+rejects('non-child-review',x=>x.reviewObservation.explicit_child_action=false);
+rejects('wrong-review-contract',x=>x.reviewObservation.source_contract_id='HIDE_RETRACE_CORRECTION_V1');
+rejects('review-other-target',x=>x.reviewObservation.payload.targetWordIds=['w2']);
+rejects('review-before-error',x=>x.reviewObservation.occurred_at='2026-10-01T00:00:00Z');
+rejects('review-after-correction',x=>x.reviewObservation.occurred_at='2026-10-03T00:00:00Z');
+rejects('invalid-date',x=>x.currentAttempt.at='invalid');
+rejects('hint-result',x=>x.currentAttempt.type='HINT_USED');
+assert('deduplicates-courage',api.recordCorrectionCourage(args)===courage&&courageState.badgeSourceObservations.length===2);
+assert('distinct-from-retrace-correction',courage.source_contract_id!==obs.source_contract_id&&courage.behavior_code!==obs.behavior_code);
+assert('explicit-child-and-artifact-links',courage.explicit_child_action===true&&!!courage.payload.errorArtifactRef&&!!courage.payload.correctedArtifactRef);
+assert('runtime-captures-rejected-selection',app.includes('codeSession.rejectedSelection={target:wTarget(codeSession.word)'));
+assert('runtime-captures-answer-artifact',app.includes('attempt.answerArtifact={target:wTarget(w)'));
+assert('runtime-prior-is-same-sheet',app.includes("x?.type==='WRONG'&&x?.sheetId===(sheet()?.sheetId||'unknown')"));
+console.log('HIDE_CORRECTION_COURAGE_FAIL_CLOSED_PASS');
+
+// Execute the actual selection/result producers with isolated state and no browser/network.
+const word={id:'w1',eng:'cat'};
+const runtimeState={sheets:[{sheetId:'sample',items:[word]}],badgeSourceObservations:[],
+  codeRed:{history:[],results:{},retrace:[],index:0,retryOnly:false},learning:{combo:0,flow:0}};
+const runtime={S:runtimeState,HideBadgeSourceObservationV01:api,
+  sheet:()=>runtimeState.sheets[0],nowISO:()=> '2026-10-02T00:00:00Z',
+  $:()=>null,$$:()=>[],CSS:{escape:x=>x},setPartner(){},updateCodeUI(){},setTimeout(){},
+  stopCodeTimer(){},markStudy(){},save(){},codeTargets:()=>[],finishCodeRed(){}};
+vm.createContext(runtime);
+vm.runInContext(app.slice(app.indexOf('function wTarget('),app.indexOf('function updateCodeUI(')),runtime);
+vm.runInContext(app.slice(app.indexOf('function checkCodeAnswer('),app.indexOf('function startCodeTimer(')),runtime);
+function session(){return {word,blankIdx:[0],keys:[{id:'bad',ch:'b'},{id:'good',ch:'c'}],answers:{},wrongAttempts:0,hintLevel:0}}
+runtime.codeSession=session();
+runtime.placeKey('bad',0);runtime.placeKey('good',0);runtime.checkCodeAnswer();
+assert('real-selection-persists-error-artifact',runtimeState.codeRed.history[0].rejectedSelection.selected==='b');
+api.recordErrorReview({state:runtimeState,sheetId:'sample',targetWordIds:['w1'],at:runtime.nowISO()});
+runtimeState.codeRed.retryOnly=true;runtime.codeSession=session();
+runtime.placeKey('good',0);runtime.checkCodeAnswer();
+const produced=runtimeState.badgeSourceObservations.filter(x=>x.behavior_code==='CORRECTION_COURAGE');
+assert('real-child-action-to-verified-outcome',produced.length===1&&produced[0].explicit_child_action===true);
+assert('equal-timestamps-no-duration-evidence',produced[0].payload.priorWrongAt===produced[0].payload.correctedAt);
+assert('no-counter-or-score-in-observation',!api.hasForbiddenKeyDeep(produced[0].payload));
+console.log('HIDE_CORRECTION_COURAGE_RUNTIME_PASS');
