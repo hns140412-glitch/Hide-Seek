@@ -242,6 +242,10 @@ function recordCodeResult(type){
     state:S,sheetId:sheet()?.sheetId||'unknown',wordId:w.id,
     priorAttempt:priorWrong,currentAttempt:attempt,reviewObservation:review
    });
+   globalThis.HideBadgeSourceObservationV01?.recordPersistentBreakthrough?.({
+    state:S,sheetId:sheet()?.sheetId||'unknown',wordId:w.id,
+    priorAttempt:priorWrong,currentAttempt:attempt,reviewObservation:review
+   });
   }
  }
  w.learningStats=w.learningStats||{};w.learningStats.codeRedAttempts=(w.learningStats.codeRedAttempts||0)+1;if(['WRONG','PASS','TIMEOUT','HINT_USED'].includes(type)){if(!S.codeRed.retrace.includes(w.id))S.codeRed.retrace.push(w.id);if(type==='WRONG')w.wrong=(w.wrong||0)+1;if(type==='PASS')w.pass=(w.pass||0)+1;if(type==='TIMEOUT')w.learningStats.timeout=(w.learningStats.timeout||0)+1;if(type==='HINT_USED')w.hint=(w.hint||0)+1}else{S.learning.combo++;S.learning.flow=Math.min(6,S.learning.flow+1)}S.codeRed.index++;markStudy(type==='CORRECT'?5:1);save();if(S.codeRed.index<codeTargets().length)renderCodeRed();else finishCodeRed()}
