@@ -134,9 +134,45 @@
     });
   }
 
+
+  function recordCorrectionCourage({state,sheetId,wordId,priorAttempt,currentAttempt,reviewObservation}={}){
+    if(!state||priorAttempt?.type!=='WRONG'||currentAttempt?.type!=='CORRECT')return null;
+    if(reviewObservation?.event_family!=='ERROR_DISCOVERY'||reviewObservation?.behavior_code!=='ERROR_REVIEW')return null;
+    const sheet=clean(sheetId,160),word=clean(wordId,160);
+    const priorAt=clean(priorAttempt?.at,80),currentAt=clean(currentAttempt?.at,80);
+    const reviewAt=clean(reviewObservation?.occurred_at,80);
+    const reviewSheet=clean(reviewObservation?.payload?.sheetId,160);
+    const targets=Array.isArray(reviewObservation?.payload?.targetWordIds)?reviewObservation.payload.targetWordIds.map(x=>clean(x,160)):[];
+    const reviewId=clean(reviewObservation?.event_id,160);
+    if(!sheet||!word||!priorAt||!currentAt||!reviewAt||!reviewId)return null;
+    if(reviewSheet!==sheet||!targets.includes(word))return null;
+    const p=Date.parse(priorAt),r=Date.parse(reviewAt),n=Date.parse(currentAt);
+    if(!Number.isFinite(p)||!Number.isFinite(r)||!Number.isFinite(n)||p>r||r>n)return null;
+    return record(state,{
+      event_id:`hide_badge_correction_courage_${sheet}_${word}_${currentAt}`,
+      event_family:'ERROR_CORRECTION',
+      behavior_code:'CORRECTION_COURAGE',
+      occurred_at:currentAt,
+      source_contract_id:'HIDE_RETRACE_CORRECTION_COURAGE_V1',
+      evidence_ref:`hide-retrace-correction-courage:${sheet}:${word}:${currentAt}`,
+      explicit_child_action:true,
+      payload:{
+        sheetId:sheet,
+        wordId:word,
+        priorWrongAt:priorAt,
+        explicitRetraceReviewEventId:reviewId,
+        explicitRetraceReviewAt:reviewAt,
+        correctedAt:currentAt,
+        priorResultType:'WRONG',
+        correctedResultType:'CORRECT',
+        interactionMode:'CORE'
+      }
+    });
+  }
+
   globalThis.HideBadgeSourceObservationV01=Object.freeze({
     VERSION,CONTRACT,
     families:Object.freeze([...ALLOWED_FAMILIES]),
-    normalize,record,recordErrorReview,recordRetraceCorrection,hasForbiddenKeyDeep
+    normalize,record,recordErrorReview,recordRetraceCorrection,recordCorrectionCourage,hasForbiddenKeyDeep
   });
 })();
