@@ -226,6 +226,20 @@ function recordCodeResult(type){
    state:S,sheetId:sheet()?.sheetId||'unknown',wordId:w.id,
    priorAttempt:priorWrong,currentAttempt:attempt
   });
+  const review=[...(S.badgeSourceObservations||[])].reverse().find(x=>
+   x?.event_family==='ERROR_DISCOVERY'&&
+   x?.behavior_code==='ERROR_REVIEW'&&
+   x?.payload?.sheetId===(sheet()?.sheetId||'unknown')&&
+   Array.isArray(x?.payload?.targetWordIds)&&x.payload.targetWordIds.includes(w.id)&&
+   Date.parse(x?.occurred_at)>=Date.parse(priorWrong.at)&&
+   Date.parse(x?.occurred_at)<=Date.parse(attempt.at)
+  )||null;
+  if(review){
+   globalThis.HideBadgeSourceObservationV01?.recordCorrectionCourage?.({
+    state:S,sheetId:sheet()?.sheetId||'unknown',wordId:w.id,
+    priorAttempt:priorWrong,currentAttempt:attempt,reviewObservation:review
+   });
+  }
  }
  w.learningStats=w.learningStats||{};w.learningStats.codeRedAttempts=(w.learningStats.codeRedAttempts||0)+1;if(['WRONG','PASS','TIMEOUT','HINT_USED'].includes(type)){if(!S.codeRed.retrace.includes(w.id))S.codeRed.retrace.push(w.id);if(type==='WRONG')w.wrong=(w.wrong||0)+1;if(type==='PASS')w.pass=(w.pass||0)+1;if(type==='TIMEOUT')w.learningStats.timeout=(w.learningStats.timeout||0)+1;if(type==='HINT_USED')w.hint=(w.hint||0)+1}else{S.learning.combo++;S.learning.flow=Math.min(6,S.learning.flow+1)}S.codeRed.index++;markStudy(type==='CORRECT'?5:1);save();if(S.codeRed.index<codeTargets().length)renderCodeRed();else finishCodeRed()}
 function startCodeTimer(){const total=codeSession.seconds;codeTimer=setInterval(()=>{const left=Math.max(0,total-(Date.now()-codeSession.start)/1000),pct=Math.round(left/total*100),ring=$('#timeRing'),txt=$('#timeText');if(!ring||!txt)return;ring.style.setProperty('--p',pct);txt.textContent=Math.ceil(left);ring.classList.toggle('warn',pct<=45&&pct>20);ring.classList.toggle('alert',pct<=20);if(left<=0)recordCodeResult('TIMEOUT')},150)}
