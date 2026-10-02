@@ -156,8 +156,14 @@
       const url = new URL(context.snap_target, location.href);
       if (!['http:', 'https:'].includes(url.protocol)) return event;
       if (context.session_id) url.searchParams.set('session_id', context.session_id);
+      if (context.goal_id) url.searchParams.set('goal_id', context.goal_id);
       if (context.task_id) url.searchParams.set('task_id', context.task_id);
       if (context.lap_id) url.searchParams.set('lap_id', context.lap_id);
+      if (context.return_target) url.searchParams.set('return_target', context.return_target);
+      if (context.child_id) url.searchParams.set('child_id', context.child_id);
+      if (context.subject) url.searchParams.set('subject', context.subject);
+      if (context.concept_skill_target) url.searchParams.set('concept_skill_target', context.concept_skill_target);
+      if (context.learning_target_id) url.searchParams.set('learning_target_id', context.learning_target_id);
       url.searchParams.set('from_app', 'hide-seek');
       url.searchParams.set('word', event.payload.word);
       if (event.payload.context) url.searchParams.set('word_context', event.payload.context);
