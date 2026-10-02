@@ -105,3 +105,52 @@ test('Hide correction courage requires explicit RETRACE review between wrong and
     }
   });
 });
+
+
+test('Hide root cause producer requires a captured Code Red error artifact and explicit child explanation',async({page})=>{
+  await page.goto('http://127.0.0.1:4173/');
+  await expect.poll(()=>page.evaluate(()=>!!globalThis.HideBadgeSourceObservationV01)).toBe(true);
+  const out=await page.evaluate(()=>{
+    const errorAttempt={
+      wordId:'w1',sheetId:'sample',type:'WRONG',at:'2026-10-02T00:00:00.000Z',
+      rejectedSelection:{target:'cat',position:0,selected:'b'}
+    };
+    const state={
+      sheets:[{sheetId:'sample',items:[{id:'w1',eng:'cat'}]}],
+      badgeSourceObservations:[],
+      codeRed:{history:[errorAttempt]}
+    };
+    const observation=globalThis.HideBadgeSourceObservationV01.recordRootCauseFound({
+      state,sheetId:'sample',wordId:'w1',errorAttempt,
+      causeText:'발음이 비슷해서 헷갈렸어요',
+      causeActionRef:'hide-root-cause-action:sample:w1:1',
+      at:'2026-10-02T00:00:30.000Z'
+    });
+    const noHistory=globalThis.HideBadgeSourceObservationV01.recordRootCauseFound({
+      state:{...state,codeRed:{history:[]}},sheetId:'sample',wordId:'w1',errorAttempt,
+      causeText:'헷갈렸어요',causeActionRef:'a'
+    });
+    return {observation,noHistory,count:state.badgeSourceObservations.length};
+  });
+  expect(out.noHistory).toBeNull();
+  expect(out.count).toBe(1);
+  expect(out.observation).toMatchObject({
+    contract_version:'TAKY_BADGE_SOURCE_OBSERVATION_V1',
+    app_id:'HIDE_SEEK',
+    event_family:'ERROR_ANALYSIS',
+    behavior_code:'ROOT_CAUSE_FOUND',
+    source_contract_id:'HIDE_ERROR_ARTIFACT_ROOT_CAUSE_V1',
+    explicit_child_action:true,
+    disposition:'OBSERVATION_ONLY',
+    badge_award_authorized:false,
+    economy_mutation_authorized:false,
+    catalog_activation_allowed:false,
+    payload:{
+      sheetId:'sample',
+      wordId:'w1',
+      errorArtifactRef:'hide-code-result:sample:w1:2026-10-02T00:00:00.000Z:rejectedSelection',
+      verificationBasis:'BOUND_TO_CAPTURED_CODE_RED_ERROR_ARTIFACT_V1',
+      interactionMode:'CORE'
+    }
+  });
+});
