@@ -79,6 +79,29 @@ function load(){
 }
 let S=load(),currentTab="home",viewStack=[],runtimeApiKey=sessionStorage.getItem(SESSION_API_KEY)||"",selectedGuide=S.guide.id||"fox",selectedGuideName=S.guide.name||"",selectedProfileFile=null,selectedTile=null,codeSession=null,codeTimer=null,selectedKey=null,toastTimer=null;
 function save(){S.schemaVersion=SCHEMA_VERSION;S.appRevision=APP_REV;localStorage.setItem(STORAGE_KEY,JSON.stringify(S));window.dispatchEvent(new CustomEvent('hide-seek-state-saved',{detail:{pwa_safe_point:globalThis.HideSeekPwaSafePoint?.()===true}}));if(globalThis.HideSeekPwaSafePoint?.()===true)window.dispatchEvent(new CustomEvent('hide-seek-safe-point'))}
+async function acceptVerifiedImprovementComparison(comparison,{endpoint}={}){
+ const obs=globalThis.HideBadgeSourceObservationV01?.recordVerifiedImprovement?.({state:S,comparison});
+ if(!obs)return null;
+ S.badgeTransportPending=S.badgeTransportPending&&typeof S.badgeTransportPending==='object'?S.badgeTransportPending:{};
+ const target=String(endpoint||globalThis.HIDE_BADGE_TRANSPORT_ENDPOINT||'').trim();
+ if(!target){
+  S.badgeTransportPending[obs.event_id]={status:'PENDING_ENDPOINT',observation:obs,updatedAt:nowISO()};
+  save();return {status:'PENDING_ENDPOINT',observation:obs};
+ }
+ try{
+  const sent=await globalThis.TakyBadgeSourceTransportV1?.sendSignedObservation?.('HIDE_SEEK',obs,{endpoint:target});
+  if(!sent||sent.network_sent!==true)throw new Error('BADGE_SOURCE_TRANSPORT_NOT_SENT');
+  delete S.badgeTransportPending[obs.event_id];
+  S.badgeTransportReceipts=S.badgeTransportReceipts&&typeof S.badgeTransportReceipts==='object'?S.badgeTransportReceipts:{};
+  S.badgeTransportReceipts[obs.event_id]={status:'SENT',receiptId:sent.response?.receipt_id||null,endpoint:target,updatedAt:nowISO()};
+  save();return {status:'SENT',observation:obs,transport:sent};
+ }catch(error){
+  S.badgeTransportPending[obs.event_id]={status:'PENDING_TRUSTED_TRANSPORT',observation:obs,error:String(error?.message||error),endpoint:target,updatedAt:nowISO()};
+  save();return {status:'PENDING_TRUSTED_TRANSPORT',observation:obs,error:String(error?.message||error)};
+ }
+}
+globalThis.HideVerifiedImprovementIntakeV01=Object.freeze({accept:acceptVerifiedImprovementComparison});
+window.addEventListener('taky-learning-improvement-comparison',event=>{void acceptVerifiedImprovementComparison(event.detail?.comparison||event.detail||{}, {endpoint:event.detail?.endpoint})});
 function sheet(){return S.sheets.find(x=>x.sheetId===S.activeSheetId)||S.sheets[0]}
 function validWords(){return (sheet()?.items||[]).filter(w=>w.eng&&w.kor&&!w.needsReview)}
 function allWords(){return sheet()?.items||[]}

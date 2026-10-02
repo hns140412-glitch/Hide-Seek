@@ -205,3 +205,39 @@ test('Hide persistent breakthrough requires explicit retrace between wrong and e
     }
   });
 });
+
+
+test('Hide verified improvement intake persists source and fails closed before trusted transport is configured', async ({ page }) => {
+  await page.goto('http://127.0.0.1:4173/', { waitUntil:'domcontentloaded' });
+  const comparison={
+    contract_version:'TAKY_LEARNING_BADGE_IMPROVEMENT_COMPARISON_V1',
+    authority:'LEARNING_VERIFICATION_RECEIPT_COMPARISON',
+    comparison_id:'improvement:word:bridge:b1:b2',
+    source_app:'hide-seek',learning_target_id:'word:bridge',
+    prior_event_id:'b1',current_event_id:'b2',
+    prior_receipt_id:'vr-b1',current_receipt_id:'vr-b2',
+    prior_verified_outcome:0,current_verified_outcome:1,
+    prior_child_action_ref:'hide-action:b1',current_child_action_ref:'hide-action:b2',
+    verified_improvement:true,explicit_child_action:true
+  };
+  const pending=await page.evaluate(async cmp=>window.HideVerifiedImprovementIntakeV01.accept(cmp),comparison);
+  expect(pending.status).toBe('PENDING_ENDPOINT');
+  const saved=await page.evaluate(()=>{
+    const s=JSON.parse(localStorage.getItem('hide_seek_state'));
+    const improvement=s.badgeSourceObservations.filter(x=>x.behavior_code==='IMPROVEMENT');
+    const pendingRows=Object.values(s.badgeTransportPending||{});
+    return {improvement,pendingRows};
+  });
+  expect(saved.improvement).toHaveLength(1);
+  expect(saved.improvement[0]).toMatchObject({
+    app_id:'HIDE_SEEK',event_family:'IMPROVEMENT',behavior_code:'IMPROVEMENT',
+    source_contract_id:'HIDE_VERIFIED_SAME_TARGET_IMPROVEMENT_V1',
+    explicit_child_action:true,badge_award_authorized:false
+  });
+  expect(saved.pendingRows).toHaveLength(1);
+  expect(saved.pendingRows[0].status).toBe('PENDING_ENDPOINT');
+
+  const blocked=await page.evaluate(async cmp=>window.HideVerifiedImprovementIntakeV01.accept(cmp,{endpoint:'/.netlify/functions/badge-observation'}),comparison);
+  expect(blocked.status).toBe('PENDING_TRUSTED_TRANSPORT');
+  expect(blocked.error).toContain('BADGE_SOURCE_IDENTITY_NOT_REGISTERED');
+});

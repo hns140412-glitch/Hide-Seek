@@ -32,8 +32,35 @@
     });
   }
 
+  async function sendSignedObservation(appId,observation,{endpoint,fetchImpl}={}){
+    const target=String(endpoint||'').trim();
+    if(!target)throw new Error('BADGE_SOURCE_TRANSPORT_ENDPOINT_REQUIRED');
+    const doFetch=fetchImpl||globalThis.fetch;
+    if(typeof doFetch!=='function')throw new Error('BADGE_SOURCE_TRANSPORT_FETCH_REQUIRED');
+    const prepared=await prepareSignedObservation(appId,observation);
+    const response=await doFetch(target,{
+      method:prepared.method,
+      headers:prepared.headers,
+      body:prepared.body
+    });
+    if(!response||response.ok!==true){
+      const status=Number(response?.status||0);
+      throw new Error(`BADGE_SOURCE_TRANSPORT_HTTP_${status||'FAILED'}`);
+    }
+    let data=null;
+    try{data=await response.json()}catch{}
+    return Object.freeze({
+      ...prepared,
+      network_sent:true,
+      endpoint:target,
+      http_status:Number(response.status||200),
+      response:data
+    });
+  }
+
   globalThis.TakyBadgeSourceTransportV1=Object.freeze({
     version:VERSION,
-    prepareSignedObservation
+    prepareSignedObservation,
+    sendSignedObservation
   });
 })();

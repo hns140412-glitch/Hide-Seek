@@ -172,6 +172,18 @@ assert('improvement-requires-comparison-authority',api.recordVerifiedImprovement
 assert('improvement-requires-action-linkage',api.recordVerifiedImprovement({state:{badgeSourceObservations:[]},comparison:{...improvementComparison,current_child_action_ref:''}})===null);
 assert('improvement-requires-fail-to-success',api.recordVerifiedImprovement({state:{badgeSourceObservations:[]},comparison:{...improvementComparison,prior_verified_outcome:1}})===null);
 assert('improvement-has-no-weak-proxy-payload',!api.hasForbiddenKeyDeep(improvement.payload));
+assert('verified-improvement-intake-is-wired',
+  app.includes('HideVerifiedImprovementIntakeV01')&&
+  app.includes("taky-learning-improvement-comparison")&&
+  app.includes("sendSignedObservation?.('HIDE_SEEK'"));
+assert('badge-source-transport-loads-before-app',
+  index.indexOf('taky-badge-source-identity-v01.js')<index.indexOf('./app.js')&&
+  index.indexOf('taky-badge-source-signer-v01.js')<index.indexOf('./app.js')&&
+  index.indexOf('taky-badge-source-transport-v01.js')<index.indexOf('./app.js'));
+assert('badge-source-transport-is-precached',
+  sw.includes("'./taky-badge-source-identity-v01.js'")&&
+  sw.includes("'./taky-badge-source-signer-v01.js'")&&
+  sw.includes("'./taky-badge-source-transport-v01.js'"));
 console.log('HIDE_VERIFIED_IMPROVEMENT_CONTRACT_PASS');
 
 
