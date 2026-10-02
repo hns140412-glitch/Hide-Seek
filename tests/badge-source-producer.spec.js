@@ -28,3 +28,34 @@ test('Hide badge source runtime stays observation-only and records verified retr
     catalog_activation_allowed:false
   });
 });
+
+
+test('Hide explicit RETRACE review is observation-only and distinct from correction',async({page})=>{
+  await page.goto('http://127.0.0.1:4173/');
+  await expect.poll(()=>page.evaluate(()=>!!globalThis.HideBadgeSourceObservationV01)).toBe(true);
+  const out=await page.evaluate(()=>{
+    const state={badgeSourceObservations:[]};
+    const review=globalThis.HideBadgeSourceObservationV01.recordErrorReview({
+      state,sheetId:'sample',targetWordIds:['w1','w2'],at:'2026-10-02T00:00:30.000Z'
+    });
+    return {review,count:state.badgeSourceObservations.length};
+  });
+  expect(out.count).toBe(1);
+  expect(out.review).toMatchObject({
+    contract_version:'TAKY_BADGE_SOURCE_OBSERVATION_V1',
+    app_id:'HIDE_SEEK',
+    event_family:'ERROR_DISCOVERY',
+    behavior_code:'ERROR_REVIEW',
+    source_contract_id:'HIDE_EXPLICIT_RETRACE_REVIEW_V1',
+    explicit_child_action:true,
+    disposition:'OBSERVATION_ONLY',
+    badge_award_authorized:false,
+    economy_mutation_authorized:false,
+    catalog_activation_allowed:false,
+    payload:{
+      sheetId:'sample',
+      targetWordIds:['w1','w2'],
+      reviewMode:'RETRACE'
+    }
+  });
+});
