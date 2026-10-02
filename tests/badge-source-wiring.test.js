@@ -56,6 +56,31 @@ assert('app-wires-only-retry-correct-after-prior-wrong',
   app.includes("S.codeRed.retryOnly&&type==='CORRECT'")&&
   app.includes("x?.wordId===w.id&&x?.type==='WRONG'")&&
   app.includes("HideBadgeSourceObservationV01?.recordRetraceCorrection"));
+
+const courageState={badgeSourceObservations:[]};
+const couragePrior={wordId:'w1',type:'WRONG',at:'2026-10-02T00:00:00.000Z'};
+const courageReview=api.recordErrorReview({
+  state:courageState,sheetId:'sample',targetWordIds:['w1'],at:'2026-10-02T00:00:30.000Z'
+});
+const courageCurrent={wordId:'w1',type:'CORRECT',at:'2026-10-02T00:01:00.000Z'};
+const courage=api.recordCorrectionCourage({
+  state:courageState,sheetId:'sample',wordId:'w1',
+  priorAttempt:couragePrior,currentAttempt:courageCurrent,reviewObservation:courageReview
+});
+assert('explicit-retrace-intent-plus-correction-emits-correction-courage',
+  courage?.event_family==='ERROR_CORRECTION'&&
+  courage?.behavior_code==='CORRECTION_COURAGE'&&
+  courage?.source_contract_id==='HIDE_RETRACE_CORRECTION_COURAGE_V1');
+assert('correction-courage-stays-observation-only',
+  courage?.badge_award_authorized===false&&
+  courage?.economy_mutation_authorized===false&&
+  courage?.catalog_activation_allowed===false);
+assert('correction-courage-rejects-missing-explicit-review',
+  api.recordCorrectionCourage({
+    state:courageState,sheetId:'sample',wordId:'w1',
+    priorAttempt:couragePrior,currentAttempt:courageCurrent,reviewObservation:null
+  })===null);
+
 assert('source-runtime-loads-before-app',
   index.indexOf('hide-badge-source-observation-v01.js')<index.indexOf('./app.js'));
 assert('source-runtime-is-precached',sw.includes("'./hide-badge-source-observation-v01.js'"));
