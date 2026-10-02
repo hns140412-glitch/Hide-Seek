@@ -35,7 +35,7 @@ const DEFAULT_STATE={
  guide:{id:"fox",name:"",style:"curious",voice:true},
  settings:{sound:true,partnerVoice:true,reducedMotion:false,pressureReduced:false,geminiModel:"gemini-2.5-flash"},
  sheets:[{sheetId:"sample",title:"이번 주 시험",createdAt:nowISO(),updatedAt:nowISO(),testDate:"",sourceType:"sample",sourceCount:0,status:"LEARNING",caseMastery:0,items:clone(DEFAULT_WORDS),recognitionMeta:{}}],
- activeSheetId:"sample",sessions:[],xp:0,streak:0,lastStudy:"",memory:{},ocrDraft:null,
+ activeSheetId:"sample",sessions:[],xp:0,streak:0,lastStudy:"",memory:{},ocrDraft:null,badgeSourceObservations:[],
  learning:{phase:"first",firstIndex:0,meaningIndex:0,connectionRound:0,weakRound:0,combo:0,flow:0,fever:false,history:[]},
  codeRed:{index:0,results:{},history:[],retrace:[],retryOnly:false,targetIds:[]},
  onboardingStep:0,onboardingDone:false
@@ -45,7 +45,7 @@ function migrate(raw){
  const s=Object.assign(clone(DEFAULT_STATE),raw||{});
  s.schemaVersion=SCHEMA_VERSION;s.appRevision=APP_REV;
  s.profile=Object.assign({},DEFAULT_STATE.profile,raw?.profile||{});s.guide=Object.assign({},DEFAULT_STATE.guide,raw?.guide||{});s.settings=Object.assign({},DEFAULT_STATE.settings,raw?.settings||{});
- s.learning=Object.assign({},DEFAULT_STATE.learning,raw?.learning||raw?.study||{});s.codeRed=Object.assign({},DEFAULT_STATE.codeRed,raw?.codeRed||{});s.memory=raw?.memory||{};
+ s.learning=Object.assign({},DEFAULT_STATE.learning,raw?.learning||raw?.study||{});s.codeRed=Object.assign({},DEFAULT_STATE.codeRed,raw?.codeRed||{});s.memory=raw?.memory||{};s.badgeSourceObservations=Array.isArray(raw?.badgeSourceObservations)?raw.badgeSourceObservations:[];
  if(!Array.isArray(s.sheets)||!s.sheets.length)s.sheets=clone(DEFAULT_STATE.sheets);
  s.sheets=s.sheets.map((sh,si)=>({...sh,sheetId:sh.sheetId||`sheet-${si}`,updatedAt:sh.updatedAt||sh.createdAt||nowISO(),status:sh.status||"READY",caseMastery:Number(sh.caseMastery||0),items:(sh.items||[]).map(normalizeWord),recognitionMeta:sh.recognitionMeta||{}}));
  if(!s.sheets.find(x=>x.sheetId===s.activeSheetId))s.activeSheetId=s.sheets[0].sheetId;
@@ -79,6 +79,29 @@ function load(){
 }
 let S=load(),currentTab="home",viewStack=[],runtimeApiKey=sessionStorage.getItem(SESSION_API_KEY)||"",selectedGuide=S.guide.id||"fox",selectedGuideName=S.guide.name||"",selectedProfileFile=null,selectedTile=null,codeSession=null,codeTimer=null,selectedKey=null,toastTimer=null;
 function save(){S.schemaVersion=SCHEMA_VERSION;S.appRevision=APP_REV;localStorage.setItem(STORAGE_KEY,JSON.stringify(S));window.dispatchEvent(new CustomEvent('hide-seek-state-saved',{detail:{pwa_safe_point:globalThis.HideSeekPwaSafePoint?.()===true}}));if(globalThis.HideSeekPwaSafePoint?.()===true)window.dispatchEvent(new CustomEvent('hide-seek-safe-point'))}
+async function acceptVerifiedImprovementComparison(comparison,{endpoint}={}){
+ const obs=globalThis.HideBadgeSourceObservationV01?.recordVerifiedImprovement?.({state:S,comparison});
+ if(!obs)return null;
+ S.badgeTransportPending=S.badgeTransportPending&&typeof S.badgeTransportPending==='object'?S.badgeTransportPending:{};
+ const target=String(endpoint||globalThis.HIDE_BADGE_TRANSPORT_ENDPOINT||'').trim();
+ if(!target){
+  S.badgeTransportPending[obs.event_id]={status:'PENDING_ENDPOINT',observation:obs,updatedAt:nowISO()};
+  save();return {status:'PENDING_ENDPOINT',observation:obs};
+ }
+ try{
+  const sent=await globalThis.TakyBadgeSourceTransportV1?.sendSignedObservation?.('HIDE_SEEK',obs,{endpoint:target});
+  if(!sent||sent.network_sent!==true)throw new Error('BADGE_SOURCE_TRANSPORT_NOT_SENT');
+  delete S.badgeTransportPending[obs.event_id];
+  S.badgeTransportReceipts=S.badgeTransportReceipts&&typeof S.badgeTransportReceipts==='object'?S.badgeTransportReceipts:{};
+  S.badgeTransportReceipts[obs.event_id]={status:'SENT',receiptId:sent.response?.receipt_id||null,endpoint:target,updatedAt:nowISO()};
+  save();return {status:'SENT',observation:obs,transport:sent};
+ }catch(error){
+  S.badgeTransportPending[obs.event_id]={status:'PENDING_TRUSTED_TRANSPORT',observation:obs,error:String(error?.message||error),endpoint:target,updatedAt:nowISO()};
+  save();return {status:'PENDING_TRUSTED_TRANSPORT',observation:obs,error:String(error?.message||error)};
+ }
+}
+globalThis.HideVerifiedImprovementIntakeV01=Object.freeze({accept:acceptVerifiedImprovementComparison});
+window.addEventListener('taky-learning-improvement-comparison',event=>{void acceptVerifiedImprovementComparison(event.detail?.comparison||event.detail||{}, {endpoint:event.detail?.endpoint})});
 function sheet(){return S.sheets.find(x=>x.sheetId===S.activeSheetId)||S.sheets[0]}
 function validWords(){return (sheet()?.items||[]).filter(w=>w.eng&&w.kor&&!w.needsReview)}
 function allWords(){return sheet()?.items||[]}
@@ -187,16 +210,22 @@ function codeTargets(){const ws=validWords();if(S.codeRed.retryOnly){const set=n
 function startCodeRed(retryOnly=false){stopCodeTimer();const targets=retryOnly?validWords().filter(w=>S.codeRed.retrace.includes(w.id)):validWords();if(!targets.length)return toast('CODE RED 대상 단어가 없어요.');S.learning.phase='code';sheet().status='CODE_RED_READY';S.codeRed.index=0;S.codeRed.retryOnly=retryOnly;S.codeRed.targetIds=targets.map(w=>w.id);if(!retryOnly){S.codeRed.results={};S.codeRed.retrace=[]}save();viewStack=[];renderCodeRed()}
 function renderCodeRed(){const targets=codeTargets();if(S.codeRed.index>=targets.length)return finishCodeRed();const w=targets[S.codeRed.index];codeSession=makeCodeSession(w);selectedKey=null;const letters=[...w.eng].map((ch,i)=>codeSession.blankIdx.includes(i)?`<span class="slot-anchor">_</span>`:esc(ch)).join('');$('#view').innerHTML=`<section class="code-shell"><div class="code-head"><div><span class="code-label">CODE RED</span><div class="code-instruction" style="margin-top:6px">${S.codeRed.retryOnly?'RE-CHECK':'ALL CURRENT WORDS'} · ${S.codeRed.index+1}/${targets.length}</div></div><div id="timeRing" class="time-ring" style="--p:100"><b><span id="timeText">${codeSession.seconds}</span>s</b></div></div><div class="code-word"><div>${letters}</div><div class="slots">${codeSession.blankIdx.map((_,n)=>`<button class="slot" data-slot="${n}" type="button" aria-label="${n+1}번째 빈칸"></button>`).join('')}</div></div><p class="code-instruction">Letter Key를 빈칸으로 끌거나, Key를 탭한 뒤 Slot을 탭하세요.</p><div class="key-tray">${codeSession.keys.map(k=>`<button draggable="true" class="letter-key" data-key="${k.id}" type="button">${esc(k.ch)}</button>`).join('')}</div><div class="btn-row"><button class="btn gold" id="codeHint" type="button">힌트</button><button class="btn secondary" id="undoCode" type="button">되돌리기</button><button class="btn danger" id="passCode" type="button">PASS</button></div></section>`;bindCodeRed();startCodeTimer();setPartner('진짜 철자 열쇠만 골라. 가짜도 섞여 있어.','radio')}
 function bindCodeRed(){$$('.letter-key').forEach(k=>{k.onclick=()=>selectKey(k.dataset.key);k.addEventListener('dragstart',e=>e.dataTransfer.setData('text/plain',k.dataset.key))});$$('.slot').forEach(s=>{s.onclick=()=>placeSelected(Number(s.dataset.slot));s.addEventListener('dragover',e=>e.preventDefault());s.addEventListener('drop',e=>{e.preventDefault();placeKey(e.dataTransfer.getData('text/plain'),Number(s.dataset.slot))})});$('#undoCode').onclick=undoCode;$('#codeHint').onclick=useCodeHint;$('#passCode').onclick=()=>recordCodeResult('PASS')}
+function wTarget(word){return String(word.eng).toLowerCase()}
 function selectKey(id){selectedKey=id;$$('.letter-key').forEach(k=>k.classList.toggle('selected',k.dataset.key===id))}
 function placeSelected(slot){if(selectedKey)placeKey(selectedKey,slot)}
-function placeKey(keyId,slot){const key=codeSession.keys.find(k=>k.id===keyId);if(!key||key.used)return;const need=codeSession.word.eng[codeSession.blankIdx[slot]].toLowerCase();if(key.ch!==need){codeSession.wrongAttempts++;selectedKey=null;$$('.letter-key').forEach(k=>k.classList.remove('selected'));const el=$(`[data-key="${CSS.escape(keyId)}"]`);if(el){el.classList.remove('reject');void el.offsetWidth;el.classList.add('reject')}setPartner('가짜 열쇠였네. 원래 자리로 돌려둘게.','focus');return}const prev=codeSession.answers[slot];if(prev){const pk=codeSession.keys.find(k=>k.id===prev);if(pk)pk.used=false}codeSession.answers[slot]=key.id;key.used=true;selectedKey=null;updateCodeUI();if(Object.keys(codeSession.answers).length===codeSession.blankIdx.length)setTimeout(checkCodeAnswer,180)}
+function placeKey(keyId,slot){const key=codeSession.keys.find(k=>k.id===keyId);if(!key||key.used)return;const need=codeSession.word.eng[codeSession.blankIdx[slot]].toLowerCase();if(key.ch!==need){codeSession.rejectedSelection={target:wTarget(codeSession.word),position:codeSession.blankIdx[slot],selected:key.ch};codeSession.wrongAttempts++;selectedKey=null;$$('.letter-key').forEach(k=>k.classList.remove('selected'));const el=$(`[data-key="${CSS.escape(keyId)}"]`);if(el){el.classList.remove('reject');void el.offsetWidth;el.classList.add('reject')}setPartner('가짜 열쇠였네. 원래 자리로 돌려둘게.','focus');return}const prev=codeSession.answers[slot];if(prev){const pk=codeSession.keys.find(k=>k.id===prev);if(pk)pk.used=false}codeSession.answers[slot]=key.id;key.used=true;selectedKey=null;updateCodeUI();if(Object.keys(codeSession.answers).length===codeSession.blankIdx.length)setTimeout(checkCodeAnswer,180)}
 function updateCodeUI(){$$('.slot').forEach(s=>{const id=codeSession.answers[Number(s.dataset.slot)],key=codeSession.keys.find(k=>k.id===id);s.textContent=key?.ch||'';s.classList.toggle('filled',!!key)});$$('.letter-key').forEach(el=>{const key=codeSession.keys.find(x=>x.id===el.dataset.key);el.classList.toggle('used',!!key?.used);el.classList.remove('selected')})}
 function undoCode(){const slots=Object.keys(codeSession.answers);if(!slots.length)return;const last=slots.at(-1),id=codeSession.answers[last],k=codeSession.keys.find(x=>x.id===id);if(k)k.used=false;delete codeSession.answers[last];updateCodeUI()}
 function useCodeHint(){codeSession.hintLevel++;const unanswered=codeSession.blankIdx.map((_,i)=>i).filter(i=>!codeSession.answers[i]);if(!unanswered.length)return;const slot=unanswered[0],needed=codeSession.word.eng[codeSession.blankIdx[slot]].toLowerCase(),key=codeSession.keys.find(k=>!k.used&&k.ch===needed);if(!key)return;if(codeSession.hintLevel>=3)placeKey(key.id,slot);else{const el=$(`[data-key="${CSS.escape(key.id)}"]`);el?.classList.add('selected');setPartner(codeSession.hintLevel===1?'필요한 열쇠 하나가 살짝 반응했어.':'정답 열쇠를 빈칸 가까이 생각해봐.','hint')}}
 function checkCodeAnswer(){const built=codeSession.blankIdx.map((_,slot)=>codeSession.keys.find(k=>k.id===codeSession.answers[slot])?.ch||''),need=codeSession.blankIdx.map(i=>codeSession.word.eng[i].toLowerCase());if(built.every((x,i)=>x===need[i]))recordCodeResult(codeSession.wrongAttempts>0?'WRONG':codeSession.hintLevel?'HINT_USED':'CORRECT')}
 function recordCodeResult(type){
  stopCodeTimer();
- const w=codeSession.word,attempt={wordId:w.id,type,at:nowISO(),hintLevel:codeSession.hintLevel,wrongAttempts:codeSession.wrongAttempts};
+ const w=codeSession.word,attempt={wordId:w.id,sheetId:sheet()?.sheetId||'unknown',type,at:nowISO(),hintLevel:codeSession.hintLevel,wrongAttempts:codeSession.wrongAttempts};
+ if(codeSession.rejectedSelection)attempt.rejectedSelection={...codeSession.rejectedSelection};
+ if(type==='CORRECT'){attempt.verificationBasis='RETRIEVAL_EXACT_MATCH_V1';attempt.answerArtifact={target:wTarget(w),positions:[...codeSession.blankIdx],letters:codeSession.blankIdx.map((_,slot)=>codeSession.keys.find(k=>k.id===codeSession.answers[slot])?.ch||'')};}
+ const priorWrong=S.codeRed.retryOnly&&type==='CORRECT'
+  ?[...(S.codeRed.history||[])].reverse().find(x=>x?.wordId===w.id&&x?.type==='WRONG'&&x?.sheetId===(sheet()?.sheetId||'unknown'))||null
+  :null;
  if(['CORRECT','WRONG','HINT_USED','TIMEOUT'].includes(type)&&globalThis.HideSeekBridge?.emit){
   globalThis.HideSeekBridge.emit('RETRIEVAL_ATTEMPT_RESULT',{
    word_id:w.id,
@@ -217,11 +246,51 @@ function recordCodeResult(type){
    }
   });
  }
- S.codeRed.results[w.id]=attempt;S.codeRed.history.push(attempt);w.learningStats=w.learningStats||{};w.learningStats.codeRedAttempts=(w.learningStats.codeRedAttempts||0)+1;if(['WRONG','PASS','TIMEOUT','HINT_USED'].includes(type)){if(!S.codeRed.retrace.includes(w.id))S.codeRed.retrace.push(w.id);if(type==='WRONG')w.wrong=(w.wrong||0)+1;if(type==='PASS')w.pass=(w.pass||0)+1;if(type==='TIMEOUT')w.learningStats.timeout=(w.learningStats.timeout||0)+1;if(type==='HINT_USED')w.hint=(w.hint||0)+1}else{S.learning.combo++;S.learning.flow=Math.min(6,S.learning.flow+1)}S.codeRed.index++;markStudy(type==='CORRECT'?5:1);save();if(S.codeRed.index<codeTargets().length)renderCodeRed();else finishCodeRed()}
+ S.codeRed.results[w.id]=attempt;S.codeRed.history.push(attempt);
+ if(priorWrong){
+  globalThis.HideBadgeSourceObservationV01?.recordRetraceCorrection?.({
+   state:S,sheetId:sheet()?.sheetId||'unknown',wordId:w.id,
+   priorAttempt:priorWrong,currentAttempt:attempt
+  });
+  const review=[...(S.badgeSourceObservations||[])].reverse().find(x=>
+   x?.event_family==='ERROR_DISCOVERY'&&
+   x?.behavior_code==='ERROR_REVIEW'&&
+   x?.payload?.sheetId===(sheet()?.sheetId||'unknown')&&
+   Array.isArray(x?.payload?.targetWordIds)&&x.payload.targetWordIds.includes(w.id)&&
+   Date.parse(x?.occurred_at)>=Date.parse(priorWrong.at)&&
+   Date.parse(x?.occurred_at)<=Date.parse(attempt.at)
+  )||null;
+  if(review){
+   globalThis.HideBadgeSourceObservationV01?.recordCorrectionCourage?.({
+    state:S,sheetId:sheet()?.sheetId||'unknown',wordId:w.id,
+    priorAttempt:priorWrong,currentAttempt:attempt,reviewObservation:review
+   });
+   globalThis.HideBadgeSourceObservationV01?.recordPersistentBreakthrough?.({
+    state:S,sheetId:sheet()?.sheetId||'unknown',wordId:w.id,
+    priorAttempt:priorWrong,currentAttempt:attempt,reviewObservation:review
+   });
+  }
+ }
+ w.learningStats=w.learningStats||{};w.learningStats.codeRedAttempts=(w.learningStats.codeRedAttempts||0)+1;if(['WRONG','PASS','TIMEOUT','HINT_USED'].includes(type)){if(!S.codeRed.retrace.includes(w.id))S.codeRed.retrace.push(w.id);if(type==='WRONG')w.wrong=(w.wrong||0)+1;if(type==='PASS')w.pass=(w.pass||0)+1;if(type==='TIMEOUT')w.learningStats.timeout=(w.learningStats.timeout||0)+1;if(type==='HINT_USED')w.hint=(w.hint||0)+1}else{S.learning.combo++;S.learning.flow=Math.min(6,S.learning.flow+1)}S.codeRed.index++;markStudy(type==='CORRECT'?5:1);save();if(S.codeRed.index<codeTargets().length)renderCodeRed();else finishCodeRed()}
 function startCodeTimer(){const total=codeSession.seconds;codeTimer=setInterval(()=>{const left=Math.max(0,total-(Date.now()-codeSession.start)/1000),pct=Math.round(left/total*100),ring=$('#timeRing'),txt=$('#timeText');if(!ring||!txt)return;ring.style.setProperty('--p',pct);txt.textContent=Math.ceil(left);ring.classList.toggle('warn',pct<=45&&pct>20);ring.classList.toggle('alert',pct<=20);if(left<=0)recordCodeResult('TIMEOUT')},150)}
 function stopCodeTimer(){if(codeTimer){clearInterval(codeTimer);codeTimer=null}}
 function finishCodeRed(){stopCodeTimer();const currentTargets=codeTargets(),passed=currentTargets.filter(w=>S.codeRed.results[w.id]?.type==='CORRECT').map(w=>w.id);if(S.codeRed.retryOnly)S.codeRed.retrace=S.codeRed.retrace.filter(id=>!passed.includes(id));if(S.codeRed.retrace.length){sheet().status='RETRACE_REQUIRED';save();return renderRetrace()}sheet().caseMastery=100;sheet().status='TEST_READY';S.learning.phase='done';save();renderComplete()}
-function renderRetrace(){const targets=validWords().filter(w=>S.codeRed.retrace.includes(w.id));$('#view').innerHTML=`<div class="section-title"><h2>RETRACE</h2><span>Fail → Learn Again → Recall Again</span></div><section class="card tint-leaf"><p>틀린 직후 같은 정답을 즉시 반복하지 않습니다. 뜻·발음·철자를 짧게 다시 본 뒤 해당 단어만 재검증합니다.</p><div class="retrace-list" style="margin-top:13px">${targets.map(w=>`<div class="retrace-item"><div><b>${esc(w.eng)}</b><span>${esc(w.kor)}</span></div><button class="circle-btn speak-retrace" data-word="${esc(w.eng)}" type="button">듣기</button></div>`).join('')}</div><button class="btn danger full" id="retryCode" style="margin-top:13px" type="button">이 단어만 다시 CODE RED</button></section>`;$$('.speak-retrace').forEach(b=>b.onclick=()=>speakWord(b.dataset.word));$('#retryCode').onclick=()=>startCodeRed(true);setPartner('놓쳤다고 끝난 건 아니지. 다시 익힌 뒤 같은 단어만 재검증하자.','note')}
+function openRootCauseModal(wordId){
+ const sh=sheet(),w=validWords().find(x=>x.id===wordId);
+ const prior=[...(S.codeRed.history||[])].reverse().find(x=>x?.wordId===wordId&&x?.sheetId===(sh?.sheetId||'unknown')&&x?.type==='WRONG'&&x?.rejectedSelection);
+ if(!w||!prior)return toast('분석할 오답 기록을 찾지 못했어요.');
+ $('#modalRoot').innerHTML=`<div class="modal-back"><section class="modal"><div class="section-title"><h2>원인 찾기</h2><button class="circle-btn" id="closeRootCause" type="button">닫기</button></div><p><b>${esc(w.eng)}</b>에서 왜 이 열쇠를 골랐는지 짧게 적어 주세요.</p><textarea id="rootCauseText" class="input" rows="3" placeholder="예: 발음이 비슷해서 헷갈렸어요"></textarea><button class="btn primary full" id="saveRootCause" style="margin-top:10px" type="button">원인 기록</button></section></div>`;
+ $('#closeRootCause').onclick=()=>{$('#modalRoot').innerHTML=''};
+ $('#saveRootCause').onclick=()=>{
+  const causeText=String($('#rootCauseText')?.value||'').trim();
+  if(!causeText)return toast('왜 헷갈렸는지 한마디만 적어 주세요.');
+  const actionRef=`hide-root-cause-action:${sh?.sheetId||'unknown'}:${wordId}:${Date.now()}`;
+  const obs=globalThis.HideBadgeSourceObservationV01?.recordRootCauseFound?.({state:S,sheetId:sh?.sheetId||'unknown',wordId,errorAttempt:prior,causeText,causeActionRef:actionRef,at:nowISO()});
+  if(!obs)return toast('오답 기록과 연결하지 못했어요.');
+  save();$('#modalRoot').innerHTML='';toast('틀린 원인을 기록했어요.');
+ };
+}
+function renderRetrace(){const targets=validWords().filter(w=>S.codeRed.retrace.includes(w.id));$('#view').innerHTML=`<div class="section-title"><h2>RETRACE</h2><span>Fail → Learn Again → Recall Again</span></div><section class="card tint-leaf"><p>틀린 직후 같은 정답을 즉시 반복하지 않습니다. 뜻·발음·철자를 짧게 다시 본 뒤 해당 단어만 재검증합니다.</p><div class="retrace-list" style="margin-top:13px">${targets.map(w=>`<div class="retrace-item"><div><b>${esc(w.eng)}</b><span>${esc(w.kor)}</span></div><div class="btn-row"><button class="circle-btn speak-retrace" data-word="${esc(w.eng)}" type="button">듣기</button><button class="circle-btn root-cause-retrace" data-word-id="${esc(w.id)}" type="button">원인 찾기</button></div></div>`).join('')}</div><button class="btn danger full" id="retryCode" style="margin-top:13px" type="button">이 단어만 다시 CODE RED</button></section>`;$('.speak-retrace').forEach(b=>b.onclick=()=>speakWord(b.dataset.word));$('.root-cause-retrace').forEach(b=>b.onclick=()=>openRootCauseModal(b.dataset.wordId));$('#retryCode').onclick=()=>{globalThis.HideBadgeSourceObservationV01?.recordErrorReview?.({state:S,sheetId:sheet()?.sheetId||'unknown',targetWordIds:targets.map(w=>w.id),at:nowISO()});save();startCodeRed(true)};setPartner('놓쳤다고 끝난 건 아니지. 다시 익힌 뒤 같은 단어만 재검증하자.','note')}
 function renderComplete(){const old=validWords()[0];$('#view').innerHTML=`<section class="card tint-leaf" style="text-align:center;padding:25px"><img src="${guideAsset('cheer')}" alt="" style="width:110px;height:110px;object-fit:contain;margin:0 auto 4px"><h1 style="margin:0">사건 준비 완료</h1><p>현재 시험지의 유효 단어를 CODE RED와 RETRACE까지 확인했어요.</p><div class="grid3" style="margin-top:14px"><div class="status-pill"><b>100%</b><span>Case Mastery</span></div><div class="status-pill"><b>${S.xp}</b><span>XP</span></div><div class="status-pill"><b>${memoryStrength()}%</b><span>Memory</span></div></div><button class="btn primary full" id="backHome" style="margin-top:14px" type="button">홈으로</button></section>${old?`<div class="section-title"><h2>작은 과거 사건</h2><span>선택적 장기기억 이벤트</span></div><section class="card memory-event"><p>학습 흐름을 막지 않는 작은 확인이야. 건너뛰어도 불이익은 없어.</p><div class="bigword">${esc(old.eng)}</div><p style="text-align:center">${esc(old.kor)}</p><div class="btn-row" style="margin-top:12px"><button class="btn secondary" id="memorySkip" type="button">건너뛰기</button><button class="btn secondary" id="memoryNo" type="button">기억 안 나요</button><button class="btn primary" id="memoryYes" type="button">기억해요</button></div></section>`:''}`;$('#backHome').onclick=()=>{currentTab='home';viewStack=[];render()};if(old){$('#memorySkip').onclick=()=>toast('현재 사건 기록에는 영향이 없어요.');$('#memoryYes').onclick=()=>{S.memory[old.id]={last:nowISO(),strength:Math.min(100,(S.memory[old.id]?.strength||60)+10)};save();toast('기억 기록 이상 없음')};$('#memoryNo').onclick=()=>{S.memory[old.id]={last:nowISO(),strength:Math.max(10,(S.memory[old.id]?.strength||60)-15)};save();toast('다음 복습 우선도를 조금 올렸어요.')}}setPartner('사건 종결. 오늘 범위는 여기까지 확보했어.','cheer',true)}
 function renderWords(){const ws=validWords();$('#view').innerHTML=`<div class="section-title"><h2>내 단어장</h2><span>${ws.length}개</span></div><section class="card">${ws.length?`<div class="weak-list">${[...ws].sort((a,b)=>weakScore(b)-weakScore(a)).map(w=>`<div class="weak-item"><div><b>${esc(w.eng)}</b><div style="font-size:10px;color:#66736a">${esc(w.kor)}</div></div><span class="badge ${weakScore(w)>=8?'weak':weakScore(w)>0?'mid':'good'}">${weakScore(w)>=8?'약함':weakScore(w)>0?'확인':'안정'}</span></div>`).join('')}</div>`:'<p>아직 단어가 없어요.</p>'}</section>`;setPartner('단어장은 지난 사건의 기록이야. 현재 시험지보다 앞서지는 않아.','note')}
 function renderRecords(){const sh=sheet();$('#view').innerHTML=`<div class="section-title"><h2>기록</h2><span>Case ≠ Memory</span></div><section class="card tint-sky"><div class="metric"><span>Case Mastery</span><b>${sh.caseMastery||0}%</b></div><div class="metric"><span>Memory Strength</span><b>${memoryStrength()}%</b></div><div class="metric"><span>총 XP</span><b>${S.xp}</b></div><div class="metric"><span>연속 학습</span><b>${S.streak}일</b></div></section><div class="section-title"><h2>최근 학습</h2><span>${APP_REV}</span></div><section class="card">${S.sessions.length?S.sessions.slice(-7).reverse().map(x=>`<div class="metric"><span>${esc(x.date)}</span><b>${x.count}회</b></div>`).join(''):'<p>아직 기록이 없어요.</p>'}</section>`;setPartner('완료한 사건은 완료 상태 그대로야. 장기 기억은 따로 천천히 추적할게.','default')}
