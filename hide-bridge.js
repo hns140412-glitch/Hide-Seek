@@ -3,7 +3,7 @@
 
   const BRIDGE_VERSION = '2026.09.10-c';
   const EVENT_LIMIT = 120;
-  const SHARED_PARAM_NAMES = ['session_id', 'goal_id', 'task_id', 'lap_id', 'return_target', 'snap_target', 'child_id', 'subject', 'concept_skill_target', 'learning_target_id', 'target_time_ms', 'session_start_at', 'paused_at', 'issue_ms'];
+  const SHARED_PARAM_NAMES = ['session_id', 'goal_id', 'task_id', 'lap_id', 'return_target', 'snap_target', 'crew_event', 'child_id', 'age', 'school_grade', 'school_stage', 'subject', 'concept_skill_target', 'learning_target_id', 'literacy_flow', 'academic_vocab_term', 'academic_vocab_level', 'reading_material_ondok', 'target_time_ms', 'session_start_at', 'paused_at', 'issue_ms'];
   const legacyTerms = [
     [/Word Detective Team/g, 'Hidden Word Trail'],
     [/사건 파일/g, '단어 탐험'],
@@ -27,6 +27,7 @@
       const value = params.get(key);
       if (value) incoming[key] = value;
     }
+    if (!incoming.crew_event && window.HideExplorerCrewInboundCrewEvent) incoming.crew_event=String(window.HideExplorerCrewInboundCrewEvent);
     return incoming;
   }
 
@@ -95,7 +96,14 @@
       task_id: context.task_id || null,
       lap_id: context.lap_id || null,
       child_id: context.child_id || null,
-      payload
+      payload: {
+        ...payload,
+        ...((context.subject || context.concept_skill_target || context.learning_target_id) ? { learning_scope: {
+          ...(context.subject ? {subject:context.subject} : {}),
+          ...(context.concept_skill_target ? {concept_skill_target:context.concept_skill_target} : {}),
+          ...(context.learning_target_id ? {learning_target_id:context.learning_target_id} : {})
+        }} : {})
+      }
     };
 
     S.takyLearningOutbox = [...(S.takyLearningOutbox || []), event].slice(-EVENT_LIMIT);
@@ -124,6 +132,7 @@
       if (context.task_id) url.searchParams.set('task_id', context.task_id);
       if (context.lap_id) url.searchParams.set('lap_id', context.lap_id);
       if (eventIdValue) url.searchParams.set('event_id', eventIdValue);
+      if (context.crew_event) url.searchParams.set('crew_event',context.crew_event);
       url.searchParams.set('task_state', taskState);
       url.searchParams.set('from_app', 'hide-seek');
       return url.href;
@@ -156,11 +165,16 @@
     try {
       const url = new URL(context.snap_target, location.href);
       if (!['http:', 'https:'].includes(url.protocol)) return event;
-      ['session_id','goal_id','task_id','lap_id','return_target','child_id','target_time_ms','session_start_at','paused_at','issue_ms'].forEach(key => {
+      ['session_id','goal_id','task_id','lap_id','return_target','crew_event','child_id','age','school_grade','school_stage','subject','concept_skill_target','learning_target_id','literacy_flow','academic_vocab_term','academic_vocab_level','reading_material_ondok','target_time_ms','session_start_at','paused_at','issue_ms'].forEach(key => {
         if (context[key]) url.searchParams.set(key, context[key]);
       });
       url.searchParams.set('from_app', 'hide-seek');
       url.searchParams.set('word', event.payload.word);
+      url.searchParams.set('literacy_flow','READ_TO_WRITE_CONCEPT_TRANSFER');
+      url.searchParams.set('academic_vocab_term',event.payload.word);
+      const academicMeta=window.HideLiteracyAdapterV1?.metadataForWord?.(event.payload.word)||null;
+      const academicLevel=academicMeta?.levels?.[0]||academicMeta?.primary_level||null;
+      if(academicLevel)url.searchParams.set('academic_vocab_level',String(academicLevel));
       if (event.payload.context) url.searchParams.set('word_context', event.payload.context);
       location.href = url.href;
     } catch {}

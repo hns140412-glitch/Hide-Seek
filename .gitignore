@@ -4,3 +4,9 @@ desktop.ini
 *.log
 .vscode/
 .idea/
+
+# Runtime reference corpus: do not publish until redistribution/license review.
+/data/learning-term-recommendation-packs-v1.json
+# Mock-only voice audio and unpublished portrait assets.
+/audio/explorer-crew/mock/
+/characters/ui_cutouts/
