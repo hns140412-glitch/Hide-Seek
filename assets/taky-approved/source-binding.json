@@ -1,0 +1,31 @@
+{
+  "schema": "TAKY_APP_APPROVED_ENVIRONMENT_PIN_V1",
+  "date": "2026-09-30",
+  "state": "STAGED_PINNED_SOURCE_COPY_NOT_RUNTIME_BOUND",
+  "app": "Hide & Seek",
+  "governing_rule": "TKY-ASSET-001",
+  "visual_id": "TAKY-LAF-HIDE-HOME-MOSSFALL-20260927-A",
+  "original_reference_id": "TAKY-LAF-UI-HOME-SNAP-HIDE-20260927-A",
+  "central_repository": "hns140412-glitch/TAKY-ASSETS",
+  "central_staging_commit": "a251775daac51236193bcbc951ac2f74b561a8a3",
+  "central_staging_pr": 3,
+  "central_source_path": "approved/learning-app-family/hide-seek/home/TAKY-LAF-HIDE-HOME-MOSSFALL-20260927-A/source/hide_seek_forest_asset.png",
+  "deployment_copy_path": "assets/taky-approved/hide_seek_forest_asset.png",
+  "sha256": "1f7aa500a177e25820649cc485355297cbc4fb89909df1f7f43e4ff7ddbe2419",
+  "git_blob_sha1": "68458a8ff21b5ccd55529b604d478a2b6cb07264",
+  "bytes": 3137077,
+  "dimensions_px": [
+    941,
+    1672
+  ],
+  "source_role": "APPROVED_ENVIRONMENT_NO_CHARACTER_NO_UI_TEXT",
+  "requires_owner_screen_contract": true,
+  "existing_main_backgrounds": [
+    "assets/backgrounds/park.png",
+    "assets/backgrounds/academy.png"
+  ],
+  "runtime_imported": false,
+  "real_render_verified": false,
+  "app_main_changed": false,
+  "released": false
+}
