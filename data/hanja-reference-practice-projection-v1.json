@@ -1,0 +1,448 @@
+{
+  "schema": "TAKY_HIDE_HANJA_REFERENCE_PRACTICE_PROJECTION_V1",
+  "generated_by": "local seed + official-elementary-term usage ranking, without assigning a Hanja curriculum grade",
+  "created_from": {
+    "source_id": "TAKY:LEARNING:data/prelearned/hanja-char-gloss-seed-v1.json",
+    "schema": "TAKY_HANJA_CHAR_GLOSS_SEED_V1",
+    "sha256": "19e0c9f556403caff727ecb404f0b92f5b71c02dd565537ea274d2f287ce87aa",
+    "usage_reference_id": "TAKY:LEARNING:data/prelearned/subject-term-universe-elementary-v1.json",
+    "usage_reference_sha256": "8884a8fd0cc4385c1db4533f28d16178aaa80ec23d5614a0fc7f15fe22a14677"
+  },
+  "grade_authority": "NONE_REFERENCE_PRACTICE_ONLY",
+  "long_term_learning_authority": "LEARNING_ENGINE_ONLY",
+  "assessment_scope": "IN_APP_PRACTICE_NO_CURRICULUM_MASTERY",
+  "items": [
+    {
+      "id": "hanja-65e5",
+      "char": "日",
+      "reading": "일",
+      "meaning": "날",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 9,
+      "order": 0
+    },
+    {
+      "id": "hanja-706b",
+      "char": "火",
+      "reading": "화",
+      "meaning": "불",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 2,
+      "order": 1
+    },
+    {
+      "id": "hanja-6c34",
+      "char": "水",
+      "reading": "수",
+      "meaning": "물",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 5,
+      "order": 2
+    },
+    {
+      "id": "hanja-5927",
+      "char": "大",
+      "reading": "대",
+      "meaning": "큰",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 6,
+      "order": 3
+    },
+    {
+      "id": "hanja-5c0f",
+      "char": "小",
+      "reading": "소",
+      "meaning": "작을",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 4,
+      "order": 4
+    },
+    {
+      "id": "hanja-4e0b",
+      "char": "下",
+      "reading": "하",
+      "meaning": "내릴",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 3,
+      "order": 5
+    },
+    {
+      "id": "hanja-5730",
+      "char": "地",
+      "reading": "지",
+      "meaning": "땅",
+      "source_ref": "TERM_DECODER_REFERENCE_SEED",
+      "elementary_term_usage_count": 23,
+      "order": 6
+    },
+    {
+      "id": "hanja-570b",
+      "char": "國",
+      "reading": "국",
+      "meaning": "국가",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 6,
+      "order": 7
+    },
+    {
+      "id": "hanja-8a9e",
+      "char": "語",
+      "reading": "어",
+      "meaning": "말씀",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 12,
+      "order": 8
+    },
+    {
+      "id": "hanja-672c",
+      "char": "本",
+      "reading": "본",
+      "meaning": "근본",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 6,
+      "order": 9
+    },
+    {
+      "id": "hanja-5fc3",
+      "char": "心",
+      "reading": "심",
+      "meaning": "마음",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 2,
+      "order": 10
+    },
+    {
+      "id": "hanja-529b",
+      "char": "力",
+      "reading": "력",
+      "meaning": "힘",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 17,
+      "order": 11
+    },
+    {
+      "id": "hanja-7a7a",
+      "char": "空",
+      "reading": "공",
+      "meaning": "빌",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 4,
+      "order": 12
+    },
+    {
+      "id": "hanja-738b",
+      "char": "王",
+      "reading": "왕",
+      "meaning": "임금",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 0,
+      "order": 13
+    },
+    {
+      "id": "hanja-52d5",
+      "char": "動",
+      "reading": "동",
+      "meaning": "움직일",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 24,
+      "order": 14
+    },
+    {
+      "id": "hanja-7528",
+      "char": "用",
+      "reading": "용",
+      "meaning": "쓸",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 24,
+      "order": 15
+    },
+    {
+      "id": "hanja-611f",
+      "char": "感",
+      "reading": "감",
+      "meaning": "느낄",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 20,
+      "order": 16
+    },
+    {
+      "id": "hanja-8981",
+      "char": "要",
+      "reading": "요",
+      "meaning": "중요할",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 20,
+      "order": 17
+    },
+    {
+      "id": "hanja-9ede",
+      "char": "點",
+      "reading": "점",
+      "meaning": "측면",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 18,
+      "order": 18
+    },
+    {
+      "id": "hanja-74b0",
+      "char": "環",
+      "reading": "환",
+      "meaning": "고리",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 17,
+      "order": 19
+    },
+    {
+      "id": "hanja-985e",
+      "char": "類",
+      "reading": "류",
+      "meaning": "무리",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 15,
+      "order": 20
+    },
+    {
+      "id": "hanja-5171",
+      "char": "共",
+      "reading": "공",
+      "meaning": "함께",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 14,
+      "order": 21
+    },
+    {
+      "id": "hanja-65b9",
+      "char": "方",
+      "reading": "방",
+      "meaning": "모",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 14,
+      "order": 22
+    },
+    {
+      "id": "hanja-5247",
+      "char": "則",
+      "reading": "칙",
+      "meaning": "법칙",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 14,
+      "order": 23
+    },
+    {
+      "id": "hanja-8cea",
+      "char": "質",
+      "reading": "질",
+      "meaning": "바탕",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 12,
+      "order": 24
+    },
+    {
+      "id": "hanja-5a92",
+      "char": "媒",
+      "reading": "매",
+      "meaning": "중매",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 11,
+      "order": 25
+    },
+    {
+      "id": "hanja-5b9a",
+      "char": "定",
+      "reading": "정",
+      "meaning": "정할",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 11,
+      "order": 26
+    },
+    {
+      "id": "hanja-60f3",
+      "char": "想",
+      "reading": "상",
+      "meaning": "생각",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 10,
+      "order": 27
+    },
+    {
+      "id": "hanja-5f0f",
+      "char": "式",
+      "reading": "식",
+      "meaning": "법",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 10,
+      "order": 28
+    },
+    {
+      "id": "hanja-76f4",
+      "char": "直",
+      "reading": "직",
+      "meaning": "곧을",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 10,
+      "order": 29
+    },
+    {
+      "id": "hanja-5716",
+      "char": "圖",
+      "reading": "도",
+      "meaning": "그림",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 9,
+      "order": 30
+    },
+    {
+      "id": "hanja-540c",
+      "char": "同",
+      "reading": "동",
+      "meaning": "같을",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 9,
+      "order": 31
+    },
+    {
+      "id": "hanja-5e38",
+      "char": "常",
+      "reading": "상",
+      "meaning": "항상",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 9,
+      "order": 32
+    },
+    {
+      "id": "hanja-8aaa",
+      "char": "說",
+      "reading": "설",
+      "meaning": "말씀",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 9,
+      "order": 33
+    },
+    {
+      "id": "hanja-4f4d",
+      "char": "位",
+      "reading": "위",
+      "meaning": "자리",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 9,
+      "order": 34
+    },
+    {
+      "id": "hanja-91cd",
+      "char": "重",
+      "reading": "중",
+      "meaning": "무거울",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 9,
+      "order": 35
+    },
+    {
+      "id": "hanja-89c0",
+      "char": "觀",
+      "reading": "관",
+      "meaning": "볼",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 8,
+      "order": 36
+    },
+    {
+      "id": "hanja-4ee3",
+      "char": "代",
+      "reading": "대",
+      "meaning": "대신할",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 8,
+      "order": 37
+    },
+    {
+      "id": "hanja-6cd5",
+      "char": "法",
+      "reading": "법",
+      "meaning": "법칙",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 8,
+      "order": 38
+    },
+    {
+      "id": "hanja-8b8a",
+      "char": "變",
+      "reading": "변",
+      "meaning": "변할",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 8,
+      "order": 39
+    },
+    {
+      "id": "hanja-7387",
+      "char": "率",
+      "reading": "률",
+      "meaning": "비율",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 8,
+      "order": 40
+    },
+    {
+      "id": "hanja-5713",
+      "char": "圓",
+      "reading": "원",
+      "meaning": "둥글",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 8,
+      "order": 41
+    },
+    {
+      "id": "hanja-907a",
+      "char": "遺",
+      "reading": "유",
+      "meaning": "끼칠",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 8,
+      "order": 42
+    },
+    {
+      "id": "hanja-76f8",
+      "char": "相",
+      "reading": "상",
+      "meaning": "서로",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 7,
+      "order": 43
+    },
+    {
+      "id": "hanja-690d",
+      "char": "植",
+      "reading": "식",
+      "meaning": "심을",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 7,
+      "order": 44
+    },
+    {
+      "id": "hanja-5dd6",
+      "char": "巖",
+      "reading": "암",
+      "meaning": "바위",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 7,
+      "order": 45
+    },
+    {
+      "id": "hanja-8c6b",
+      "char": "豫",
+      "reading": "예",
+      "meaning": "미리",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 7,
+      "order": 46
+    },
+    {
+      "id": "hanja-5bdf",
+      "char": "察",
+      "reading": "찰",
+      "meaning": "살필",
+      "source_ref": "EDUCATION_OFFICE_HANJA_REFERENCE",
+      "elementary_term_usage_count": 7,
+      "order": 47
+    }
+  ]
+}
