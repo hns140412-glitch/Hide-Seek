@@ -927,6 +927,14 @@
       registerCards,
       clearCustomCards,
       snapshot,
+      selectSubject:subject => {
+        if (!SUBJECTS.some(x => x.id === subject && subject !== 'ALL')) return {state:'SUBJECT_NOT_SUPPORTED'};
+        const current=ensureState();
+        if (!current) return {state:'UNBOUND'};
+        current.selectedSubject=subject;
+        persist();
+        return {state:'BOUND',subject};
+      },
       open:mode => {
         const render = MODE_META[mode] ? () => renderMode(mode) : renderHub;
         try {

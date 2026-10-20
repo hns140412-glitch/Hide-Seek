@@ -333,11 +333,32 @@ async function boot(){
     return {state:'DECODER_MISSING'};
   }
   const subject=normalizedSubject||'ALL';
+  if(subject==='ALL')return failClosed('SUBJECT_SELECTION_REQUIRED',{school_stage:gradeContext.school_stage},decoder);
   const live=await tryLive(ctx,gradeContext,subject,decoder);
   if(live)return live;
   return loadStatic(gradeContext,subject,decoder);
 }
-window.HideLearningTermLoaderV1=Object.freeze({version:VERSION,boot,context:readContext,resolveGradeContext,applyEvidenceStep,adaptCards});
+// Subject selection for the existing Hide UI: reuse Learning Engine projection, never infer a grade.
+// Static projection is the local fallback; this action does not call a paid/external API.
+async function projectSubject(rawSubject,additionalContext={}){
+  const subject=SUBJECT_MAP[clean(rawSubject).toUpperCase()]||SUBJECT_MAP[clean(rawSubject)]||null;
+  if(!['KOREAN','SOCIAL','SCIENCE','MATH'].includes(subject))
+    return {state:'SUBJECT_NOT_SUPPORTED',subject:rawSubject};
+  const ctx={...readContext(),...additionalContext,subject};
+  const gradeContext=resolveGradeContext(ctx);
+  if(gradeContext.state!=='RESOLVED')
+    return {state:'NO_GRADE_CONTEXT',reason:gradeContext.reason,subject};
+  const decoder=await waitDecoder();
+  if(!decoder)return {state:'DECODER_MISSING',subject};
+  const existing=decoder.snapshot?.()?.engineProjection;
+  if(existing?.source_kind==='LIVE_SERVER'){
+    if(existing.subject!==subject||existing.school_stage!==gradeContext.school_stage)
+      return {state:'READY_ASSIGNED_SUBJECT_CONFLICT',subject};
+    return {state:'BOUND',source:'LIVE_SERVER_REUSE',subject,school_stage:gradeContext.school_stage};
+  }
+  return loadStatic(gradeContext,subject,decoder);
+}
+window.HideLearningTermLoaderV1=Object.freeze({version:VERSION,boot,projectSubject,context:readContext,resolveGradeContext,applyEvidenceStep,adaptCards});
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>boot(),{once:true});
 else boot();
 })();
