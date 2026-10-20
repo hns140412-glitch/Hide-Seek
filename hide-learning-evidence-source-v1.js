@@ -15,11 +15,13 @@ function capture(){
       if(key?.ch)chars[idx]=key.ch;
     }
     const complete=c.blankIdx.every((_,slot)=>!!c.answers?.[slot]);
+    const source=window.HideEnglishCycleV1?.originOf?.(String(w.id||''))||null;
     return {
       learning_target_id:String(w.id||''),
       word_id:String(w.id||''),
+      ...(source?{source_sheet_id:source.sourceSheetId,source_role:source.role,source_kind:source.sourceKind,word_set:'NEW_12_REVIEW_24'}:{}),
       instrument_version:'HIDE_CODE_RED_V1',
-      interaction_mode:'CORE',
+      interaction_mode:'RECALL',
       assisted:Number(c.hintLevel||0)>0,
       attemptCount:Math.max(1,Number(c.wrongAttempts||0)+1),
       responseLatencyMs:Math.max(0,Date.now()-Number(c.start||Date.now())),
