@@ -18,7 +18,14 @@ const check=(ok,msg)=>{if(!ok)failures.push(msg);};
   const ctx=await browser.newContext(),page=await ctx.newPage(),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
   await page.goto(`http://127.0.0.1:${port}/index.html`,{waitUntil:'load'});
-  await page.evaluate(()=>{S.onboardingDone=true;startCodeRed(false);});
+  await page.evaluate(()=>{
+   S.onboardingDone=true;
+   const src=S.sheets[0],id='qa-reviewed-english';
+   S.sheets=[{...src,sheetId:id,title:'확인된 모의 영어 단어',sourceType:'manual',
+    recognitionMeta:{reviewedAt:nowISO(),count:src.items.length},
+    items:src.items.map(w=>({...w,needsReview:false,manuallyEdited:true,reviewResolution:'USER_CORRECTED'}))}];
+   S.activeSheetId=id;save();startCodeRed(false);
+  });
   await page.waitForSelector('#codeHint');
   if(negative)await page.evaluate(()=>{ // old behavior: highlight correct key, auto-place on 3rd hint
    $('#codeHint').onclick=()=>{codeSession.hintLevel++;const un=codeSession.blankIdx.map((_,i)=>i).filter(i=>!codeSession.answers[i]);if(!un.length)return;const slot=un[0],need=codeSession.word.eng[codeSession.blankIdx[slot]].toLowerCase(),key=codeSession.keys.find(k=>!k.used&&k.ch===need);if(!key)return;if(codeSession.hintLevel>=3)placeKey(key.id,slot);else $(`[data-key="${CSS.escape(key.id)}"]`)?.classList.add('selected');};
@@ -55,6 +62,8 @@ const check=(ok,msg)=>{if(!ok)failures.push(msg);};
    const outcome=await page.evaluate(id=>({type:S.codeRed.results[id]?.type,retrace:S.codeRed.retrace.includes(id)}),target.id);
    check(outcome.type==='HINT_USED','hint-assisted answer was not HINT_USED: '+outcome.type);
    check(outcome.retrace===true,'hint-assisted answer skipped retrace');
+   const emitted=await page.evaluate(id=>(S.takyLearningOutbox||[]).findLast(x=>x.type==='RETRIEVAL_ATTEMPT_RESULT'&&x.payload?.word_id===id)?.payload||null,target.id);
+   check(emitted?.interaction_mode==='RECALL'&&emitted?.result_type==='HINT_USED'&&emitted?.assisted===true,'RECALL hint evidence emitted with incorrect learning mode: '+JSON.stringify(emitted));
   }
   check(errors.length===0,'page errors: '+errors.join(' | '));
   await ctx.close();

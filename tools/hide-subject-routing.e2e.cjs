@@ -19,12 +19,15 @@ const assert=(ok,msg)=>{if(!ok)fails.push(msg)};
      const errors=[];page.on('pageerror',e=>errors.push(e.message));
      await page.goto('http://127.0.0.1:'+port+'/index.html'+query,{waitUntil:'load'});
      await page.evaluate(()=>{S.onboardingDone=true;S.settings.partnerVoice=false;currentTab='home';render()});
-     await page.waitForSelector('.hs-subject-sign');
+     await page.waitForSelector('.hs-mode-sign');
      return {page,context,errors};
    };
    // Known grade => 6 subjects, subject-specific Learning Engine cards.
    const grade=await fresh('?school_grade=5');
    const pg=grade.page;
+   assert(await pg.locator('.hs-mode-sign').count()===4,'direct Home should default to English four modes');
+   await pg.click('#hsBackSubjects');
+   assert(await pg.locator('.hs-subject-sign').count()===6,'subject switch should expose six subjects');
    await pg.click('[data-hs-subject=SCIENCE]');
    assert(await pg.locator('.hs-mode-sign').count()===4,'science should have four modes');
    await pg.click('[data-mode=trace]');
@@ -42,7 +45,8 @@ const assert=(ok,msg)=>{if(!ok)fails.push(msg)};
      const actual=await pg.locator('.term-decoder-shell .phase-chip').first().textContent();
      assert(actual.trim()===mode.toUpperCase(),'SCIENCE '+mode+' opened wrong mode '+actual);
    }
-   await pg.evaluate(()=>{currentTab='home';hsHomeSubject=null;render()});
+   await pg.evaluate(()=>{currentTab='home';render()});
+   await pg.click('#hsBackSubjects');
    await pg.click('[data-hs-subject=KOREAN]');
    await pg.click('[data-mode=core]');
    await pg.waitForSelector('[data-core-index]',{timeout:30000});
@@ -50,7 +54,8 @@ const assert=(ok,msg)=>{if(!ok)fails.push(msg)};
    assert(korean.subject==='KOREAN'&&korean.projection==='KOREAN'&&korean.cards>0&&korean.foreign===0,'KOREAN projection contaminated '+JSON.stringify(korean));
    const otherSubjects={};
    for(const [subject,mode,selector] of [['SOCIAL','link','.term-decoder-shell'],['MATH','recall','[data-recall-index]']]){
-     await pg.evaluate(()=>{currentTab='home';hsHomeSubject=null;render()});
+     await pg.evaluate(()=>{currentTab='home';render()});
+     await pg.click('#hsBackSubjects');
      await pg.click('[data-hs-subject='+subject+']');
      await pg.click('[data-mode='+mode+']');
      await pg.waitForSelector(selector,{timeout:30000});
@@ -58,15 +63,18 @@ const assert=(ok,msg)=>{if(!ok)fails.push(msg)};
      otherSubjects[subject]=snap;
      assert(snap.subject===subject&&snap.projection===subject&&snap.count>0&&snap.foreign===0,subject+' route contaminated '+JSON.stringify(snap));
    }
-   await pg.evaluate(()=>{currentTab='home';hsHomeSubject=null;render()});
+   await pg.evaluate(()=>{currentTab='home';render()});
+   await pg.click('#hsBackSubjects');
    await pg.click('[data-hs-subject=HANJA]');
    await pg.click('[data-mode=core]');
-   const hanja=await pg.locator('#hsHomeNotice').textContent();
-   assert(hanja.includes('연결')&&!await pg.locator('.term-decoder-shell').count(),'HANJA must not masquerade as another subject');
+   await pg.waitForSelector('[data-hanja-mode=CORE]',{timeout:15000});
+   const hanja=await pg.evaluate(()=>({mode:document.querySelector('[data-hanja-mode]')?.dataset.hanjaMode,source:HideHanjaPracticeV1.status(),termDecoderVisible:!!document.querySelector('.term-decoder-shell')}));
+   assert(hanja.mode==='CORE'&&hanja.source.cards>=16&&!hanja.termDecoderVisible,'HANJA must run source-bound reference practice rather than masquerading as another subject');
    assert(grade.errors.length===0,'grade5 page errors '+grade.errors.join('; '));
    await grade.context.close();
    // No grade => no silent stage guess, no scored curriculum.
    const noGrade=await fresh('');
+   await noGrade.page.click('#hsBackSubjects');
    await noGrade.page.click('[data-hs-subject=SOCIAL]');
    await noGrade.page.click('[data-mode=recall]');
    const noGradeMsg=await noGrade.page.locator('#hsHomeNotice').textContent();
@@ -76,6 +84,8 @@ const assert=(ok,msg)=>{if(!ok)fails.push(msg)};
    await noGrade.context.close();
    // Ready assignment must not be credited to another subject.
    const ready=await fresh('?school_grade=5&subject=SCIENCE&session_id=synthetic-qa');
+   assert((await ready.page.locator('#hsSubjectContext').textContent()).includes('과학'),'Ready subject should take precedence');
+   await ready.page.click('#hsBackSubjects');
    await ready.page.click('[data-hs-subject=KOREAN]');
    await ready.page.click('[data-mode=link]');
    const readyMsg=await ready.page.locator('#hsHomeNotice').textContent();
