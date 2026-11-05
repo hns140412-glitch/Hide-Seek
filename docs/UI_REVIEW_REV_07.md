@@ -22,7 +22,7 @@ The active visual baseline is an original treasure-seek / hide-and-seek / hidden
 ## World regression gate
 
 FAIL if the current approved UI shows or normalizes back to:
-- ZPD Word as the current product title,
+- Hide & Seek as the current product title,
 - police/detective/arrest framing,
 - 수사 / 사건 / 사건 파일 / 체포 / 검거 / 범인 terminology,
 - police badge/siren/case-file identity as the dominant experience.

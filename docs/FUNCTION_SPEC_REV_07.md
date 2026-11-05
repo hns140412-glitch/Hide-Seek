@@ -142,7 +142,7 @@ Release rule: local/static validation is not Release PASS. Live HTTPS, install, 
 ## 17. WORLD REGRESSION GATE
 
 FAIL if current UI reintroduces:
-- ZPD Word as active product name,
+- Hide & Seek as active product name,
 - police/detective/arrest framing,
 - 수사/사건/체포/검거/범인/사건파일 wording,
 - a child-facing 'case' metaphor.

@@ -82,7 +82,7 @@ World changes must not reduce capture/OCR reliability.
 
 ### 4.0 LEARNING LINEAGE TRACE — HARD LOCK
 
-Historical ZPD-era terminology/world framing is SUPERSEDED, but validated learning semantics are not deleted merely because their old names disappear.
+Historical former-name terminology/world framing is SUPERSEDED, but validated learning semantics are not deleted merely because their old names disappear.
 
 The following learning lineage remains protected at semantic level when supported by actual implementation/evidence:
 - trustworthy word↔meaning pairing,
@@ -303,7 +303,7 @@ FAIL if:
 
 When the user explicitly authorizes central TAKY application, promote this project correction as:
 
-`ZPD WORD CHILD-FACING IDENTITY → SUPERSEDED`
+`FORMER CHILD-FACING PRODUCT IDENTITY → SUPERSEDED`
 `POLICE / DETECTIVE / ARREST WORD WORLD → SUPERSEDED`
 `HIDE & SEEK + TREASURE SEEK / TAG / HIDDEN WORD EXPLORATION → ACTIVE`
 

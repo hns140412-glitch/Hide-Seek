@@ -3,10 +3,8 @@
 
   const BRIDGE_VERSION = '2026.09.10-c';
   const EVENT_LIMIT = 120;
-  const SHARED_PARAM_NAMES = ['session_id', 'goal_id', 'task_id', 'lap_id', 'return_target', 'snap_target', 'crew_event', 'child_id', 'age', 'school_grade', 'school_stage', 'subject', 'concept_skill_target', 'learning_target_id', 'literacy_flow', 'academic_vocab_term', 'academic_vocab_level', 'reading_material_ondok', 'target_time_ms', 'session_start_at', 'paused_at', 'issue_ms'];
+  const SHARED_PARAM_NAMES = ['session_id', 'goal_id', 'task_id', 'lap_id', 'return_target', 'snap_target', 'crew_event', 'child_id', 'subject', 'concept_skill_target', 'learning_target_id', 'age', 'school_grade', 'school_stage', 'literacy_flow', 'academic_vocab_term', 'academic_vocab_level', 'reading_material_ondok', 'target_time_ms', 'session_start_at', 'paused_at', 'issue_ms'];
   const legacyTerms = [
-    [/ZPD WORD/g, 'HIDE & SEEK'],
-    [/ZPD Word/g, 'Hide & Seek'],
     [/Word Detective Team/g, 'Hidden Word Trail'],
     [/사건 파일/g, '단어 탐험'],
     [/수사/g, '탐험'],
@@ -18,8 +16,9 @@
   let applyingUpdate = false;
   let lastSnapshot = '';
 
+  const EventEnvelope = globalThis.TakyEventEnvelope;
+  if(!EventEnvelope?.create) throw new Error('HIDE_SHARED_EVENT_ENVELOPE_UNAVAILABLE');
   const iso = () => new Date().toISOString();
-  const id = prefix => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
   function readIncomingContext() {
     const params = new URLSearchParams(location.search);
@@ -82,11 +81,18 @@
 
   function emit(type, payload = {}) {
     const context = getContext();
+    const envelope = EventEnvelope.create({
+      source:'hide-seek',
+      event_type:type,
+      occurred_at:iso(),
+      correlation_id:context.session_id || context.task_id || null,
+      payload
+    });
     const event = {
-      event_id: id('hide-event'),
+      ...envelope,
       type,
-      app: 'hide-seek',
-      at: iso(),
+      app:'hide-seek',
+      at:envelope.occurred_at,
       session_id: context.session_id || null,
       goal_id: context.goal_id || null,
       task_id: context.task_id || null,
@@ -177,6 +183,242 @@
     return event;
   }
 
+  // Optional central evidence path. No automatic login, URL-derived authority,
+  // background flush, or claim of central sync from the legacy bounded event list.
+  // The authenticated host supplies its actual session + central Bearer providers.
+  let centralEvidencePipeline = null;
+  let centralEvidenceState = { status:'UNBOUND', event_id:null, reason:'TRUSTED_CENTRAL_SESSION_NOT_CONFIGURED' };
+  function centralEvidenceStatus() { return { ...centralEvidenceState }; }
+  function reportCentralEvidence(status, event_id, reason) {
+    centralEvidenceState = { status, event_id:event_id || null, reason:reason || null };
+    try {
+      window.dispatchEvent(new CustomEvent('hide-central-evidence-status',
+        { detail:centralEvidenceStatus() }));
+    } catch {}
+  }
+  function configureCentralEvidence({ endpointUrl, sessionProvider, tokenProvider,
+    fetchImpl, indexedDB:database, dbName } = {}) {
+    if (centralEvidencePipeline) throw new Error('CENTRAL_EVIDENCE_ALREADY_CONFIGURED');
+    if (typeof sessionProvider !== 'function' || typeof tokenProvider !== 'function')
+      throw new Error('EXPLICIT_TRUSTED_CENTRAL_SESSION_REQUIRED');
+    const factory = globalThis.TakyCentralEvidence?.pipeline;
+    if (factory?.VERSION !== 'TAKY_PWA_SCOPED_EVIDENCE_PIPELINE_V1' ||
+        typeof factory.create !== 'function')
+      throw new Error('PINNED_CENTRAL_BROWSER_PIPELINE_UNAVAILABLE');
+    const pipeline = factory.create({ endpointUrl, sessionProvider, tokenProvider,
+      fetchImpl:fetchImpl || globalThis.fetch.bind(globalThis),
+      indexedDB:database || globalThis.indexedDB, dbName,
+      cryptoProvider:globalThis.crypto });
+    centralEvidencePipeline = pipeline;
+    reportCentralEvidence('READY', null, null);
+    return Object.freeze({ configured:true, version:pipeline.version });
+  }
+  async function flushCentralEvidenceOnce(owner) {
+    if (!centralEvidencePipeline) throw new Error('CENTRAL_EVIDENCE_NOT_CONFIGURED');
+    const result = await centralEvidencePipeline.flushOne('hide-seek',owner);
+    if (result.processed) reportCentralEvidence(result.status === 'ACKED'
+      ? 'CENTRAL_OBSERVATION_ACKED' : result.status === 'BLOCKED' ? 'HOLD' : 'PENDING',
+      null,result.reason);
+    return result;
+  }
+  async function closeCentralEvidence() {
+    if (!centralEvidencePipeline) return;
+    const pipeline=centralEvidencePipeline;
+    centralEvidencePipeline=null;
+    await pipeline.close();
+    reportCentralEvidence('UNBOUND',null,'CENTRAL_EVIDENCE_CLOSED');
+  }
+  function queueCentralMemorySignal(event) {
+    if (!centralEvidencePipeline) {
+      reportCentralEvidence('UNBOUND',event.event_id,'TRUSTED_CENTRAL_SESSION_NOT_CONFIGURED');
+      return;
+    }
+    const p=event.payload || {};
+    if (!p.member_id || !p.subject || !p.concept_skill_target) {
+      reportCentralEvidence('HOLD',event.event_id,'EXPLICIT_LEARNING_SCOPE_REQUIRED');
+      return;
+    }
+    // An event's child_id and member_id are only client assertions; the pinned
+    // central mapper/session and then the server separately check scope.
+    Promise.resolve().then(()=>centralEvidencePipeline.enqueueBridge('hide-seek',event))
+      .then(result=>{
+        if (result?.queued === true || result?.duplicate === true)
+          reportCentralEvidence('PENDING_CENTRAL_OUTBOX',event.event_id,null);
+        else reportCentralEvidence('HOLD',event.event_id,'DURABLE_ENQUEUE_NOT_CONFIRMED');
+      }).catch(error=>reportCentralEvidence('HOLD',event.event_id,
+        String(error?.message || 'CENTRAL_ENQUEUE_UNAVAILABLE')));
+  }
+
+  function emitLearningMemorySignal(input = {}) {
+    const context = getContext();
+    const payload = {
+      skill_id: input.skill_id || input.word || input.item_id || context.concept_skill_target || null,
+      word: input.word || null,
+      item_id: input.item_id || null,
+      member_id: input.member_id || context.child_id || null,
+      subject: input.subject || context.subject || null,
+      concept_skill_target: input.concept_skill_target || context.concept_skill_target || null,
+      learning_target_id: input.learning_target_id || context.learning_target_id || null,
+      correct: typeof input.correct === 'boolean' ? input.correct : null,
+      assisted: !!(input.assisted || input.hint_used),
+      confusion: input.confusion ?? null,
+      strength: input.strength ?? null,
+      weakness: input.weakness ?? null,
+      spacedEvidence: input.spacedEvidence ?? input.spaced_evidence ?? null,
+      nextReviewPriority: input.nextReviewPriority ?? input.next_review_priority ?? null,
+      mode: input.mode || null,
+      sourceSheetId: S.activeSheetId || null,
+      evidence_source_refs: Array.isArray(input.source_refs) ? [...input.source_refs] : [],
+      evidence_provenance: Array.isArray(input.provenance) ? [...input.provenance] : [],
+      observation_only: true,
+      global_mastery_claim: false,
+      review_need_owned_by_learning_engine: true,
+      dated_allocation_owned_by_planner: true
+    };
+    const event=emit('LEARNING_MEMORY_SIGNAL', payload);
+    queueCentralMemorySignal(event);
+    return event;
+  }
+
+  function emitChildAuthoredReflection(input = {}) {
+    const context = getContext();
+    const allowedDifficulty = new Set(['EASY','OK','HARD','VERY_HARD']);
+    const allowedRecall = new Set(['KNEW_AND_RECALLED','KNEW_BUT_COULD_NOT_RECALL','RECALLED_WITH_HINT','DID_NOT_KNOW']);
+    const allowedConfidence = new Set(['LOW','MEDIUM','HIGH']);
+    const difficulty = String(input.difficulty || '').toUpperCase();
+    const recall_state = String(input.recall_state || '').toUpperCase();
+    const confidence = String(input.confidence || '').toUpperCase();
+    const member_id = input.member_id || context.child_id || null;
+    if (input.child_authored !== true || input.explicit_confirmation !== true) {
+      return { ok:false, reason:'CHILD_AUTHORED_CONFIRMATION_REQUIRED' };
+    }
+    if (!member_id) return { ok:false, reason:'MEMBER_SCOPE_REQUIRED' };
+    if (!allowedDifficulty.has(difficulty) || !allowedRecall.has(recall_state) || !allowedConfidence.has(confidence)) {
+      return { ok:false, reason:'SELF_REFLECTION_SELECTION_REQUIRED' };
+    }
+    const payload = {
+      evidence_contract:'TAKY_SELF_REFLECTION_EVIDENCE_V1',
+      event_id: input.event_id || `hide-reflection-${Date.now()}`,
+      observed_at: new Date().toISOString(),
+      member_id,
+      subject: input.subject || context.subject || '영어',
+      concept_skill_target: input.concept_skill_target || context.concept_skill_target || 'vocabulary',
+      evidence_type:'SELF_REFLECTION_EVIDENCE',
+      source_app:'hide-seek',
+      instrument_version:'HIDE_CHILD_REFLECTION_V1',
+      interaction_mode:'SELF_REFLECTION',
+      verified_outcome:null,
+      reflection:{
+        difficulty,
+        recall_state,
+        confidence,
+        confusion_with:Array.isArray(input.confusion_with)?input.confusion_with.map(v=>String(v).trim()).filter(Boolean):[],
+        used_hint:input.used_hint===true,
+        notes:input.notes ? String(input.notes).trim() : null
+      },
+      provenance:{
+        authority:'SELF_REFLECTION_OBSERVATION_ONLY',
+        can_verify_performance:false,
+        can_directly_set_mastery:false,
+        child_authored:true,
+        explicit_confirmation:true,
+        inference_from_telemetry:false,
+        direct_award_allowed:false,
+        requires_candidate_review:true
+      },
+      badge_guard:{
+        auto_canonicalize:false,
+        auto_activate:false,
+        auto_award:false,
+        auto_infer_error_discovery:false,
+        auto_infer_deep_thinking:false,
+        auto_infer_special_behavior:false
+      },
+      sourceSheetId:S.activeSheetId || null
+    };
+    return emit('SELF_REFLECTION_EVIDENCE', payload);
+  }
+
+  function ensureChildReflectionProducer() {
+    let completed = false;
+    try { completed = sheet()?.status === 'TEST_READY'; } catch {}
+    const existing = document.getElementById('hideChildReflectionProducer');
+    if (!completed) { existing?.remove(); return; }
+    if (existing) return;
+
+    const root = document.getElementById('view');
+    if (!root) return;
+    const section = document.createElement('section');
+    section.id = 'hideChildReflectionProducer';
+    section.className = 'card';
+    section.style.marginTop = '12px';
+    section.innerHTML = `
+      <div class="hero-kicker"><span>MY REFLECTION</span><span>내가 직접 기록</span></div>
+      <h2>오늘 단어 찾기는 어땠어?</h2>
+      <p>정답 기록과 별개예요. 네가 직접 고른 내용만 배지 후보 검토의 증거가 될 수 있어요.</p>
+      <div data-reflect-group="difficulty" class="btn-row" style="margin-top:10px">
+        <button class="btn secondary" data-value="EASY" type="button">쉬웠어</button>
+        <button class="btn secondary" data-value="OK" type="button">괜찮았어</button>
+        <button class="btn secondary" data-value="HARD" type="button">어려웠어</button>
+        <button class="btn secondary" data-value="VERY_HARD" type="button">아주 어려웠어</button>
+      </div>
+      <div data-reflect-group="recall" class="btn-row" style="margin-top:8px">
+        <button class="btn secondary" data-value="KNEW_AND_RECALLED" type="button">바로 떠올랐어</button>
+        <button class="btn secondary" data-value="KNEW_BUT_COULD_NOT_RECALL" type="button">아는데 안 떠올랐어</button>
+        <button class="btn secondary" data-value="RECALLED_WITH_HINT" type="button">힌트 후 떠올랐어</button>
+        <button class="btn secondary" data-value="DID_NOT_KNOW" type="button">몰랐어</button>
+      </div>
+      <div data-reflect-group="confidence" class="btn-row" style="margin-top:8px">
+        <button class="btn secondary" data-value="LOW" type="button">아직 자신 없어</button>
+        <button class="btn secondary" data-value="MEDIUM" type="button">조금 자신 있어</button>
+        <button class="btn secondary" data-value="HIGH" type="button">자신 있어</button>
+      </div>
+      <label style="display:block;margin-top:10px">헷갈린 단어가 있으면 적어도 돼
+        <input id="hideReflectionConfusion" type="text" placeholder="예: accept, except" style="width:100%;margin-top:6px">
+      </label>
+      <button class="btn primary full" id="hideReflectionSubmit" type="button" style="margin-top:12px">내 기록 저장</button>
+      <small id="hideReflectionStatus" style="display:block;margin-top:8px"></small>
+    `;
+    root.appendChild(section);
+
+    const selected = { difficulty:null, recall_state:null, confidence:null };
+    section.querySelectorAll('[data-reflect-group]').forEach(group => {
+      group.querySelectorAll('[data-value]').forEach(button => {
+        button.addEventListener('click', () => {
+          group.querySelectorAll('[data-value]').forEach(x => x.classList.remove('primary'));
+          button.classList.add('primary');
+          const key = group.dataset.reflectGroup === 'recall' ? 'recall_state' : group.dataset.reflectGroup;
+          selected[key] = button.dataset.value;
+        });
+      });
+    });
+    section.querySelector('#hideReflectionSubmit')?.addEventListener('click', () => {
+      if (!selected.difficulty || !selected.recall_state || !selected.confidence) {
+        toast('세 가지를 네가 직접 골라 주세요.');
+        return;
+      }
+      const confusion = String(section.querySelector('#hideReflectionConfusion')?.value || '')
+        .split(',').map(v => v.trim()).filter(Boolean);
+      const result = emitChildAuthoredReflection({
+        ...selected,
+        confusion_with:confusion,
+        used_hint:selected.recall_state === 'RECALLED_WITH_HINT',
+        child_authored:true,
+        explicit_confirmation:true
+      });
+      const status = section.querySelector('#hideReflectionStatus');
+      if (result?.ok === false) {
+        if (status) status.textContent = result.reason === 'MEMBER_SCOPE_REQUIRED'
+          ? '베이스캠프에서 연결된 사용자 정보가 있어야 저장할 수 있어요.'
+          : '선택 내용을 다시 확인해 주세요.';
+        return;
+      }
+      if (status) status.textContent = '내가 직접 남긴 회고가 저장됐어요. 자동 배지 지급은 하지 않아요.';
+      const submit = section.querySelector('#hideReflectionSubmit');
+      if (submit) submit.disabled = true;
+    });
+  }
+
   function requestImaginationCloud(word, reason = 'retrieval_support') {
     return emit('IMAGINATION_CLOUD_REQUEST', {
       word: String(word || '').trim(),
@@ -192,6 +434,8 @@
     try { status = sheet()?.status || null; } catch {}
     return !['LEARNING', 'CODE_RED_READY', 'RETRACE_REQUIRED'].includes(status);
   }
+
+  globalThis.HideSeekPwaSafePoint=isSafeUpdatePoint;
 
   function ensureCaptureResumeChip() {
     const active = S.hideSeekCaptureSession && S.hideSeekCaptureSession.status === 'CAPTURING' && S.hideSeekCaptureSession.pages?.length;
@@ -397,11 +641,13 @@
     void syncFamilyCharacterProfile();
     ensureCaptureResumeChip();
     ensureBaseCampChip();
+    ensureChildReflectionProducer();
     normalizeBrandAttributes();
     new MutationObserver(records => {
       records.forEach(record => record.addedNodes.forEach(node => {
         if (node.nodeType === Node.ELEMENT_NODE) normalizeBrandAttributes(node);
       }));
+      ensureChildReflectionProducer();
     }).observe(document.body, { childList: true, subtree: true });
     lastSnapshot = JSON.stringify(buildTaskSnapshot());
     watchSafeUpdates();
@@ -413,6 +659,13 @@
       returnToBase,
       sendToSnap,
       requestImaginationCloud,
+      emitLearningMemorySignal,
+      configureCentralEvidence,
+      flushCentralEvidenceOnce,
+      closeCentralEvidence,
+      centralEvidenceStatus,
+      emitChildAuthoredReflection,
+      ensureChildReflectionProducer,
       syncFamilyCharacterProfile,
       isSafeUpdatePoint
     });

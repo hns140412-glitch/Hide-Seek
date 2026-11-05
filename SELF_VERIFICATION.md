@@ -24,7 +24,7 @@
 - Memory Strength
 
 ## 5. 내부 호환
-기존 `codeRed`, `caseMastery`, `zpd_word_state` 등은 마이그레이션 안전을 위해 내부에서 일시 유지 가능.
+기존 학습 상태는 schema/signature 기반 호환 마이그레이션을 통해 현재 Hide & Seek 저장 구조로 승격하며, 과거 제품명 기반 저장키를 현행 코드에 유지하지 않는다.
 이 값이 UI 문구나 현재 제품명으로 노출되면 FAIL.
 
 ## 6. 배포 검증

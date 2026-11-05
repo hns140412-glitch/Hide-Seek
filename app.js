@@ -1,10 +1,15 @@
 const $=(s,r=document)=>r.querySelector(s);
 const $$=(s,r=document)=>[...r.querySelectorAll(s)];
 globalThis.HideExplorerCrewInboundCrewEvent=new URLSearchParams(location.search).get('crew_event')||'';
-const APP_REV="REV_07";
-const SCHEMA_VERSION=7;
-const STORAGE_KEY="zpd_word_state";
-const LEGACY_KEYS=["zpd_rev06_state"];
+const RELEASE=globalThis.HideSeekReleaseDescriptor;
+if(!globalThis.TakyReleaseContract?.validateDescriptor?.(RELEASE)?.ok)throw new Error('INVALID_HIDE_RELEASE_DESCRIPTOR');
+const APP_REV=RELEASE.app_version;
+const SCHEMA_VERSION=RELEASE.data_schema_version;
+const STORAGE_KEY="hide_seek_state";
+// Earlier builds stored state under these keys; prefer them (in order) over generic discovery.
+const LEGACY_KEYS=["zpd_word_state","zpd_rev06_state"];
+const SESSION_API_KEY="hide_seek_runtime_api_key";
+const ASSET_DB_NAME="hide-seek-assets";
 const DEFAULT_WORDS=[
 {id:"w1",eng:"environment",kor:"환경",example:"We should protect the environment.",wrong:2,pass:0,hint:0,learningStats:{}},
 {id:"w2",eng:"evidence",kor:"증거",example:"The detective found new evidence.",wrong:2,pass:0,hint:0,learningStats:{}},
@@ -52,15 +57,41 @@ function migrate(raw){
  if(!s.sheets.find(x=>x.sheetId===s.activeSheetId))s.activeSheetId=s.sheets[0].sheetId;
  return s;
 }
-function load(){
- try{let raw=localStorage.getItem(STORAGE_KEY);if(!raw){for(const k of LEGACY_KEYS){raw=localStorage.getItem(k);if(raw)break}}return raw?migrate(JSON.parse(raw)):clone(DEFAULT_STATE)}catch{return clone(DEFAULT_STATE)}
+function isCompatibleLegacyState(v){
+ return !!(v&&typeof v==="object"&&Array.isArray(v.sheets)&&v.sheets.some(sh=>Array.isArray(sh?.items)&&sh.items.some(w=>w&&("eng" in w||"kor" in w)))&&(v.profile||v.guide||v.memory||v.codeRed));
 }
-let S=load(),currentTab="home",viewStack=[],runtimeApiKey=sessionStorage.getItem("zpd_runtime_api_key")||"",selectedGuide=S.guide.id||"fox",selectedGuideName=S.guide.name||"",selectedProfileFile=null,selectedTile=null,codeSession=null,codeTimer=null,selectedKey=null,toastTimer=null;
+function discoverCompatibleLegacyState(){
+ try{
+  for(let i=0;i<localStorage.length;i++){
+   const key=localStorage.key(i);
+   if(!key||key===STORAGE_KEY)continue;
+   try{const parsed=JSON.parse(localStorage.getItem(key));if(isCompatibleLegacyState(parsed))return parsed}catch{}
+  }
+ }catch{}
+ return null;
+}
+function load(){
+ try{
+  const current=localStorage.getItem(STORAGE_KEY);
+  if(current)return migrate(JSON.parse(current));
+ for(const k of LEGACY_KEYS){
+  try{const parsed=JSON.parse(localStorage.getItem(k)||"null");if(isCompatibleLegacyState(parsed)){const migrated=migrate(parsed);localStorage.setItem(STORAGE_KEY,JSON.stringify(migrated));return migrated}}catch{}
+ }
+  const legacy=discoverCompatibleLegacyState();
+  if(legacy){
+   const migrated=migrate(legacy);
+   localStorage.setItem(STORAGE_KEY,JSON.stringify(migrated));
+   return migrated;
+  }
+  return clone(DEFAULT_STATE);
+ }catch{return clone(DEFAULT_STATE)}
+}
+let S=load(),currentTab="home",viewStack=[],runtimeApiKey=sessionStorage.getItem(SESSION_API_KEY)||"",selectedGuide=S.guide.id||"fox",selectedGuideName=S.guide.name||"",selectedProfileFile=null,selectedTile=null,codeSession=null,codeTimer=null,selectedKey=null,toastTimer=null;
 function save(){S.schemaVersion=SCHEMA_VERSION;S.appRevision=APP_REV;
  // An unrelated settings/progress save must never persist unreviewed OCR rows.
  // Approved sheets and their recognition provenance are stored separately.
  const {ocrDraft:_unreviewedDraft,...persisted}=S;
- localStorage.setItem(STORAGE_KEY,JSON.stringify(persisted));}
+ localStorage.setItem(STORAGE_KEY,JSON.stringify(persisted));window.dispatchEvent(new CustomEvent('hide-seek-state-saved',{detail:{pwa_safe_point:globalThis.HideSeekPwaSafePoint?.()===true}}));if(globalThis.HideSeekPwaSafePoint?.()===true)window.dispatchEvent(new CustomEvent('hide-seek-safe-point'))}
 function sheet(){return S.sheets.find(x=>x.sheetId===S.activeSheetId)||S.sheets[0]}
 function validWords(){if(S.englishPracticeCycle?.active){return window.HideEnglishCycleV1?.activeWords?.()||[]}const sh=sheet();if(!sh||sh.sourceType==='sample')return [];return (sh.items||[]).filter(w=>w.eng&&w.kor&&!w.needsReview)}
 function traceWords(){
@@ -88,9 +119,26 @@ function updateChrome(){const onboard=!S.onboardingDone;$("#bottomNav").style.di
 function pushView(fn){viewStack.push(()=>render());fn();updateChrome()}
 function goBack(){const fn=viewStack.pop();stopCodeTimer();if(fn)fn();else render();updateChrome()}
 function render(){stopCodeTimer();updateChrome();if(!S.onboardingDone)return renderOnboarding();const map={home:renderHome,explore:renderHome,catch:renderRecords,sheets:renderSheets,study:renderHome,words:renderWords,records:renderRecords};(map[currentTab]||renderHome)();updateChrome()}
-async function dbOpen(){return new Promise((res,rej)=>{const q=indexedDB.open("zpd-word-assets",1);q.onupgradeneeded=()=>{if(!q.result.objectStoreNames.contains("assets"))q.result.createObjectStore("assets")};q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})}
+async function dbOpen(name=ASSET_DB_NAME){return new Promise((res,rej)=>{const q=indexedDB.open(name,1);q.onupgradeneeded=()=>{if(!q.result.objectStoreNames.contains("assets"))q.result.createObjectStore("assets")};q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})}
 async function dbSet(k,v){const db=await dbOpen();return new Promise((res,rej)=>{const tx=db.transaction("assets","readwrite");tx.objectStore("assets").put(v,k);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error)})}
-async function dbGet(k){const db=await dbOpen();return new Promise((res,rej)=>{const q=db.transaction("assets").objectStore("assets").get(k);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})}
+async function readAssetFromDb(db,k){return new Promise((res,rej)=>{if(!db.objectStoreNames.contains("assets"))return res(undefined);const q=db.transaction("assets").objectStore("assets").get(k);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})}
+async function discoverCompatibleLegacyAsset(k){
+ if(typeof indexedDB.databases!=="function")return undefined;
+ try{
+  const dbs=await indexedDB.databases();
+  for(const meta of dbs){
+   if(!meta?.name||meta.name===ASSET_DB_NAME)continue;
+   try{
+    const db=await new Promise((res,rej)=>{const q=indexedDB.open(meta.name);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)});
+    const value=await readAssetFromDb(db,k);
+    db.close();
+    if(value!==undefined){await dbSet(k,value);return value}
+   }catch{}
+  }
+ }catch{}
+ return undefined;
+}
+async function dbGet(k){const db=await dbOpen();const value=await readAssetFromDb(db,k);if(value!==undefined)return value;return discoverCompatibleLegacyAsset(k)}
 async function avatarURL(){if(S.profile.characterMasterAssetRef)return S.profile.characterMasterAssetRef;if(S.profile.avatarMode!=="illustrated")return "";try{const blob=await dbGet("profile-avatar");return blob?URL.createObjectURL(blob):""}catch{return ""}}
 async function stylizePhoto(file){const bmp=await createImageBitmap(file,{imageOrientation:"from-image"});const low=256,size=512,c=document.createElement("canvas"),small=document.createElement("canvas");small.width=low;small.height=low;const sctx=small.getContext("2d",{willReadFrequently:true}),scale=Math.max(low/bmp.width,low/bmp.height),w=bmp.width*scale,h=bmp.height*scale;sctx.filter="saturate(1.16) contrast(1.06) brightness(1.05)";sctx.drawImage(bmp,(low-w)/2,(low-h)/2,w,h);const data=sctx.getImageData(0,0,low,low),px=data.data,step=34;for(let i=0;i<px.length;i+=4){px[i]=Math.round(px[i]/step)*step;px[i+1]=Math.round(px[i+1]/step)*step;px[i+2]=Math.round(px[i+2]/step)*step}sctx.putImageData(data,0,0);c.width=size;c.height=size;const ctx=c.getContext("2d");ctx.imageSmoothingQuality="high";ctx.drawImage(small,0,0,size,size);ctx.globalCompositeOperation="soft-light";ctx.fillStyle="rgba(184,220,164,.22)";ctx.fillRect(0,0,size,size);ctx.globalCompositeOperation="source-over";return new Promise(r=>c.toBlob(r,"image/webp",.9))}
 function renderOnboarding(){
@@ -317,9 +365,9 @@ async function analyzeSheetExternal(file,quality){
   return pushView(()=>renderManualEntry('외부 전송을 하지 않았어요. 직접 입력이나 붙여넣기로 학습할 수 있습니다.'));
  }
  $('#view').innerHTML=`<section class="card"><div class="hero-kicker"><span>OCR</span><span>Draft only</span></div><h2>단어 흔적 찾는 중</h2><p id="ocrStage">SEE · 사진에 실제 보이는 문자열 확인 중</p><div class="progress" style="margin-top:16px"><span id="ocrProgress" style="width:24%"></span></div></section>`;setPartner('먼저 보이는 글자를 읽고, 그다음 단어와 뜻의 짝을 확인할게.','note',true);
- try{const img=await normalizedImageBase64(file),seePrompt=`사진에 실제로 보이는 영어 단어와 한글 뜻만 행 순서대로 전사하세요. 원본에 없는 단어를 만들지 말고, 예문/힌트/정답 추측을 하지 마세요. 불확실하면 confidence를 low로 표시하세요. JSON만 출력: {"rows":[{"eng":"...","kor":"...","confidence":"high|medium|low"}]}`,see=await gemini(seePrompt,img.b64,img.mime);$('#ocrStage').textContent='PAIR · 영어 단어와 한국어 뜻 대응 확인 중';$('#ocrProgress').style.width='66%';const pairPrompt=`아래 SEE OCR 행만 사용해 영어 단어-한국어 뜻의 짝을 검증하세요. 원본에 없는 새 단어를 만들지 마세요. 헤더/번호/잡음은 제외하고 원래 순서를 유지하세요. 애매한 행은 low로 남기세요. JSON만 출력: {"rows":[{"eng":"...","kor":"...","confidence":"high|medium|low"}]}\nSEE:\n${JSON.stringify(see)}`,paired=await gemini(pairPrompt);$('#ocrProgress').style.width='100%';const rows=(paired.rows||see.rows||[]).filter(x=>x.eng||x.kor).map((x,i)=>normalizeWord({id:`ocr-${Date.now()}-${i}`,eng:x.eng,kor:x.kor,confidence:x.confidence||'medium',needsReview:x.confidence==='low'},i));if(!rows.length)throw new Error('단어와 뜻을 찾지 못했어요.');S.ocrDraft={createdAt:nowISO(),quality,rows};save();renderOCRReview(rows,true)}catch(e){toast(`OCR 실패: ${e.message||'다시 시도해 주세요.'}`);renderManualEntry('OCR 결과를 만들지 못했어요. 사진을 다시 찍거나 직접 입력할 수 있습니다.')}
+ try{const VisionIngest=globalThis.TakyVisionIngest;if(!VisionIngest?.buildRequest)throw new Error('공통 이미지 분석 계층을 불러오지 못했어요.');const sourceId=`hide-single-${Date.now()}`;const ingest=VisionIngest.buildRequest({source:'hide-seek:single-photo-ocr',manifest:[{source_id:sourceId,mime_type:file.type||'image/jpeg',file_name:file.name||'capture.jpg',size:file.size||0}]});if(!ingest.ok)throw new Error(ingest.reason||'이미지 분석 준비 실패');const img=await normalizedImageBase64(file),seePrompt=`사진에 실제로 보이는 영어 단어와 한글 뜻만 행 순서대로 전사하세요. 원본에 없는 단어를 만들지 말고, 예문/힌트/정답 추측을 하지 마세요. 불확실하면 confidence를 low로 표시하세요. JSON만 출력: {"rows":[{"eng":"...","kor":"...","confidence":"high|medium|low"}]}`,see=await gemini(seePrompt,img.b64,img.mime);$('#ocrStage').textContent='PAIR · 영어 단어와 한국어 뜻 대응 확인 중';$('#ocrProgress').style.width='66%';const pairPrompt=`아래 SEE OCR 행만 사용해 영어 단어-한국어 뜻의 짝을 검증하세요. 원본에 없는 새 단어를 만들지 마세요. 헤더/번호/잡음은 제외하고 원래 순서를 유지하세요. 애매한 행은 low로 남기세요. JSON만 출력: {"rows":[{"eng":"...","kor":"...","confidence":"high|medium|low"}]}\nSEE:\n${JSON.stringify(see)}`,paired=await gemini(pairPrompt);$('#ocrProgress').style.width='100%';const rawRows=(paired.rows||see.rows||[]).filter(x=>x.eng||x.kor);const normalized=VisionIngest.normalizeResult({request_id:ingest.request.request_id,provider:'gemini',model:S.settings.geminiModel||'gemini-2.5-flash',items:rawRows.map((x,i)=>({result_id:`row-${i}`,evidence_source_ids:[sourceId],provider_payload:x}))});if(!normalized.ok||!VisionIngest.validateEvidence(normalized.result,[sourceId]).ok)throw new Error('OCR 근거 연결 검증 실패');const rows=rawRows.map((x,i)=>normalizeWord({id:`ocr-${Date.now()}-${i}`,eng:x.eng,kor:x.kor,confidence:x.confidence||'medium',needsReview:x.confidence==='low'},i));if(!rows.length)throw new Error('단어와 뜻을 찾지 못했어요.');S.ocrDraft={createdAt:nowISO(),quality,visionIngestRequestId:ingest.request.request_id,sourceId,rows};save();renderOCRReview(rows,true)}catch(e){toast(`OCR 실패: ${e.message||'다시 시도해 주세요.'}`);renderManualEntry('OCR 결과를 만들지 못했어요. 사진을 다시 찍거나 직접 입력할 수 있습니다.')}
 }
-async function gemini(prompt,b64,mime){const parts=[{text:prompt}];if(b64)parts.push({inlineData:{mimeType:mime,data:b64}});const model=encodeURIComponent(S.settings.geminiModel||'gemini-2.5-flash'),r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':runtimeApiKey},body:JSON.stringify({contents:[{parts}],generationConfig:{responseMimeType:'application/json'}})});if(!r.ok){if(r.status===401||r.status===403)throw new Error('API 인증을 확인해 주세요.');if(r.status===429)throw new Error('요청이 많아요. 잠시 후 다시 시도해 주세요.');throw new Error(`네트워크/API 오류 ${r.status}`)}const j=await r.json(),txt=j.candidates?.[0]?.content?.parts?.[0]?.text||'{}';return JSON.parse(txt)}
+async function gemini(prompt,b64,mime){const HttpJson=globalThis.TakyHttpJson;if(!HttpJson?.request)throw new Error('공통 네트워크 계층을 불러오지 못했어요.');const parts=[{text:prompt}];if(b64)parts.push({inlineData:{mimeType:mime,data:b64}});const model=encodeURIComponent(S.settings.geminiModel||'gemini-2.5-flash'),r=await HttpJson.request(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':runtimeApiKey},body:{contents:[{parts}],generationConfig:{responseMimeType:'application/json'}},timeout_ms:20000});if(!r.ok){if(r.category==='AUTH_REJECTED')throw new Error('API 인증을 확인해 주세요.');if(r.category==='RATE_LIMITED')throw new Error('요청이 많아요. 잠시 후 다시 시도해 주세요.');throw new Error(r.status?`네트워크/API 오류 ${r.status}`:(r.reason||'네트워크/API 오류'))}const j=r.data||{},txt=j.candidates?.[0]?.content?.parts?.[0]?.text||'{}';return JSON.parse(txt)}
 function renderManualEntry(message='단어와 뜻을 직접 입력할 수 있어요.'){renderOCRReview([{id:`manual-${Date.now()}`,eng:'',kor:'',confidence:'manual',needsReview:true}],true,message)}
 function renderOCRReview(rows,isDraft=false,message=''){
  let data=rows.map((w,i)=>{
@@ -596,7 +644,28 @@ function updateCodeUI(){$$('.slot').forEach(s=>{const id=codeSession.answers[Num
 function undoCode(){const slots=Object.keys(codeSession.answers);if(!slots.length)return;const last=slots.at(-1),id=codeSession.answers[last],k=codeSession.keys.find(x=>x.id===id);if(k)k.used=false;delete codeSession.answers[last];updateCodeUI()}
 function useCodeHint(){codeSession.hintLevel++;const msgs=['단어를 소리 내어 천천히 읽어 보고, 빈칸에서 어떤 소리가 나는지 생각해봐.','자음과 모음이 어떻게 이어지는지 구조를 떠올려 봐. 빈칸은 자음일까, 모음일까?','배운 철자 규칙을 다시 떠올리며 단어를 처음부터 소리 내어 확인해봐.'];setPartner(msgs[Math.min(codeSession.hintLevel,msgs.length)-1],'hint')}
 function checkCodeAnswer(){if(!codeSession||Object.keys(codeSession.answers).length!==codeSession.blankIdx.length)return;const built=codeSession.blankIdx.map((_,slot)=>codeSession.keys.find(k=>k.id===codeSession.answers[slot])?.ch||''),need=codeSession.blankIdx.map(i=>codeSession.word.eng[i].toLowerCase());if(built.every((x,i)=>x===need[i]))return recordCodeResult(codeSession.wrongAttempts>0?'WRONG':codeSession.hintLevel?'HINT_USED':'CORRECT');codeSession.wrongAttempts++;setPartner('아직 맞지 않는 글자가 있어. 어느 칸인지 바로 알려주지는 않을게. 소리를 다시 생각하고 되돌리거나 다른 글자를 골라 봐.','think')}
-function recordCodeResult(type){stopCodeTimer();const w=codeSession.word,origin=window.HideEnglishCycleV1?.originOf?.(w.id)||null,attempt={wordId:w.id,type,at:nowISO(),hintLevel:codeSession.hintLevel,wrongAttempts:codeSession.wrongAttempts,runId:S.codeRed.activeRunId||null,...(origin?{sourceSheetId:origin.sourceSheetId,sourceRole:origin.role}:{})};S.codeRed.results[w.id]=attempt;S.codeRed.history.push(attempt);w.learningStats=w.learningStats||{};w.learningStats.codeRedAttempts=(w.learningStats.codeRedAttempts||0)+1;if(['WRONG','PASS','TIMEOUT','HINT_USED'].includes(type)){if(!S.codeRed.retrace.includes(w.id))S.codeRed.retrace.push(w.id);if(type==='WRONG')w.wrong=(w.wrong||0)+1;if(type==='PASS')w.pass=(w.pass||0)+1;if(type==='TIMEOUT')w.learningStats.timeout=(w.learningStats.timeout||0)+1;if(type==='HINT_USED')w.hint=(w.hint||0)+1}else{S.learning.combo++;S.learning.flow=Math.min(6,S.learning.flow+1)}S.codeRed.index++;markStudy(type==='CORRECT'?5:1);save();if(S.codeRed.index<codeTargets().length)renderCodeRed();else finishCodeRed()}
+function recordCodeResult(type){stopCodeTimer();const w=codeSession.word,origin=window.HideEnglishCycleV1?.originOf?.(w.id)||null,attempt={wordId:w.id,type,at:nowISO(),hintLevel:codeSession.hintLevel,wrongAttempts:codeSession.wrongAttempts,runId:S.codeRed.activeRunId||null,...(origin?{sourceSheetId:origin.sourceSheetId,sourceRole:origin.role}:{})};
+ if(['CORRECT','WRONG','HINT_USED','TIMEOUT'].includes(type)&&globalThis.HideSeekBridge?.emit){
+  globalThis.HideSeekBridge.emit('RETRIEVAL_ATTEMPT_RESULT',{
+   word_id:w.id,
+   lexical_id:w.id,
+   instrumentVersion:'HIDE_CODE_RED_V1',
+   interactionMode:'CORE',
+   responseLatencyMs:Math.max(0,Date.now()-(codeSession.start||Date.now())),
+   assisted:type==='HINT_USED'||codeSession.hintLevel>0,
+   attemptCount:Math.max(1,(codeSession.wrongAttempts||0)+1),
+   verification_candidate:{
+    verifier_type:'RETRIEVAL_EXACT_MATCH',
+    verifier_version:'HIDE_CODE_RED_V1',
+    target_semantics:'UNASSISTED_EXACT_RETRIEVAL',
+    outcome:type==='CORRECT'?1:0,
+    reference_id:`hide-word:${sheet()?.sheetId||'unknown'}:${w.id}:spelling`,
+    basis:'DETERMINISTIC_LOCAL_MATCH',
+    result_type:type
+   }
+  });
+ }
+ S.codeRed.results[w.id]=attempt;S.codeRed.history.push(attempt);w.learningStats=w.learningStats||{};w.learningStats.codeRedAttempts=(w.learningStats.codeRedAttempts||0)+1;if(['WRONG','PASS','TIMEOUT','HINT_USED'].includes(type)){if(!S.codeRed.retrace.includes(w.id))S.codeRed.retrace.push(w.id);if(type==='WRONG')w.wrong=(w.wrong||0)+1;if(type==='PASS')w.pass=(w.pass||0)+1;if(type==='TIMEOUT')w.learningStats.timeout=(w.learningStats.timeout||0)+1;if(type==='HINT_USED')w.hint=(w.hint||0)+1}else{S.learning.combo++;S.learning.flow=Math.min(6,S.learning.flow+1)}S.codeRed.index++;markStudy(type==='CORRECT'?5:1);save();if(S.codeRed.index<codeTargets().length)renderCodeRed();else finishCodeRed()}
 function startCodeTimer(){const total=codeSession.seconds;codeTimer=setInterval(()=>{const left=Math.max(0,total-(Date.now()-codeSession.start)/1000),pct=Math.round(left/total*100),ring=$('#timeRing'),txt=$('#timeText');if(!ring||!txt)return;ring.style.setProperty('--p',pct);txt.textContent=Math.ceil(left);ring.classList.toggle('warn',pct<=45&&pct>20);ring.classList.toggle('alert',pct<=20);if(left<=0)recordCodeResult('TIMEOUT')},150)}
 function stopCodeTimer(){if(codeTimer){clearInterval(codeTimer);codeTimer=null}}
 function finishCodeRed(){stopCodeTimer();const currentTargets=codeTargets(),passed=currentTargets.filter(w=>S.codeRed.results[w.id]?.type==='CORRECT').map(w=>w.id);if(S.codeRed.retryOnly)S.codeRed.retrace=S.codeRed.retrace.filter(id=>!passed.includes(id));if(S.codeRed.retrace.length){sheet().status='RETRACE_REQUIRED';save();return renderRetrace()}const cycleSummary=window.HideEnglishCycleV1?.summarizePractice?.();if(cycleSummary?.state!=='LOCAL_IMMEDIATE_PRACTICE_ONLY')sheet().caseMastery=100;sheet().status='TEST_READY';S.learning.phase='done';save();renderComplete()}
@@ -743,5 +812,5 @@ function renderRecords(){
 }
 function exportData(){const copy=clone(S);delete copy.settings.geminiKey;const blob=new Blob([JSON.stringify(copy,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`HIDE_SEEK_WORD_DATA_${today()}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
 async function importData(file){try{const data=JSON.parse(await file.text()),m=migrate(data);if(!Array.isArray(m.sheets)||!m.sheets.length)throw new Error('시험지 데이터가 없어요.');S=m;save();toast('데이터를 불러왔어요.');$('#modalRoot').innerHTML='';render()}catch(e){toast(`불러오기 실패: ${e.message||'파일을 확인해 주세요.'}`)}}
-function openSettings(){$('#modalRoot').innerHTML=`<div class="modal-back"><section class="modal"><div class="section-title"><h2>설정</h2><button class="circle-btn" id="closeSettings" type="button">닫기</button></div><div class="setting"><div><label>길잡이 음성</label><small>영어 단어 발음보다 우선하지 않습니다.</small></div><button class="switch ${S.settings.partnerVoice?'on':''}" data-toggle="partnerVoice" type="button"><i></i></button></div><div class="setting"><div><label>Reduced Motion</label><small>과한 움직임을 줄입니다.</small></div><button class="switch ${S.settings.reducedMotion?'on':''}" data-toggle="reducedMotion" type="button"><i></i></button></div><div class="setting"><div style="width:100%"><label for="settingSchoolGrade">학교 학년</label><small>학년에 맞는 국어·사회·과학·수학 단서를 고릅니다.</small><select class="input" id="settingSchoolGrade"><option value="">학년 나중에 설정</option><option value="preschool" ${S.profile.school_stage==="preschool"?"selected":""}>취학 전</option>${[1,2,3,4,5,6].map(n=>`<option value="${n}" ${Number(S.profile.school_grade)===n?"selected":""}>초등 ${n}학년</option>`).join("")}</select></div></div><div class="setting"><div><label>긴장 연출 줄이기</label><small>숨은 단어 찾기의 제한 시간을 조금 넉넉하게 제공합니다.</small></div><button class="switch ${S.settings.pressureReduced?'on':''}" data-toggle="pressureReduced" type="button"><i></i></button></div><div class="setting"><div style="width:100%"><label>Gemini API Key</label><small>개인 테스트용 · 이번 브라우저 세션에만 보관. 공개 배포는 서버 프록시 권장.</small><input id="apiKey" class="input" type="password" value="${esc(runtimeApiKey)}" placeholder="API Key"></div></div><div class="setting"><div style="width:100%"><label>Gemini Model</label><input id="apiModel" class="input" value="${esc(S.settings.geminiModel)}"></div></div><div class="btn-row" style="margin-top:13px"><button class="btn secondary" id="exportData" type="button">데이터 내보내기</button><button class="btn secondary" id="importData" type="button">데이터 불러오기</button></div><button class="btn primary full" id="saveSettings" style="margin-top:8px" type="button">설정 저장</button><button class="btn secondary full" id="restartOnboarding" style="margin-top:8px" type="button">프로필/길잡이 다시 설정</button><p style="margin-top:10px">Build ${APP_REV} · Schema ${SCHEMA_VERSION}</p></section></div>`;$('#closeSettings').onclick=()=>$('#modalRoot').innerHTML='';$$('[data-toggle]').forEach(b=>b.onclick=()=>{const k=b.dataset.toggle;S.settings[k]=!S.settings[k];b.classList.toggle('on',S.settings[k]);save()});$('#saveSettings').onclick=()=>{runtimeApiKey=$('#apiKey').value.trim();sessionStorage.setItem('zpd_runtime_api_key',runtimeApiKey);S.settings.geminiModel=$('#apiModel').value.trim()||'gemini-2.5-flash';const gradeRaw=$('#settingSchoolGrade')?.value||'';S.profile.school_grade=/^[1-6]$/.test(gradeRaw)?Number(gradeRaw):'';S.profile.school_stage=gradeRaw==='preschool'?'preschool':gradeRaw?'elementary':'';save();$('#modalRoot').innerHTML='';toast('설정을 저장했어요. API Key는 세션에만 유지됩니다.')};$('#restartOnboarding').onclick=()=>{S.onboardingDone=false;S.onboardingStep=0;save();$('#modalRoot').innerHTML='';render()};$('#exportData').onclick=exportData;$('#importData').onclick=()=>$('#importDataInput').click()}
-$('#settingsBtn').onclick=openSettings;$('#backBtn').onclick=goBack;$('#partnerVoiceBtn').onclick=()=>partnerSpeak();$('#profileCameraInput').addEventListener('change',e=>profilePicked(e.target.files[0]));$('#profileLibraryInput').addEventListener('change',e=>profilePicked(e.target.files[0]));$('#sheetCameraInput').addEventListener('change',e=>sheetPicked(e.target.files[0]));$('#sheetLibraryInput').addEventListener('change',e=>sheetPicked(e.target.files[0]));$('#importDataInput').addEventListener('change',e=>importData(e.target.files[0]));$$('.nav-btn').forEach(b=>b.onclick=()=>{viewStack=[];stopCodeTimer();currentTab=b.dataset.tab;render()});if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));save();render();globalThis.HideExplorerCrewAuthorityConsumer?.boot?.({storage:localStorage,locationHref:location.href,replaceUrl:u=>history.replaceState(null,'',u),host:$("#partnerBar"),img:$("#partnerAvatar"),name:$("#partnerName")});
+function openSettings(){$('#modalRoot').innerHTML=`<div class="modal-back"><section class="modal"><div class="section-title"><h2>설정</h2><button class="circle-btn" id="closeSettings" type="button">닫기</button></div><div class="setting"><div><label>길잡이 음성</label><small>영어 단어 발음보다 우선하지 않습니다.</small></div><button class="switch ${S.settings.partnerVoice?'on':''}" data-toggle="partnerVoice" type="button"><i></i></button></div><div class="setting"><div><label>Reduced Motion</label><small>과한 움직임을 줄입니다.</small></div><button class="switch ${S.settings.reducedMotion?'on':''}" data-toggle="reducedMotion" type="button"><i></i></button></div><div class="setting"><div style="width:100%"><label for="settingSchoolGrade">학교 학년</label><small>학년에 맞는 국어·사회·과학·수학 단서를 고릅니다.</small><select class="input" id="settingSchoolGrade"><option value="">학년 나중에 설정</option><option value="preschool" ${S.profile.school_stage==="preschool"?"selected":""}>취학 전</option>${[1,2,3,4,5,6].map(n=>`<option value="${n}" ${Number(S.profile.school_grade)===n?"selected":""}>초등 ${n}학년</option>`).join("")}</select></div></div><div class="setting"><div><label>긴장 연출 줄이기</label><small>숨은 단어 찾기의 제한 시간을 조금 넉넉하게 제공합니다.</small></div><button class="switch ${S.settings.pressureReduced?'on':''}" data-toggle="pressureReduced" type="button"><i></i></button></div><div class="setting"><div style="width:100%"><label>Gemini API Key</label><small>개인 테스트용 · 이번 브라우저 세션에만 보관. 공개 배포는 서버 프록시 권장.</small><input id="apiKey" class="input" type="password" value="${esc(runtimeApiKey)}" placeholder="API Key"></div></div><div class="setting"><div style="width:100%"><label>Gemini Model</label><input id="apiModel" class="input" value="${esc(S.settings.geminiModel)}"></div></div><div class="btn-row" style="margin-top:13px"><button class="btn secondary" id="exportData" type="button">데이터 내보내기</button><button class="btn secondary" id="importData" type="button">데이터 불러오기</button></div><button class="btn primary full" id="saveSettings" style="margin-top:8px" type="button">설정 저장</button><button class="btn secondary full" id="restartOnboarding" style="margin-top:8px" type="button">프로필/길잡이 다시 설정</button><p style="margin-top:10px">Build ${APP_REV} · Schema ${SCHEMA_VERSION}</p></section></div>`;$('#closeSettings').onclick=()=>$('#modalRoot').innerHTML='';$$('[data-toggle]').forEach(b=>b.onclick=()=>{const k=b.dataset.toggle;S.settings[k]=!S.settings[k];b.classList.toggle('on',S.settings[k]);save()});$('#saveSettings').onclick=()=>{runtimeApiKey=$('#apiKey').value.trim();sessionStorage.setItem(SESSION_API_KEY,runtimeApiKey);S.settings.geminiModel=$('#apiModel').value.trim()||'gemini-2.5-flash';const gradeRaw=$('#settingSchoolGrade')?.value||'';S.profile.school_grade=/^[1-6]$/.test(gradeRaw)?Number(gradeRaw):'';S.profile.school_stage=gradeRaw==='preschool'?'preschool':gradeRaw?'elementary':'';save();$('#modalRoot').innerHTML='';toast('설정을 저장했어요. API Key는 세션에만 유지됩니다.')};$('#restartOnboarding').onclick=()=>{S.onboardingDone=false;S.onboardingStep=0;save();$('#modalRoot').innerHTML='';render()};$('#exportData').onclick=exportData;$('#importData').onclick=()=>$('#importDataInput').click()}
+$('#settingsBtn').onclick=openSettings;$('#backBtn').onclick=goBack;$('#partnerVoiceBtn').onclick=()=>partnerSpeak();$('#profileCameraInput').addEventListener('change',e=>profilePicked(e.target.files[0]));$('#profileLibraryInput').addEventListener('change',e=>profilePicked(e.target.files[0]));$('#sheetCameraInput').addEventListener('change',e=>sheetPicked(e.target.files[0]));$('#sheetLibraryInput').addEventListener('change',e=>sheetPicked(e.target.files[0]));$('#importDataInput').addEventListener('change',e=>importData(e.target.files[0]));$$('.nav-btn').forEach(b=>b.onclick=()=>{viewStack=[];stopCodeTimer();currentTab=b.dataset.tab;render()});save();render();globalThis.HideExplorerCrewAuthorityConsumer?.boot?.({storage:localStorage,locationHref:location.href,replaceUrl:u=>history.replaceState(null,'',u),host:$("#partnerBar"),img:$("#partnerAvatar"),name:$("#partnerName")});
