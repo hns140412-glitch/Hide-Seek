@@ -81,6 +81,10 @@
 
   function emit(type, payload = {}) {
     const context = getContext();
+    const recallDirection = type === 'RETRIEVAL_ATTEMPT_RESULT' ? window.HideRecallDirectionV1 : null;
+    if (recallDirection) {
+      try { payload = recallDirection.annotate(payload); recallDirection.tally(S, payload); } catch {}
+    }
     const envelope = EventEnvelope.create({
       source:'hide-seek',
       event_type:type,

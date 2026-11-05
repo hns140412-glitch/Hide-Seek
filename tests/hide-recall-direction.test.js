@@ -1,0 +1,33 @@
+'use strict';
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const root=path.resolve(__dirname,'..');
+globalThis.window=globalThis;
+require(path.join(root,'hide-recall-direction-v1.js'));
+const R=globalThis.HideRecallDirectionV1;
+assert.ok(R,'module loads');
+assert.equal(R.classify({instrument_version:'HIDE_HOME_RECALL_V1'}),'MEANING_TO_FORM');
+assert.equal(R.classify({instrument_version:'HIDE_HOME_CORE_V1'}),'MEANING_TO_FORM');
+assert.equal(R.classify({instrumentVersion:'HIDE_CODE_RED_V1'}),'FORM_COMPLETION');
+assert.equal(R.classify({instrument_version:'HIDE_TERM_DECODER_V1'}),null,'unknown prompt stays unclassified');
+const S={};
+const ev=(o)=>R.annotate({word_id:'w1',...o});
+R.tally(S,ev({instrument_version:'HIDE_HOME_RECALL_V1',result_type:'CORRECT',assisted:false}));
+R.tally(S,ev({instrument_version:'HIDE_HOME_RECALL_V1',result_type:'WRONG',assisted:false}));
+R.tally(S,ev({instrument_version:'HIDE_HOME_RECALL_V1',result_type:'HINT_USED',assisted:true}));
+R.tally(S,ev({instrument_version:'HIDE_CODE_RED_V1',result_type:'CORRECT',assisted:false}));
+// legacy camelCase duplicate of the same Code Red attempt must not double count
+R.tally(S,ev({instrumentVersion:'HIDE_CODE_RED_V1',result_type:'CORRECT',assisted:false}));
+R.tally(S,ev({instrument_version:'HIDE_TERM_DECODER_V1',result_type:'CORRECT'}));
+const s=R.summary(S,'w1');
+assert.deepEqual(s.MEANING_TO_FORM,{attempts:3,correct:1,wrong:1,assisted:1});
+assert.deepEqual(s.FORM_COMPLETION,{attempts:1,correct:1,wrong:0,assisted:0});
+assert.equal(Object.keys(s).length,2);
+// wiring: bridge annotates retrieval payloads; page loads the module before the bridge; SW caches it
+const bridge=fs.readFileSync(path.join(root,'hide-bridge.js'),'utf8');
+assert.match(bridge,/HideRecallDirectionV1/);
+const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+assert.ok(html.indexOf('hide-recall-direction-v1.js')>0&&html.indexOf('hide-recall-direction-v1.js')<html.indexOf('hide-bridge.js'),'module loads before bridge');
+assert.match(fs.readFileSync(path.join(root,'sw.js'),'utf8'),/hide-recall-direction-v1\.js/);
+console.log('PASS hide recall-direction evidence: classify, de-duplicated tally, bridge/page/SW wiring');

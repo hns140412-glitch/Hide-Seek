@@ -77,7 +77,7 @@ function record(word,result,responseValue=null){
 function completed(word,result,responseValue=null){
  record(word,result,responseValue);run.done=true;
  showNotice(result==='CORRECT'?'도움 없이 찾았어!':result==='HINT_USED'?'힌트를 활용해서 찾아냈어.':result==='WRONG'?'다시 확인할 단어로 남길게.':'모르는 단어로 기록하고 다시 만날게.');
- const reveal=node('#hsPedagogyReveal');if(reveal){reveal.textContent='정답 · '+word.eng+' — '+word.kor;reveal.hidden=false}
+ const reveal=node('#hsPedagogyReveal');if(reveal){const ev=window.HideLanguageEvidence,key=String(word.eng||'').trim().toLowerCase(),origin=ev&&!ev.invalidRecords.includes(key)?ev.records[key]:null;reveal.textContent=(origin?origin.bridge+' · ':'')+'정답 · '+word.eng+' — '+word.kor;reveal.hidden=false}
  node('#hsPedagogyNext').hidden=false;
  for(const selector of ['#hsPedagogyCheck','#hsPedagogyHint','#hsPedagogyPass']){const btn=node(selector);if(btn)btn.disabled=true}
  for(const btn of document.querySelectorAll('.hs-piece-key,.hs-piece-slot'))btn.disabled=true;
