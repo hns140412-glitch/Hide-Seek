@@ -6,8 +6,6 @@ if(!globalThis.TakyReleaseContract?.validateDescriptor?.(RELEASE)?.ok)throw new 
 const APP_REV=RELEASE.app_version;
 const SCHEMA_VERSION=RELEASE.data_schema_version;
 const STORAGE_KEY="hide_seek_state";
-// Earlier builds stored state under these keys; prefer them (in order) over generic discovery.
-const LEGACY_KEYS=["zpd_word_state","zpd_rev06_state"];
 const SESSION_API_KEY="hide_seek_runtime_api_key";
 const ASSET_DB_NAME="hide-seek-assets";
 const DEFAULT_WORDS=[
@@ -61,22 +59,21 @@ function isCompatibleLegacyState(v){
  return !!(v&&typeof v==="object"&&Array.isArray(v.sheets)&&v.sheets.some(sh=>Array.isArray(sh?.items)&&sh.items.some(w=>w&&("eng" in w||"kor" in w)))&&(v.profile||v.guide||v.memory||v.codeRed));
 }
 function discoverCompatibleLegacyState(){
+ let best=null;
  try{
   for(let i=0;i<localStorage.length;i++){
    const key=localStorage.key(i);
    if(!key||key===STORAGE_KEY)continue;
-   try{const parsed=JSON.parse(localStorage.getItem(key));if(isCompatibleLegacyState(parsed))return parsed}catch{}
+   // Several earlier builds may have left state; keep the newest schema, not whichever key comes first.
+   try{const parsed=JSON.parse(localStorage.getItem(key));if(isCompatibleLegacyState(parsed)&&(!best||Number(parsed.schemaVersion||0)>Number(best.schemaVersion||0)))best=parsed}catch{}
   }
  }catch{}
- return null;
+ return best;
 }
 function load(){
  try{
   const current=localStorage.getItem(STORAGE_KEY);
   if(current)return migrate(JSON.parse(current));
- for(const k of LEGACY_KEYS){
-  try{const parsed=JSON.parse(localStorage.getItem(k)||"null");if(isCompatibleLegacyState(parsed)){const migrated=migrate(parsed);localStorage.setItem(STORAGE_KEY,JSON.stringify(migrated));return migrated}}catch{}
- }
   const legacy=discoverCompatibleLegacyState();
   if(legacy){
    const migrated=migrate(legacy);
