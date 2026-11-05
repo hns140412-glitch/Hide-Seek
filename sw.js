@@ -17,6 +17,7 @@ const CORE=[
   './hide-runtime.js',
   './hide-recall-direction-v1.js',
   './hide-language-evidence.js',
+  './hide-ocr-evidence-guard-v1.js',
   './hide-family-character-profile-adapter-v1.js',
   './hide-character-asset-read-adapter-v1.js',
   './taky-family-auth-runtime-v1.js',
