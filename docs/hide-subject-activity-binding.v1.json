@@ -1,0 +1,388 @@
+{
+  "schema": "hide.subject-activity-ui-binding.v1",
+  "status": "DRAFT_REVIEW_REQUIRED_NOT_RUNTIME_ACTIVE",
+  "date": "2026-09-28",
+  "intendedOwner": "Hide & Seek project UX/activity contract",
+  "scope": "Subordinate to TAKY and Hide project canonical; no master promotion, main merge, visual approval, production release, or runtime mode implementation implied.",
+  "upstream": {
+    "projectMaster": "Hide_Seek_UI_MASTER_LOGIC_REV_04.md",
+    "familyMaster": "hns140412-glitch/TAKY:MASTER/LEARNING_APP_FAMILY_MASTER_REV_01.md",
+    "currentV2Source": "taky/hide-mossfall-approved-art-ui-20260928@b58d99d866d9e62d7ec8bd9d8f54c9f717ed9daf",
+    "currentDraftPR": "https://github.com/hns140412-glitch/Hide-Seek/pull/22",
+    "approvedVisualId": "TAKY-LAF-HIDE-HOME-MOSSFALL-20260927-A",
+    "approvedVisualScope": "HOME_ENVIRONMENT_ONLY",
+    "approvedAssetSha256": "1f7aa500a177e25820649cc485355297cbc4fb89909df1f7f43e4ff7ddbe2419",
+    "assetBinaryInPR22": "NOT_YET_BOUND",
+    "rejectedReference": "expedition.html"
+  },
+  "preserve": [
+    "English learning semantics and approved home/environment source",
+    "free-choice TRACE/LINK/CORE/RECALL design; no false claim existing runtime implements mode switching",
+    "image and character Visual IDs immutable; no generated copy and no implicit asset promotion",
+    "no full-screen card dashboard; activity-local fragments/card layouts are allowed when pedagogically justified",
+    "tap-first mobile controls, optional drag with equivalent tap fallback, no forced full word typing",
+    "child is author; clues support rather than reveal; assisted success is not unassisted recall",
+    "source/OCR draft and verified learning content are separate; subject ranges and review schedules come from their owning layer"
+  ],
+  "ownership": {
+    "Hide": "renders activities, attempts, minimal assistance, locally scoped observational evidence; no mastery or date allocation",
+    "LearningEngineCore": "interprets concept/skill evidence, selects suitable review need and intensity; does not render Hide UI",
+    "Planner": "dated allocation, target item/mission directive, carry-over",
+    "Ready": "host/session/timer/return target and task-level result adapter",
+    "Snap": "optional child-authored expression of acquired material, not Hide's primary learning UI",
+    "AssetOwner": "existing approved Visual IDs; no regenerated paintings or persona replacement"
+  },
+  "modes": {
+    "TRACE": {
+      "intent": "notice and recognize form/sound/meaning",
+      "allowed": [
+        "FOCUS_CUE",
+        "SOFT_TILE",
+        "IMAGE_MASK",
+        "SOUND_KEY"
+      ],
+      "evidence": [
+        "RECOGNIZED_FORM",
+        "RECOGNIZED_SOUND",
+        "MEANING_SELECTED"
+      ]
+    },
+    "LINK": {
+      "intent": "infer and verify relations, grouping and imagery",
+      "allowed": [
+        "CLUSTER_CHIP",
+        "CONSTRAINED_GROUP",
+        "RELATION_SPINE",
+        "COMPARISON_PAIR",
+        "EXPANDABLE_FRAGMENT"
+      ],
+      "evidence": [
+        "RELATION_INFERRED",
+        "GROUPED",
+        "CLUE_USED",
+        "PREDICTION_RECORDED"
+      ]
+    },
+    "CORE": {
+      "intent": "reconstruct essential structure and apply understanding",
+      "allowed": [
+        "SENTENCE_SLOT",
+        "PART_ASSEMBLY",
+        "IMAGE_MASK",
+        "COMPARISON_PAIR"
+      ],
+      "evidence": [
+        "STRUCTURE_RECONSTRUCTED",
+        "CONTEXT_APPLIED",
+        "ANSWER_VERIFIED"
+      ]
+    },
+    "RECALL": {
+      "intent": "retrieve without revealed answer, then correct/recover",
+      "allowed": [
+        "FOCUS_CUE",
+        "SENTENCE_SLOT",
+        "SOUND_KEY"
+      ],
+      "evidence": [
+        "UNASSISTED_RECALL",
+        "ASSISTED_RECOVERY",
+        "CONFUSION_RECORDED"
+      ]
+    }
+  },
+  "modePolicy": {
+    "freeChoice": true,
+    "noForcedLinearProgression": true,
+    "currentRuntimeModeSelector": "INFORMATIONAL_ONLY_NOT_VERIFIED_AS_FUNCTIONAL",
+    "legacyRuntimeStages": "MEMORIZE/FIRST_FIND/MEANING/DOMAIN_EXTENSION/FINAL_SEEK/SEEK_AGAIN remain active in V2; no silent rename or equivalence",
+    "crossModeEvidence": "use actual attempt/mode, not presumed stages"
+  },
+  "subjects": {
+    "ENGLISH": {
+      "state": "EXISTING_LANGUAGE_MODEL",
+      "interpreter": "PREFIX/ROOT/SUFFIX/MEANING_BRIDGE/CONTEXT",
+      "focus": [
+        "pronunciation",
+        "meaning",
+        "orthography",
+        "context",
+        "morphology_when_valid"
+      ],
+      "preferred": [
+        "FOCUS_CUE",
+        "SOUND_KEY",
+        "SOFT_TILE",
+        "PART_ASSEMBLY",
+        "SENTENCE_SLOT"
+      ],
+      "prohibitedAssumption": "all lexical tokens have historical etymology"
+    },
+    "KOREAN": {
+      "state": "EXISTING_LANGUAGE_MODEL",
+      "interpreter": "ETYMOLOGY/AFFIX/HANJA_ORIGIN/SEMANTIC_RELATION/CONTEXT",
+      "focus": [
+        "word meaning",
+        "word family",
+        "contextual inference",
+        "synonym-antonym",
+        "evidence in sentence"
+      ],
+      "preferred": [
+        "CLUSTER_CHIP",
+        "CONSTRAINED_GROUP",
+        "COMPARISON_PAIR",
+        "SENTENCE_SLOT"
+      ],
+      "prohibitedAssumption": "every similar-looking word shares origin"
+    },
+    "HANJA": {
+      "state": "EXISTING_LANGUAGE_MODEL",
+      "interpreter": "RADICAL/COMPONENT/SOUND/MEANING/COMPOUND_CONTEXT",
+      "focus": [
+        "form",
+        "reading",
+        "meaning",
+        "transparent compound",
+        "context",
+        "confusable characters"
+      ],
+      "preferred": [
+        "FOCUS_CUE",
+        "PART_ASSEMBLY",
+        "CLUSTER_CHIP",
+        "CONSTRAINED_GROUP",
+        "SENTENCE_SLOT"
+      ],
+      "prohibitedAssumption": "mnemonic picture is verified paleography or all components independently explain true etymology"
+    },
+    "SOCIAL": {
+      "state": "NEW_DESIGN_ONLY_NOT_LANGUAGE_MODEL_BOUND",
+      "interpreter": "CONCEPT/CATEGORY/TIMELINE/SPACE/CAUSE_EFFECT/SOURCE_EVIDENCE",
+      "focus": [
+        "concept sorting",
+        "chronology",
+        "map/location",
+        "cause and consequence",
+        "source interpretation"
+      ],
+      "preferred": [
+        "CONSTRAINED_GROUP",
+        "RELATION_SPINE",
+        "COMPARISON_PAIR",
+        "IMAGE_MASK"
+      ],
+      "prohibitedAssumption": "ordinary text-domain fallback means ENGLISH"
+    },
+    "SCIENCE": {
+      "state": "NEW_DESIGN_ONLY_NOT_LANGUAGE_MODEL_BOUND",
+      "interpreter": "OBSERVATION/FEATURE/CLASSIFICATION/HYPOTHESIS/CAUSE_EFFECT/RESULT",
+      "focus": [
+        "predict",
+        "observe",
+        "compare",
+        "classify",
+        "explain with evidence"
+      ],
+      "preferred": [
+        "IMAGE_MASK",
+        "CONSTRAINED_GROUP",
+        "RELATION_SPINE",
+        "COMPARISON_PAIR"
+      ],
+      "prohibitedAssumption": "classification/correlation automatically establishes causality"
+    }
+  },
+  "renderers": {
+    "FOCUS_CUE": {
+      "role": "one focal unit",
+      "appearance": "single prominent live-text target anchored inside approved Hide study surface; no generic quiz dashboard",
+      "interaction": "tap/listen/reveal where permitted"
+    },
+    "SOUND_KEY": {
+      "role": "pronunciation and sound-meaning matching",
+      "appearance": "short radio-like listening control with visible text alternative",
+      "interaction": "tap to hear, select matching meaning or reading"
+    },
+    "SOFT_TILE": {
+      "role": "bounded rapid recognition",
+      "appearance": "lightweight translucent fragment; restrained border and clear selection state",
+      "interaction": "tap choice, not obligatory flip"
+    },
+    "CLUSTER_CHIP": {
+      "role": "see related lexical units",
+      "appearance": "central word/character and spaced small meaning chips; no auto extra study list",
+      "interaction": "tap pair then connect; prior encounters prioritized"
+    },
+    "CONSTRAINED_GROUP": {
+      "role": "categorize small bounded set",
+      "appearance": "2-4 visible destinations and 3-6 fragments; a compact work surface, not infinite whiteboard",
+      "interaction": "tap item -> tap destination; drag optional; undo and reset"
+    },
+    "RELATION_SPINE": {
+      "role": "read and construct relation",
+      "appearance": "clean line/connector path for root-to-word, temporal, part-whole or cause-effect",
+      "interaction": "select node pair and label relation; provenance check"
+    },
+    "COMPARISON_PAIR": {
+      "role": "disambiguation",
+      "appearance": "two side-by-side or vertically comparable fragments with a single discriminating feature",
+      "interaction": "select difference and support with context"
+    },
+    "SENTENCE_SLOT": {
+      "role": "apply in context",
+      "appearance": "short sentence and editable live DOM slot",
+      "interaction": "tap candidate/voice where supported; answer must be uniquely justified"
+    },
+    "PART_ASSEMBLY": {
+      "role": "rebuild essential structure",
+      "appearance": "large focal item plus a limited tray of real fragments",
+      "interaction": "tap-to-assemble with optional drag"
+    },
+    "IMAGE_MASK": {
+      "role": "imagery/observation occlusion",
+      "appearance": "approved or attributable contextual visual with selective overlays; live DOM question text",
+      "interaction": "predict before reveal; uncover parts without auto-scoring visual exposure as recall"
+    },
+    "EXPANDABLE_FRAGMENT": {
+      "role": "progressive clue",
+      "appearance": "compact one-line fragment, context/example on explicit request",
+      "interaction": "expansion is assistance evidence, not success"
+    }
+  },
+  "activitySelection": {
+    "required": [
+      "subject",
+      "concept_skill_target",
+      "mode",
+      "task_kind",
+      "verified_content",
+      "device_capability"
+    ],
+    "choose": "match task and skill target to renderer; minimum visual complexity; preserve accessible equivalent interaction; no subject-wide rigid template",
+    "fallback": "if evidence/visual unavailable use verified text and live-DOM interactions without invented source claims"
+  },
+  "contentTruth": {
+    "kinds": [
+      "VERIFIED_HISTORICAL_ETYMOLOGY",
+      "VERIFIED_MORPHOLOGY",
+      "VERIFIED_COMPOUND_STRUCTURE",
+      "SEMANTIC_ASSOCIATION",
+      "MNEMONIC_IMAGE",
+      "OBSERVATIONAL_FACT",
+      "UNVERIFIED_CANDIDATE"
+    ],
+    "rule": "Historical roots, Hanja glyph origin and science/social facts need checked source; imagery or mnemonic explicitly labeled as mnemonic, never asserted historical source.",
+    "sourceFields": [
+      "source_ref",
+      "source_type",
+      "verification_state",
+      "interpretation_kind",
+      "content_revision"
+    ],
+    "predictionBeforeReveal": true,
+    "assistanceMustNotRevealAnswerByDefault": true,
+    "ocr": "OCR_DRAFT!=CONFIRMED_UNIT; preserve source page/row/provider/confidence and explicit correction or acceptance"
+  },
+  "observationContract": {
+    "required": [
+      "event_id",
+      "member_id",
+      "subject",
+      "concept_skill_target",
+      "source_app",
+      "unit_id",
+      "mode",
+      "activity_id",
+      "renderer",
+      "attempt_index",
+      "answer_state",
+      "assisted",
+      "hint_types",
+      "objective_verified",
+      "unassisted",
+      "source_ref",
+      "occurred_at"
+    ],
+    "optional": [
+      "prediction",
+      "prediction_confidence",
+      "group_assignments",
+      "relation_type",
+      "latency_ms",
+      "confusion_target",
+      "image_prompt_ref",
+      "source_row_ref",
+      "session_id",
+      "task_id",
+      "lap_id"
+    ],
+    "mandatoryFlags": {
+      "observation_only": true,
+      "global_mastery_claim": false
+    },
+    "rule": "self-report/prediction/visual exposure/group motion is not a verified recall; successful assisted retry requires a later genuinely unassisted attempt before unassisted credit; preserve source/learner boundaries"
+  },
+  "implementationBindings": [
+    {
+      "path": "Hide_Seek_UI_MASTER_LOGIC_REV_04.md",
+      "role": "CURRENT_PROJECT_OWNER",
+      "action": "PRESERVE; draft addendum only"
+    },
+    {
+      "path": "hide-language-model.js",
+      "role": "EXISTING_ENGLISH_KOREAN_HANJA",
+      "action": "ADAPTER_DESIGN_ONLY; social/science require explicit subject-domain routing rather than ENGLISH fallback"
+    },
+    {
+      "path": "hide-learning-basis-v01.js",
+      "role": "EXISTING_LANGUAGE_PROFILES",
+      "action": "READ_ONLY; do not make Ready semantic owner"
+    },
+    {
+      "path": "src/v2/learning-session.js",
+      "role": "ACTIVE_LEGACY_STAGE_MACHINE",
+      "action": "PRESERVE; mode selector requires separate reviewed implementation"
+    },
+    {
+      "path": "src/v2/app.js",
+      "role": "CURRENT_V2_STUDY_RENDERER",
+      "action": "NO_RUNTIME_MODIFICATION_IN_THIS_DRAFT"
+    },
+    {
+      "path": "src/v2/mossfall-world.js",
+      "role": "CURRENT_HOME_VISUAL_CANDIDATE",
+      "action": "NO_MODIFICATION; four labels currently informational"
+    },
+    {
+      "path": "assets/visual/hide-mossfall.binding.json",
+      "role": "APPROVED_HOME_ART_POINTER",
+      "action": "NO_OVERRIDE; original SHA + review gates remain"
+    },
+    {
+      "path": "docs/HIDE_SUBJECT_ACTIVITY_UI_CONTRACT_2026-09-28.md",
+      "role": "NEW_PROPOSAL_SPEC",
+      "action": "DOCUMENT_AND_REVIEW"
+    },
+    {
+      "path": "docs/hide-subject-activity-binding.v1.json",
+      "role": "NEW_MACHINE_READABLE_DESIGN_BINDING",
+      "action": "DOCUMENT_AND_VALIDATE"
+    }
+  ],
+  "gates": [
+    "main/approved branch untouched",
+    "no false runtime-active mode selector claim",
+    "no regeneration or replacement of approved Mossfall art, character IDs or user-invalid expedition reference",
+    "no English fallback for social/science",
+    "no OCR draft as confirmed learning source",
+    "no invented historical etymology/hanja origin",
+    "rendered functionality is live DOM not baked image text",
+    "mode selection remains elective; no default success without answer",
+    "card permitted only when its comparison/grouping task needs it, not a home dashboard",
+    "tap fallback, reversible error, and reduced-motion and screen-reader alternatives",
+    "assisted success and unassisted recall separable",
+    "Learning Engine and Planner semantic owners preserved",
+    "visual 1:1 review, actual runtime implementation, real-device QA and release remain OPEN"
+  ]
+}
