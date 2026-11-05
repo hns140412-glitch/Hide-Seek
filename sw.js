@@ -15,6 +15,7 @@ const CORE=[
   './hide-pwa-update-v01.js',
   './app.js',
   './hide-runtime.js',
+  './hide-recall-direction-v1.js',
   './hide-family-character-profile-adapter-v1.js',
   './hide-character-asset-read-adapter-v1.js',
   './taky-family-auth-runtime-v1.js',
