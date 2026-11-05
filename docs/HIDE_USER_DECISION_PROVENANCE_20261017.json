@@ -1,0 +1,175 @@
+{
+  "schema": "HIDE_USER_DECISION_PROVENANCE_LEDGER_20261017_V1",
+  "purpose": "Evidence index for restoring user-confirmed Hide & Seek. This file does not itself grant user approval.",
+  "precedence": [
+    "direct_user_decision_with_original_timestamp",
+    "explicit_user_approved_design_asset_with_scope",
+    "verified_source_material",
+    "assistant_analysis_and_candidate",
+    "implementation_or_test_result"
+  ],
+  "source_policy": {
+    "assistant_document_never_approves_itself": true,
+    "passing_test_does_not_approve_design": true,
+    "candidate_never_promoted_without_user_decision": true,
+    "preserve_worktree_and_prior_evidence": true
+  },
+  "decisions": [
+    {
+      "id": "NAV_3",
+      "status": "USER_DIRECT",
+      "source": "user conversation 2026-09-22T04:08:09Z plus 2026-09-22 selection of CATCH",
+      "scope": "HOME / EXPLORE / CATCH, primary Korean and smaller English labels",
+      "code_area": "index.html bottomNav; app.js render/updateChrome",
+      "test": "independent browser actual tab click"
+    },
+    {
+      "id": "MODES_FREE",
+      "status": "USER_DIRECT",
+      "source": "user conversation 2026-09-22T04:13:21Z; learning record model 2026-09-22",
+      "scope": "TRACE LINK PIECE common abstraction; mode freedom; current CORE/RECALL naming reconciliation needs source-by-source assessment",
+      "code_area": "app.js startHomeMode and render map",
+      "test": "actual user tab EXPLORE should not impose six-stage sequential landing"
+    },
+    {
+      "id": "NEW12_REVIEW24",
+      "status": "USER_DIRECT",
+      "source": "user 2026-10-01T08:18:58Z new 12 plus review 24 accepted; 2026-09-22 review/new separation",
+      "scope": "First TRACE new 12, review 24 separate; data from confirmed source worksheets, not synthetic score promotion",
+      "code_area": "app.js traceWords; hide-english-cycle-v1.js",
+      "test": "real browser TRACE 1/12 and review provenance",
+      "source_note": "User 2026-09-21T01:17:14Z clarified that left 12 words in an example photo must NOT be treated as a general New12 recognition rule."
+    },
+    {
+      "id": "ENGLISH_AND_SIX_SUBJECTS",
+      "status": "SOURCE_SUPPORTED_REVIEW_SCOPE",
+      "source": "2026-10-01 discussion and later repeated user requests to restore all subjects",
+      "scope": "English, Korean, Hanja, Social Studies, Science, Math; subject-specific interaction and source, no reroute to foreign subject",
+      "code_area": "HS_SUBJECTS and HideTermDecoder; preserve Ready assigned subject",
+      "test": "subject-mode/grade boundary"
+    },
+    {
+      "id": "CATCH_NAME",
+      "status": "USER_DIRECT",
+      "source": "2026-09-22 user accepted name CATCH and three-tab layout",
+      "scope": "The name and tab count are confirmed; badge/calendar/item-specific screen design needs its own decision provenance",
+      "code_area": "index.html, app.js renderRecords",
+      "test": "CATCH navigation and no false mastery"
+    },
+    {
+      "id": "VISUAL_APPROVAL_SCOPE",
+      "status": "USER_DIRECT_ASSET_SCOPE",
+      "source": "2026-09-27 approved forest/waterfall imagery; 2026-09-30 user requested approved original vs assistant UI difference",
+      "scope": "forest/waterfall reference and approved environment asset only; 9-screen storyboard and later mockups must not inherit approval",
+      "code_area": "assets world and UI design registry",
+      "test": "visual compare original asset and separate UI mockups; QA title is not approval"
+    },
+    {
+      "id": "HIDE_READY_OWNER",
+      "status": "SOURCE_SUPPORTED",
+      "source": "2026-09-22 family-learning decision and user's repeated Ready assignment/learning engine ownership requests",
+      "scope": "Ready sets goal and return; Hide runs subject-specific study and emits actual attempt evidence. Long-term review selection remains Learning Engine responsibility",
+      "code_area": "hide-bridge, hide-learning-evidence-source-v1, HideEnglishCycleV1",
+      "test": "no local 100 percent false outcome"
+    },
+    {
+      "id": "FIRST_FIND_DISTINCTION",
+      "status": "USER_DIRECT",
+      "source": "Direct user 2026-09-20T23:27:06Z and 23:27:15Z: worksheet -> word verification -> child memorization -> Hide FIRST FIND first independent recall.",
+      "scope": "First retrieval after prior memorization must start without hints; exposure alone is not FIRST FIND. No user-approved mandatory memorized flag/button; do not invent one.",
+      "code_area": "app.js renderFirstContact; renderMeaningCheck; hide-english-pedagogy-v1.js",
+      "test": "independent attempt evidence and unscored exposure split"
+    },
+    {
+      "id": "LINK_THREE",
+      "status": "DIRECT_USER_TURNS_LOCATED_ORIGINAL_EXPORT_SHA_PENDING",
+      "source": "2026-09-22T03:21:52Z and 2026-09-22T03:26:42Z direct user messages, recovered via conversation search; byte-identical original export not yet verified",
+      "recovered_user_direction": [
+        "LINK first presents word root, etymology, or sourced association",
+        "learner then taps a related word or scene (no mandatory drag)",
+        "learner finally connects multiple words and meanings by tapping"
+      ],
+      "scope": "Three stages are the user-defined interaction, not verified teaching contents. A root/related scene cannot be invented without source. Simple pair matching alone does not fulfill LINK. Do not authorize any arbitrary 3-screen mock as an approved design.",
+      "original_chat_export_sha256": null,
+      "semantic_content_review_verified": false,
+      "design_pixel_approval": false,
+      "code_area": "app.js renderConnection; HideTermDecoderV1",
+      "test": "real learner can complete sourced principle -> related-word/scene discrimination -> mixed word/meaning matching by touch; missing originals stay HOLD"
+    },
+    {
+      "id": "OCR_OWNER",
+      "status": "USER_ACCEPTED_WORKFLOW_SOURCE_REVIEW",
+      "source": "2026-10-01 on-device OCR first preference and shared Capture / parent confirmation references",
+      "scope": "Do not promote browser Gemini private API path as accepted shared capture; free manual intake may be fallback, not equivalent to OCR.",
+      "code_area": "app.js analyzeSheet, common capture path",
+      "test": "no unexpected paid provider call; source review must stay user-action"
+    },
+    {
+      "id": "CATCH_DETAIL_CONTENT",
+      "status": "NOT_ENOUGH_DIRECT_USER_EVIDENCE",
+      "source": "assistant C2S references mention badges/calendar/item detail; user confirmed CATCH name and functions generally, exact screen content needs original user acceptance",
+      "scope": "Keep known data; do not invent official UI or delete current data.",
+      "code_area": "app.js renderRecords",
+      "test": "screen capability inventory not fake green check"
+    }
+  ],
+  "quarantined_assistant_candidates": [
+    {
+      "id": "MASTER_4_3",
+      "location": ".local/AUTHORITY_CLEANUP_20261017/ASSISTANT_CANDIDATE_NOT_APPROVED.md",
+      "reason": "assistant-authored HARD RULE text mixed verified details with interpretation; preserve and classify before promotion"
+    },
+    {
+      "id": "MASTER_5_1",
+      "location": ".local/AUTHORITY_CLEANUP_20261017/ASSISTANT_CANDIDATE_NOT_APPROVED.md",
+      "reason": "assistant-authored source reconciliation declared canonical UX; not self-approving"
+    },
+    {
+      "id": "SIX_STAGE_PRIMARY",
+      "location": "app.js renderLearningHub and tools/six-stage-child-journey.e2e.cjs",
+      "reason": "assistant-imposed sequential scene; retained as legacy candidate but removed from active navigation"
+    },
+    {
+      "id": "IMAGE_STORYBOARD",
+      "location": "9-screen storyboard and latest collage previews",
+      "reason": "review candidate, not user-approved UI"
+    },
+    {
+      "id": "QA_GOLDEN_NAMING",
+      "location": "tools/approved-home-learning-behavior.e2e.cjs",
+      "reason": "functional Chrome test must not be represented as 1:1 approved visual parity"
+    }
+  ],
+  "remaining_logic_conflicts": [
+    {
+      "id": "FIRST_FIND",
+      "priority": "P0",
+      "action": "restore distinct memorization and independent retrieval semantics against dated source; no invented hint/show-answer behavior"
+    },
+    {
+      "id": "LINK",
+      "priority": "P0",
+      "action": "restore source-supported principle -> discrimination -> mixed relation behavior instead of only word/meaning pairing"
+    },
+    {
+      "id": "CATCH_DEPTH",
+      "priority": "P0",
+      "action": "recover badge/calendar/item history source before modifying screen"
+    },
+    {
+      "id": "OCR",
+      "priority": "P0",
+      "action": "verify on-device first and shared Capture owner; do not use chargeable API without approval"
+    },
+    {
+      "id": "REVIEW_SELECTOR",
+      "priority": "P0",
+      "action": "confirm Learning Engine ownership of review24 selection before changing selection logic"
+    },
+    {
+      "id": "UI_DESIGN",
+      "priority": "P1",
+      "action": "compare exact approved 2026-09-27 images vs candidates; no 1:1 claim without pixel inspection"
+    }
+  ]
+}

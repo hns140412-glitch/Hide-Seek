@@ -1,0 +1,121 @@
+<!doctype html>
+<meta charset="utf-8">
+<base href="../">
+<title>Hide Term Decoder Pre-UI Browser Harness</title>
+<div id="view"></div>
+<pre id="result">RUNNING</pre>
+<script>
+const STORAGE_KEY='hide_seek_state';
+const params=new URLSearchParams(location.search);
+const phase=params.get('phase')||'1';
+if(phase==='1') localStorage.removeItem(STORAGE_KEY);
+var S={};
+try{S=JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}')}catch{S={}}
+window.__events=[];
+function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(S))}
+function markStudy(){save()}
+function setPartner(){}
+function pushView(fn){fn()}
+window.HideSeekBridge={context(){return{}},emit(type,payload){window.__events.push({type,payload})}};
+window.addEventListener('error',e=>{document.querySelector('#result').textContent='FAIL: '+e.message});
+</script>
+<script src="./hide-term-decoder-v1.js"></script>
+<script src="./hide-learning-term-loader-v1.js"></script>
+<script>
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+const assert=(cond,msg)=>{if(!cond)throw new Error(msg)};
+async function waitBound(){
+  const expected=new URLSearchParams(location.search).get('school_stage');
+  for(let i=0;i<100;i++){
+    const snap=window.HideTermDecoderV1?.snapshot?.();
+    const stage=snap?.engineProjection?.school_stage||snap?.engineProjection?.grade_context?.school_stage||null;
+    if(snap?.engineOwnedCards && (!expected||stage===expected))return snap;
+    await wait(50);
+  }
+  throw new Error('ENGINE_PROJECTION_NOT_BOUND');
+}
+function correct(selector){
+  const b=[...document.querySelectorAll(selector)].find(x=>x.dataset.correct==='1');
+  assert(b,'CORRECT_BUTTON_MISSING '+selector); b.click();
+}
+async function run(){
+  let api=null;
+  for(let i=0;i<100;i++){
+    api=window.HideTermDecoderV1;
+    if(api)break;
+    await wait(50);
+  }
+  assert(api,'DECODER_API_MISSING');
+  const bound=await waitBound();
+  if(phase==='2'){
+    const snap=api.snapshot();
+    const modes=snap.evidence.map(x=>x.mode);
+    for(const m of ['TRACE','LINK','CORE','RECALL'])assert(modes.includes(m),'PERSISTED_'+m+'_MISSING');
+    assert(localStorage.getItem(STORAGE_KEY),'LOCALSTORAGE_MISSING');
+    let phase1Summary={};
+    try{phase1Summary=JSON.parse(localStorage.getItem('hide_preui_phase1_summary')||'{}')}catch{}
+    const out={
+      state:'PASS',phase:'READBACK_AFTER_RELOAD',
+      engineOwnedCards:snap.engineOwnedCards,
+      school_stage:snap.engineProjection?.school_stage,
+      evidence_modes:[...new Set(modes)],
+      evidence_count:snap.evidence.length,
+      localStorage_bytes:localStorage.getItem(STORAGE_KEY).length,
+      phase1:phase1Summary
+    };
+    document.querySelector('#result').textContent='PRE_UI_BROWSER_E2E_PASS\n'+JSON.stringify(out,null,2);
+    document.documentElement.dataset.harness='PASS';
+    return;
+  }
+
+  const cards=bound.cards;
+  const target=cards.find(c=>c.components?.length && c.families?.some(f=>f.words?.length) && ['TRACE','LINK','CORE','RECALL'].every(m=>c.miningLearningPattern?.eligible_modes?.includes(m)))
+    || cards.find(c=>c.components?.length && c.families?.some(f=>f.words?.length))
+    || cards[0];
+  assert(target,'EXECUTABLE_TARGET_NOT_FOUND');
+  const others=cards.filter(c=>c.id!==target.id).slice(0,4);
+  api.registerCards([target,...others],{
+    replace:true,engineOwned:true,
+    projection:bound.engineProjection
+  });
+
+  api.open('TRACE');
+  document.querySelector('#termTraceReveal')?.click();
+  const traceKnown=[...document.querySelectorAll('[data-trace-result]')].find(x=>x.dataset.traceResult==='SELF_KNOWN');
+  assert(traceKnown,'TRACE_DECISION_MISSING'); traceKnown.click();
+
+  api.open('LINK');
+  correct('[data-link-index]');
+
+  api.open('CORE');
+  correct('[data-core-index]');
+
+  api.open('RECALL');
+  const context=document.querySelector('.term-decoder-family')?.textContent||'';
+  const rawRecallContext=[target.example,...(target.unitContext||[]),target.concept?.summary||''].join(' ');
+  if(rawRecallContext.includes(target.term))assert(context.includes('_____'),'RECALL_TARGET_NOT_MASKED');
+  assert(!context.includes(target.term),'RECALL_CONTEXT_LEAKS_TARGET');
+  correct('[data-recall-index]');
+
+  const snap=api.snapshot();
+  for(const m of ['TRACE','LINK','CORE','RECALL'])assert(snap.evidence.some(x=>x.mode===m),'MODE_NOT_EXECUTED '+m);
+  assert(window.__events.some(x=>x.type==='TERM_DECODER_EXPOSURE'),'TRACE_BRIDGE_EVENT_MISSING');
+  assert(window.__events.filter(x=>x.type==='RETRIEVAL_ATTEMPT_RESULT').length>=3,'RETRIEVAL_BRIDGE_EVENTS_MISSING');
+  localStorage.setItem('hide_preui_phase1_summary',JSON.stringify({
+    bridge_events:window.__events.length,
+    exposure_events:window.__events.filter(x=>x.type==='TERM_DECODER_EXPOSURE').length,
+    retrieval_events:window.__events.filter(x=>x.type==='RETRIEVAL_ATTEMPT_RESULT').length,
+    evidence_modes:[...new Set(snap.evidence.map(x=>x.mode))],
+    recall_context_source:snap.evidence.filter(x=>x.mode==='RECALL').at(-1)?.context_source||null,
+    grade_context:snap.engineProjection?.grade_context||null
+  }));
+  save();
+  const nextStage=bound.engineProjection?.school_stage||bound.engineProjection?.grade_context?.school_stage||'E5';
+  const nextSubject=bound.engineProjection?.subject||'ALL';
+  location.replace('tools/pre-ui-runtime-harness.html?phase=2&school_stage='+encodeURIComponent(nextStage)+'&subject='+encodeURIComponent(nextSubject));
+}
+run().catch(err=>{
+  document.querySelector('#result').textContent='PRE_UI_BROWSER_E2E_FAIL\n'+String(err?.stack||err);
+  document.documentElement.dataset.harness='FAIL';
+});
+</script>

@@ -1,0 +1,31 @@
+Focused repair pass. Work ONLY in D:\Git PWA\Hide & Seek.
+Do not reset/checkout/clean/revert unrelated work. No commit/push/merge/deploy/Netlify.
+
+The previous AGE/GRADE adaptive Term Decoder implementation is now written, but my independent test execution found two failures.
+
+Failure 1:
+node tools/test-term-decoder-v1.cjs
+TypeError at tools/test-term-decoder-v1.cjs:47:
+api.snapshot().evidence.at(-1) is undefined when asserting .term_projection.authority.
+The test must actually create evidence through a supported public/user interaction path, OR assert the intended preview metadata without inventing an impossible evidence item. Do not weaken product behavior merely to satisfy the test.
+
+Failure 2:
+node tools/test-learning-term-loader-v1.cjs
+SyntaxError: Identifier 'low' has already been declared around line 89.
+Rename/restructure test locals cleanly.
+
+Tasks:
+1) Inspect the two tests and the implementation files.
+2) Make the minimal repair to tests and/or implementation needed for the intended behavior.
+3) Preserve all product requirements from the previous pass:
+   - unknown grade fail-closed
+   - age/grade conflict fail-closed
+   - lower/middle/upper/secondary adaptation
+   - bounded ±1 engine evidence adjustment
+   - low transparency/etymology suppresses or reduces decomposition
+   - Learning Engine owns recommendation; Hide only consumes/executes/emits evidence
+   - TRACE -> LINK -> CORE -> RECALL unchanged
+   - live/static E5 SCIENCE regressions preserved
+4) Do not add new unrelated features.
+5) You do not need to run node commands if permissions deny them; I will run tests independently.
+6) At end, print exactly which files you changed and why.

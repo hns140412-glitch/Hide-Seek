@@ -1,0 +1,28 @@
+Review ONLY the AGE/GRADE adaptive Term Decoder implementation in these paths under D:\Git PWA\Hide & Seek:
+- hide-learning-term-loader-v1.js
+- hide-term-decoder-v1.js
+- hide-bridge.js (only age/school_grade propagation changes)
+- tools/test-learning-term-loader-v1.cjs
+- tools/test-term-decoder-v1.cjs
+- data/learning-term-recommendation-packs-v1.json only as needed to validate loader assumptions; do not review unrelated generated content.
+
+Ignore all other dirty/untracked files and unrelated pre-existing changes.
+
+Review goals:
+1) correctness of age -> grade -> subject -> unit -> learner-evidence resolution;
+2) unknown grade and age/grade conflict fail closed;
+3) evidence adjustment is bounded to one adjacent band and only engine-interpreted live evidence can shift it;
+4) static fallback never performs mastery/review scheduling and never silently promotes grade;
+5) low semantic_transparency or etymology_confidence suppresses/reduces Hanja decomposition without corrupting the term itself;
+6) Learning Engine remains recommendation/interpretation owner; Hide only adapts presentation and emits evidence;
+7) TRACE -> LINK -> CORE -> RECALL and evidence persistence are not regressed;
+8) HTML escaping / audio button safety / state mutation bugs;
+9) tests meaningfully cover the requirements and do not merely assert implementation details;
+10) E5 science live/static behavior remains compatible.
+
+Independent execution already passed:
+node tools/test-term-decoder-v1.cjs
+node tools/test-learning-term-loader-v1.cjs
+git diff --check
+
+Return findings ordered P0/P1/P2 with exact file + line/function, impact, and minimal fix. If no P0/P1, explicitly say so. Do not edit files.
