@@ -1,0 +1,33 @@
+{
+  "pass": true,
+  "subjects": [
+    {
+      "subject": "SCIENCE",
+      "cardCount": 36,
+      "firstTerm": "고기압",
+      "firstSource": "GOE_FRAMEWORK_56|STANDARD:6과06-03",
+      "projectionVersion": "2026-10-07.4-all-elementary-profile",
+      "sourceKind": "STATIC_PROJECTION_FALLBACK",
+      "rendered": true
+    },
+    {
+      "subject": "SOCIAL",
+      "cardCount": 36,
+      "firstTerm": "분포",
+      "firstSource": "GOE_FRAMEWORK_56|STANDARD:6사01-01",
+      "projectionVersion": "2026-10-07.4-all-elementary-profile",
+      "sourceKind": "STATIC_PROJECTION_FALLBACK",
+      "rendered": true
+    },
+    {
+      "subject": "MATH",
+      "cardCount": 36,
+      "firstTerm": "겨냥도",
+      "firstSource": "GOE_FRAMEWORK_56|STANDARD:6수03-04",
+      "projectionVersion": "2026-10-07.4-all-elementary-profile",
+      "sourceKind": "STATIC_PROJECTION_FALLBACK",
+      "rendered": true
+    }
+  ],
+  "errors": []
+}
