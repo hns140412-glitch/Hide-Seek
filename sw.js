@@ -126,6 +126,7 @@ const CORE=[
   './explorer-crew-voice/data-mock.js',
   './explorer-crew-voice/data-approved.js',
   './explorer-crew-voice/data-guide-lines.js',
+  './explorer-crew-voice/data-hanja-lines.js',
   './explorer-crew-voice/explorer-crew-guide-line-voice-v1.js',
   './explorer-crew-voice/explorer-crew-dialogue-voice-bridge-v1.js',
   './explorer-crew-voice/explorer-crew-tts-mock-switch-v1.js',
