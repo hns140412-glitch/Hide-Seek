@@ -141,12 +141,34 @@ function bindOnboarding(){
 async function profilePicked(file){if(!file||!file.type.startsWith('image/'))return toast('이미지 파일을 선택해 주세요.');selectedProfileFile=file;const blob=await stylizePhoto(file),url=URL.createObjectURL(blob),box=$('#photoPreview');if(box)box.innerHTML=`<img src="${url}" alt="프로필 미리보기">`}
 function finishOnboard(name=selectedGuideName){S.guide.id=selectedGuide;S.guide.name=name||'길잡이';S.guide.style=GUIDE_OPTIONS.find(x=>x.id===selectedGuide)?.style||'curious';S.onboardingDone=true;S.onboardingStep=4;S.profile.createdAt=S.profile.createdAt||nowISO();save();currentTab='home';viewStack=[];render();setPartner(`${S.profile.displayName||'탐험가'}, 새 사건이 들어왔어. 시험지부터 볼까?`,'smile')}
 async function renderHome(){
- const av=await avatarURL(),sh=sheet(),ws=validWords(),weak=ws.filter(w=>weakScore(w)>0).length,progress=learningProgress(),remain=Math.max(0,ws.length-Object.keys(S.codeRed.results||{}).length),first=(S.profile.displayName||'나').slice(0,1);
- $('#view').innerHTML=`<section class="world-hero"><div class="hero-profile"><div class="user-chip">${av?`<img class="avatar-circle" src="${av}" alt="사용자 프로필">`:`<div class="avatar-circle avatar-fallback">${esc(first)}</div>`}<div><b>${esc(S.profile.displayName||'탐험가')}</b><small>Lv.${Math.floor(S.xp/100)+1} · ${S.xp} XP</small></div></div><img class="guide-peek" src="${guideAsset('smile')}" alt="${esc(S.guide.name||'길잡이')}"></div><div class="hero-case"><div class="hero-kicker"><span>ACTIVE CASE</span><span>${stateLabel(sh.status)}</span></div><h1>${esc(sh.title)}</h1><p>${ws.length}단어 · 취약 ${weak}개 · CODE RED 남은 ${remain}개</p><div class="progress" style="margin-top:8px"><span style="width:${progress}%"></span></div><div class="hero-actions"><button class="btn primary" id="photoFirst" type="button">사진으로 시험지 만들기</button><button class="btn secondary" id="continueCase" type="button">이어하기</button></div></div></section>
- <section class="primary-intake"><div><h2>새 시험지 접수</h2><p>카메라 또는 사진 보관함 → OCR SEE/PAIR → 확인 → 저장 순서로 진행합니다.</p><div class="btn-row" style="margin-top:10px"><button class="btn dark" id="homeCamera" type="button">카메라</button><button class="btn secondary" id="homeLibrary" type="button">사진 보관함</button></div></div><img class="intake-illustration" src="${guideAsset('note')}" alt=""></section>
- <div class="section-title"><h2>오늘의 수사 상태</h2><span>Case Mastery ≠ Memory Strength</span></div><section class="status-strip"><div class="status-pill"><b>${sh.caseMastery||0}%</b><span>Case Mastery</span></div><div class="status-pill"><b>${memoryStrength()}%</b><span>Memory</span></div><div class="status-pill"><b>${S.streak}일</b><span>연속 학습</span></div></section>
- <div class="section-title"><h2>나의 수사 동료</h2><span>기능 차등 없음</span></div><section class="card tint-sky"><div class="partner-mini"><img src="${guideAsset('default')}" alt=""><div><b>${esc(S.guide.name||'길잡이')}</b><p>${GUIDE_OPTIONS.find(x=>x.id===S.guide.id)?.label||'나의 수사 동료'} · ${GUIDE_OPTIONS.find(x=>x.id===S.guide.id)?.tone||''}</p></div></div></section>`;
- $('#photoFirst').onclick=()=>{$('#sheetCameraInput').click()};$('#homeCamera').onclick=()=>$('#sheetCameraInput').click();$('#homeLibrary').onclick=()=>$('#sheetLibraryInput').click();$('#continueCase').onclick=()=>{currentTab='study';render()};setPartner('새 시험지가 최우선이야. 준비됐으면 사진부터 접수하자.','default')
+ const sh=sheet(),ws=validWords(),first=(S.profile.displayName||'나').slice(0,1);
+ $('#view').innerHTML=`<section class="home-world" aria-labelledby="homeTitle">
+ <header class="home-heading"><h1 id="homeTitle">Hide &amp; Seek</h1><p>머릿속에 숨어버린 단어 찾기</p></header>
+ <div class="home-identities"><div class="home-user"><div id="homeAvatar" class="avatar-circle avatar-fallback">${esc(first)}</div><div><small>탐험가</small><b>${esc(S.profile.displayName||'탐험가')}</b><small>Lv.${Math.floor(S.xp/100)+1} · ${S.xp} XP</small></div></div><div class="home-guide"><img src="${guideAsset('smile')}" alt="길잡이"><div><small>길잡이</small><b>${esc(S.guide.name||'나의 길잡이')}</b></div></div></div>
+ <nav class="home-modes" aria-label="단어 탐험 모드">
+ <button class="home-mode" id="homeTrace" type="button"><strong>TRACE</strong><span lang="ko">흔적 찾기</span></button>
+ <button class="home-mode" id="homeLink" type="button"><strong>LINK</strong><span lang="ko">연결 찾기</span></button>
+ <button class="home-mode" id="homeCore" type="button" aria-describedby="homeHubNote"><strong>CORE</strong><span lang="ko">핵심 조각</span></button>
+ <button class="home-mode" id="homeRecall" type="button" aria-describedby="homeHubNote"><strong>RECALL</strong><span lang="ko">숨은 단어</span></button>
+ </nav>
+ <p id="homeHubNote" class="home-hub-note">CORE · RECALL은 학습 목록에서 활동을 골라요.</p>
+ <section class="home-progress" aria-label="탐험 기록"><div><b>${ws.length}</b><span>준비된 단어</span></div><div><b>${sh?.caseMastery||0}%</b><span>Trail Mastery</span></div><div><b>${memoryStrength()}%</b><span>Memory Strength</span></div></section>
+ <section class="home-intake" aria-label="사진으로 단어 추가"><p>사진 속 단어도 찾아볼까?</p><div><button class="btn secondary" id="homeCamera" type="button">카메라</button><button class="btn secondary" id="homeLibrary" type="button">사진 보관함</button></div></section>
+ </section>`;
+ // HOME mapping: TRACE = first exposure; LINK = word/meaning association.
+ // CORE has no verified equivalent; RECALL must not imply unaided recall from
+ // the letter-choice challenge. Both fail closed to the existing learning hub.
+ // Guard at click time: unconfirmed/empty lists also use the hub's intake route.
+ const enter=fn=>pushView(validWords().length?fn:renderLearningHub);
+ $('#homeTrace').onclick=()=>enter(renderFirstContact);
+ $('#homeLink').onclick=()=>enter(renderConnection);
+ $('#homeCore').onclick=()=>pushView(renderLearningHub);
+ $('#homeRecall').onclick=()=>pushView(renderLearningHub);
+ $('#homeCamera').onclick=()=>$('#sheetCameraInput').click();
+ $('#homeLibrary').onclick=()=>$('#sheetLibraryInput').click();
+ setPartner('어떤 길로 가볼까? 숨은 단어를 함께 찾아보자.','smile');
+ const avatarSlot=$('#homeAvatar'),av=await avatarURL();
+ if(av){if(avatarSlot===$('#homeAvatar'))avatarSlot.innerHTML=`<img src="${esc(av)}" alt="사용자 프로필">`;else URL.revokeObjectURL(av)}
 }
 function renderSheets(){
  $('#view').innerHTML=`<div class="section-title"><h2>시험지 · 사건 파일</h2><span>Camera First</span></div><section class="primary-intake"><div><h2>새 시험지 만들기</h2><p>사진 결과는 바로 저장하지 않고 확인 화면을 반드시 거칩니다.</p><div class="btn-row" style="margin-top:10px"><button class="btn primary" id="cameraSheet" type="button">카메라로 찍기</button><button class="btn secondary" id="librarySheet" type="button">사진 보관함</button></div></div><img class="intake-illustration" src="${guideAsset('focus')}" alt=""></section><div class="section-title"><h2>사건 파일</h2><span>${S.sheets.length}개</span></div>${S.sheets.map(sh=>`<section class="card" style="margin-bottom:8px"><div class="hero-kicker"><span>${stateLabel(sh.status)}</span><span>${(sh.items||[]).filter(w=>!w.needsReview).length}단어</span></div><h3>${esc(sh.title)}</h3><div class="progress" style="margin:10px 0"><span style="width:${sh.caseMastery||0}%"></span></div><div class="btn-row"><button class="btn secondary open-sheet" data-id="${esc(sh.sheetId)}" type="button">열기</button><button class="btn secondary review-sheet" data-id="${esc(sh.sheetId)}" type="button">단어 확인</button></div></section>`).join('')}`;

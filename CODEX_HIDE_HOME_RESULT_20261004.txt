@@ -1,0 +1,16 @@
+Changed `app.js`, `styles.css`, and `tests/home-exploration.test.js`. HOME now uses the unchanged approved background, live bilingual mode buttons, separate user/guide identities, and secondary photo intake. `index.html` is unchanged.
+
+Mapping:
+- TRACE → `renderFirstContact`
+- LINK → `renderConnection`
+- CORE → `renderLearningHub`
+- RECALL → `renderLearningHub`
+- Empty/unconfirmed lists → existing hub/intake fallback.
+
+Passed: syntax check, focused HOME assertions, existing shared-runtime tests, background SHA-256 verification, and `git diff --check`.
+
+Remaining verification: rendered 390×844 overflow testing and comparison against the external approved reference. Responsive constraints are implemented; visual parity is unverified.
+
+**GOLDEN_PARITY=HOLD**
+
+No commit, push, deployment, network/API calls, or dependency installation.

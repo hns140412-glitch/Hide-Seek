@@ -1,0 +1,68 @@
+{
+  "schema": "HIDE_HOME_DESIGN_AUTHORITY_CORRECTION_V1",
+  "date": "2026-10-04",
+  "status": "SOURCE_AUTHORITY_CORRECTED__GOLDEN_PARITY_HOLD",
+  "current_main": "5da6594510cc89341054aafef66d5f4ea47a0210",
+  "approved_reference": {
+    "library_file_id": "libfile_2aae2cfb72a8819181610829cf29e5dd",
+    "file_id": "file_00000000a16482068b698390b5f671cb",
+    "library_path": "/TAKY/LEARNING_APP_FAMILY_VISUAL_BINDINGS/APPROVED_SNAP_HIDE_2026-09-27.png",
+    "sha256": "6cd65b6d82f3306bab6fa93064780c96a3e4849484a8cc8add1926108a6db6f2",
+    "hide_reference_rect_px": [
+      846,
+      0,
+      826,
+      941
+    ],
+    "visual_id": "TAKY-LAF-HIDE-HOME-MOSSFALL-20260927-A",
+    "role": "REFERENCE_ONLY__NOT_SHIPPED_FLATTENED_UI"
+  },
+  "approved_runtime_background": {
+    "path": "assets/world/hide_seek_forest_asset.png",
+    "sha256": "1f7aa500a177e25820649cc485355297cbc4fb89909df1f7f43e4ff7ddbe2419",
+    "size_px": [
+      941,
+      1672
+    ],
+    "role": "BACKGROUND_ENVIRONMENT_ONLY",
+    "exact_bytes_verified_in_worktree": true
+  },
+  "superseded_design_candidate": {
+    "source_file_id": "file_0000000040788206873bb1bf11068818",
+    "source_name": "스냅 앤 팝과 하이드 앤 시크 UI 여정.png",
+    "prior_expected_crop_sha256": "6b3f0fac9b5ac098d05d40b9b2cd0a2f38a22ad139b629210d4a697b9cfc5b4a",
+    "state": "INVALID_FOR_CURRENT_GOLDEN_AUTHORITY",
+    "reason": "Current Visual ID Registry explicitly rejects the 9-screen storyboard as approval authority."
+  },
+  "child_facing_hard_locks": [
+    "Hide & Seek exploration language only",
+    "no detective/police/arrest/case framing",
+    "background != UI",
+    "all text/buttons are live DOM",
+    "existing learning semantics preserved",
+    "no image generation",
+    "no flattened mockup runtime",
+    "no merge/deploy/Netlify"
+  ],
+  "home_structure": [
+    "approved Mossfall environment fills HOME",
+    "Hide & Seek brand/subtitle live DOM",
+    "four mode entry controls: TRACE / LINK / CORE / RECALL with Korean secondary labels",
+    "existing profile/guide is a separate live slot",
+    "photo/OCR intake remains reachable as secondary action",
+    "mode actions reuse existing learning functions; no Learning Engine semantic rewrite"
+  ],
+  "golden_parity": "HOLD_UNTIL_EXACT_APPROVED_REFERENCE_BINARY_IS_MATERIALIZED_OR_A_NEW_VERIFIED_DERIVATION_RECEIPT_IS_CREATED",
+  "allowed_current_claims": [
+    "SOURCE_LOCK_PASS",
+    "RUNTIME_BACKGROUND_SHA_PASS",
+    "HOME_STRUCTURE_IMPLEMENTED",
+    "LOCAL_REGRESSION_PASS"
+  ],
+  "forbidden_claims": [
+    "GOLDEN_PARITY_PASS",
+    "DESIGN_PASS",
+    "DEPLOYED",
+    "PRODUCTION_VERIFIED"
+  ]
+}
