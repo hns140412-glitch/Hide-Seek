@@ -421,6 +421,9 @@ globalThis.TakyCrewHanjaLines=Object.freeze({
   "SP03-hanja-76f4": "./audio/explorer-crew/hanja/SP03/hanja-76f4.mp3?v=1f3d9016a19a",
   "VF02-hanja-5730": "./audio/explorer-crew/hanja/VF02/hanja-5730.mp3?v=e67f8bb53f93",
   "VF03-hanja-5730": "./audio/explorer-crew/hanja/VF03/hanja-5730.mp3?v=60fc80332ea3",
-  "SP03-hanja-5730": "./audio/explorer-crew/hanja/SP03/hanja-5730.mp3?v=9cdbdb05aae7"
+  "SP03-hanja-5730": "./audio/explorer-crew/hanja/SP03/hanja-5730.mp3?v=9cdbdb05aae7",
+  "VF01-hanja-7a7a": "./audio/explorer-crew/hanja/VF01/hanja-7a7a.mp3?v=b319ded76922",
+  "VF01-hanja-907a": "./audio/explorer-crew/hanja/VF01/hanja-907a.mp3?v=724950358978",
+  "SP02-hanja-540c": "./audio/explorer-crew/hanja/SP02/hanja-540c.mp3?v=d7c51379c6cd"
  }
 });
