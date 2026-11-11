@@ -732,7 +732,7 @@ function renderComplete(){
 function renderWords(){const ws=validWords();$('#view').innerHTML=`<div class="section-title"><h2>내 단어장</h2><span>${ws.length}개</span></div><section class="card">${ws.length?`<div class="weak-list">${[...ws].sort((a,b)=>weakScore(b)-weakScore(a)).map(w=>`<div class="weak-item"><div><b>${esc(w.eng)}</b><div style="font-size:10px;color:#66736a">${esc(w.kor)}</div></div><span class="badge ${weakScore(w)>=8?'weak':weakScore(w)>0?'mid':'good'}">${weakScore(w)>=8?'약함':weakScore(w)>0?'확인':'안정'}</span></div>`).join('')}</div>`:'<p>아직 단어가 없어요.</p>'}</section>`;setPartner('찾은 단어를 모아 둔 곳이야. 어려운 단어부터 다시 살펴보자.','note')}
 function renderRecords(){
  const words=validWords();
- const all=[...(S.learning?.history||[]),...(S.codeRed?.history||[])].sort((a,b)=>Date.parse(a.at||0)-Date.parse(b.at||0));
+ const all=[...(S.learning?.history||[]),...(S.codeRed?.history||[])].map(e=>window.HideGradingCorrectionV1?.effective?.(e)||e).sort((a,b)=>Date.parse(a.at||0)-Date.parse(b.at||0));
  const recallModes=new Set(['RECALL','recall','code','post-completion-recall']);
  const byWord=new Map();
  for(const item of all){
