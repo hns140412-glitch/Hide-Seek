@@ -6,13 +6,15 @@
  *   - results are practice evidence (QUICK_SEEK), never FINAL SEEK / independent recall
  * Designable: rounds live in ROUNDS (add one entry to add a round type), all copy in COPY,
  * all timing in CONFIG, all colours/sizes as --qs-* tokens in hide-quick-seek-v1.css.
+ * Look: the approved Mossfall HOME language (full forest art, timber signs, forest green / warm
+ * timber / soft cream). No generic card shells: a hanging plank board, wooden stumps, real leaves.
  */
 (function(){
 'use strict';
 const VERSION='HIDE_QUICK_SEEK_V1';
 const CONFIG=Object.freeze({minWords:4,revealMs:950,flashShowMs:1700,coverMs:520,idleFinishMs:7000,countdownMs:2100,maxPromptsPerRun:80});
 const COPY=Object.freeze({
- hubKicker:'QUICK SEEK',hubTitle:'한 판 숨바꼭질',hubSub:'학습지 단어로 20~30초 한 판',
+ hubKicker:'QUICK SEEK',hubTitle:'한 판 숨바꼭질',hubSub:'폭포 숲에 단어가 숨었어',
  hubRule:'한 판은 짧아요. 틀려도 찾은 단어는 그대로예요.',
  needWords:n=>'확인한 단어가 '+n+'개 이상 있어야 숨바꼭질을 할 수 있어요.',
  needWordsAction:'학습지 사진 찍기',
@@ -30,7 +32,7 @@ const COPY=Object.freeze({
 
 const ROUNDS={
  letter:{
-  id:'letter',icon:'🔤',title:'빠진 글자',seconds:20,
+  id:'letter',icon:'🔤',tag:'MISSING LETTER',title:'빠진 글자',seconds:20,
   rule:'뜻을 보고, 숨은 글자 하나를 톡!',
   level:'PARTIAL_ORTHOGRAPHIC_RECALL',
   usable:w=>/[a-z]/i.test(w.eng)&&w.eng.replace(/[^a-z]/gi,'').length>=3,
@@ -49,16 +51,16 @@ const ROUNDS={
   },
   render(p){
    const shown=[...p.target.eng].map((c,i)=>i===p.at?'<span class="hs-qs-gap" aria-label="숨은 글자">?</span>':esc(c)).join('');
-   return '<p class="hs-qs-ask">이 뜻을 가진 단어의 숨은 글자는?</p>'+
+   return plate('<p class="hs-qs-ask">이 뜻을 가진 단어의 숨은 글자는?</p>'+
     '<p class="hs-qs-meaning">'+esc(p.target.kor)+'</p>'+
-    '<p class="hs-qs-word" aria-hidden="true">'+shown+'</p>'+
-    '<div class="hs-qs-keys">'+p.options.map(o=>'<button type="button" class="hs-qs-key" data-qs-pick="'+esc(o)+'">'+esc(o)+'</button>').join('')+'</div>';
+    '<p class="hs-qs-word" aria-hidden="true">'+shown+'</p>')+
+    '<div class="hs-qs-opts hs-qs-keys">'+p.options.map((o,i)=>'<button type="button" class="hs-qs-key" style="--qs-i:'+i+'" data-qs-pick="'+esc(o)+'"><span>'+esc(o)+'</span></button>').join('')+'</div>';
   },
   judge:(p,v)=>v===p.answer,
   reveal(p,root){root.querySelectorAll('[data-qs-pick]').forEach(b=>b.classList.toggle('is-answer',b.dataset.qsPick===p.answer));const g=root.querySelector('.hs-qs-gap');if(g){g.textContent=p.target.eng[p.at];g.classList.add('is-open')}}
  },
  flash:{
-  id:'flash',icon:'🍃',title:'반짝 숨기',seconds:30,
+  id:'flash',icon:'🍃',tag:'LEAF FLASH',title:'반짝 숨기',seconds:30,
   rule:'단어 4개가 잎 뒤로 숨어요. 뜻에 맞는 잎을 톡!',
   level:'RECOGNITION_MEANING_TO_WORD',
   usable:w=>!!w.eng,
@@ -68,9 +70,9 @@ const ROUNDS={
    return {target,cells,answer:target.id,hidden:false};
   },
   render(p){
-   return '<p class="hs-qs-ask" data-qs-flash-ask>잘 봐! 곧 잎 뒤로 숨어요</p>'+
-    '<p class="hs-qs-meaning" data-qs-flash-meaning hidden>'+esc(p.target.kor)+'</p>'+
-    '<div class="hs-qs-leaves" data-qs-leaves>'+p.cells.map(w=>'<button type="button" class="hs-qs-leaf" data-qs-pick="'+esc(w.id)+'" disabled><span class="hs-qs-leaf-word">'+esc(w.eng)+'</span><span class="hs-qs-leaf-cover" aria-hidden="true"></span></button>').join('')+'</div>';
+   return plate('<p class="hs-qs-ask" data-qs-flash-ask>잘 봐! 곧 잎 뒤로 숨어요</p>'+
+    '<p class="hs-qs-meaning is-waiting" data-qs-flash-meaning><span aria-hidden="true">🍃 🍃 🍃</span></p>')+
+    '<div class="hs-qs-opts hs-qs-leaves" data-qs-leaves>'+p.cells.map((w,i)=>'<button type="button" class="hs-qs-leaf" style="--qs-i:'+i+'" data-qs-pick="'+esc(w.id)+'" disabled><span class="hs-qs-leaf-word">'+esc(w.eng)+'</span><span class="hs-qs-leaf-cover" aria-hidden="true"></span></button>').join('')+'</div>';
   },
   mount(p,root,api){
    /* the show time counts toward the 30s: the round length on the card is the real length */
@@ -81,7 +83,7 @@ const ROUNDS={
     api.later(()=>{
      root.querySelectorAll('.hs-qs-leaf').forEach(b=>{b.disabled=false;b.setAttribute('aria-label','잎 '+(1+[...b.parentNode.children].indexOf(b))+'번')});
      if(ask)ask.textContent='이 뜻의 단어는 어느 잎 뒤에 숨었을까?';
-     const m=root.querySelector('[data-qs-flash-meaning]');if(m)m.hidden=false;
+     const m=root.querySelector('[data-qs-flash-meaning]');if(m){m.textContent=p.target.kor;m.classList.remove('is-waiting')}
     },CONFIG.coverMs);
    },CONFIG.flashShowMs);
    return null;
@@ -90,7 +92,7 @@ const ROUNDS={
   reveal(p,root){root.querySelector('[data-qs-leaves]')?.classList.remove('is-hidden');root.querySelectorAll('[data-qs-pick]').forEach(b=>b.classList.toggle('is-answer',b.dataset.qsPick===p.answer))}
  },
  pair:{
-  id:'pair',icon:'🤝',title:'맞는 짝?',seconds:20,
+  id:'pair',icon:'🤝',tag:'MATCH O·X',title:'맞는 짝?',seconds:20,
   rule:'단어와 뜻이 짝이 맞으면 O, 아니면 X를 톡!',
   level:'RECOGNITION_PAIR_VERIFY',
   usable:w=>!!w.eng,
@@ -101,9 +103,9 @@ const ROUNDS={
    return {target,kor,answer:(truth||!decoy)?'O':'X'};
   },
   render(p){
-   return '<p class="hs-qs-ask">이 둘은 맞는 짝일까?</p>'+
-    '<div class="hs-qs-pair"><b>'+esc(p.target.eng)+'</b><span aria-hidden="true">＝</span><b>'+esc(p.kor)+'</b></div>'+
-    '<div class="hs-qs-ox"><button type="button" class="hs-qs-o" data-qs-pick="O" aria-label="맞아요">O<small>맞아요</small></button><button type="button" class="hs-qs-x" data-qs-pick="X" aria-label="아니에요">X<small>아니에요</small></button></div>';
+   return plate('<p class="hs-qs-ask">이 둘은 맞는 짝일까?</p>'+
+    '<div class="hs-qs-pair"><b>'+esc(p.target.eng)+'</b><span class="hs-qs-knot" aria-hidden="true"></span><b>'+esc(p.kor)+'</b></div>')+
+    '<div class="hs-qs-opts hs-qs-ox"><button type="button" class="hs-qs-o" data-qs-pick="O" aria-label="맞아요"><span>O</span><small>맞아요</small></button><button type="button" class="hs-qs-x" data-qs-pick="X" aria-label="아니에요"><span>X</span><small>아니에요</small></button></div>';
   },
   judge:(p,v)=>v===p.answer,
   reveal(p,root){root.querySelectorAll('[data-qs-pick]').forEach(b=>b.classList.toggle('is-answer',b.dataset.qsPick===p.answer));if(p.answer==='X'){const n=root.querySelector('.hs-qs-pair');if(n&&!n.querySelector('.hs-qs-truth'))n.insertAdjacentHTML('beforeend','<small class="hs-qs-truth">'+esc(p.target.eng)+' = '+esc(p.target.kor)+'</small>')}}
@@ -138,30 +140,52 @@ function wrapSafePoint(){
 function alive(r){return run===r&&!!document.querySelector('[data-hs-qs-run="'+r.id+'"]')}
 function clearTimers(r){if(!r)return;clearInterval(r.tick);r.timeouts.forEach(clearTimeout);r.timeouts=[]}
 
-function shell(inner,{kicker,title,sub,compact=true}={}){
- return '<section class="learning-shell hs-pedagogy hs-qs'+(compact?' hs-qs-compact':'')+'" aria-label="한 판 숨바꼭질">'+
-  '<header class="hs-learning-forest-hero hs-qs-hero"><div class="hs-learning-hero-title"><span class="phase-chip">'+esc(kicker||COPY.hubKicker)+'</span><h2>'+esc(title||COPY.hubTitle)+'</h2><small>'+esc(sub||COPY.hubSub)+'</small></div></header>'+
-  inner+'</section>';
+/* One full-viewport forest scene for every quick-seek screen (same frame as the approved HOME). */
+function scene(inner,{title,sub,right='',cls=''}={}){
+ return '<section class="hs-qs-scene hs-qs '+cls+'" aria-label="한 판 숨바꼭질">'+
+  '<header class="hs-qs-top"><button type="button" class="hs-qs-back" data-qs-back aria-label="뒤로 가기"><span aria-hidden="true">‹</span></button>'+
+  '<div class="hs-qs-title"><h2>'+esc(title||COPY.hubTitle)+'</h2>'+(sub?'<small>'+esc(sub)+'</small>':'')+'</div>'+
+  '<div class="hs-qs-right">'+right+'</div></header>'+
+  '<div class="hs-qs-body">'+inner+'</div>'+
+  '<p class="hs-qs-say" aria-live="polite"><img alt="" data-qs-guide hidden><span data-qs-say-text></span></p>'+
+ '</section>';
 }
+function plate(inner){return '<div class="hs-qs-plate"><i class="hs-qs-rope" aria-hidden="true"></i>'+inner+'</div>'}
+/* The guide speaks inside the scene (the partner bar is hidden like on HOME). */
+function say(msg,mood){
+ try{setPartner(msg,mood)}catch{}
+ const t=document.querySelector('[data-qs-say-text]');if(t)t.textContent=msg;
+ const img=document.querySelector('[data-qs-guide]'),src=document.getElementById('partnerAvatar')?.getAttribute('src');
+ if(img&&src){img.src=src;img.hidden=false}
+}
+function onBack(fn){const b=view().querySelector('[data-qs-back]');if(b)b.onclick=fn}
+function leave(){if(run){abandon(run);run=null}try{if(viewStack.length)goBack();else toForest()}catch{toForest()}}
 
 function openHub(){
  if(run){clearTimers(run);run=null}
  const pool=words();const st=state();
  try{if(!viewStack.length)viewStack.push(()=>render())}catch{}
  if(pool.length<CONFIG.minWords){
-  view().innerHTML=shell('<div class="word-card hs-qs-card"><p class="hs-qs-ask">'+esc(COPY.needWords(CONFIG.minWords))+'</p><div class="btn-row"><button type="button" class="btn primary" data-qs-camera>'+esc(COPY.needWordsAction)+'</button><button type="button" class="btn secondary" data-qs-forest>'+esc(COPY.forest)+'</button></div></div>');
+  view().innerHTML=scene('<div class="hs-qs-signs">'+
+   '<button type="button" class="hs-qs-sign" style="--qs-i:0" data-qs-camera><span class="hs-qs-sign-icon" aria-hidden="true">📷</span><span class="hs-qs-sign-copy"><b>PHOTO</b><span>'+esc(COPY.needWordsAction)+'</span><small>'+esc(COPY.needWords(CONFIG.minWords))+'</small></span></button>'+
+   '<button type="button" class="hs-qs-sign" style="--qs-i:1" data-qs-forest><span class="hs-qs-sign-icon" aria-hidden="true">🌳</span><span class="hs-qs-sign-copy"><b>FOREST</b><span>'+esc(COPY.forest)+'</span></span></button></div>',{sub:COPY.hubSub});
   view().querySelector('[data-qs-camera]').onclick=()=>document.getElementById('sheetCameraInput')?.click();
   view().querySelector('[data-qs-forest]').onclick=toForest;
+  onBack(leave);say(COPY.needWords(CONFIG.minWords),'think');
   try{updateChrome()}catch{}
   return;
  }
- const cards=Object.values(ROUNDS).map(r=>{
+ const signs=Object.values(ROUNDS).map((r,i)=>{
   const best=st.best[r.id];
-  return '<button type="button" class="hs-qs-round" data-qs-round="'+r.id+'"><span class="hs-qs-round-icon" aria-hidden="true">'+r.icon+'</span><span class="hs-qs-round-copy"><b>'+esc(r.title)+' <em>'+r.seconds+'초</em></b><small>'+esc(r.rule)+'</small></span>'+(best!=null?'<span class="hs-qs-round-best" aria-label="내 최고 기록 '+best+'개">내 기록 '+best+'</span>':'')+'</button>';
+  return '<button type="button" class="hs-qs-sign" style="--qs-i:'+i+'" data-qs-round="'+r.id+'"><span class="hs-qs-sign-icon" aria-hidden="true">'+r.icon+'</span>'+
+   '<span class="hs-qs-sign-copy"><b>'+esc(r.tag||r.id.toUpperCase())+'</b><span>'+esc(r.title)+'</span><small>'+esc(r.rule)+'</small></span>'+
+   '<span class="hs-qs-sign-sec" aria-label="'+r.seconds+'초">'+r.seconds+'<small>초</small></span>'+
+   (best!=null?'<span class="hs-qs-sign-best" aria-label="내 최고 기록 '+best+'개">🍀 내 기록 '+best+'</span>':'')+'</button>';
  }).join('');
- view().innerHTML=shell('<div class="word-card hs-qs-card"><p class="hs-qs-note">'+esc(COPY.hubRule)+'</p><div class="hs-qs-rounds">'+cards+'</div><p class="hs-qs-pool">이번 학습지 단어 '+pool.length+'개'+(pool.some(w=>weak(w)>0)?' · 다시 찾을 단어부터 숨어요':'')+'</p></div>');
+ view().innerHTML=scene('<div class="hs-qs-signs">'+signs+'</div>'+
+  '<p class="hs-qs-pool"><span aria-hidden="true">📜</span> 이번 학습지 단어 <b>'+pool.length+'</b>개'+(pool.some(w=>weak(w)>0)?' · 다시 찾을 단어부터 숨어요':'')+'</p>',{sub:COPY.hubSub,cls:'is-hub'});
  view().querySelectorAll('[data-qs-round]').forEach(b=>b.onclick=()=>start(b.dataset.qsRound));
- try{setPartner('어떤 숨바꼭질부터 해볼까? 한 판은 금방 끝나.','play')}catch{}
+ onBack(leave);say(COPY.hubRule+' 어떤 숨바꼭질부터 해볼까?','play');
  try{updateChrome()}catch{}
 }
 
@@ -177,12 +201,13 @@ function start(roundId){
  run={id:'qs-'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),round,pool,queue,i:0,found:[],missed:[],answers:0,
   startedAt:iso(),sheetId:sh?.sheetId||null,remaining:round.seconds*1000,clockOn:false,lastTick:0,status:'PLAYING',timeouts:[],over:false,prompt:null};
  const r=run;
- view().innerHTML=shell('<div class="word-card hs-qs-card hs-qs-play" data-hs-qs-run="'+r.id+'">'+
-   '<div class="hs-qs-vine" role="progressbar" aria-label="남은 시간" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><span style="--qs-p:100%"></span></div>'+
-   '<div class="hs-qs-found" aria-live="polite"><span aria-hidden="true">🍀</span> 찾은 단어 <b data-qs-count>0</b></div>'+
-   '<div class="hs-qs-stage" data-qs-stage><p class="hs-qs-countdown">'+esc(COPY.ready)+'</p></div>'+
-  '</div>',{kicker:round.icon+' '+round.title+' · '+round.seconds+'초',title:COPY.hubTitle,sub:round.rule});
- try{setPartner(round.rule,'focus')}catch{}
+ const clock='<div class="hs-qs-clock" role="progressbar" aria-label="남은 시간" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" style="--qs-p:100%"><b data-qs-sec>'+round.seconds+'</b></div>';
+ view().innerHTML=scene('<div class="hs-qs-play" data-hs-qs-run="'+r.id+'">'+
+   '<div class="hs-qs-pouch" aria-live="polite"><span aria-hidden="true">🍀</span><b data-qs-count>0</b><small>찾음</small></div>'+
+   '<div class="hs-qs-stage" data-qs-stage><p class="hs-qs-countdown"><span aria-hidden="true">🍃</span>'+esc(COPY.ready)+'</p></div>'+
+  '</div>',{title:round.icon+' '+round.title,sub:round.rule,right:clock,cls:'is-play is-'+round.id});
+ onBack(()=>{abandon(r);openHub()});
+ say(round.rule,'focus');
  try{updateChrome()}catch{}
  r.timeouts.push(setTimeout(()=>{if(!alive(r))return;r.tick=setInterval(()=>onTick(r),100);next(r)},CONFIG.countdownMs));
 }
@@ -192,9 +217,9 @@ function onTick(r){
  if(!r.clockOn)return;
  const now=performance.now();r.remaining-=now-r.lastTick;r.lastTick=now;
  const pct=Math.max(0,r.remaining/(r.round.seconds*1000)*100);
- const bar=document.querySelector('[data-hs-qs-run="'+r.id+'"] .hs-qs-vine');
- if(bar){bar.firstElementChild.style.setProperty('--qs-p',pct.toFixed(1)+'%');bar.setAttribute('aria-valuenow',String(Math.round(pct)))}
- if(r.remaining<=0&&!r.over){r.over=true;r.overAt=now;try{setPartner(COPY.lastOne,'cheer')}catch{}bar?.classList.add('is-done')}
+ const bar=document.querySelector('.hs-qs-clock');
+ if(bar){bar.style.setProperty('--qs-p',pct.toFixed(1)+'%');bar.setAttribute('aria-valuenow',String(Math.round(pct)));const sec=bar.querySelector('[data-qs-sec]');if(sec)sec.textContent=String(Math.max(0,Math.ceil(r.remaining/1000)));bar.classList.toggle('is-low',pct<25)}
+ if(r.remaining<=0&&!r.over){r.over=true;r.overAt=now;say(COPY.lastOne,'cheer');bar?.classList.add('is-done');const sec=bar?.querySelector('[data-qs-sec]');if(sec)sec.textContent='!'}
  if(r.over&&r.clockOn&&now-r.overAt>CONFIG.idleFinishMs)finish(r);
 }
 function startClock(r){if(r.over)return;r.clockOn=true;r.lastTick=performance.now()}
@@ -228,7 +253,9 @@ function answer(r,p,value,btn,stage){
  if(ok){if(!r.found.some(w=>w.id===p.target.id))r.found.push(p.target)}
  else{if(!r.missed.some(w=>w.id===p.target.id))r.missed.push(p.target);r.round.reveal(p,stage)}
  const c=document.querySelector('[data-hs-qs-run="'+r.id+'"] [data-qs-count]');if(c)c.textContent=String(r.found.length);
- try{setPartner(ok?pick(['찾았다! 잘 숨어 있었는데.','좋아, 바로 보였네!','그거야! 다음 단어도 숨어 있어.']):'여기 숨어 있었어. 다음에 다시 찾아보자.',ok?'cheer':'think')}catch{}
+ if(ok){const pouch=document.querySelector('.hs-qs-pouch');if(pouch){pouch.classList.remove('is-bump');void pouch.offsetWidth;pouch.classList.add('is-bump')}
+  stage.querySelector('.hs-qs-plate')?.insertAdjacentHTML('beforeend','<span class="hs-qs-burst" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>')}
+ say(ok?pick(['찾았다! 잘 숨어 있었는데.','좋아, 바로 보였네!','그거야! 다음 단어도 숨어 있어.','눈이 반짝! 하나 더 찾았어.']):'여기 숨어 있었어. 다음에 다시 찾아보자.',ok?'cheer':'think');
  r.timeouts.push(setTimeout(()=>{if(!alive(r))return abandon(r);if(!r.over)startClock(r);next(r)},ok?520:CONFIG.revealMs));
 }
 
@@ -271,20 +298,22 @@ function finish(r){
  const s=summarize(r,'COMPLETED');run=null;
  const found=r.found,missed=r.missed;
  let line=found.length?(s.prevBest==null?COPY.first:found.length>s.prevBest?COPY.better(found.length-s.prevBest):found.length===s.prevBest?COPY.same:''):COPY.foundNone;
- const chips=found.map((w,i)=>'<li class="hs-qs-chip" style="--qs-d:'+(i*140)+'ms"><b>'+esc(w.eng)+'</b><small>'+esc(w.kor)+'</small></li>').join('');
+ const chips=found.map((w,i)=>'<li class="hs-qs-chip" style="--qs-d:'+(i*90)+'ms"><b>'+esc(w.eng)+'</b><small>'+esc(w.kor)+'</small></li>').join('');
  const miss=missed.map(w=>'<li><b>'+esc(w.eng)+'</b><span>'+esc(w.kor)+'</span></li>').join('');
- view().innerHTML=shell('<div class="word-card hs-qs-card hs-qs-end" data-qs-end="'+esc(s.runId)+'">'+
-   '<p class="hs-qs-end-count"><span aria-hidden="true">🍀</span> <b>'+found.length+'</b>개 찾았어</p>'+
+ view().innerHTML=scene('<div class="hs-qs-end" data-qs-end="'+esc(s.runId)+'">'+
+   plate('<p class="hs-qs-end-count"><span aria-hidden="true">🍀</span><b>'+found.length+'</b><small>개 찾았어</small></p>'+
    (line?'<p class="hs-qs-end-line">'+esc(line)+'</p>':'')+
-   (found.length?'<h3 class="hs-qs-h">'+esc(COPY.foundTitle)+'</h3><ul class="hs-qs-chips">'+chips+'</ul>':'')+
-   (miss?'<h3 class="hs-qs-h">'+esc(COPY.missedTitle)+'</h3><ul class="hs-qs-miss">'+miss+'</ul>':'')+
-   '<div class="hs-qs-end-actions"><button type="button" class="btn primary full" data-qs-again>'+esc(COPY.again)+'</button>'+
-   '<div class="btn-row"><button type="button" class="btn secondary" data-qs-hub>'+esc(COPY.other)+'</button><button type="button" class="btn secondary" data-qs-forest>'+esc(COPY.forest)+'</button></div></div>'+
-   '<p class="hs-qs-evidence">'+esc(COPY.evidenceNote)+'</p></div>',{kicker:r.round.icon+' '+r.round.title+' · '+r.round.seconds+'초',title:'숨바꼭질 끝!',sub:missed.length?found.length+'개 찾고 '+missed.length+'개는 한 번 놓쳤어':found.length+'개를 한 번도 안 놓쳤어'});
+   (found.length?'<h3 class="hs-qs-h">'+esc(COPY.foundTitle)+'</h3><ul class="hs-qs-chips">'+chips+'</ul>':''))+
+   '<div class="hs-qs-end-actions">'+
+    '<button type="button" class="hs-qs-sign is-main" style="--qs-i:0" data-qs-again><span class="hs-qs-sign-icon" aria-hidden="true">'+r.round.icon+'</span><span class="hs-qs-sign-copy"><b>ONE MORE</b><span>'+esc(COPY.again)+'</span></span></button>'+
+    '<div class="hs-qs-end-row"><button type="button" class="hs-qs-plank" data-qs-hub>'+esc(COPY.other)+'</button><button type="button" class="hs-qs-plank" data-qs-forest>'+esc(COPY.forest)+'</button></div></div>'+
+   (miss?'<div class="hs-qs-missed"><h3 class="hs-qs-h">'+esc(COPY.missedTitle)+'</h3><ul class="hs-qs-miss">'+miss+'</ul></div>':'')+
+   '<p class="hs-qs-evidence">'+esc(COPY.evidenceNote)+'</p></div>',{title:'숨바꼭질 끝!',sub:r.round.title+' · '+(missed.length?found.length+'개 찾고 '+missed.length+'개는 한 번 놓쳤어':found.length+'개를 한 번도 안 놓쳤어'),cls:'is-end'});
  view().querySelector('[data-qs-again]').onclick=()=>start(r.round.id);
  view().querySelector('[data-qs-hub]').onclick=openHub;
  view().querySelector('[data-qs-forest]').onclick=toForest;
- try{setPartner(found.length?'찾은 단어가 하나씩 모였어. '+COPY.again:'괜찮아, 숨은 곳을 봤잖아. '+COPY.again,'cheer')}catch{}
+ onBack(openHub);
+ say(found.length?'찾은 단어가 하나씩 모였어. '+COPY.again:'괜찮아, 숨은 곳을 봤잖아. '+COPY.again,'cheer');
 }
 
 window.HideQuickSeekV1=Object.freeze({

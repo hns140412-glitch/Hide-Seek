@@ -108,16 +108,20 @@ function renderList(){
    '<div class="hs-gc-meta"><span>'+esc(MODE_LABEL[e.mode]||e.mode||'기록')+' · '+esc(fmt(e.at))+'</span>'+
    '<span class="hs-gc-verdict">'+(c?'<s>'+esc(RESULT_LABEL[orig]||orig)+'</s> → ':'')+'<em class="'+(pos(now)?'ok':'no')+'">'+esc(RESULT_LABEL[now]||now)+'</em>'+(c?' <i>보호자 고침</i>':'')+'</span>'+
    (reason?'<span class="hs-gc-reason">'+esc(reason.label)+'</span>':'')+'</div>'+
-   '<div class="hs-gc-acts"><button type="button" class="btn secondary hs-gc-fix" data-gc-fix="'+esc(it.key)+'">고치기</button>'+
+   '<div class="hs-gc-acts"><button type="button" class="hs-gc-fix" data-gc-fix="'+esc(it.key)+'">고치기</button>'+
    (c&&c.correctedResult!==orig?'<button type="button" class="hs-gc-undo" data-gc-undo="'+esc(it.key)+'">원래대로</button>':'')+'</div></li>';
  }).join('');
  const fixed=items.filter(it=>latestFor(it.key)).length;
- document.getElementById('view').innerHTML='<section class="card hs-gc" aria-label="판정 고치기">'+
-  '<header class="hs-gc-head"><span class="phase-chip">보호자 전용</span><h2>판정 고치기</h2>'+
-  '<p>앱이 잘못 채점한 것만 바로잡아요. 원래 기록은 지우지 않고, 고친 내용이 따로 남아요.</p></header>'+
+ /* Same forest frame as HOME / 한 판 숨바꼭질 (styles in hide-quick-seek-v1.css); a parchment ledger, no white cards. */
+ document.getElementById('view').innerHTML='<section class="hs-qs-scene hs-gc-scene hs-gc" aria-label="판정 고치기">'+
+  '<header class="hs-qs-top"><button type="button" class="hs-qs-back" data-gc-back aria-label="뒤로 가기"><span aria-hidden="true">‹</span></button>'+
+  '<div class="hs-qs-title"><h2>판정 고치기</h2><small>보호자가 채점만 바로잡는 곳</small></div><div class="hs-qs-right"></div></header>'+
+  '<div class="hs-qs-body"><div class="hs-gc-ledger"><header class="hs-gc-head"><span class="hs-gc-badge">보호자 전용</span>'+
+  '<p class="hs-gc-intro">앱이 잘못 채점한 것만 바로잡아요. 원래 기록은 지우지 않고, 고친 내용이 따로 남아요.</p></header>'+
   '<div class="hs-gc-filters" role="tablist" aria-label="보기">'+[['all','전체 '+items.length],['wrong','틀림·넘김'],['fixed','고친 것 '+fixed]].map(([id,l])=>'<button type="button" role="tab" aria-selected="'+(filter===id)+'" data-gc-filter="'+id+'">'+esc(l)+'</button>').join('')+'</div>'+
   (rows?'<ul class="hs-gc-list">'+rows+'</ul>':'<p class="hs-gc-empty">'+(items.length?'이 보기에 해당하는 기록이 없어요.':'아직 채점된 기록이 없어요. 아이가 탐험을 하면 여기에 쌓여요.')+'</p>')+
-  '<p class="hs-gc-foot">최근 60개까지 보여요 · 고친 기록 '+log().length+'건 보관 중</p></section>';
+  '</div><p class="hs-gc-foot">최근 60개까지 보여요 · 고친 기록 '+log().length+'건 보관 중</p></div></section>';
+ const back=document.querySelector('[data-gc-back]');if(back)back.onclick=()=>{try{if(viewStack.length)goBack();else{currentTab='home';render()}}catch{}};
  document.querySelectorAll('[data-gc-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.gcFilter;renderList()});
  document.querySelectorAll('[data-gc-fix]').forEach(b=>b.onclick=()=>openFix(items.find(i=>i.key===b.dataset.gcFix)));
  document.querySelectorAll('[data-gc-undo]').forEach(b=>b.onclick=()=>{const it=items.find(i=>i.key===b.dataset.gcUndo);if(!it)return;const c=apply(it,resultOf(it.event),'PARENT_REVERT','GRADING_CORRECTION_REVERT');if(c)toast('원래 판정으로 돌렸어요. 고친 이력은 남아 있어요.');renderList()});
