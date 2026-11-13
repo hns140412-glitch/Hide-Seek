@@ -434,6 +434,11 @@
   function isSafeUpdatePoint() {
     const capture = S.hideSeekCaptureSession;
     if (capture && capture.status === 'CAPTURING') return false;
+    // sheet().status stays LEARNING for the whole life of a sheet (even on HOME),
+    // so it alone kept every update waiting forever. Only an on-screen learning
+    // activity blocks the update; HOME / lists / records are safe points.
+    const activeView = document.querySelector('#view .learning-shell, #view .code-shell, #view .fever-stage');
+    if (!activeView) return true;
     let status = null;
     try { status = sheet()?.status || null; } catch {}
     return !['LEARNING', 'CODE_RED_READY', 'RETRACE_REQUIRED'].includes(status);
