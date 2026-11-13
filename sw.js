@@ -26,6 +26,8 @@ const CORE=[
   './hide-family-runtime-bootstrap-v1.js',
   './hide-bridge.js',
   './hide-brand-current.js',
+  './hide-basic-skills-v1.js',
+  './hide-basic-skills-v1.css',
   './manifest.json',
   './assets/asset-map.json',
   './assets/icons/icon-180x180.png',
