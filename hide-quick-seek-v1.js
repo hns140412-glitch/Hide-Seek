@@ -72,7 +72,7 @@ const ROUNDS={
   render(p){
    return plate('<p class="hs-qs-ask" data-qs-flash-ask>잘 봐! 곧 잎 뒤로 숨어요</p>'+
     '<p class="hs-qs-meaning is-waiting" data-qs-flash-meaning>· · ·</p>')+
-    '<div class="hs-qs-opts hs-qs-leaves" data-qs-leaves>'+p.cells.map((w,i)=>'<button type="button" class="hs-qs-leaf" style="--qs-i:'+i+'" data-qs-pick="'+esc(w.id)+'" disabled><span class="hs-qs-leaf-word">'+esc(w.eng)+'</span><span class="hs-qs-leaf-cover" aria-hidden="true">'+icon('flash')+'</span></button>').join('')+'</div>';
+    '<div class="hs-qs-opts hs-qs-leaves" data-qs-leaves>'+p.cells.map((w,i)=>'<button type="button" class="hs-qs-leaf" style="--qs-i:'+i+'" data-qs-pick="'+esc(w.id)+'" disabled><i class="hs-qs-tag" aria-hidden="true">'+'ABCD'[i]+'</i><span class="hs-qs-leaf-word">'+esc(w.eng)+'</span><span class="hs-qs-leaf-cover" aria-hidden="true">'+icon('flash')+'</span></button>').join('')+'</div>';
   },
   mount(p,root,api){
    /* the show time counts toward the 30s: the round length on the card is the real length */
@@ -144,8 +144,9 @@ function clearTimers(r){if(!r)return;clearInterval(r.tick);r.timeouts.forEach(cl
 function scene(inner,{title,sub,right='',cls=''}={}){
  return '<section class="hs-qs-scene hs-qs '+cls+'" aria-label="한 판 숨바꼭질">'+
   '<header class="hs-qs-top"><button type="button" class="hs-qs-back" data-qs-back aria-label="뒤로 가기"><span aria-hidden="true">‹</span></button>'+
-  '<div class="hs-qs-title"><h2>'+esc(title||COPY.hubTitle)+'</h2>'+(sub?'<small>'+esc(sub)+'</small>':'')+'</div>'+
+  '<div class="hs-qs-title"><h2 class="hs-qs-plaque"><span>'+esc(title||COPY.hubTitle)+'</span></h2>'+(sub?'<small>'+esc(sub)+'</small>':'')+'</div>'+
   '<div class="hs-qs-right">'+right+'</div></header>'+
+  '<div class="hs-qs-fireflies" aria-hidden="true">'+'<i></i>'.repeat(9)+'</div>'+
   '<div class="hs-qs-body">'+inner+'</div>'+
   '<p class="hs-qs-say" aria-live="polite"><img alt="" data-qs-guide hidden><span data-qs-say-text></span></p>'+
  '</section>';
@@ -188,12 +189,15 @@ function openHub(){
  }
  const signs=Object.values(ROUNDS).map((r,i)=>{
   const best=st.best[r.id];
-  return '<button type="button" class="hs-qs-sign" style="--qs-i:'+i+'" data-qs-round="'+r.id+'"><span class="hs-qs-sign-icon">'+icon(r.id)+'</span>'+
-   '<span class="hs-qs-sign-copy"><b>'+esc(r.tag||r.id.toUpperCase())+'</b><span>'+esc(r.title)+'</span><small>'+esc(r.rule)+'</small></span>'+
-   '<span class="hs-qs-sign-meta"><span class="hs-qs-sign-sec">'+r.seconds+'<small>초</small></span>'+(best!=null?'<em class="hs-qs-sign-best" aria-label="내 최고 기록 '+best+'개">최고 '+best+'</em>':'')+'</span></button>';
+  return '<button type="button" class="hs-qs-sign hs-qs-medal-btn" style="--qs-i:'+i+'" data-qs-round="'+r.id+'" aria-label="'+esc(r.title+' '+r.seconds+'초. '+r.rule)+'">'+
+   '<span class="hs-qs-medal">'+icon(r.id)+'</span>'+
+   '<span class="hs-qs-medal-name">'+esc(r.title)+'</span>'+
+   '<span class="hs-qs-medal-sec">'+r.seconds+'초'+(best!=null?' · 최고 '+best:'')+'</span></button>';
  }).join('');
- view().innerHTML=scene('<div class="hs-qs-signs">'+signs+'</div>'+
-  '<p class="hs-qs-pool">이번 학습지 단어 <b>'+pool.length+'</b>개'+(pool.some(w=>weak(w)>0)?' · 다시 찾을 단어부터 숨어요':'')+'</p>',{sub:COPY.hubSub,cls:'is-hub'});
+ const rules=Object.values(ROUNDS).map(r=>'<li><b>'+esc(r.title)+'</b><span>'+esc(r.rule)+'</span></li>').join('');
+ view().innerHTML=scene('<div class="hs-qs-ribbon"><span>숨은 단어를 찾는 세 가지 방법</span></div>'+
+  '<div class="hs-qs-medals">'+signs+'</div>'+
+  '<div class="hs-qs-sheet hs-qs-howto"><p class="hs-qs-pool">이번 학습지 단어 <b>'+pool.length+'</b>개'+(pool.some(w=>weak(w)>0)?' · 다시 찾을 단어부터 숨어요':'')+'</p><ul>'+rules+'</ul></div>',{sub:COPY.hubSub,cls:'is-hub'});
  view().querySelectorAll('[data-qs-round]').forEach(b=>b.onclick=()=>start(b.dataset.qsRound));
  onBack(leave);say(COPY.hubRule+' 어떤 숨바꼭질부터 해볼까?','play');
  try{updateChrome()}catch{}
@@ -211,9 +215,10 @@ function start(roundId){
  run={id:'qs-'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),round,pool,queue,i:0,found:[],missed:[],answers:0,
   startedAt:iso(),sheetId:sh?.sheetId||null,remaining:round.seconds*1000,clockOn:false,lastTick:0,status:'PLAYING',timeouts:[],over:false,prompt:null};
  const r=run;
- const clock='<div class="hs-qs-clock" role="progressbar" aria-label="남은 시간" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" style="--qs-p:100%"><b data-qs-sec>'+round.seconds+'</b></div>';
+ const clock='<div class="hs-qs-clock" role="progressbar" aria-label="남은 시간" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" style="--qs-p:100%"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10M7 21h10M8 3c0 5 8 5 8 9s-8 4-8 9M16 3c0 5-8 5-8 9s8 4 8 9"/></svg><b data-qs-sec>'+round.seconds+'</b></div>';
  view().innerHTML=scene('<div class="hs-qs-play" data-hs-qs-run="'+r.id+'">'+
-   '<div class="hs-qs-pouch" aria-live="polite"><small>찾은 단어</small><b data-qs-count>0</b></div>'+
+   '<div class="hs-qs-hud"><div class="hs-qs-pouch" aria-live="polite"><small>찾은 단어</small><b data-qs-count>0</b></div>'+
+   '<div class="hs-qs-segs" aria-hidden="true">'+'<i></i>'.repeat(round.seconds)+'</div></div>'+
    '<div class="hs-qs-stage" data-qs-stage><p class="hs-qs-countdown">'+esc(COPY.ready)+'</p></div>'+
   '</div>',{title:round.title,sub:round.rule,right:clock,cls:'is-play is-'+round.id});
  onBack(()=>{abandon(r);openHub()});
@@ -228,7 +233,8 @@ function onTick(r){
  const now=performance.now();r.remaining-=now-r.lastTick;r.lastTick=now;
  const pct=Math.max(0,r.remaining/(r.round.seconds*1000)*100);
  const bar=document.querySelector('.hs-qs-clock');
- if(bar){bar.style.setProperty('--qs-p',pct.toFixed(1)+'%');bar.setAttribute('aria-valuenow',String(Math.round(pct)));const sec=bar.querySelector('[data-qs-sec]');if(sec)sec.textContent=String(Math.max(0,Math.ceil(r.remaining/1000)));bar.classList.toggle('is-low',pct<25)}
+ if(bar){bar.style.setProperty('--qs-p',pct.toFixed(1)+'%');bar.setAttribute('aria-valuenow',String(Math.round(pct)));const left=Math.max(0,Math.ceil(r.remaining/1000));const sec=bar.querySelector('[data-qs-sec]');if(sec)sec.textContent=String(left);bar.classList.toggle('is-low',pct<25);
+  const segs=document.querySelectorAll('.hs-qs-segs i');segs.forEach((g,k)=>g.classList.toggle('is-off',k>=left))}
  if(r.remaining<=0&&!r.over){r.over=true;r.overAt=now;say(COPY.lastOne,'cheer');bar?.classList.add('is-done');const sec=bar?.querySelector('[data-qs-sec]');if(sec)sec.textContent='!'}
  if(r.over&&r.clockOn&&now-r.overAt>CONFIG.idleFinishMs)finish(r);
 }
@@ -258,7 +264,7 @@ function answer(r,p,value,btn,stage){
  const latency=Math.max(0,Math.round(performance.now()-p.shownAt));
  pauseClock(r);
  record(r,p,ok,value,latency);
- r.answers++;
+ r.answers++;if(ok)r.correct=(r.correct||0)+1;
  btn.classList.add(ok?'is-ok':'is-miss');stage.classList.add(ok?'is-ok':'is-miss');
  if(ok){if(!r.found.some(w=>w.id===p.target.id))r.found.push(p.target)}
  else{if(!r.missed.some(w=>w.id===p.target.id))r.missed.push(p.target);r.round.reveal(p,stage)}
@@ -310,15 +316,22 @@ function finish(r){
  let line=found.length?(s.prevBest==null?COPY.first:found.length>s.prevBest?COPY.better(found.length-s.prevBest):found.length===s.prevBest?COPY.same:''):COPY.foundNone;
  const chips=found.map((w,i)=>'<li class="hs-qs-chip" style="--qs-d:'+(i*90)+'ms"><b>'+esc(w.eng)+'</b><small>'+esc(w.kor)+'</small></li>').join('');
  const miss=missed.map(w=>'<li><b>'+esc(w.eng)+'</b><span>'+esc(w.kor)+'</span></li>').join('');
+ const acc=r.answers?Math.round((r.correct||0)/r.answers*100):0;
+ const best=state().best[r.round.id];
+ const ringPct=r.answers?Math.round((r.correct||0)/r.answers*100):0;
  view().innerHTML=scene('<div class="hs-qs-end" data-qs-end="'+esc(s.runId)+'">'+
-   plate('<p class="hs-qs-end-count"><small>이번 판</small><b>'+found.length+'</b><small>개 찾았어</small></p>'+
-   (line?'<p class="hs-qs-end-line">'+esc(line)+'</p>':'')+
-   (found.length?'<h3 class="hs-qs-h">'+esc(COPY.foundTitle)+'</h3><ul class="hs-qs-chips">'+chips+'</ul>':''))+
+   '<div class="hs-qs-score">'+
+    '<div class="hs-qs-ring" style="--qs-p:'+ringPct+'%"><p class="hs-qs-end-count"><b>'+found.length+'</b><small>개 찾았어</small></p></div>'+
+    (line?'<p class="hs-qs-end-line">'+esc(line)+'</p>':'')+
+    '<dl class="hs-qs-stats"><div><dt>찾은 단어</dt><dd>'+found.length+'</dd></div><div><dt>한 번 놓침</dt><dd>'+missed.length+'</dd></div>'+
+    '<div><dt>맞힌 비율</dt><dd>'+acc+'<small>%</small></dd></div><div><dt>내 최고</dt><dd>'+(best??found.length)+'</dd></div></dl></div>'+
    '<div class="hs-qs-end-actions">'+
     '<button type="button" class="hs-qs-cta" data-qs-again>'+esc(COPY.again)+'</button>'+
     '<div class="hs-qs-end-row"><button type="button" class="hs-qs-plank" data-qs-hub>'+esc(COPY.other)+'</button><button type="button" class="hs-qs-plank" data-qs-forest>'+esc(COPY.forest)+'</button></div></div>'+
-   (miss?'<div class="hs-qs-missed"><h3 class="hs-qs-h">'+esc(COPY.missedTitle)+'</h3><ul class="hs-qs-miss">'+miss+'</ul></div>':'')+
-   '<p class="hs-qs-evidence">'+esc(COPY.evidenceNote)+'</p></div>',{title:'숨바꼭질 끝!',sub:r.round.title+' · '+(missed.length?found.length+'개 찾고 '+missed.length+'개는 한 번 놓쳤어':found.length+'개를 한 번도 안 놓쳤어'),cls:'is-end'});
+   '<div class="hs-qs-sheet hs-qs-results">'+
+    (found.length?'<h3 class="hs-qs-h">'+esc(COPY.foundTitle)+'</h3><ul class="hs-qs-chips">'+chips+'</ul>':'')+
+    (miss?'<h3 class="hs-qs-h">'+esc(COPY.missedTitle)+'</h3><ul class="hs-qs-miss">'+miss+'</ul>':'')+
+    '<p class="hs-qs-evidence">'+esc(COPY.evidenceNote)+'</p></div></div>',{title:'숨바꼭질 끝!',sub:r.round.title+' · '+(missed.length?found.length+'개 찾고 '+missed.length+'개는 한 번 놓쳤어':found.length+'개를 한 번도 안 놓쳤어'),cls:'is-end'});
  view().querySelector('[data-qs-again]').onclick=()=>start(r.round.id);
  view().querySelector('[data-qs-hub]').onclick=openHub;
  view().querySelector('[data-qs-forest]').onclick=toForest;
