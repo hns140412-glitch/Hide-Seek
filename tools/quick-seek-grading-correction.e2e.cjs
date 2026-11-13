@@ -41,13 +41,13 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
   await page.screenshot({path:path.join(shots,'01-menu.png')});
   await page.click('[data-hs-play=quick]');
   await page.waitForSelector('[data-qs-round]');
-  assert(await page.locator('[data-qs-round]').count()===3,'hub must offer 3 rounds');
+  assert(await page.locator('[data-qs-round]').count()===4,'hub must offer 4 rounds (incl. 닮은 글자)');
   await sleep(800);
   const sceneLook=await page.evaluate(()=>{const sc=document.querySelector('.hs-qs-scene');const vis=id=>{const el=document.querySelector(id);return !!el&&getComputedStyle(el).display!=='none'};
    return {scene:!!sc,bg:sc?getComputedStyle(sc,'::before').backgroundImage:'',chrome:vis('.top-safe')||vis('#bottomNav')||vis('#partnerBar'),signs:[...document.querySelectorAll('.hs-qs-sign')].map(b=>parseFloat(getComputedStyle(b).borderTopWidth)),emoji:/[\u{1F300}-\u{1FAFF}]/u.test(document.querySelector('.hs-qs-scene').innerText)}});
   assert(sceneLook.scene&&sceneLook.bg.includes('hide_seek_forest_asset.png'),'quick seek must sit on the approved forest art '+JSON.stringify(sceneLook));
   assert(!sceneLook.chrome,'quick seek must be a full forest scene like HOME (no app bars) '+JSON.stringify(sceneLook));
-  assert(sceneLook.signs.length===3&&sceneLook.signs.every(w=>w<=2),'round panels must use a thin hairline, not chunky planks '+JSON.stringify(sceneLook));
+  assert(sceneLook.signs.length===4&&sceneLook.signs.every(w=>w<=2),'round panels must use a thin hairline, not chunky planks '+JSON.stringify(sceneLook));
   assert(!sceneLook.emoji,'quick seek hub must use line icons, not emoji '+JSON.stringify(sceneLook));
   await page.screenshot({path:path.join(shots,'02-hub.png')});
   const words=await page.evaluate(()=>validWords().map(w=>({id:w.id,eng:w.eng,kor:w.kor})));
@@ -64,7 +64,11 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
       word:st.querySelector('.hs-qs-word')?[...st.querySelector('.hs-qs-word').childNodes].map(n=>n.nodeType===1?'?':n.textContent).join(''):null,
       pair:[...st.querySelectorAll('.hs-qs-pair b')].map(b=>b.textContent),picks:[...st.querySelectorAll('[data-qs-pick]')].map(b=>b.dataset.qsPick)}});
     let correct;
-    if(round==='pair'){const w=words.find(x=>x.eng===p.pair[0]);correct=w&&w.kor===p.pair[1]?'O':'X'}
+    if(round==='jamo'){const eng=await page.textContent('.hs-qs-stage .hs-qs-word');const w=words.find(x=>x.eng===eng);correct=w&&w.kor.trim();
+      const diffs=await page.evaluate(([c,ps])=>ps.filter(x=>x!==c).map(x=>HideQuickSeekV1.jamo.diff(c,x)),[correct,p.picks]);
+      assert(p.picks.length===3&&diffs.length===2&&diffs.every(d=>d===1),'jamo: fakes must differ by exactly one jamo '+JSON.stringify({correct,picks:p.picks,diffs}));
+      assert(!p.picks.some(x=>x!==correct&&words.some(w=>w.kor.trim()===x)),'jamo: a fake equals another real meaning');}
+    else if(round==='pair'){const w=words.find(x=>x.eng===p.pair[0]);correct=w&&w.kor===p.pair[1]?'O':'X'}
     else if(round==='flash'){correct=byKor.get(p.meaning)?.id}
     else{const w=byKor.get(p.meaning);const i=p.word.indexOf('?');correct=w.eng[i].toLowerCase()}
     assert(correct&&p.picks.includes(correct),'cannot find correct option in '+round+' '+JSON.stringify(p));
@@ -108,6 +112,11 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
   await sleep(1200);await page.screenshot({path:path.join(shots,'05-end-letter.png')});
   const r3=await play('flash',{shotAt:1,wrongEvery:3});notes.push('flash round '+JSON.stringify(r3));
   assert(r3.ms>=29000,'flash round ended early');
+  const r4=await play('jamo',{shotAt:1,wrongEvery:3});notes.push('jamo round '+JSON.stringify(r4));
+  await sleep(900);await page.screenshot({path:path.join(shots,'05b-end-jamo.png')});
+  const ev4=await page.evaluate(()=>S.learning.history.filter(e=>e.mode==='quick-seek'&&e.round==='jamo'));
+  assert(r4.n>0&&ev4.length===r4.n,'jamo events '+ev4.length+' != taps '+r4.n);
+  assert(ev4.every(e=>e.scoreAuthority==='QUICK_SEEK_PRACTICE'&&e.evidenceLevel==='RECOGNITION_KOREAN_MINIMAL_PAIR'),'jamo evidence mislabeled');
   // abandon mid-run: back button kills timers, no errors afterwards
   await page.evaluate(()=>HideQuickSeekV1.start('letter'));
   await page.waitForSelector('.hs-qs-stage [data-qs-pick]:not([disabled])');

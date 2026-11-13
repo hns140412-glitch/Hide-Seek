@@ -245,3 +245,9 @@ body:has(.hs-qs-scene) .view{padding:0!important;max-width:none!important;margin
 .hs-gc-reasons b{display:block;font-size:13px}.hs-gc-reasons small{font-size:11px;color:var(--qs-ink2)}
 .hs-gc-modal .btn.primary{background:var(--qs-em);border-color:var(--qs-em);color:var(--qs-gold2)}
 .hs-gc-modal .btn.secondary{background:#fff;border:1px solid rgba(31,43,37,.25);color:var(--qs-ink)}
+
+/* 한 글자 숨바꼭질: Korean name tags, same plank keys, one column of three when words get long */
+.hs-qs-medals{grid-template-columns:repeat(var(--qs-n,3),minmax(0,1fr))}
+.hs-qs-keys.is-tags .hs-qs-key span{font-family:inherit;font-size:clamp(22px,6.2vw,28px);font-weight:800;letter-spacing:.02em;word-break:keep-all}
+.hs-qs-keys.is-tags .hs-qs-key mark{background:none;color:var(--qs-coral2,#ffb39a);text-decoration:underline 3px;text-underline-offset:5px}
+.is-jamo .hs-qs-word{text-transform:none}

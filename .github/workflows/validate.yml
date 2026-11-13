@@ -38,6 +38,7 @@ jobs:
           node tests/hide-recall-direction.test.js
           node tests/hide-language-evidence.test.js
           node tests/hide-ocr-evidence-guard.test.js
+          node tests/hide-quick-seek-jamo.test.js
           node tools/validate-hide-subject-activity-binding.js
       - name: Validate shared runtime contract
         run: node tests/shared-runtime-contract.test.js

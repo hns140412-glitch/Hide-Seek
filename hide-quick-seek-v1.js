@@ -30,6 +30,34 @@ const COPY=Object.freeze({
  evidenceNote:'숨바꼭질 결과는 연습 기록이에요. 마지막 찾기(철자) 점수와는 따로 남아요.'
 });
 
+
+/* 한 글자 숨바꼭질 (BSP-20261113 pattern DP2: one-change distractor, 찬찬한글 헷갈리는 모음/받침).
+ * The learner's own confirmed Korean meaning hides among look-alikes that differ by exactly ONE jamo. */
+const JAMO=Object.freeze({
+ V:'ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ',
+ L:'ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ',
+ T:' ㄱㄲㄳㄴㄵㄶㄷㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅄㅅㅆㅇㅈㅊㅋㅌㅍㅎ',
+ /* confusable groups first (the portal workbook's 헷갈리는 모음), then nearby sounds */
+ vowelSwap:{'ㅏ':'ㅓㅑ','ㅓ':'ㅏㅗㅕ','ㅗ':'ㅜㅓㅛ','ㅜ':'ㅗㅡㅠ','ㅡ':'ㅜㅣ','ㅣ':'ㅡ','ㅐ':'ㅔ','ㅔ':'ㅐ','ㅑ':'ㅏㅕ','ㅕ':'ㅓㅑ','ㅛ':'ㅗㅠ','ㅠ':'ㅜㅛ','ㅘ':'ㅝ','ㅝ':'ㅘ','ㅚ':'ㅟㅙ','ㅟ':'ㅚ','ㅢ':'ㅡㅣ','ㅙ':'ㅞㅚ','ㅞ':'ㅙ','ㅒ':'ㅖ','ㅖ':'ㅒ'},
+ leadSwap:{'ㄱ':'ㅋㄲ','ㅋ':'ㄱ','ㄲ':'ㄱ','ㄷ':'ㅌㄸ','ㅌ':'ㄷ','ㄸ':'ㄷ','ㅂ':'ㅍㅃ','ㅍ':'ㅂ','ㅃ':'ㅂ','ㅈ':'ㅊㅉ','ㅊ':'ㅈ','ㅉ':'ㅈ','ㅅ':'ㅆ','ㅆ':'ㅅ','ㄴ':'ㄹ','ㄹ':'ㄴ','ㅁ':'ㄴ','ㅇ':'ㅎ','ㅎ':'ㅇ'}
+});
+function jamoSplit(ch){const c=ch.charCodeAt(0)-0xAC00;if(c<0||c>11171)return null;return [Math.floor(c/588),Math.floor(c%588/28),c%28]}
+function jamoJoin(l,v,t){return String.fromCharCode(0xAC00+l*588+v*28+t)}
+/* every word that differs from `word` by exactly one vowel or one initial consonant, confusable first */
+function oneJamoVariants(word){
+ const out=[];const chars=[...word];
+ chars.forEach((ch,i)=>{const j=jamoSplit(ch);if(!j)return;
+  const v=JAMO.V[j[1]],l=JAMO.L[j[0]];
+  for(const nv of JAMO.vowelSwap[v]||'')out.push(chars.slice(0,i).join('')+jamoJoin(j[0],JAMO.V.indexOf(nv),j[2])+chars.slice(i+1).join(''));
+  for(const nl of JAMO.leadSwap[l]||'')out.push(chars.slice(0,i).join('')+jamoJoin(JAMO.L.indexOf(nl),j[1],j[2])+chars.slice(i+1).join(''));
+ });
+ return [...new Set(out)].filter(x=>x!==word);
+}
+/* positions where two same-length Hangul words differ, counted in jamo (null if not comparable) */
+function jamoDiffCount(a,b){const A=[...a],B=[...b];if(A.length!==B.length)return null;let n=0;
+ for(let i=0;i<A.length;i++){const x=jamoSplit(A[i]),y=jamoSplit(B[i]);if(!x||!y){if(A[i]!==B[i])return null;continue}n+=(x[0]!==y[0])+(x[1]!==y[1])+(x[2]!==y[2])}return n}
+const isTagWord=k=>/^[가-힣]{2,5}$/.test(String(k||'').trim());
+
 const ROUNDS={
  letter:{
   id:'letter',icon:'🔤',tag:'MISSING LETTER',title:'빠진 글자',seconds:20,
@@ -109,6 +137,29 @@ const ROUNDS={
   },
   judge:(p,v)=>v===p.answer,
   reveal(p,root){root.querySelectorAll('[data-qs-pick]').forEach(b=>b.classList.toggle('is-answer',b.dataset.qsPick===p.answer));if(p.answer==='X'){const n=root.querySelector('.hs-qs-pair');if(n&&!n.querySelector('.hs-qs-truth'))n.insertAdjacentHTML('beforeend','<small class="hs-qs-truth">'+esc(p.target.eng)+' = '+esc(p.target.kor)+'</small>')}}
+ },
+ jamo:{
+  id:'jamo',icon:'ㄱ',tag:'ONE JAMO',title:'닮은 글자',seconds:20,
+  rule:'뜻 이름표 중 진짜를 톡! 가짜는 딱 한 곳만 달라요.',
+  level:'RECOGNITION_KOREAN_MINIMAL_PAIR',
+  usable:w=>!!w.eng&&isTagWord(w.kor)&&oneJamoVariants(w.kor.trim()).length>=2,
+  build(target,pool){
+   const real=target.kor.trim();
+   const known=new Set(pool.map(w=>String(w.kor||'').trim()));
+   const fakes=[];for(const f of oneJamoVariants(real)){if(fakes.length>=2)break;if(!known.has(f)&&jamoDiffCount(real,f)===1&&!fakes.some(x=>x===f))fakes.push(f)}
+   /* keep the variety: one confusable change first, the second picked at random from the rest */
+   const rest=oneJamoVariants(real).filter(f=>!known.has(f)&&f!==fakes[0]&&jamoDiffCount(real,f)===1);
+   if(rest.length)fakes[1]=pick(rest);
+   return {target,answer:real,options:shuffleArr([real,...fakes.filter(Boolean)])};
+  },
+  render(p){
+   return plate('<p class="hs-qs-ask">이 단어의 진짜 뜻 이름표는?</p>'+
+    '<p class="hs-qs-word" lang="en">'+esc(p.target.eng)+'</p>')+
+    '<div class="hs-qs-opts hs-qs-keys is-tags">'+p.options.map((o,i)=>'<button type="button" class="hs-qs-key" style="--qs-i:'+i+'" data-qs-pick="'+esc(o)+'"><span>'+esc(o)+'</span></button>').join('')+'</div>';
+  },
+  judge:(p,v)=>v===p.answer,
+  reveal(p,root){root.querySelectorAll('[data-qs-pick]').forEach(b=>{b.classList.toggle('is-answer',b.dataset.qsPick===p.answer);
+   if(b.dataset.qsPick!==p.answer&&!b.querySelector('mark')){const a=[...p.answer],f=[...b.dataset.qsPick];b.querySelector('span').innerHTML=f.map((c,i)=>c!==a[i]?'<mark>'+esc(c)+'</mark>':esc(c)).join('')}})}
  }
 };
 
@@ -157,6 +208,7 @@ const ICON={
  letter:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18 9 6l5 12M6 14h6"/><path d="M16 18h5"/></svg>',
  flash:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19C5 10 11 5 20 5c0 9-5 14-13 14"/><path d="M5 19 14 10"/></svg>',
  pair:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="12" r="4.5"/><circle cx="16" cy="12" r="4.5"/></svg>',
+ jamo:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h7v5"/><path d="M15 4v16M15 12h5"/><path d="M5 15h6v5H5z"/></svg>',
  photo:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-2h6l2 2h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
  forest:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 6 12h3l-4 6h14l-4-6h3z"/><path d="M12 18v3"/></svg>',
  ok:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7"/></svg>',
@@ -195,8 +247,8 @@ function openHub(){
    '<span class="hs-qs-medal-sec">'+r.seconds+'초'+(best!=null?' · 최고 '+best:'')+'</span></button>';
  }).join('');
  const rules=Object.values(ROUNDS).map(r=>'<li><b>'+esc(r.title)+'</b><span>'+esc(r.rule)+'</span></li>').join('');
- view().innerHTML=scene('<div class="hs-qs-ribbon"><span>숨은 단어를 찾는 세 가지 방법</span></div>'+
-  '<div class="hs-qs-medals">'+signs+'</div>'+
+ view().innerHTML=scene('<div class="hs-qs-ribbon"><span>숨은 단어를 찾는 '+(['','한','두','세','네','다섯'][Object.keys(ROUNDS).length]||Object.keys(ROUNDS).length)+' 가지 방법</span></div>'+
+  '<div class="hs-qs-medals" style="--qs-n:'+Object.keys(ROUNDS).length+'">'+signs+'</div>'+
   '<div class="hs-qs-sheet hs-qs-howto"><p class="hs-qs-pool">이번 학습지 단어 <b>'+pool.length+'</b>개'+(pool.some(w=>weak(w)>0)?' · 다시 찾을 단어부터 숨어요':'')+'</p><ul>'+rules+'</ul></div>',{sub:COPY.hubSub,cls:'is-hub'});
  view().querySelectorAll('[data-qs-round]').forEach(b=>b.onclick=()=>start(b.dataset.qsRound));
  onBack(leave);say(COPY.hubRule+' 어떤 숨바꼭질부터 해볼까?','play');
@@ -344,6 +396,7 @@ window.HideQuickSeekV1=Object.freeze({
  rounds:()=>Object.keys(ROUNDS),
  open:openHub,start,
  registerRound(def){if(!def||!def.id||ROUNDS[def.id]||typeof def.build!=='function'||typeof def.render!=='function'||typeof def.judge!=='function')return false;ROUNDS[def.id]=Object.assign({icon:'🌿',seconds:20,usable:()=>true,reveal(){}},def);return true},
- activeRun:()=>run?{id:run.id,round:run.round.id,status:run.status}:null
+ activeRun:()=>run?{id:run.id,round:run.round.id,status:run.status}:null,
+ jamo:Object.freeze({variants:oneJamoVariants,diff:jamoDiffCount,isTagWord})
 });
 })();
