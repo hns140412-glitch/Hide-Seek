@@ -10,7 +10,8 @@ permissions:
 
 jobs:
   validate:
-    runs-on: ubuntu-latest
+    # ubuntu-latest moved to 26.04, which Playwright 1.55 cannot install browsers on.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Guard product identity
@@ -29,6 +30,9 @@ jobs:
           node --check hide-recall-direction-v1.js
           node --check hide-language-evidence.js
           node --check hide-ocr-evidence-guard-v1.js
+          node --check hide-quick-seek-v1.js
+          node --check hide-grading-correction-v1.js
+          node --check hide-play-entries-v1.js
       - name: Hide V2 ported features
         run: |
           node tests/hide-recall-direction.test.js
