@@ -29,11 +29,13 @@ jobs:
           node --check hide-recall-direction-v1.js
           node --check hide-language-evidence.js
           node --check hide-ocr-evidence-guard-v1.js
+          node --check hide-basic-skills-v1.js
       - name: Hide V2 ported features
         run: |
           node tests/hide-recall-direction.test.js
           node tests/hide-language-evidence.test.js
           node tests/hide-ocr-evidence-guard.test.js
+          node tests/hide-basic-skills.test.js
           node tools/validate-hide-subject-activity-binding.js
       - name: Validate shared runtime contract
         run: node tests/shared-runtime-contract.test.js
