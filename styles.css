@@ -449,3 +449,5 @@ body:has(#ocrRows) .view{padding-bottom:calc(93px + var(--safe-bottom,0px))}
 /* 2026-09-22 user decision: three tabs, Korean primary with smaller English. */
 .bottom-nav .nav-btn small{font-size:9px;line-height:1.1;color:#6b8172;font-weight:800}
 .bottom-nav .nav-btn span{font-size:12px;line-height:1.2;font-weight:900}
+/* Companion picker lives in the menu (탐험대원 목소리 듣기); the floating launcher overlapped the companion bar. */
+#takyCrewSelectionLauncher{display:none!important}

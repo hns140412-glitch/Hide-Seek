@@ -13,6 +13,7 @@ const CORE=[
   './vendor/taky/central-evidence-browser-v1.js',
   './hide-release-v01.js',
   './hide-pwa-update-v01.js',
+  './hide-voice-pick-v1.js',
   './app.js',
   './hide-runtime.js',
   './hide-recall-direction-v1.js',

@@ -47,7 +47,7 @@ function renderSummary(){
   S.englishPracticeCycle.lastResult=summary;save();
   split='<div class="grid2 hs-weekly-mode-result"><div class="status-pill"><b>'+new12.independent_correct+'/'+new12.total+'</b><span>신규 · 도움 없는 회상</span></div><div class="status-pill"><b>'+review24.independent_correct+'/'+review24.total+'</b><span>지난 단어 · 도움 없는 회상</span></div></div>';
  }
- node('#view').innerHTML='<section class="learning-shell hs-pedagogy"><div class="learn-head"><span class="phase-chip">'+run.mode+'</span><h2>이번 탐험을 기록했어요</h2></div><section class="card"><p>처음부터 도움 없이 떠올린 단어 <b>'+unassisted+'/'+run.words.length+'</b></p>'+split+'<p>이 결과는 <b>지금의 회상 기록</b>이에요. 나중에도 기억하는지는 Learning Engine이 별도로 확인해요.</p><button class="btn primary" type="button" id="hsPedagogyHome">숲으로 돌아가기</button></section></section>';
+ node('#view').innerHTML='<section class="learning-shell hs-pedagogy"><div class="learn-head"><span class="phase-chip">'+(run.mode==='CORE'?'글자 조각':'숨은 단어')+'</span><h2>이번 탐험을 기록했어요</h2></div><section class="card"><p>처음부터 도움 없이 떠올린 단어 <b>'+unassisted+'/'+run.words.length+'</b></p>'+split+'<p>이 결과는 <b>지금의 회상 기록</b>이에요. 나중에도 기억하는지는 Learning Engine이 별도로 확인해요.</p><button class="btn primary" type="button" id="hsPedagogyHome">숲으로 돌아가기</button></section></section>';
  node('#hsPedagogyHome').onclick=home;
 }
 function home(){currentTab='home';viewStack=[];renderHome()}
@@ -146,7 +146,7 @@ function render(){
  run.firstAttemptMade=false;run.firstAttemptResult=null;
  run.firstFind=run.mode==='RECALL'&&!S.learning.history.some(x=>x.wordId===word.id&&x.mode==='RECALL'&&['CORRECT','HINT_USED','WRONG','PASS'].includes(x.result));
  const recall=run.mode==='RECALL';
- node('#view').innerHTML='<section class="learning-shell hs-pedagogy" data-hs-pedagogy="'+run.mode+'"><header class="hs-learning-forest-hero"><div class="hs-learning-hero-title"><span class="phase-chip">'+run.mode+'</span><h2>'+(recall?'숨은 단어 · 혼자 떠올리기':'핵심 조각 · 글자 만들기')+'</h2><small>숲과 폭포의 단어 탐험 · '+(run.index+1)+'/'+run.words.length+'</small></div></header><section class="card word-card"><p>이 뜻을 가진 영어 단어는?</p><div class="kor hs-pedagogy-meaning">'+esc(word.kor)+'</div>'+
+ node('#view').innerHTML='<section class="learning-shell hs-pedagogy" data-hs-pedagogy="'+run.mode+'"><header class="hs-learning-forest-hero"><div class="hs-learning-hero-title"><span class="phase-chip">'+(run.mode==='CORE'?'글자 조각':'숨은 단어')+'</span><h2>'+(recall?'숨은 단어 · 혼자 떠올리기':'핵심 조각 · 글자 만들기')+'</h2><small>숲과 폭포의 단어 탐험 · '+(run.index+1)+'/'+run.words.length+'</small></div></header><section class="card word-card"><p>이 뜻을 가진 영어 단어는?</p><div class="kor hs-pedagogy-meaning">'+esc(word.kor)+'</div>'+
  (recall?'<label for="hsRecallAnswer">기억나는 영어 단어를 입력하세요.</label><input class="input" id="hsRecallAnswer" type="text" autocapitalize="none" autocomplete="off" spellcheck="false" placeholder="직접 떠올려 입력하기">':buildCore(word))+
  '<p id="hsPedagogyFeedback" aria-live="polite" role="status"></p><p id="hsPedagogyReveal" hidden></p><div class="btn-row"><button class="btn gold" id="hsPedagogyHint" type="button">힌트</button><button class="btn secondary" id="hsPedagogyPass" type="button">모르겠어</button><button class="btn primary" id="hsPedagogyCheck" type="button">확인하기</button><button class="btn primary" id="hsPedagogyNext" type="button" hidden>다음</button></div></section><button type="button" id="hsPedagogyHome" class="btn secondary">숲으로 돌아가기</button></section>';
  node('#hsPedagogyHint').onclick=hint;
