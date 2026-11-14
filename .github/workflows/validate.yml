@@ -33,6 +33,9 @@ jobs:
           node --check hide-quick-seek-v1.js
           node --check hide-grading-correction-v1.js
           node --check hide-play-entries-v1.js
+          node --check taky-family-signin-v1.js
+          node --check hide-learning-link-v1.js
+          node --check netlify/functions/family-auth-config.mjs
       - name: Hide V2 ported features
         run: |
           node tests/hide-recall-direction.test.js
