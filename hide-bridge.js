@@ -80,6 +80,10 @@
   }
 
   function emit(type, payload = {}) {
+    // Example (sample) words are free practice: never sent as learning evidence (a real or confirmed list is).
+    if (type === 'RETRIEVAL_ATTEMPT_RESULT' && !payload?.term_id) {
+      try { if (typeof sheet === 'function' && sheet()?.sourceType === 'sample') return null; } catch {}
+    }
     const context = getContext();
     const recallDirection = type === 'RETRIEVAL_ATTEMPT_RESULT' ? window.HideRecallDirectionV1 : null;
     if (recallDirection) {

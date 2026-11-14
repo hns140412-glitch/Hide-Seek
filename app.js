@@ -90,7 +90,7 @@ function save(){S.schemaVersion=SCHEMA_VERSION;S.appRevision=APP_REV;
  const {ocrDraft:_unreviewedDraft,...persisted}=S;
  localStorage.setItem(STORAGE_KEY,JSON.stringify(persisted));window.dispatchEvent(new CustomEvent('hide-seek-state-saved',{detail:{pwa_safe_point:globalThis.HideSeekPwaSafePoint?.()===true}}));if(globalThis.HideSeekPwaSafePoint?.()===true)window.dispatchEvent(new CustomEvent('hide-seek-safe-point'))}
 function sheet(){return S.sheets.find(x=>x.sheetId===S.activeSheetId)||S.sheets[0]}
-function validWords(){if(S.englishPracticeCycle?.active){return window.HideEnglishCycleV1?.activeWords?.()||[]}const sh=sheet();if(!sh||sh.sourceType==='sample')return [];return (sh.items||[]).filter(w=>w.eng&&w.kor&&!w.needsReview)}
+function validWords(){if(S.englishPracticeCycle?.active){return window.HideEnglishCycleV1?.activeWords?.()||[]}const sh=sheet();if(!sh||(sh.sourceType==='sample'&&hsAssignedSubject()))return [];return (sh.items||[]).filter(w=>w.eng&&w.kor&&!w.needsReview)}
 function traceWords(){
  const active=validWords();
  if(S.learning?.traceFocusWordId)return active.filter(w=>w.id===S.learning.traceFocusWordId);
@@ -477,7 +477,7 @@ function renderOCRReview(rows,isDraft=false,message=''){
   else Object.assign(sheet(),newSheet);
   window.HideEnglishCycleV1?.disable?.();
   S.ocrDraft=null;S.learning=clone(DEFAULT_STATE.learning);S.codeRed=clone(DEFAULT_STATE.codeRed);
-  save();toast('확인한 단어 목록이 저장됐어요.');currentTab='explore';hsHomeSubject='ENGLISH';viewStack=[];render();
+  save();toast('확인한 단어 목록이 저장됐어요.');currentTab='explore';hsHomeSubject='ENGLISH';hsHomeNotice='';viewStack=[];Promise.resolve(render()).then(()=>{if(validWords().length){S.learning.traceFocusWordId=null;S.learning.firstIndex=0;save();pushView(renderFirstContact)}});
  };
  setPartner('헷갈리는 단어는 먼저 고치거나 확인해 주세요. 확인 전에는 학습 문제로 사용하지 않을게.','note');
 }
