@@ -1,6 +1,7 @@
 /* TAKY family sign-in for Hide & Seek (shared contract, copied from TAKY-MOBILE src/family-signin.mjs
- * on branch auth/remember-device-20261114 — keep in sync; works against a central with or without
- * /api/family/device). Google credential or device token -> central /api/family/session -> TAKY_FAMILY_RUNTIME.
+ * on branch auth/family-connect-sso-20261114 — keep in sync; works against a central with or without
+ * /api/family/device and /api/family/handoff). Google credential, device token or a Ready handoff pass
+ * (#taky_handoff=) -> central /api/family/session -> TAKY_FAMILY_RUNTIME.
  * Membership comes only from the verified server response. */
 (function(){
 'use strict';
@@ -85,6 +86,7 @@ function createFamilySignin({fetchImpl=fetch,googleSdk=browserGoogleSdk}={}){
   action.disabled=false;
   // Testable readiness means handlers are bound, NOT that anyone is signed in.
   document.documentElement.dataset.takyFamilySigninReady='true';
+  takeHandoff();
   if(!globalThis.TAKY_FAMILY_RUNTIME&&!installed){
    // Signed in on this device before: continue silently with the device token (no Google prompt).
    if(deviceGet())void restore().then(r=>{if(!r.ok&&r.state==='DEVICE_SIGNIN_ENDED'&&markGet()&&!installed)resumeGoogle()});
@@ -92,6 +94,36 @@ function createFamilySignin({fetchImpl=fetch,googleSdk=browserGoogleSdk}={}){
   }
   return {ok:true};
  };
+ // Opened by another signed-in TAKY app (Ready) with a 2-minute pass in the URL fragment: keep it as this
+ // origin's device token (restore() trades it for a long-lived one at once) and remove it from the address bar.
+ function takeHandoff(){
+  try{
+   const h=new URLSearchParams(String(location.hash||'').replace(/^#/,''));
+   const t=clean(h.get('taky_handoff'));
+   if(!h.has('taky_handoff'))return false;
+   h.delete('taky_handoff');
+   const rest=h.toString();
+   globalThis.history?.replaceState?.(globalThis.history.state,'',location.pathname+location.search+(rest?'#'+rest:''));
+   if(!DEVICE_TOKEN.test(t))return false;
+   deviceSet(t);markSet();return true;
+  }catch{return false}
+ }
+ // For the signed-in app that opens another TAKY app: the target URL with a 2-minute pass attached.
+ // Not signed in, or the target is not an approved TAKY app -> the plain URL (the app then asks to sign in).
+ async function handoffUrl(target){
+  const plain=String(target||'');
+  try{
+   if(!installed)return plain;
+   const url=new URL(plain,location.href);
+   const central=new URL(installed.apiBaseUrl).origin;
+   const r=await fetchImpl(new URL('/api/family/handoff',central).href,{method:'POST',cache:'no-store',redirect:'error',
+    headers:{'content-type':'application/json','authorization':'Bearer '+await installed.getToken()},body:JSON.stringify({target:url.href})});
+   const b=await r.json();const t=clean(b?.handoff_token);
+   if(!r.ok||!b?.ok||!DEVICE_TOKEN.test(t)||b?.target_origin!==url.origin)return plain;
+   const h=new URLSearchParams(url.hash.replace(/^#/,''));h.set('taky_handoff',t);url.hash=h.toString();
+   return url.href;
+  }catch{return plain}
+ }
  async function loadConfig(){
   const res=await fetchImpl(jsonConfig,{method:'GET',credentials:'same-origin',cache:'no-store',redirect:'error'});
   const config=await res.json();
@@ -217,8 +249,8 @@ function createFamilySignin({fetchImpl=fetch,googleSdk=browserGoogleSdk}={}){
   globalThis.dispatchEvent(new Event('taky-central-auth-ready'));
   return {ok:true,state:'BOUND',family_id:family.family_id};
  }
- return {mount,begin,restore,signOut,selectFamily,status:()=>({state:installed?'BOUND':holder?'FAMILY_SELECTION':'UNBOUND'})};
+ return {mount,begin,restore,signOut,selectFamily,handoffUrl,status:()=>({state:installed?'BOUND':holder?'FAMILY_SELECTION':'UNBOUND'})};
 }
 
-window.TakyFamilySigninV1=Object.freeze({createFamilySignin,verifyServerFamilyResponse,version:'2026.11.14-family-signin-device-v1'});
+window.TakyFamilySigninV1=Object.freeze({createFamilySignin,verifyServerFamilyResponse,version:'2026.11.14-family-signin-handoff-v1'});
 })();
