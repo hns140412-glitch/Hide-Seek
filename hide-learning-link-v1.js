@@ -22,8 +22,13 @@ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 let signin=null,session=null;
 
 function readLearners(){try{const x=JSON.parse(localStorage.getItem(LEARNER_KEY)||'{}');return x&&typeof x==='object'?x:{}}catch{return {}}}
-function learnerFor(familyId){const v=clean(readLearners()[familyId]);return v||''}
-function setLearner(familyId,memberId){const all=readLearners();all[familyId]=memberId;try{localStorage.setItem(LEARNER_KEY,JSON.stringify(all))}catch{}}
+/* Stored per family as {member, at, only}: `at` = when this learner was chosen, `only` = the family has one child,
+ * so nothing can be mixed. (Older builds stored a bare member id.) */
+function learnerRow(familyId){const v=readLearners()[familyId];if(typeof v==='string')return {member:clean(v),at:0,only:false};return v&&typeof v==='object'?{member:clean(v.member),at:Number(v.at)||0,only:v.only===true}:{member:'',at:0,only:false}}
+function learnerFor(familyId){return learnerRow(familyId).member}
+function setLearner(familyId,memberId,{only=false}={}){const all=readLearners();const cur=learnerRow(familyId);
+ all[familyId]=cur.member===memberId&&cur.only===only?{member:memberId,at:cur.at,only}:{member:memberId,at:Date.now(),only};
+ try{localStorage.setItem(LEARNER_KEY,JSON.stringify(all))}catch{}}
 
 /* Ready-launched sessions carry their own scope in the URL/context; never touch those. */
 function readyOwned(ctx){return !!(ctx&&(ctx.session_id||ctx.task_id||ctx.lap_id))}
@@ -50,9 +55,12 @@ function clearScope(){
 function client(){return window.TakyLearningEvidenceClientV1}
 /* Hide events recorded on this device before sign-in were queued without a learner. Give ONLY those
  * standalone Hide rows (no Ready session id in the event) the chosen learner and Hide's vocabulary
- * scope; rows that already carry a scope are left exactly as they are. */
+ * scope; rows that already carry a scope are left exactly as they are.
+ * No mixing between children (Taky 2026-11-14 "사용자에 따라 데이터 혼용은 안생길까?"): when the family has
+ * more than one child, a row is given the learner only if it was recorded AFTER that learner was chosen;
+ * earlier unnamed rows stay on this device unsent rather than be credited to the wrong child. */
 const QUEUE_KEY='taky_learning_evidence_pending_v1';
-function fillQueuedScope(memberId){
+function fillQueuedScope(memberId,{since=0,only=false}={}){
  if(!memberId)return 0;
  let q;try{q=JSON.parse(localStorage.getItem(QUEUE_KEY)||'[]')}catch{return 0}
  if(!Array.isArray(q))return 0;
@@ -63,6 +71,7 @@ function fillQueuedScope(memberId){
   if(e.session_id||e.task_id||e.lap_id)continue;
   const h=row.scope_hint;
   if(clean(h.member_id))continue;
+  if(!only&&!(Date.parse(row.enqueued_at||'')>=since))continue;
   row.scope_hint={...h,member_id:memberId,subject:clean(h.subject)||DEFAULT_SCOPE.subject,
    concept_skill_target:clean(h.concept_skill_target)||DEFAULT_SCOPE.concept_skill_target};
   n++;
@@ -73,7 +82,7 @@ function fillQueuedScope(memberId){
 async function sendNow(){
  const c=client();if(!c)return null;
  try{c.scan({allowAmbientScope:true})}catch{}
- try{if(session)fillQueuedScope(learnerFor(session.family_id))}catch{}
+ try{if(session){const l=learnerRow(session.family_id);fillQueuedScope(l.member,{since:l.at,only:l.only})}}catch{}
  try{return await c.flush()}catch{return null}
 }
 
@@ -121,7 +130,7 @@ function renderSync(text){
 }
 async function choose(memberId){
  if(!session||!(session.authorized_member_ids||[]).includes(memberId))return;
- setLearner(session.family_id,memberId);
+ {const others=(session.authorized_member_ids||[]).filter(m=>m!==session.self_member_id);setLearner(session.family_id,memberId,{only:others.length===1&&memberId===others[0]})}
  applyScope(memberId);
  renderLearner();renderSync('기록 보내는 중…');
  const r=await sendNow();
@@ -133,11 +142,16 @@ async function onBound(){
  if(!session)return;
  const ctx=(()=>{try{return S.sharedLearningContext||{}}catch{return {}}})();
  let learner=learnerFor(session.family_id);
- const fromUrl=clean(ctx.child_id);
+ const fromUrl=clean(ctx.scope_source===SCOPE_TAG?'':ctx.child_id);
  if(readyOwned(ctx)&&ctx.scope_source!==SCOPE_TAG){renderLearner();renderSync();void sendNow();return}
- if(!learner&&fromUrl&&(session.authorized_member_ids||[]).includes(fromUrl))learner=fromUrl;
- if(!learner){const others=(session.authorized_member_ids||[]).filter(m=>m!==session.self_member_id);if(others.length===1)learner=others[0]}
- if(learner){setLearner(session.family_id,learner);applyScope(learner);void sendNow().then(()=>{renderSync();setTimeout(()=>renderSync(),1500)})}
+ const members=session.authorized_member_ids||[];
+ const others=members.filter(m=>m!==session.self_member_id);
+ const only=others.length===1;
+ // A child named in the link (Ready / family hub) always wins over the one remembered on this device.
+ if(fromUrl&&members.includes(fromUrl))learner=fromUrl;
+ else if(learner&&!members.includes(learner))learner='';
+ if(!learner&&only)learner=others[0];
+ if(learner){setLearner(session.family_id,learner,{only:only&&learner===others[0]});applyScope(learner);void sendNow().then(()=>{renderSync();setTimeout(()=>renderSync(),1500)})}
  renderLearner();renderSync();
 }
 function onCleared(){session=null;clearScope();renderLearner();renderSync()}
@@ -163,7 +177,7 @@ function boot(){
  ensurePanel();
  const F=window.TakyFamilySigninV1;
  if(!F){renderSync('로그인 모듈을 불러오지 못했어요.');return}
- signin=F.createFamilySignin();
+ signin=F.createFamilySignin({viaCentral:true});
  window.addEventListener('taky-central-auth-ready',()=>void onBound());
  window.addEventListener('taky-central-auth-cleared',onCleared);
  signin.mount();
