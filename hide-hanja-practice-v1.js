@@ -38,6 +38,22 @@ function finish(card,result){
  q('#hanjaHint')?.setAttribute('disabled','');
  q('#hanjaPass')?.setAttribute('disabled','');
 }
+// TRACE card shows "<meaning> <reading>" (훈음, e.g. 날 일); the voice says the same. Recorded clip in the bound
+// companion's voice family when one exists (explorer-crew-voice/data-hanja-lines.js), otherwise device TTS.
+let voice=null;
+function hear(card){
+ const said=card.meaning+' '+card.reading;
+ const tts=()=>{if('speechSynthesis' in window){speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(said);u.lang='ko-KR';u.rate=.85;speechSynthesis.speak(u)}};
+ if(voice){try{voice.pause()}catch{}voice=null}
+ const fam=window.TakyCrewGuideLineVoice?.familyFor?.(window.HideExplorerCrewAuthorityConsumer);
+ const url=fam&&window.TakyCrewHanjaLines?.clips?.[fam+'-'+card.id];
+ if(!url||typeof Audio!=='function')return tts();
+ try{window.TakyCrewGuideLineVoice?.stop?.();speechSynthesis?.cancel?.()}catch{}
+ const a=new Audio(url);voice=a;let failed=false;
+ const fail=()=>{if(failed||voice!==a)return;failed=true;voice=null;tts()};
+ a.addEventListener('error',fail,{once:true});a.addEventListener('ended',()=>{if(voice===a)voice=null},{once:true});
+ try{Promise.resolve(a.play()).catch(fail)}catch{fail()}
+}
 function render(){
  const card=rows[index%rows.length];started=Date.now();wrong=0;hints=0;done=false;
  const desc={TRACE:'보고·소리 듣기',LINK:'한자와 음 연결',CORE:'글자의 의미 찾기',RECALL:'음·뜻에서 글자 회상'}[mode];
@@ -49,7 +65,7 @@ function render(){
  q('#hanjaExit').onclick=()=>{currentTab='home';renderHome()};
  q('#hanjaNext').onclick=()=>{if(mode==='TRACE')record(card,'EXPOSED');index++;render()};
  if(mode==='TRACE'){
-  q('#hanjaHear').onclick=()=>{if('speechSynthesis' in window){speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(card.reading);u.lang='ko-KR';u.rate=.85;speechSynthesis.speak(u)}};
+  q('#hanjaHear').onclick=()=>hear(card);
   return;
  }
  q('#hanjaHint').onclick=()=>{
