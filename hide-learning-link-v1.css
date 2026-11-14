@@ -1,0 +1,19 @@
+/* 가족 학습 연결 panel — approved Mossfall tokens (forest green / cream / timber). */
+.hs-ll{position:fixed;inset:0;z-index:4000;display:flex;align-items:flex-end;justify-content:center;background:rgba(14,38,28,.5)}
+.hs-ll[hidden]{display:none}
+.hs-ll-sheet{width:min(560px,100%);max-height:92vh;overflow:auto;box-sizing:border-box;padding:18px 18px calc(18px + env(safe-area-inset-bottom));border-radius:24px 24px 0 0;background:#fffaf0;color:#1f3a2c;box-shadow:0 -12px 40px rgba(10,30,20,.3)}
+@media (min-width:760px){.hs-ll{align-items:center}.hs-ll-sheet{border-radius:24px}}
+.hs-ll-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.hs-ll-head h2{margin:0;font-size:20px;color:#214836}
+.hs-ll-x{min-height:44px;padding:0 14px;border:0;border-radius:12px;background:#e8f1e6;color:#214836;font:inherit;font-weight:700}
+.hs-ll-lead{margin:10px 0 14px;font-size:15px;line-height:1.5;color:#41574a}
+.hs-ll-login{display:grid;gap:10px}
+.hs-ll-btn{min-height:48px;padding:0 16px;border:1px solid rgba(49,95,70,.35);border-radius:14px;background:#fff;color:#214836;font:inherit;font-size:16px;font-weight:800}
+.hs-ll-btn.is-on{background:#315f46;border-color:#315f46;color:#fffaf0}
+.hs-ll-btn[hidden],.hs-ll-ghost[hidden]{display:none}
+.hs-ll-ghost{min-height:44px;border:0;background:none;color:#68776d;font:inherit;text-decoration:underline}
+.hs-ll-status,.hs-ll-sync{margin:0;font-size:14px;color:#41574a}
+.hs-ll-sync{margin-top:12px;font-weight:700}
+.hs-ll-choices{display:grid;gap:8px}
+.hs-ll-learner h3{margin:16px 0 8px;font-size:16px;color:#214836}
+#familyGoogleTarget:empty{display:none}
