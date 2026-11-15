@@ -19,6 +19,7 @@ jobs:
       - name: Check JavaScript syntax
         run: |
           node --check app.js
+          node --check hide-voice-pick-v1.js
           node --check hide-brand-current.js
           node --check hide-bridge.js
           node --check vendor/taky/central-evidence-browser-v1.js
