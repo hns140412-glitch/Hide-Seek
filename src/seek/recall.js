@@ -4,12 +4,16 @@
    the order leans on what has helped this learner before, and the last fallback opens one letter only.
    A word found with a clue is assisted: it must be found again later without one.
    Missed words are learned again, and only then looked for again (never the same answer straight after a miss).
+   A quiet time gauge runs under the meaning (spec 11). When it runs out the attempt is kept as its own TIMEOUT
+   result: no failure mark, the word is shown, learned again and sought again. Time stops while the page is hidden.
    With opts.pool the same play runs over words from earlier sets (old-word review); evidence lands on their own set. */
 (() => {
   'use strict';
   const S = globalThis.Seek, { $, $$, esc } = S;
   const LETTERS = 'abcdefghijklmnopqrstuvwxyz';
   const CLUE_NAME = { SCENE: '장면 단서', SOUND: '소리 단서', SHAPE: '모양 단서', PERSONAL_ERROR_TRACE: '지난 흔적', FRAGMENT: '조각 단서', MINIMUM_REVEAL: '글자 하나' };
+
+  const CLUE_MS = 10000, limitMs = letters => 20000 + 4000 * Math.max(1, letters);
 
   function start(view, done, opts = {}) {
     const W = S.words, old = Array.isArray(opts.pool);
@@ -19,7 +23,8 @@
     const st = { queue: pool.map(w => w.id), stage: 'FINAL_SEEK', again: [], found: 0, total: pool.length, at: 0 };
     const mid = w => W.locate(w.id)?.mission.id;
     const head = () => `<header class="sk-mode-head"><button class="sk-back" id="skBack" type="button" aria-label="탐험으로">‹</button><div><small>RECALL</small><b>${st.stage === 'SEEK_AGAIN' ? '다시 찾기' : title}</b></div><span class="sk-count">${st.found} / ${st.total}</span></header>`;
-    const bindBack = () => { $('#skBack', view).onclick = () => { S.quiet(); done(); }; };
+    const stopClock = () => { clearInterval(st.tick); st.tick = 0; };
+    const bindBack = () => { $('#skBack', view).onclick = () => { stopClock(); S.quiet(); done(); }; };
 
     function next() {
       if (st.queue.length) return seek(W.fresh(st.queue.shift()));
@@ -49,6 +54,8 @@
       const sig = HideV2Memory.summary(w).memorySignature;
       if (sig.phonologicalWeakness > sig.semanticWeakness && order.includes('SOUND')) order = ['SOUND', ...order.filter(x => x !== 'SOUND')];
       if (order.includes('PERSONAL_ERROR_TRACE') && sig.orthographicWeakness >= 22) order = ['PERSONAL_ERROR_TRACE', ...order.filter(x => x !== 'PERSONAL_ERROR_TRACE')];
+      // a word that ran out of time before gets a short sound or shape cue first, not more meaning (memory trace standard)
+      if (sig.timeoutRisk > 0) order = [...['SOUND', 'SHAPE'].filter(x => order.includes(x)), ...order.filter(x => x !== 'SOUND' && x !== 'SHAPE')];
       const tail = ['FRAGMENT', 'MINIMUM_REVEAL'];
       order = [...order.filter(x => !tail.includes(x)), ...tail.filter(x => order.includes(x))];
       return order.map(t => steps.find(x => x.type === t));
@@ -68,7 +75,17 @@
       const fakeN = Math.min(3, Math.max(2, Math.floor(realKeys.length / 3)));
       const fakes = [...S.sample(mine, Math.min(mine.length, fakeN)), ...S.sample(fakePool.filter(c => !mine.includes(c)), fakeN)].slice(0, fakeN);
       const keys = S.shuffle([...realKeys, ...fakes]).map((ch, i) => ({ ch, i, used: false }));
-      const clues = cluePlan(w, chars, need), hintTrace = [], wrongAt = [], wrongKeys = []; let wrong = 0, clueAt = 0, hot = -1; const t0 = Date.now();
+      const clues = cluePlan(w, chars, need), hintTrace = [], wrongAt = [], wrongKeys = []; let wrong = 0, clueAt = 0, hot = -1, note = ''; const t0 = Date.now();
+      // time allowance grows with the word and with each clue read; only time spent looking at the page counts
+      let limit = limitMs(realKeys.length), used = 0, lastTick = Date.now(), over = false;
+      const left = () => Math.max(0, 1 - used / limit);
+      const paint = () => { const g = $('.sk-gauge', view); if (!g) return false; g.classList.toggle('low', left() <= .25); g.firstElementChild.style.width = `${Math.round(left() * 1000) / 10}%`; return true; };
+      const tick = () => {
+        const now = Date.now(), d = now - lastTick; lastTick = now;
+        if (!document.hidden) used += Math.min(d, 1000);
+        if (!paint()) return stopClock();
+        if (used >= limit) end('TIMEOUT');
+      };
       const cursor = () => fill.findIndex((v, i) => need[i] && !v);
       const open = at => { const k = keys.find(x => !x.used && x.ch === chars[at].toLowerCase()); if (k) k.used = true; fill[at] = chars[at]; };
       const draw = () => {
@@ -77,8 +94,9 @@
           <section class="sk-card recall">
             <p class="sk-step">${st.stage === 'SEEK_AGAIN' ? '혼자 힘으로 다시 찾기' : '뜻을 보고 단어를 찾아 줘'}</p>
             <p class="sk-meaning lead">${esc(w.meaning)}</p>
+            <div class="sk-gauge${left() <= .25 ? ' low' : ''}" role="img" aria-label="남은 시간"><i style="width:${Math.round(left() * 1000) / 10}%"></i></div>
             <div class="sk-slots">${fill.map((v, i) => `<span class="${v ? 'on' : ''} ${i === cursor() ? 'cur' : ''} ${i === hot && !v ? 'hot' : ''}">${esc(v || '')}</span>`).join('')}</div>
-            <p class="sk-clue" id="skClue">${last ? `<b>${CLUE_NAME[last.step]}</b> ${esc(last.text)}` : ''}</p>
+            <p class="sk-clue" id="skClue">${note ? esc(note) : last ? `<b>${CLUE_NAME[last.step]}</b> ${esc(last.text)}` : ''}</p>
             <div class="sk-keys">${keys.map(k => `<button type="button" class="sk-key" data-i="${k.i}" ${k.used ? 'disabled' : ''}>${esc(k.ch)}</button>`).join('')}</div>
             <div class="sk-row2">
               <button type="button" class="sk-btn ghost" id="skClueBtn" ${clueAt >= clues.length ? 'disabled' : ''}>길 단서</button>
@@ -91,7 +109,7 @@
         $('#skPass', view).onclick = () => end('PASS');
       };
       function press(k, btn) {
-        const at = cursor(); if (at < 0) return;
+        const at = cursor(); if (at < 0 || over) return;
         if (k.ch !== chars[at].toLowerCase()) {
           // where and with which letter the slip happened is kept: it becomes this learner's own clue and trap next time
           wrong++; wrongAt.push(at); wrongKeys.push(k.ch);
@@ -103,7 +121,9 @@
         draw();
       }
       function clue() {
+        if (over) return;
         const c = clues[clueAt++]; if (!c) return;
+        limit += CLUE_MS;
         hintTrace.push({ step: c.type, at: new Date().toISOString(), text: c.text });
         S.record(mid(w), w, { stage: 'FINAL_SEEK_SUPPORT', evidenceMode: 'ASSISTANCE', axes: ['RECALL'], result: 'HINT_USED', assisted: true, hintLevel: clueAt, supportType: c.type });
         if (c.type === 'SOUND') S.sayWord(token);
@@ -118,23 +138,26 @@
         draw();
       }
       async function end(kind) {
+        if (over) return; over = true; stopClock();
         const assisted = hintTrace.length > 0, ms = Date.now() - t0;
-        const result = kind === 'PASS' ? 'PASS' : wrong >= 3 ? 'WRONG' : 'CORRECT';
+        const result = kind === 'PASS' ? 'PASS' : kind === 'TIMEOUT' ? 'TIMEOUT' : wrong >= 3 ? 'WRONG' : 'CORRECT';
+        if (kind === 'TIMEOUT') note = '시간이 다 됐어. 이 단어는 다시 익히고 또 찾자.';
         // found alone = objective recall; found with a clue = assisted reconstruction, to be re-checked later
         S.record(mid(w), w, {
           stage: st.stage, evidenceMode: assisted ? 'ASSISTED_RECONSTRUCTION' : 'RETRIEVAL', axes: ['FORM', 'RECALL'], result,
           objectiveVerified: true, objectiveRecall: !assisted, recallScoreImpact: !assisted, assisted, hintLevel: hintTrace.length,
           hintTrace: hintTrace.map(h => ({ step: h.step, at: h.at })), wrongAttempts: wrong, wrongAt: wrongAt.slice(0, 12), wrongKeys: [...new Set(wrongKeys)].slice(0, 8),
-          elapsedMs: ms, slow: result === 'CORRECT' && ms >= 12000, oldWordReview: old || undefined
+          elapsedMs: ms, timeLimitMs: limit, slow: result === 'CORRECT' && ms >= 12000, oldWordReview: old || undefined
         });
         const clean = result === 'CORRECT' && !assisted;
         if (clean) st.found++;
         else if (st.stage === 'FINAL_SEEK') { st.again.push(w.id); if (kind === 'PASS') S.crewSay('이 단어는 추적 목록에 넣어둘게. 뒤에서 더 자주 만나자.'); }
         if (kind === 'PASS') return next();
         fill.forEach((_, i) => { fill[i] = chars[i]; }); hot = -1; draw(); view.querySelector('.sk-card').classList.add(clean ? 'win' : 'soft');
-        S.sayWord(token); await S.wait(900); next();
+        S.sayWord(token); await S.wait(kind === 'TIMEOUT' ? 1800 : 900); next();
       }
       draw();
+      stopClock(); st.tick = setInterval(tick, 250);
       if (st.at++ === 0) S.crewSay(st.stage === 'SEEK_AGAIN' ? '놓쳤다고 끝난 건 아니지. 다시 익힌 뒤 같은 단어만 재검증하자.' : '진짜 철자 열쇠만 골라. 가짜도 섞여 있어.');
     }
 
@@ -161,7 +184,7 @@
     }
 
     function finish() {
-      S.quiet();
+      stopClock(); S.quiet();
       const left = st.total - st.found;
       view.innerHTML = `${head()}<section class="sk-card done">
         <p class="sk-step">${title} 끝</p><h2>혼자 힘으로 ${st.found}개를 찾았어</h2>
@@ -175,5 +198,5 @@
     next();
   }
 
-  S.recall = { start };
+  S.recall = { start, limitMs };
 })();

@@ -184,6 +184,9 @@ h2, h3, p, ul, dl, dd { margin: 0; padding: 0; } ul { list-style: none; }
 #skCompare { display: grid; gap: 10px; }
 /* personal traces: the slot or letter where this learner slipped before */
 .sk-slots span.hot { border-style: solid; border-color: var(--berry); animation: skPulse 1.2s ease-in-out infinite; } @keyframes skPulse { 50% { box-shadow: 0 0 0 5px rgba(200, 85, 61, .25); } }
+.sk-gauge { width: min(220px, 70%); height: 6px; margin: 0 auto; border-radius: 999px; background: rgba(31, 58, 42, .16); overflow: hidden; }
+.sk-gauge i { display: block; height: 100%; border-radius: inherit; background: var(--moss); transition: width .25s linear; }
+.sk-gauge.low i { background: var(--sun); animation: skGauge 1.4s ease-in-out infinite; } @keyframes skGauge { 50% { opacity: .55; } }
 .sk-clue b { display: inline-block; margin-right: 6px; padding: 1px 8px; border-radius: 999px; background: #fdf0d2; font-size: 12.5px; }
 mark { background: #fde3a7; color: inherit; border-radius: 4px; padding: 0 1px; }
 .sk-watch { background: #fff6e0; border-radius: 12px; padding: 10px 12px; display: grid; gap: 4px; } .sk-watch small { font-size: 12px; font-weight: 700; color: #a8741a; } .sk-watch p { font-size: 15px; } .sk-spell { font-size: 19px; letter-spacing: 1px; }

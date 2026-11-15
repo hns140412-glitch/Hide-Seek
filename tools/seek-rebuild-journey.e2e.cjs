@@ -105,6 +105,17 @@ async function journey(browser, base, name, viewport) {
   await p.locator('.sk-item').first().click(); assert(await has('.sk-ladder'), 'word story did not open'); await p.click('.sk-x');
   await p.click('[data-t="calendar"]'); assert((await p.locator('.sk-cal span.on').count()) >= 1, 'calendar did not show a learning day');
   const overflow = await p.evaluate(() => document.documentElement.scrollWidth > innerWidth || [...document.querySelectorAll('#skView *')].some(e => e.getBoundingClientRect().right > innerWidth + 1));
+  // 9) time gauge: running out of time is its own TIMEOUT result, never "found", and the word is learned again
+  await p.clock.install();
+  await p.evaluate(() => SeekApp.play('recall'));
+  await p.waitForSelector('.sk-card.recall .sk-gauge');
+  const tWord = await p.evaluate(() => document.querySelector('.sk-card.recall .sk-meaning.lead').textContent);
+  await p.clock.runFor(30000);
+  assert(await p.evaluate(() => !document.querySelector('.sk-card.soft') && parseFloat(document.querySelector('.sk-gauge i').style.width) < 60), 'time gauge did not drain');
+  await p.clock.runFor(120000);
+  const tRow = await p.evaluate(m => { const w = HideV2Store.snapshot().missions.flatMap(x => x.items).find(x => x.meaning === m); const e = (w.evidence || []).filter(x => x.stage === 'FINAL_SEEK').pop(); return { r: e.result, lim: e.timeLimitMs, ready: HideV2Trail.wordReadiness(w).ready === true }; }, tWord);
+  assert(tRow.r === 'TIMEOUT' && tRow.lim > 0 && !tRow.ready, 'timeout was not kept as its own result: ' + JSON.stringify(tRow));
+  await p.click('#skBack');
   assert(!overflow, 'layout overflows the screen at ' + name);
   assert(!errors.length, 'page errors: ' + errors.join(' | '));
   assert(!outside.filter(u => !/family-auth-config|accounts\.google\.com/.test(u)).length, 'unexpected outside request: ' + outside[0]);
