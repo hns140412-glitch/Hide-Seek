@@ -71,6 +71,30 @@
     return event;
   }
 
+  /* Ready & Set status report (spec 18): when Ready opened this run, tell it how the word set stands after a recall
+     round. Hide reports specialist evidence only; Ready owns the cross-app status, the planner and TODAY. */
+  function reportTask() {
+    const ctx = readyContext(); if (!readyOwned(ctx)) return null;
+    const mission = S.words.mission(); if (!mission || mission.provenance?.source === 'SAMPLE') return null;
+    const Envelope = globalThis.TakyEventEnvelope; if (!Envelope?.create) return null;
+    const words = S.words.words(), p = S.words.progress(), done = p.total > 0 && p.found === p.total;
+    const top = words.map(w => ({ w, s: HideV2Memory.summary(w) })).filter(x => !S.words.found(x.w)).sort((a, b) => b.s.nextReviewPriority - a.s.nextReviewPriority).slice(0, 5);
+    const type = done ? 'TASK_COMPLETED' : 'TASK_PARTIAL';
+    const payload = {
+      explorationMissionId: mission.id, explorationMissionTitle: mission.title, validWordCount: p.total,
+      taskState: done ? 'COMPLETED' : 'PARTIAL', trailMastery: p.total ? Math.round(p.found / p.total * 100) : 0,
+      learningPhase: 'RECALL', remainingSeekAgain: p.total - p.found,
+      attemptCounts: { recall: words.reduce((n, w) => n + (w.evidence || []).filter(e => e.stage === 'FINAL_SEEK' || e.stage === 'SEEK_AGAIN').length, 0) },
+      memorySummary: { averageStrength: words.length ? Math.round(words.reduce((n, w) => n + HideV2Memory.summary(w).memoryStrength, 0) / words.length) : 0 },
+      reviewPriorities: top.map(x => ({ learning_target_id: String(x.w.lexicalId || x.w.id), reason: HideV2Memory.reason(x.s).key })),
+      ...((ctx.subject || ctx.concept_skill_target) ? { learning_scope: { ...(ctx.subject ? { subject: ctx.subject } : {}), ...(ctx.concept_skill_target ? { concept_skill_target: ctx.concept_skill_target } : {}) } } : {})
+    };
+    const envelope = Envelope.create({ source: 'hide-seek', event_type: type, occurred_at: new Date().toISOString(), correlation_id: ctx.session_id || ctx.task_id || null, payload });
+    const event = { ...envelope, type, app: 'hide-seek', at: envelope.occurred_at, session_id: ctx.session_id || null, goal_id: ctx.goal_id || null, task_id: ctx.task_id || null, lap_id: ctx.lap_id || null, child_id: ctx.child_id || null, payload };
+    try { window.dispatchEvent(new CustomEvent('taky-learning-event', { detail: event })); } catch { /* reporting never blocks learning */ }
+    return event;
+  }
+
   /* rows queued before a learner was known: credit them only when that cannot mix two children */
   function fillQueuedScope(memberId, { since = 0, only = false } = {}) {
     if (!memberId) return 0;
@@ -167,5 +191,5 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true }); else boot();
 
   globalThis.SeekBridge = { onEvidence };
-  S.family = { open, close, status: () => ({ bound: !!session, family_id: session?.family_id || null, learner: learner() || null }), _test: { eventFor, fillQueuedScope, readyOwned } };
+  S.family = { open, close, reportTask, status: () => ({ bound: !!session, family_id: session?.family_id || null, learner: learner() || null }), _test: { eventFor, fillQueuedScope, readyOwned } };
 })();

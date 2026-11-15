@@ -85,7 +85,7 @@ h2, h3, p, ul, dl, dd { margin: 0; padding: 0; } ul { list-style: none; }
 .sk-back { width: 48px; height: 48px; border-radius: 50%; background: var(--paper); font-size: 26px; box-shadow: var(--shadow); }
 .sk-mode-head div { display: flex; flex-direction: column; justify-self: start; padding: 3px 14px; border-radius: 14px; background: rgba(255, 253, 244, .84); backdrop-filter: blur(6px); box-shadow: 0 2px 8px rgba(20, 50, 30, .15); }
 .sk-count { font-weight: 700; font-size: 14px; padding: 5px 12px; border-radius: 999px; background: rgba(255, 253, 244, .84); backdrop-filter: blur(6px); box-shadow: 0 2px 8px rgba(20, 50, 30, .15); }
-.sk-view > section.sk-card { background: radial-gradient(ellipse closest-side, rgba(255, 253, 244, .94) 0%, rgba(255, 253, 244, .86) 60%, rgba(255, 253, 244, 0) 100%); padding: 44px 24px; align-items: stretch; gap: 14px; text-align: center; margin-top: auto; margin-bottom: auto; transition: opacity .25s, transform .25s; }
+.sk-view > section.sk-card { background: radial-gradient(ellipse closest-side, rgba(255, 253, 244, .95) 0%, rgba(255, 253, 244, .9) 80%, rgba(255, 253, 244, 0) 100%); padding: 44px 24px; align-items: stretch; gap: 14px; text-align: center; margin-top: auto; margin-bottom: auto; transition: opacity .25s, transform .25s; }
 .sk-card.hiding { opacity: 0; transform: translateY(14px) scale(.97); }
 .sk-card.win .sk-slots span { background: #dff0d4; border-color: var(--moss); } .sk-card.soft .sk-slots span { background: #fdf0d2; border-color: var(--sun); }
 .sk-step { align-self: center; font-size: 13.5px; font-weight: 700; color: var(--leaf-deep); letter-spacing: .3px; padding: 3px 12px; border-radius: 999px; background: rgba(255, 253, 244, .8); }
@@ -175,6 +175,24 @@ h2, h3, p, ul, dl, dd { margin: 0; padding: 0; } ul { list-style: none; }
 .sk-crew-pick img { width: 72px; height: 72px; object-fit: contain; } .sk-crew-pick button.on { border-color: var(--leaf); background: #dff0d4; } .sk-crew-pick button:disabled { opacity: .4; }
 
 .sk-fam-login { display: grid; gap: 10px; } .sk-fam-choices { display: grid; gap: 8px; } .sk-fam-choices:empty { display: none; }
+
+.sk-card .sk-link { background: rgba(255, 253, 244, .85); border-radius: 999px; padding: 8px 16px; }
+/* thinking trail chips (the child's own clue and comparison): leaves on the path */
+.sk-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.sk-chip-btn { min-height: 46px; padding: 8px 16px; border-radius: 24px 8px 24px 8px; background: rgba(226, 242, 214, .95); box-shadow: 0 3px 0 rgba(70, 120, 70, .45), 0 6px 10px rgba(20, 50, 30, .15); font-weight: 700; font-size: 15.5px; color: var(--leaf-deep); }
+.sk-chip-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(70, 120, 70, .45); }
+#skCompare { display: grid; gap: 10px; }
+/* personal traces: the slot or letter where this learner slipped before */
+.sk-slots span.hot { border-style: solid; border-color: var(--berry); animation: skPulse 1.2s ease-in-out infinite; } @keyframes skPulse { 50% { box-shadow: 0 0 0 5px rgba(200, 85, 61, .25); } }
+.sk-clue b { display: inline-block; margin-right: 6px; padding: 1px 8px; border-radius: 999px; background: #fdf0d2; font-size: 12.5px; }
+mark { background: #fde3a7; color: inherit; border-radius: 4px; padding: 0 1px; }
+.sk-watch { background: #fff6e0; border-radius: 12px; padding: 10px 12px; display: grid; gap: 4px; } .sk-watch small { font-size: 12px; font-weight: 700; color: #a8741a; } .sk-watch p { font-size: 15px; } .sk-spell { font-size: 19px; letter-spacing: 1px; }
+/* morning mock test record */
+.sk-mock { display: grid; gap: 8px; } .sk-mock li { background: #f4f7ee; border-radius: 14px; padding: 8px 10px; display: grid; gap: 6px; }
+.sk-mock p { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; } .sk-mock b { font-size: 18px; } .sk-mock i { font-style: normal; font-size: 14px; color: var(--ink-soft); }
+.sk-mock li > div { display: flex; flex-wrap: wrap; gap: 5px; }
+.sk-mock button { min-height: 44px; padding: 4px 11px; border-radius: 999px; background: #fff; border: 1.5px solid var(--line); font-size: 13.5px; font-weight: 700; }
+.sk-mock button.on { color: #fff; border-color: transparent; background: var(--leaf); } .sk-mock button.on.confused, .sk-mock button.on.assisted_correct { background: #c98a1c; } .sk-mock button.on.wrong { background: var(--berry); } .sk-mock button.on.recovered_correct { background: var(--water); }
 
 /* tablet / landscape */
 @media (min-width: 760px) {

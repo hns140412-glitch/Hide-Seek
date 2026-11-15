@@ -56,9 +56,10 @@
     const confusionCount=association.filter(x=>x.result==='MISMATCH').length+meaning.filter(x=>x.result==='MISMATCH').length;
     const hintCount=rows.filter(x=>x.evidenceMode==='ASSISTANCE'||Number(x.hintLevel||0)>0).length;
     const timeoutCount=rows.filter(x=>x.result==='TIMEOUT').length;
-    const slowCount=rows.filter(x=>Number(x.elapsedMs||0)>=8000).length;
+    // seek rebuild: an external mock test has no timing; "confused" is written as uncertain and counts as latency evidence (spec 20)
+    const slowCount=rows.filter(x=>Number(x.elapsedMs||0)>=8000||x.uncertain===true).length;
 
-    const recoveryAssist=rows.filter(x=>x.assisted===true&&['FINAL_SEEK_SUPPORT','FINAL_SEEK','SEEK_AGAIN','FIRST_FIND'].includes(x.stage));
+    const recoveryAssist=rows.filter(x=>x.assisted===true&&['FINAL_SEEK_SUPPORT','FINAL_SEEK','SEEK_AGAIN','FIRST_FIND','MORNING_MOCK_TEST'].includes(x.stage));
     let recoveryStatus='UNPROVEN';
     if(spaced.length) recoveryStatus='SPACED_RECOVERED';
     else if(recoveryAssist.length&&correctRecall.length) recoveryStatus='IMMEDIATE_ONLY';

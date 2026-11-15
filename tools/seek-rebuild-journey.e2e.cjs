@@ -69,11 +69,41 @@ async function journey(browser, base, name, viewport) {
   assert(ev.every(e => e.t === 'RETRIEVAL_ATTEMPT_RESULT' && e.app === 'hide-seek' && e.i === 'HIDE_HOME_RECALL_V1' && e.s.subject === 'ENGLISH'), 'event shape drifted');
   assert(ev.filter(e => e.a).length === 1 && ev.find(e => e.a).r === 'HINT_USED', 'assisted attempt was not reported as assisted');
 
+  // 4b) thinking trail is self-report: kept for the learner's clue profile, never recall
+  assert(c['THINKING_TRAIL:SUBMITTED'] >= 6 && Object.keys(c).some(k => k.startsWith('THINKING_TRAIL_COMPARE:')), 'thinking trail was not recorded: ' + JSON.stringify(c));
+  const skill = await p.evaluate(() => HideLanguageModel.summarizeInferenceSkill(HideV2Store.snapshot().events));
+  assert(skill.assessed >= 6, 'guess / compare history did not reach the inference profile');
+
+  // 4c) morning mock test: external evidence. It re-hides and re-prioritises a word; it never marks one found.
+  await p.click('#skMenuBtn'); await p.click('#skMenuMock');
+  const mockId = await p.locator('.sk-mock li').first().getAttribute('data-id');
+  await p.click(`.sk-mock li[data-id="${mockId}"] [data-o="WRONG"]`);
+  await p.click('.sk-mock li:nth-child(2) [data-o="CORRECT"]');
+  await p.click('#skMockSave');
+  const mock = await p.evaluate(id => { const W = Seek.words, w = W.fresh(id), s = HideV2Memory.summary(w); return { found: W.progress().found, rank: W.byPriority(12).findIndex(x => x.id === id), needs: s.needsUnassistedRecall, events: window.__events.length, rows: w.evidence.filter(e => e.stage === 'MORNING_MOCK_TEST').map(e => e.source + ':' + e.actor) }; }, mockId);
+  assert(mock.found === 12, 'a paper mock test changed today\'s found count');
+  assert(mock.needs, 'a word missed in the mock test did not hide again');
+  assert(mock.rank >= 0 && mock.rank <= 2, 'a word missed in the mock test did not move to the front: rank ' + mock.rank);
+  assert(mock.rows[0] === 'MORNING_MOCK_TEST:PARENT_CHILD' && mock.events === ev.length, 'mock test evidence was mislabeled or reported as an app recall');
+
+  // 4d) old-word review: a word from an earlier set, due after a real gap, is offered in the treasure box;
+  //     finding it alone is spaced evidence on its own set, not on today's set
+  const firstSet = await p.evaluate(() => { const id = Seek.words.mission().id; HideV2Store.transaction(s => s.missions.find(m => m.id === id).items.forEach(w => (w.evidence || []).forEach(e => { e.at = new Date(Date.parse(e.at) - 26 * 3600 * 1000).toISOString(); }))); return id; });
+  await p.click('#skMenuBtn'); await p.click('#skMenuAdd');
+  await p.fill('#skInText', 'window 창문\ngarden 정원\nriver 강'); await p.click('#skInNext'); await p.click('#skRvSave');
+  await p.click('#skNav [data-tab="catch"]');
+  assert(await has('#skOld'), 'old-word review was not offered after a real gap');
+  await p.click('#skOld'); await play('recall', { resume: true, limit: 1 });
+  const oldRow = await p.evaluate(id => HideV2Store.snapshot().missions.find(m => m.id === id).items.flatMap(w => w.evidence || []).filter(e => e.oldWordReview).map(e => e.stage + ':' + e.result + ':' + e.spacedEvidence), firstSet);
+  assert(oldRow.length === 1 && oldRow[0] === 'FINAL_SEEK:CORRECT:true', 'old-word recall did not land on its own set as spaced evidence: ' + oldRow);
+  assert((await p.evaluate(() => Seek.family.reportTask())) === null, 'a status report was built without a Ready session');
+  await p.evaluate(id => { HideV2Mission.setActive(id); SeekApp.go('home'); }, firstSet);
+
   // 5) treasure box: items, story, calendar
   await p.click('#skNav [data-tab="catch"]');
-  assert((await p.locator('.sk-item').count()) === 12, 'treasure box did not list the 12 real words');
+  assert((await p.locator('.sk-item').count()) === 15, 'treasure box did not list the 15 real words');
   await p.locator('.sk-item').first().click(); assert(await has('.sk-ladder'), 'word story did not open'); await p.click('.sk-x');
-  await p.click('[data-t="calendar"]'); assert((await p.locator('.sk-cal span.on').count()) === 1, 'calendar did not show today');
+  await p.click('[data-t="calendar"]'); assert((await p.locator('.sk-cal span.on').count()) >= 1, 'calendar did not show a learning day');
   const overflow = await p.evaluate(() => document.documentElement.scrollWidth > innerWidth || [...document.querySelectorAll('#skView *')].some(e => e.getBoundingClientRect().right > innerWidth + 1));
   assert(!overflow, 'layout overflows the screen at ' + name);
   assert(!errors.length, 'page errors: ' + errors.join(' | '));
@@ -87,7 +117,9 @@ async function journey(browser, base, name, viewport) {
     for (let i = 0; i < 600; i++) {
       if (await has('#skDone')) { await p.click('#skDone'); return seen; }
       if (!(await p.evaluate(() => document.querySelector('#seekApp').dataset.mode))) return seen;
-      if (await has('#skThought')) { await p.click('#skThought'); continue; }
+      // thinking trail: mostly pick a clue and compare the guess; sometimes "아직 모르겠어"
+      if (await has('[data-clue]')) { await p.locator(i % 5 === 4 ? '[data-clue="NONE"]' : '.sk-chip-btn[data-clue]').first().click(); continue; }
+      if (await has('[data-outcome]')) { await p.locator('[data-outcome]').nth(i % 3).click(); continue; }
       if (await has('#skHide:not(:disabled)')) { await p.click('#skHide'); await p.waitForTimeout(450); continue; }
       if (await has('#skHide')) { await p.waitForTimeout(100); continue; }
       if (await has('#skShow')) { await p.click('#skShow'); continue; }
@@ -109,11 +141,12 @@ async function journey(browser, base, name, viewport) {
       }
       if (await has('.sk-card.recall')) {
         if (await has('.sk-card.win, .sk-card.soft')) { await p.waitForTimeout(150); continue; }
+        const token = await p.evaluate(() => { const m = document.querySelector('.sk-card.recall .sk-meaning.lead')?.textContent; return m ? HideV2Store.snapshot().missions.flatMap(x => x.items).find(w => w.meaning === m).token : null; });
+        if (!token) continue;
         seen.seeks++;
         if (o.limit && seen.seeks > o.limit) { await p.click('#skBack'); return seen; }
         if (seen.seeks === o.passAt) { await p.click('#skPass'); continue; }
         if (seen.seeks === o.clueAt) await p.click('#skClueBtn');
-        const token = await p.evaluate(() => { const m = document.querySelector('.sk-meaning.lead').textContent; return Seek.words.words().find(w => w.meaning === m).token; });
         for (;;) {
           const at = await p.evaluate(() => document.querySelector('.sk-card.win, .sk-card.soft') ? -1 : [...document.querySelectorAll('.sk-slots span')].findIndex(x => x.classList.contains('cur')));
           if (at < 0) break;

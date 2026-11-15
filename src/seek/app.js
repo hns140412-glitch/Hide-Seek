@@ -19,14 +19,14 @@
     VIEWS[tab](v);
   }
 
-  function play(mode) {
+  function play(mode, opts = {}) {
     const m = MODES[mode]?.(); if (!m) return;
     if (!S.words.mission()) { S.toast('먼저 오늘의 단어를 가져오자.'); return S.intake.open(); }
-    S.quiet(); playing = mode;
+    S.quiet(); S.closeSheet(); playing = mode;
     const el = app(); el.dataset.mode = mode;
     S.crewSay('', { speak: false });
     const v = view(); v.scrollTop = 0; delete v.dataset.lock;
-    m.start(v, () => go('explore'));
+    m.start(v, () => go(opts.back || 'explore'), opts);
   }
 
   /* ---------- companion: who comes along never changes what is learned ---------- */
@@ -55,6 +55,7 @@
         <button type="button" class="sk-set" data-set="${esc(m.id)}"><b>${esc(m.title || '단어 묶음')}</b><i>${(m.items || []).length}개${m.provenance?.source === 'SAMPLE' ? ' · 연습용' : ''}</i></button>
         <button type="button" class="sk-del" data-del="${esc(m.id)}" aria-label="${esc(m.title || '단어 묶음')} 지우기">지우기</button></li>`).join('')}</ul>` : '<p class="sk-note">아직 단어 묶음이 없어.</p>'}
       <div class="sk-row2"><button type="button" class="sk-btn main" id="skMenuAdd">새 단어 가져오기</button><button type="button" class="sk-btn ghost" id="skMenuMute">${S.isMuted() ? '소리 켜기' : '소리 끄기'}</button></div>
+      <button type="button" class="sk-btn ghost" id="skMenuMock">아침 시험 결과 적기</button>
       <button type="button" class="sk-btn ghost" id="skMenuFamily">가족 학습 연결${S.family?.status().bound ? ' · 연결됨' : ''}</button>
       <a class="sk-link" href="./index.html">이전 화면으로 가기</a>
       <p class="sk-note">${esc(globalThis.HIDE_RELEASE?.release_id || '')}</p>`, el => {
@@ -64,6 +65,7 @@
         try { HideV2Mission.deleteMission(b.dataset.del); } catch (e) { return S.toast('이 묶음은 지금 지울 수 없어.'); }
         go(tab); menu();
       });
+      $('#skMenuMock', el).onclick = () => { S.closeSheet(); S.mock.open(); };
       $('#skMenuFamily', el).onclick = () => { S.closeSheet(); S.family?.open(); };
       $('#skMenuAdd', el).onclick = () => { S.closeSheet(); S.intake.open(); };
       $('#skMenuMute', el).onclick = () => { const v = !S.isMuted(); S.setMuted(v); S.setSeek({ muted: v }); S.closeSheet(); S.toast(v ? '소리를 껐어.' : '소리를 켰어.'); };

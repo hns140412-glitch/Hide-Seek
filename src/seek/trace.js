@@ -31,29 +31,59 @@
       chase(W.fresh(st.queue.shift()));
     }
 
-    /* ---- meet: WORD -> THINKING QUESTION -> (optional scene) -> MEANING -> hide ---- */
+    /* ---- meet (spec 21, thinking-first): WORD -> the child guesses from a clue of their own choice ->
+       MEANING CONFIRMATION -> the child compares the guess -> hide. Taps only, no typing.
+       The guess and the comparison are self-reports: they teach inferring and are never recall evidence.
+       Which kind of clue tends to work for this learner is kept and later orders the Memory Trail clues. ---- */
+    const CHIP = { WORD_PART: '단어 조각이 보여', ROOT_ETYMOLOGY: '말의 뿌리가 보여', AFFIX: '말조각이 보여', HANJA_ORIGIN: '한자가 보여', ETYMOLOGY: '말의 뿌리가 보여', COMPONENT: '글자 구성이 보여', RADICAL: '부수가 보여', SOUND: '소리가 비슷해', SCENE: '장면이 떠올라', PRIOR_WORD: '전에 본 단어랑 닮았어', OTHER: '그냥 느낌이야' };
     function meet(w) {
-      const ex = globalThis.HideLanguageModel?.starterExploration?.(w, { encounteredWords: W.words().filter(W.met).map(x => x.token) }) || null;
+      const M = globalThis.HideLanguageModel;
+      const ex = M?.starterExploration?.(w, { encounteredWords: W.words().filter(W.met).map(x => x.token) }) || null;
       const parts = (ex?.parts || []).filter(p => p.label);
+      const clues = (M?.clueOptions?.(M?.detectDomain?.(w) || 'ENGLISH') || [{ value: 'SCENE' }, { value: 'PRIOR_WORD' }, { value: 'OTHER' }]).map(o => o.value);
       view.innerHTML = `${head()}
         <section class="sk-card meet">
           <p class="sk-step">처음 만나는 단어</p>
           <button type="button" class="sk-word big" id="skHear" aria-label="소리 듣기">${esc(w.token)} <span class="sk-spk">🔊</span></button>
           ${parts.length >= 2 ? `<div class="sk-parts">${parts.map(p => `<span><b>${esc(p.label)}</b><i>${esc(p.meaning || '')}</i></span>`).join('<em>+</em>')}</div>` : ''}
-          <p class="sk-think">${esc(ex?.question || '이 단어를 보면 어떤 장면이 떠올라? 뜻을 먼저 생각해 봐.')}</p>
-          <div id="skMeetNext"><button type="button" class="sk-btn main" id="skThought">생각했어, 뜻 보기</button></div>
+          <p class="sk-think">${esc(ex?.question || '뜻을 보기 전에 먼저 짐작해 봐. 무엇이 단서가 될까?')}</p>
+          <div id="skMeetNext">
+            <div class="sk-chips" role="group" aria-label="내가 고른 단서">${clues.map(c => `<button type="button" class="sk-chip-btn" data-clue="${c}">${CHIP[c] || CHIP.OTHER}</button>`).join('')}</div>
+            <button type="button" class="sk-link" data-clue="NONE">아직 모르겠어, 뜻 보기</button>
+          </div>
         </section>`;
       bindBack(); S.sayWord(w.token);
       $('#skHear', view).onclick = () => S.sayWord(w.token);
       const t0 = Date.now();
-      $('#skThought', view).onclick = () => {
+      $$('[data-clue]', view).forEach(b => b.onclick = () => {
+        const clue = b.dataset.clue, guessed = clue !== 'NONE';
         S.record(mission.id, w, { stage: 'TRACE_MEET', evidenceMode: 'EXPOSURE', axes: ['MEANING'], result: 'SEEN', thinkingFirst: true, supportType: ex ? (ex.type || 'THINKING_SCENE') : null, elapsedMs: Date.now() - t0 });
+        if (guessed) {
+          S.record(mission.id, w, { stage: 'THINKING_TRAIL', evidenceMode: 'INFERENCE_SELF_REPORT', axes: ['MEANING', 'CONTEXT'], result: 'SUBMITTED', clue });
+          HideV2Store.transaction(s => {
+            s.events = Array.isArray(s.events) ? s.events : [];
+            s.events.push({ event: 'FIRST_SEEN_PREDICTION', at: new Date().toISOString(), missionId: mission.id, wordId: w.id, lexicalId: w.lexicalId || null, word: w.token, clueUsed: clue, objectiveVerified: false, recallScoreImpact: false, assessmentSource: 'LEARNER_SELF_REPORT' });
+            if (s.events.length > 120) s.events = s.events.slice(-120);
+          });
+        }
+        const hide = '<button type="button" class="sk-btn main" id="skHide">기억했어, 숨겨 줘</button>';
         $('#skMeetNext', view).innerHTML = `
           <p class="sk-meaning">${esc(w.meaning)}</p>
           ${ex?.scene ? `<p class="sk-scene">${esc(ex.scene)}</p>` : ''}
-          <button type="button" class="sk-btn main" id="skHide">기억했어, 숨겨 줘</button>`;
-        $('#skHide', view).onclick = async e => { if (e.currentTarget.disabled) return; e.currentTarget.disabled = true; view.querySelector('.sk-card').classList.add('hiding'); await S.wait(380); st.meetAt++; next(); };
-      };
+          ${guessed ? `<div id="skCompare"><p class="sk-ask">내 짐작이랑 어땠어?</p><div class="sk-chips">
+            <button type="button" class="sk-chip-btn" data-outcome="MATCH">맞았어</button><button type="button" class="sk-chip-btn" data-outcome="NEAR">비슷했어</button><button type="button" class="sk-chip-btn" data-outcome="MISS">달랐어</button></div></div>` : hide}`;
+        const bindHide = () => { $('#skHide', view).onclick = async e => { if (e.currentTarget.disabled) return; e.currentTarget.disabled = true; view.querySelector('.sk-card').classList.add('hiding'); await S.wait(380); next(); }; };
+        if (!guessed) return bindHide();
+        $$('[data-outcome]', view).forEach(o => o.onclick = () => {
+          const outcome = o.dataset.outcome;
+          HideV2Store.transaction(s => {
+            const ev = Array.isArray(s.events) ? s.events : [];
+            for (let k = ev.length - 1; k >= 0; k--) if (ev[k]?.event === 'FIRST_SEEN_PREDICTION' && ev[k].wordId === w.id && !ev[k].outcome) { ev[k].outcome = outcome; ev[k].outcomeAt = new Date().toISOString(); ev[k].transferSkillEvidence = true; break; }
+          });
+          S.record(mission.id, w, { stage: 'THINKING_TRAIL_COMPARE', evidenceMode: 'INFERENCE_SELF_REPORT', axes: ['MEANING', 'CONTEXT'], result: outcome, assessmentSource: 'LEARNER_SELF_REPORT' });
+          $('#skCompare', view).outerHTML = hide; bindHide();
+        });
+      });
     }
 
     /* ---- chase: one quick turn ---- */

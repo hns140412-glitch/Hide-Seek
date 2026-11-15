@@ -5,7 +5,15 @@
   const S = globalThis.Seek;
   const mission = () => HideV2Mission.activeMission();
   const words = () => (mission()?.items || []).filter(w => w.token && w.meaning);
-  const fresh = id => words().find(w => w.id === id) || null;
+  const realMissions = () => HideV2Store.snapshot().missions.filter(m => m.provenance?.source !== 'SAMPLE' && m.status !== 'ARCHIVED');
+  // a word may belong to an earlier word set (old-word review): find it and the set it lives in, so evidence lands there
+  function locate(id) {
+    const active = mission(), own = (active?.items || []).find(w => w.id === id);
+    if (own) return { mission: active, word: own };
+    for (const m of realMissions()) { const w = (m.items || []).find(x => x.id === id); if (w) return { mission: m, word: w }; }
+    return null;
+  }
+  const fresh = id => locate(id)?.word || null;
   const has = (w, pred) => (w.evidence || []).some(pred);
   const met = w => has(w, e => e.stage === 'TRACE_MEET');
   const traced = w => has(w, e => e.stage === 'TRACE_CHASE' && e.result === 'CORRECT');
@@ -40,6 +48,24 @@
       .sort((a, b) => b.p - a.p).slice(0, limit).map(x => x.w);
   }
 
+  /* Old-word review (spec 13: sparse, skippable, never lowers today's readiness): words from earlier sets that
+     hid again, or were found only on the day they were learned and are due to be found again after a real gap. */
+  const DAY = 20 * 60 * 60 * 1000;
+  function hiddenAcross(limit = 8) {
+    const active = mission(), out = [], seen = new Set((active?.items || []).map(w => String(w.token).toLowerCase()));
+    for (const m of realMissions()) {
+      if (m.id === active?.id) continue;
+      for (const w of m.items || []) {
+        const rows = w.evidence || [], key = String(w.token).toLowerCase();
+        if (!w.token || !w.meaning || !rows.length || seen.has(key)) continue;
+        const sum = HideV2Memory.summary(w), last = Date.parse(rows[rows.length - 1].at) || 0;
+        const rehidden = sum.needsUnassistedRecall, due = sum.memorySignature.traceCounts.spaced === 0 && sum.recallCount > 0;
+        if ((rehidden || due) && Date.now() - last >= DAY) { seen.add(key); out.push({ w, p: sum.nextReviewPriority + (rehidden ? 30 : 0) }); }
+      }
+    }
+    return out.sort((a, b) => b.p - a.p).slice(0, limit).map(x => x.w);
+  }
+
   /* look-alike distance: confusable boundary items come from the learner's own set, never invented */
   function distance(a, b) {
     a = a.toLowerCase(); b = b.toLowerCase();
@@ -48,9 +74,12 @@
     for (let i = 1; i <= m; i++) for (let j = 1; j <= n; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
     return d[m][n] - (a[0] === b[0] ? 0.5 : 0);
   }
+  // the learner's own mix-ups come first: a word once picked instead of the target is the most useful boundary item
+  function confusedWith(target) { return new Set((target.evidence || []).map(e => e.confusedWith).filter(Boolean)); }
   function lookAlikes(target, pool, n = 2) {
+    const mine = confusedWith(target);
     return pool.filter(w => w.id !== target.id && w.meaning !== target.meaning)
-      .map(w => ({ w, d: distance(w.token, target.token) + Math.random() * 0.4 }))
+      .map(w => ({ w, d: distance(w.token, target.token) + Math.random() * 0.4 - (mine.has(w.lexicalId) ? 5 : 0) }))
       .sort((a, b) => a.d - b.d).slice(0, n).map(x => x.w);
   }
   function distractors(target, n = 2, alike = false) {
@@ -91,5 +120,5 @@
     return [...out].slice(0, n);
   }
 
-  S.words = { mission, words, fresh, met, traced, linked, pieced, found, isNew, isSample, progress, tracePool, byPriority, distractors, lookAlikes, chunkPlan, fakeChunks, distance };
+  S.words = { mission, words, fresh, locate, hiddenAcross, confusedWith, met, traced, linked, pieced, found, isNew, isSample, progress, tracePool, byPriority, distractors, lookAlikes, chunkPlan, fakeChunks, distance };
 })();

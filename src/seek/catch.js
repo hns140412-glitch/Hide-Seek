@@ -8,10 +8,12 @@
 
   const REASON = { recovery: '혼자 다시 찾아볼 단어', confusion: '뜻이 헷갈린 단어', orthographic: '글자가 헷갈린 단어', sound: '소리가 헷갈린 단어', latency: '천천히 떠오른 단어', hint: '단서가 필요했던 단어', decay: '오랜만에 볼 단어', stable: '잘 기억하는 단어' };
   function stateOf(e) {
+    // "found" is earned only in this app's own 숨은 단어 찾기; a paper mock test can hide a word again but never finds it
     const recall = (e.evidence || []).filter(x => x.objectiveRecall === true);
+    const own = recall.filter(x => x.stage === 'FINAL_SEEK' || x.stage === 'SEEK_AGAIN');
     const last = recall[recall.length - 1];
-    if (last?.result === 'CORRECT' && !e.needsUnassistedRecall) return { key: 'found', label: '찾음' };
-    if (recall.length || e.needsUnassistedRecall) return { key: 'hidden', label: '다시 숨음' };
+    if (own.length && last?.result === 'CORRECT' && !e.needsUnassistedRecall) return { key: 'found', label: '찾음' };
+    if (e.needsUnassistedRecall || own.length || (last && last.result !== 'CORRECT')) return { key: 'hidden', label: '다시 숨음' };
     return { key: 'meeting', label: '만나는 중' };
   }
   const entries = () => HideV2Memory.wordbook().filter(e => !sampleOnly(e));
@@ -33,10 +35,14 @@
     if (!list.length) { body.innerHTML = `<p class="sk-empty">아직 보물함이 비어 있어. 탐험에서 만난 단어가 여기에 모여.</p>`; return S.crewSay('', { speak: false }); }
     if (tab === 'calendar') return calendar(body, list);
     const counts = { found: 0, hidden: 0, meeting: 0 }; list.forEach(e => counts[stateOf(e).key]++);
+    // old-word review: offered, never forced (spec 13). Only words from earlier sets that are due after a real gap.
+    const old = S.words.hiddenAcross(8);
     body.innerHTML = `
       <p class="sk-catch-sum"><span class="found">찾음 ${counts.found}</span><span class="hidden">다시 숨음 ${counts.hidden}</span><span class="meeting">만나는 중 ${counts.meeting}</span></p>
+      ${old.length ? `<button type="button" class="sk-btn main" id="skOld">옛 단어 ${old.length}개 다시 찾기</button>` : ''}
       <ul class="sk-items">${list.map(e => { const s = stateOf(e); return `<li><button type="button" class="sk-item ${s.key}" data-id="${esc(e.lexicalId)}"><b>${esc(e.token)}</b><i>${esc(e.meaning)}</i><span>${s.label}</span></button></li>`; }).join('')}</ul>`;
     $$('.sk-item', body).forEach(b => b.onclick = () => detail(list.find(e => e.lexicalId === b.dataset.id)));
+    if (old.length) $('#skOld', body).onclick = () => globalThis.SeekApp.play('recall', { pool: old.map(w => w.id), back: 'catch' });
     S.crewSay('찾은 단어를 모아 둔 곳이야. 어려운 단어부터 다시 살펴보자.', { speak: false });
   }
 
@@ -53,12 +59,18 @@
       ['조각 맞추기', `${n(x => x.stage === 'PIECE')}번`],
       ['혼자 찾음', `${alone}번`], ['다시 숨음', `${missed}번`], ['단서 사용', `${n(x => x.evidenceMode === 'ASSISTANCE')}번`]
     ];
+    const mock = n(x => x.stage === 'MORNING_MOCK_TEST'); if (mock) rows.push(['아침 시험', `${mock}번`]);
+    // the learner's own mix-ups and slips: shown as "watch out here", never as a score
+    const mixed = [...new Set(ev.map(x => x.confusedWith).filter(Boolean))].map(id => entries().find(x => x.lexicalId === id)?.token).filter(Boolean).slice(0, 3);
+    const slipAt = ev.flatMap(x => Array.isArray(x.wrongAt) ? x.wrongAt : []);
+    const spell = slipAt.length ? [...String(e.token)].map((c, i) => slipAt.includes(i) ? `<mark>${esc(c)}</mark>` : esc(c)).join('') : '';
     const rung = Math.max(1, Math.min(5, Math.round(e.memoryStrength / 20)));
     S.sheet(`
       <header class="sk-sheet-head"><h2>${esc(e.token)}</h2><button class="sk-x" data-close aria-label="닫기">×</button></header>
       <p class="sk-detail-meaning">${esc(e.meaning)} <button type="button" class="sk-link" id="skDtHear">🔊</button></p>
       <p class="sk-chip ${s.key}">${s.label}</p>
       <div class="sk-ladder" aria-label="기억 사다리 ${rung}칸"><small>기억 사다리</small><div>${[1, 2, 3, 4, 5].map(i => `<span class="${i <= rung ? 'on' : ''}"></span>`).join('')}</div><em>${esc(REASON[e.primaryReason?.key] || '')}</em></div>
+      ${mixed.length || spell ? `<div class="sk-watch"><small>여기를 조심해</small>${mixed.length ? `<p>헷갈린 단어 <b>${mixed.map(esc).join(', ')}</b></p>` : ''}${spell ? `<p>헷갈린 글자 <b class="sk-spell">${spell}</b></p>` : ''}</div>` : ''}
       <dl class="sk-story">${rows.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>
       <p class="sk-note">탐험 ${e.missions.length}번에 나온 단어야.</p>`, el => { $('#skDtHear', el).onclick = () => S.sayWord(e.token); });
   }

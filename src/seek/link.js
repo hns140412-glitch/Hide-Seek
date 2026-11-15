@@ -66,10 +66,18 @@
       function advance() { delete view.dataset.lock; st.at++; if (st.at >= items.length) { st.step = 'CONNECT'; st.at = 0; } next(); }
     }
 
+    /* connection test: broad exposure first (spec 9). Every word on hand gets joined once, four at a time;
+       words not joined yet and words the learner mixed up come first. */
+    const rounds = (() => {
+      const all = pool.map(w => ({ w, p: (W.linked(w) ? 0 : 50) + HideV2Memory.summary(w).memorySignature.confusionPattern.count * 20 + Math.random() })).sort((a, b) => b.p - a.p).slice(0, 12).map(x => x.w.id);
+      const out = []; for (let i = 0; i < all.length; i += 4) out.push(all.slice(i, i + 4));
+      if (out.length > 1 && out[out.length - 1].length < 2) out[out.length - 2].push(...out.pop());
+      return out;
+    })();
     function connect() {
-      const set = items.slice(0, 5).map(w => W.fresh(w.id)), left = S.shuffle(set), right = S.shuffle(set);
+      const set = rounds[st.at].map(W.fresh), left = S.shuffle(set), right = S.shuffle(set);
       let pick = null, joined = 0; const missed = new Set(), t0 = Date.now();
-      view.innerHTML = `${head('연결 테스트')}
+      view.innerHTML = `${head(`잇기 ${st.at + 1} / ${rounds.length}`)}
         <section class="sk-card connect">
           <p class="sk-step">단어와 뜻을 눌러서 이어 줘</p>
           <div class="sk-pairs">
@@ -85,17 +93,21 @@
         const wordBtn = a.dataset.side === 'w' ? a : b, w = W.fresh(wordBtn.dataset.id);
         if (a.dataset.id === b.dataset.id) {
           a.classList.add('done'); b.classList.add('done'); joined++;
-          S.record(mission.id, w, { stage: 'LINK_CONNECT', evidenceMode: 'ASSOCIATION', axes: ['MEANING'], result: missed.has(w.id) ? 'MISMATCH' : 'CORRECT', objectiveVerified: true, elapsedMs: Date.now() - t0 });
+          S.record(mission.id, w, { stage: 'LINK_CONNECT', evidenceMode: 'ASSOCIATION', axes: ['MEANING'], result: 'CORRECT', objectiveVerified: true, afterMiss: missed.has(w.id), elapsedMs: Date.now() - t0 });
           if (!missed.has(w.id)) st.right++;
-          if (joined === set.length) { await S.wait(500); finish(); }
-        } else { missed.add(w.id); a.classList.add('shake'); b.classList.add('shake'); await S.wait(350); a.classList.remove('shake'); b.classList.remove('shake'); }
+          if (joined === set.length) { await S.wait(500); st.at++; if (st.at < rounds.length) connect(); else finish(); }
+        } else {
+          // which meaning was joined by mistake is kept: that pair becomes this learner's own look-alike choice later
+          const other = W.fresh((a.dataset.side === 'm' ? a : b).dataset.id);
+          S.record(mission.id, w, { stage: 'LINK_CONNECT', evidenceMode: 'ASSOCIATION', axes: ['MEANING'], result: 'MISMATCH', objectiveVerified: true, confusedWith: other?.lexicalId || null, elapsedMs: Date.now() - t0 });
+          missed.add(w.id); a.classList.add('shake'); b.classList.add('shake'); await S.wait(350); a.classList.remove('shake'); b.classList.remove('shake'); }
       });
     }
 
     function finish() {
       S.quiet();
       view.innerHTML = `${head('끝')}<section class="sk-card done">
-        <p class="sk-step">연결 찾기 끝</p><h2>${items.length}개의 단어를 이어 봤어</h2>
+        <p class="sk-step">연결 찾기 끝</p><h2>${rounds.flat().length}개의 단어를 이어 봤어</h2>
         <p class="sk-sub">이어 본 단어는 조각 맞추기나 숨은 단어에서 혼자 꺼내 보자.</p>
         <button type="button" class="sk-btn main" id="skDone">탐험 길로</button></section>`;
       bindBack(); $('#skDone', view).onclick = done;
