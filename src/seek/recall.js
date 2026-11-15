@@ -28,9 +28,9 @@
       // only a scene the child actually met in TRACE may be replayed as "a memory"
       const sawScene = (w.evidence || []).some(e => e.stage === 'TRACE_MEET' && e.supportType);
       if (ex?.scene && sawScene) steps.push({ type: 'SCENE', text: ex.scene });
-      steps.push({ type: 'SOUND', text: '소리를 들려줄게.' });
-      steps.push({ type: 'SHAPE', text: `${w.token[0]}로 시작하고 ${w.token.length}글자야.` });
-      steps.push({ type: 'MINIMUM_REVEAL', text: '글자 하나만 열어 줄게.' });
+      steps.push({ type: 'SOUND', text: '소리 단서: 다시 들어 봐.' });
+      steps.push({ type: 'SHAPE', text: `모양 단서: ${w.token[0]}로 시작하는 ${w.token.length}글자.` });
+      steps.push({ type: 'MINIMUM_REVEAL', text: '글자 하나가 열렸어.' });
       if (sig.phonologicalWeakness > sig.semanticWeakness) steps.sort((a, b) => (a.type === 'SOUND' ? -1 : 0) - (b.type === 'SOUND' ? -1 : 0));
       return steps;
     }
@@ -57,7 +57,7 @@
             <p class="sk-clue" id="skClue">${hintTrace.length ? esc(hintTrace[hintTrace.length - 1].text) : ''}</p>
             <div class="sk-keys">${keys.map(k => `<button type="button" class="sk-key" data-i="${k.i}" ${k.used ? 'disabled' : ''}>${esc(k.ch)}</button>`).join('')}</div>
             <div class="sk-row2">
-              <button type="button" class="sk-btn ghost" id="skClueBtn" ${clueAt >= clues.length ? 'disabled' : ''}>단서</button>
+              <button type="button" class="sk-btn ghost" id="skClueBtn" ${clueAt >= clues.length ? 'disabled' : ''}>길 단서</button>
               <button type="button" class="sk-btn ghost" id="skPass">아직 안 떠올라</button>
             </div>
           </section>`;
@@ -70,7 +70,6 @@
         const at = cursor(); if (at < 0) return;
         if (k.ch !== chars[at].toLowerCase()) {
           wrong++; btn.classList.add('no'); setTimeout(() => btn.classList.remove('no'), 350);
-          if (wrong === 2) S.crewSay('아직 맞지 않는 글자가 있어. 어느 칸인지 바로 알려주지는 않을게. 소리를 다시 생각하고 되돌리거나 다른 글자를 골라 봐.');
           return;
         }
         k.used = true; fill[at] = chars[at];

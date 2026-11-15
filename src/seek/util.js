@@ -32,7 +32,7 @@
   function crewInfo(id = crewId()) { const c = CREW.find(x => x.id === id) || CREW[0]; return { ...c, img: `./characters/ui_cutouts/${c.id}.png` }; }
 
   /* ---------- Speech: recorded crew line when the exact text is recorded, else the best device voice ---------- */
-  let muted = false;
+  let muted = false, talkTimer = 0;
   function tts(text, lang = 'ko-KR', rate = 1) {
     if (muted || !('speechSynthesis' in window) || !text) return;
     try {
@@ -45,9 +45,12 @@
   function sayWord(token, lang = 'en-US') { globalThis.TakyCrewGuideLineVoice?.stop?.(); tts(token, lang, 0.9); }
   function crewSay(text, { speak = true } = {}) {
     const bar = $('#skCrewBar'); if (!bar) return;
-    $('#skCrewLine').textContent = text || '';
+    // The companion stands in the scene the whole time. It speaks briefly at its slots (before a start, a reaction,
+    // a completion) over the walkie-talkie and then goes quiet: it is not a teacher, a grader or an answer engine.
     $('#skCrewBarImg').src = crewInfo().img;
-    bar.hidden = !text;
+    bar.hidden = false; clearTimeout(talkTimer);
+    if (text) { $('#skCrewLine').textContent = text; bar.classList.add('talk'); talkTimer = setTimeout(() => bar.classList.remove('talk'), Math.max(4200, String(text).length * 130)); }
+    else bar.classList.remove('talk');
     if (!text || !speak || muted) return;
     const consumer = { snapshot: () => ({ status: 'BOUND', character_id: crewId() }) };
     const fallback = () => tts(text, 'ko-KR', 1.02);
