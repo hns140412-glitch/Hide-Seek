@@ -21,6 +21,13 @@
   <title>Hide & Seek</title>
 </head>
 <body>
+  <!-- Launch gate: covers the app until the update check is done, so a cached older release is never shown
+       and then swapped out. hide-pwa-update-v01.js lifts it; the timer below lifts it if that script never runs. -->
+  <div id="hideLaunchGate" role="status" aria-live="polite" style="position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;align-content:center;gap:14px;background:#e8f3e7;color:#2f5939;font:700 16px system-ui,sans-serif;transition:opacity .25s">
+    <span style="display:grid;place-items:center;width:84px;height:84px;border-radius:26px;background:#2f5939;color:#fff;font-size:26px;letter-spacing:.5px">H&amp;S</span>
+    <span id="hideLaunchGateText">탐험 길을 여는 중</span>
+  </div>
+  <script>setTimeout(function(){var g=document.getElementById('hideLaunchGate');if(g&&!g.dataset.held)g.remove()},6000)</script>
   <div id="app" class="app-shell">
     <header class="top-safe">
       <button id="backBtn" class="icon-btn ghost" type="button" aria-label="뒤로 가기" hidden>‹</button>
@@ -119,7 +126,7 @@
   <script src="./taky-learning-evidence-client-v1.js?v=20261004-grow1"></script>
   <script src="./taky-family-signin-v1.js?v=20261114-ll1"></script>
   <script src="./hide-learning-link-v1.js?v=20261114-ll1"></script>
-  <script src="./hide-pwa-update-v01.js"></script>
+  <script src="./hide-pwa-update-v01.js?v=20261118-gate1"></script>
   <script src="./hide-brand-current.js"></script>
   <script src="./hide-quick-seek-v1.js?v=20261113-qs4"></script>
   <script src="./hide-grading-correction-v1.js?v=20261111-gc1"></script>
