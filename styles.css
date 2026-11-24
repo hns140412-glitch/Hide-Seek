@@ -503,3 +503,13 @@ body:has(#ocrRows) .view{padding-bottom:calc(93px + var(--safe-bottom,0px))}
 .hs-hanja-learning .hs-hanja-say[disabled]{opacity:.7}
 .hs-hanja-learning .learn-head h2{margin:4px 0 0}
 .hs-hanja-learning .word-card{margin-top:8px;padding-top:16px;padding-bottom:16px}
+
+/* this week's 재능 한자 (from Ready & Set) on the Hanja map */
+.hs-hanja-learning .hs-hanja-week{margin:0 0 10px}
+.hs-hanja-learning .hs-hanja-week button{width:100%;min-height:78px;text-align:left;display:grid;gap:3px;border:2px solid #d79a3c;border-radius:16px;background:#fff4df;color:#5a3d14;padding:10px 12px}
+.hs-hanja-learning .hs-hanja-week button[disabled]{opacity:.6}
+.hs-hanja-learning .hs-hanja-week b{font-size:16px}
+.hs-hanja-learning .hs-hanja-week .chars{font-size:22px;font-weight:850;letter-spacing:.12em;color:#7a4b12;overflow-wrap:anywhere}
+.hs-hanja-learning .hs-hanja-week small{font-size:12px;font-weight:750}
+.hs-hanja-learning .hs-hanja-week small.miss{color:#8a5a2b;font-weight:700}
+.hs-hanja-learning .hs-hanja-week.wait{border:1px dashed #d7b98a;border-radius:16px;padding:10px 12px;color:#6b5636;display:grid;gap:2px;background:#fffaf0}

@@ -8,11 +8,13 @@ if(window.HideHanjaPracticeV1)return;
 //  - a miss (wrong, pass) is noted per character and the character comes back once at the end of the round;
 //  - "다시 만날 한자" gathers every missed character across rounds; answering one first try takes it off the list;
 //  - "48자 모두 섞어서" mixes everything; a small map shows each 구간's state. Progress lives in S.hanjaPractice.
+//  - "이번 주 구간": this week's 재능 한자 registered in Ready & Set (HideHanjaWeekV1), same look/cover/voice flow
+//    in parts of 5; 훈음 from the 48 chars or the TAKY gloss reference; a character with no known 훈음 is left out and named.
 // Records stay practice-only (grade_authority NONE_REFERENCE_PRACTICE_ONLY); no canonical evidence is emitted.
-const DATA='./data/hanja-reference-practice-projection-v1.json',MODES=['TRACE','LINK','CORE','RECALL'],CAMP=5,AGAIN_MAX=2,REVIEW_MAX=10;
+const DATA='./data/hanja-reference-practice-projection-v1.json',GLOSS='./data/hanja-char-gloss-reference-v1.json',MODES=['TRACE','LINK','CORE','RECALL'],CAMP=5,AGAIN_MAX=2,REVIEW_MAX=10;
 const DESC={TRACE:'보고·소리 듣기',LINK:'한자와 음 연결',CORE:'글자의 의미 찾기',RECALL:'음·뜻에서 글자 회상'};
 const KO={TRACE:'처음 찾기',LINK:'연결의 길',CORE:'글자 조각',RECALL:'숨은 단어'};
-let loaded=null,rows=[],mode='TRACE',scope={kind:'CAMP',camp:0};
+let loaded=null,rows=[],mode='TRACE',scope={kind:'CAMP',camp:0},gloss=null,glossMeta=null;const extra=new Map();
 let queue=[],pos=0,step='VIEW',again={},round=null;
 let started=0,wrong=0,hints=0,done=false,revealed=false,gen=0,rec=null;
 // Voice answer (TRACE cover step): the child says 뜻과 음 aloud; the device's own speech recognition
@@ -20,7 +22,7 @@ let started=0,wrong=0,hints=0,done=false,revealed=false,gen=0,rec=null;
 const SR=()=>window.SpeechRecognition||window.webkitSpeechRecognition||null;
 const DIGIT={'0':'영','1':'일','2':'이','3':'삼','4':'사','5':'오','6':'육','7':'칠','8':'팔','9':'구'};
 const norm=s=>String(s||'').replace(/10/g,'십').replace(/[0-9]/g,d=>DIGIT[d]).replace(/[^가-힣]/g,'');
-function spokenMatches(card,alts){const m=norm(card.meaning),r=norm(card.reading);return alts.some(a=>{const t=norm(a);return t.includes(m+r)||t.includes(r+m)||(t.includes(m)&&t.endsWith(r))})}
+function spokenMatches(card,alts){const m=norm(card.meaning),rs=(card.readings||[card.reading]).map(norm).filter(Boolean);return alts.some(a=>{const t=norm(a);return rs.some(r=>t.includes(m+r)||t.includes(r+m)||(t.includes(m)&&t.endsWith(r)))})}
 function stopListening(){const r=rec;rec=null;try{r?.abort?.()}catch{}}
 function listen(cb){
  const C=SR();if(!C)return cb(null);
@@ -45,6 +47,39 @@ async function load(){
  rows=(d.items||[]).filter(x=>x?.char&&x?.reading&&x?.meaning&&/^[㐀-鿿]$/.test(x.char));
  if(rows.length<4)throw Error('확인된 한자 카드가 부족합니다');loaded=d;
 }
+async function loadGloss(){
+ if(gloss)return;
+ try{const r=await fetch(GLOSS,{cache:'no-cache'});if(!r.ok)throw Error();const d=await r.json();
+  if(d.schema!=='TAKY_HIDE_HANJA_GLOSS_REFERENCE_V1'||d.grade_authority!=='NONE_REFERENCE_PRACTICE_ONLY')throw Error();
+  gloss=new Map((d.items||[]).filter(x=>x?.char&&x?.meaning&&x?.reading).map(x=>[x.char,x]));glossMeta=d.created_from||null}
+ catch{gloss=new Map()}
+}
+function cardFor(ch){
+ const r=rows.find(x=>x.char===ch);if(r)return r;
+ if(extra.has('G-'+ch))return extra.get('G-'+ch);
+ // worksheet ?덉쓬 (from Ready) first, then the TAKY gloss reference
+ const w=week()?.gloss?.[ch];
+ if(w){const c={id:'G-'+ch,char:ch,meaning:w.meaning,reading:w.reading,gloss:true,gloss_source:'READY_TALENT_WEEK'};extra.set(c.id,c);return c}
+ const g=gloss?.get(ch);if(!g)return null;
+ const c={id:'G-'+ch,char:ch,meaning:g.meaning,reading:g.reading,readings:g.readings,gloss:true,gloss_source:(g.sources||[])[0]||null};extra.set(c.id,c);return c;
+}
+const week=()=>window.HideHanjaWeekV1?.current?.()||null;
+function weekCards(){const w=week();return w?w.chars.map(cardFor).filter(Boolean):[]}
+function weekMissing(){const w=week();return w?w.chars.filter(ch=>!cardFor(ch)):[]}
+const weekParts=()=>Math.ceil(weekCards().length/CAMP);
+const allCards=()=>rows.concat([...extra.values()]);
+function weekState(){
+ const w=week(),h=book();if(!w)return null;
+ h.weeks=h.weeks&&typeof h.weeks==='object'?h.weeks:{};
+ const ws=h.weeks[w.week_id]=h.weeks[w.week_id]||{part:0,parts:{}};
+ const keys=Object.keys(h.weeks).sort();while(keys.length>6)delete h.weeks[keys.shift()];
+ return ws;
+}
+function groupRows(){return scope.kind==='WEEK'?weekCards().slice(scope.part*CAMP,scope.part*CAMP+CAMP):campRows(scope.camp)}
+function groupState(){
+ if(scope.kind==='WEEK'){const ws=weekState();if(!ws)return {best:{}};const p=ws.parts[scope.part]=ws.parts[scope.part]||{};if(!p.best||typeof p.best!=='object')p.best={};return p}
+ return campState(scope.camp);
+}
 function book(){
  if(typeof S!=='object'||!S)return {records:[],camps:{},wrongLog:{},camp:0,recovered:0};
  const h=S.hanjaPractice=S.hanjaPractice||{records:[]};
@@ -59,35 +94,43 @@ const campCount=()=>Math.ceil(rows.length/CAMP);
 const campRows=n=>rows.slice(n*CAMP,n*CAMP+CAMP);
 const campOf=card=>Math.floor(rows.indexOf(card)/CAMP);
 const campState=n=>{const h=book();const c=h.camps[n]=h.camps[n]||{};if(!c.best||typeof c.best!=='object')c.best={};return c};
-function reviewPool(){const log=book().wrongLog;return rows.filter(x=>(log[x.id]|0)>0).sort((a,b)=>(log[b.id]|0)-(log[a.id]|0)||rows.indexOf(a)-rows.indexOf(b))}
+function reviewPool(){
+ const log=book().wrongLog;
+ // missed gloss characters from an earlier week stay in the pile while their 훈음 is known
+ for(const id of Object.keys(log))if(id.startsWith('G-')&&(log[id]|0)>0)cardFor(id.slice(2));
+ const all=allCards();return all.filter(x=>(log[x.id]|0)>0).sort((a,b)=>(log[b.id]|0)-(log[a.id]|0)||all.indexOf(a)-all.indexOf(b));
+}
 function shuffled(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function scopeLabel(){
  if(scope.kind==='REVIEW')return '다시 만날 한자';
  if(scope.kind==='ALL')return rows.length+'자 모두 섞어서';
+ if(scope.kind==='WEEK'){const n=weekParts();return (week()?.label||'이번 주 구간')+(n>1?' '+(scope.part+1)+'/'+n:'')+' · '+groupRows().map(x=>x.char).join(' ')}
  return (scope.camp+1)+'구간 · '+campRows(scope.camp).map(x=>x.char).join(' ');
 }
 function startRound(){
  const h=book();
  if(scope.kind==='CAMP'){scope.camp=Math.min(Math.max(0,scope.camp|0),campCount()-1);h.camp=scope.camp;queue=campRows(scope.camp)}
+ else if(scope.kind==='WEEK'){const n=weekParts();if(n){scope.part=Math.min(Math.max(0,scope.part|0),n-1);weekState().part=scope.part;queue=groupRows()}else queue=[]}
  else if(scope.kind==='REVIEW')queue=reviewPool().slice(0,REVIEW_MAX);
  else queue=shuffled(rows);
  if(!queue.length){scope={kind:'CAMP',camp:h.camp};queue=campRows(h.camp)}
  queue=queue.slice();pos=0;again={};
- step=mode==='TRACE'?(scope.kind==='CAMP'?'VIEW':'COVER'):'ASK';
+ step=mode==='TRACE'?(scope.kind==='CAMP'||scope.kind==='WEEK'?'VIEW':'COVER'):'ASK';
  round={total:queue.length,first:0,firstSeen:new Set(),missed:new Set(),known:0,recovered:0};
  persist();render();
 }
 function options(card,field){
  const seen=new Set([card[field]]),pool=[];
- const mates=campRows(campOf(card)).filter(x=>x.id!==card.id),rest=rows.filter(x=>x.id!==card.id&&!mates.includes(x));
+ const group=scope.kind==='WEEK'?groupRows():campRows(campOf(card));
+ const mates=group.filter(x=>x.id!==card.id),rest=rows.filter(x=>x.id!==card.id&&!mates.includes(x));
  for(const x of mates.concat(rest)){if(seen.has(x[field]))continue;seen.add(x[field]);pool.push(x);if(pool.length>=3)break}
  const vals=[card,...pool];
  const shift=(pos+campOf(card)+1)%vals.length;
  return vals.slice(shift).concat(vals.slice(0,shift));
 }
-function record(card,result,extra){
+function record(card,result,more){
  const g=grade(),h=book();
- const item={at:new Date().toISOString(),subject:'HANJA',mode,word_id:card.id,char:card.char,source_ref:loaded.created_from.source_id,source_sha256:loaded.created_from.sha256,grade:g.state==='RESOLVED'?g.grade:null,grade_authority:'NONE_REFERENCE_PRACTICE_ONLY',result,hintLevel:hints,wrongAttempts:wrong,responseLatencyMs:Date.now()-started,practice_only:true,scope:scope.kind,camp:campOf(card),...(extra||{})};
+ const item={at:new Date().toISOString(),subject:'HANJA',mode,word_id:card.id,char:card.char,source_ref:card.gloss?(card.gloss_source==='READY_TALENT_WEEK'?'READY_TALENT_WEEK_V1':(glossMeta?.source_id||'TAKY_HIDE_HANJA_GLOSS_REFERENCE_V1')):loaded.created_from.source_id,source_sha256:card.gloss?(card.gloss_source==='READY_TALENT_WEEK'?null:glossMeta?.sha256||null):loaded.created_from.sha256,...(card.gloss?{gloss_source:card.gloss_source}:{}),grade:g.state==='RESOLVED'?g.grade:null,grade_authority:'NONE_REFERENCE_PRACTICE_ONLY',result,hintLevel:hints,wrongAttempts:wrong,responseLatencyMs:Date.now()-started,practice_only:true,scope:scope.kind,camp:campOf(card),...(scope.kind==='WEEK'?{week_id:week()?.week_id||null,week_part:scope.part,source_app:'ready-set'}:{}),...(more||{})};
  h.records=[...h.records,item].slice(-250);
  // No canonical evidence emission: this is reference-only practice, not a verified
  // grade-specific task. Engine-owned HANJA projections must authorize promotion.
@@ -137,7 +180,7 @@ function shell(inner,extraClass,withTrail){
  return '<section class="learning-shell hs-hanja-learning'+(extraClass?' '+extraClass:'')+'" data-hanja-mode="'+mode+'" data-hanja-scope="'+scope.kind+'">'+
   '<div class="hs-hanja-campbar"><button class="hs-hanja-mapbtn" id="hanjaMap" type="button" aria-label="한자 지도 열기">지도</button><span class="hs-hanja-camplabel">'+e(scopeLabel())+'</span>'+(withTrail?trail():'')+'</div>'+
   inner+
-  '<p class="hs-hanja-authority">출처 검증 훈음 참고 학습 · '+(g.state==='RESOLVED'?'학년 맥락 확인':'학년 미확인')+' · 교과 성취 점수와 별도</p><button class="btn secondary" id="hanjaExit" type="button">학습 방법으로 돌아가기</button></section>';
+  '<p class="hs-hanja-authority">'+(scope.kind==='WEEK'?'이번 주 재능 숙제 한자 · 훈음 참고 학습 · ':'출처 검증 훈음 참고 학습 · ')+(g.state==='RESOLVED'?'학년 맥락 확인':'학년 미확인')+' · 교과 성취 점수와 별도</p><button class="btn secondary" id="hanjaExit" type="button">학습 방법으로 돌아가기</button></section>';
 }
 function bindShell(){
  q('#hanjaExit').onclick=()=>{stopListening();try{speechSynthesis?.cancel?.()}catch{}if(typeof currentTab!=='undefined')currentTab='home';if(typeof renderHome==='function')renderHome()};
@@ -146,8 +189,8 @@ function bindShell(){
 function render(){
  if(pos>=queue.length){
   if(mode==='TRACE'&&step==='VIEW'){
-   campState(scope.camp).seen=true;persist();
-   step='COVER';queue=campRows(scope.camp).slice();pos=0;again={};round.firstSeen=new Set();
+   groupState().seen=true;persist();
+   step='COVER';queue=groupRows().slice();pos=0;again={};round.firstSeen=new Set();
   }else return renderSummary();
  }
  stopListening();const card=queue[pos],myGen=++gen;started=Date.now();wrong=0;hints=0;done=false;revealed=false;
@@ -221,16 +264,16 @@ function render(){
 function renderSummary(){
  const h=book(),total=round.total,missed=[...round.missed].map(id=>rows.find(x=>x.id===id)).filter(Boolean);
  const firstGood=mode==='TRACE'?round.known:round.first;
- if(scope.kind==='CAMP'){
-  const c=campState(scope.camp);
+ if(scope.kind==='CAMP'||scope.kind==='WEEK'){
+  const c=groupState();
   if(mode==='TRACE'){c.seen=true;c.cover=Math.max(c.cover|0,firstGood)}
   else c.best[mode]=Math.max(c.best[mode]|0,firstGood);
   persist();
  }
- const pool=reviewPool(),nextCamp=scope.kind==='CAMP'&&scope.camp<campCount()-1;
+ const pool=reviewPool(),nextCamp=scope.kind==='CAMP'&&scope.camp<campCount()-1,nextPart=scope.kind==='WEEK'&&scope.part<weekParts()-1;
  const line=mode==='TRACE'?'가리고 바로 떠올린 한자 '+firstGood+'/'+total:'한 번에 찾은 한자 '+firstGood+'/'+total;
  const met=queue.filter((x,i,a)=>a.indexOf(x)===i);
- const inner='<div class="learn-head"><div><span class="phase-chip">'+mode+'</span><h2>'+(scope.kind==='REVIEW'?'다시 만나기 끝':scope.kind==='ALL'?'모두 섞어서 끝':(scope.camp+1)+'구간 끝')+'</h2></div></div>'+
+ const inner='<div class="learn-head"><div><span class="phase-chip">'+mode+'</span><h2>'+(scope.kind==='REVIEW'?'다시 만나기 끝':scope.kind==='ALL'?'모두 섞어서 끝':scope.kind==='WEEK'?(weekParts()>1?'이번 주 구간 '+(scope.part+1)+'/'+weekParts()+' 끝':'이번 주 구간 끝'):(scope.camp+1)+'구간 끝')+'</h2></div></div>'+
   '<section class="card word-card hs-hanja-summary"><p class="hs-hanja-score">'+e(line)+'</p>'+
   '<ul class="hs-hanja-chars">'+met.map(x=>'<li class="'+(round.missed.has(x.id)?'miss':'ok')+'"><b>'+e(x.char)+'</b><small>'+e(x.meaning+' '+x.reading)+'</small></li>').join('')+'</ul>'+
   (missed.length?'<p class="hs-hanja-note">다시 만날 한자에 넣어 뒀어: '+missed.map(x=>e(x.char)).join(' ')+'</p>':'<p class="hs-hanja-note">이번에 놓친 한자는 없어.</p>')+
@@ -238,13 +281,30 @@ function renderSummary(){
   '<div class="btn-row hs-hanja-next">'+
    '<button class="btn secondary" id="hanjaAgain" type="button">한 번 더</button>'+
    (nextCamp?'<button class="btn primary" id="hanjaNextCamp" type="button">'+(scope.camp+2)+'구간으로</button>':'')+
+   (nextPart?'<button class="btn primary" id="hanjaNextPart" type="button">이번 주 다음 '+groupRowsAt(scope.part+1).length+'자</button>':'')+
    (pool.length?'<button class="btn gold" id="hanjaReviewGo" type="button">다시 만날 한자 '+pool.length+'자</button>':'')+
   '</div></section>';
  q('#view').innerHTML=shell(inner,'hs-hanja-done');
  bindShell();
  q('#hanjaAgain').onclick=()=>startRound();
  if(nextCamp)q('#hanjaNextCamp').onclick=()=>{scope={kind:'CAMP',camp:scope.camp+1};startRound()};
+ if(nextPart)q('#hanjaNextPart').onclick=()=>{scope={kind:'WEEK',part:scope.part+1};startRound()};
  if(pool.length)q('#hanjaReviewGo').onclick=()=>{scope={kind:'REVIEW'};startRound()};
+}
+function groupRowsAt(n){return weekCards().slice(n*CAMP,n*CAMP+CAMP)}
+function dayLabel(d){const t=new Date(d+'T00:00:00');return isNaN(t)?d:(t.getMonth()+1)+'월 '+t.getDate()+'일('+'일월화수목금토'[t.getDay()]+')'}
+function weekBlock(){
+ const w=week(),st=window.HideHanjaWeekV1?.status?.()||{};
+ if(!w){
+  if(st.state==='NOT_CONFIRMED')return '<div class="hs-hanja-week wait"><b>이번 주 구간</b><small>보호자 확인을 기다리는 중이야</small></div>';
+  return '';
+ }
+ const cards=weekCards(),miss=weekMissing(),ws=weekState(),n=weekParts();
+ const done=Object.keys(ws?.parts||{}).filter(k=>ws.parts[k]?.seen).length;
+ return '<div class="hs-hanja-week"><button type="button" data-hanja-week-go="'+(ws?.part|0)+'" '+(cards.length?'':'disabled')+'><b>'+e(w.label||'이번 주 구간')+'</b>'+
+  '<span class="chars">'+cards.map(x=>e(x.char)).join(' ')+'</span>'+
+  '<small>재능 한자'+(w.range_text?' '+e(w.range_text):'')+' · '+cards.length+'자 · '+e(dayLabel(w.deadline))+'까지'+(n>1?' · '+done+'/'+n+' 해 봤어':'')+'</small>'+
+  (miss.length?'<small class="miss">뜻과 음을 아직 몰라서 빠진 글자: '+miss.map(e).join(' ')+'</small>':'')+'</button></div>';
 }
 function campLine(n){
  const c=book().camps[n];if(!c||(!c.seen&&!Object.keys(c.best||{}).length))return '아직 안 가 봤어';
@@ -259,19 +319,26 @@ function renderMap(){
  const camps='<ol class="hs-hanja-camps">'+Array.from({length:campCount()},(_,n)=>'<li><button type="button" data-hanja-camp="'+n+'" class="'+(n===h.camp?'here':'')+'"><span class="no">'+(n+1)+'</span><span class="chars">'+campRows(n).map(x=>e(x.char)).join(' ')+'</span><small>'+e(campLine(n))+'</small></button></li>').join('')+'</ol>';
  const more='<div class="hs-hanja-gather"><button type="button" data-hanja-scope-go="REVIEW" '+(pool.length?'':'disabled')+'><b>다시 만날 한자</b><small>'+(pool.length?pool.slice(0,8).map(x=>e(x.char)).join(' ')+(pool.length>8?' …':'')+' · '+pool.length+'자':'아직 없어')+'</small></button>'+
   '<button type="button" data-hanja-scope-go="ALL"><b>'+rows.length+'자 모두 섞어서</b><small>'+(h.recovered?'지금까지 되찾은 한자 '+h.recovered+'자':'구간을 다 돌고 나서 해 봐')+'</small></button></div>';
- const inner='<div class="learn-head"><div><span class="phase-chip">MAP</span><h2>한자 지도</h2></div><b>'+rows.length+'자</b></div>'+tabs+camps+more;
+ const inner='<div class="learn-head"><div><span class="phase-chip">MAP</span><h2>한자 지도</h2></div><b>'+rows.length+'자</b></div>'+tabs+weekBlock()+camps+more;
  q('#view').innerHTML=shell(inner,'hs-hanja-mapview');
  bindShell();
  q('.hs-hanja-campbar').hidden=true;
  document.querySelectorAll('[data-hanja-switch]').forEach(b=>b.onclick=()=>{mode=b.dataset.hanjaSwitch;renderMap()});
  document.querySelectorAll('[data-hanja-camp]').forEach(b=>b.onclick=()=>{scope={kind:'CAMP',camp:+b.dataset.hanjaCamp};startRound()});
+ document.querySelectorAll('[data-hanja-week-go]').forEach(b=>b.onclick=()=>{if(b.disabled)return;scope={kind:'WEEK',part:+b.dataset.hanjaWeekGo|0};startRound()});
  document.querySelectorAll('[data-hanja-scope-go]').forEach(b=>b.onclick=()=>{if(b.disabled)return;scope={kind:b.dataset.hanjaScopeGo};startRound()});
 }
 async function open(raw){
  const chosen=String(raw||'').toUpperCase();if(!MODES.includes(chosen))return {state:'BAD_MODE'};
- try{await load();mode=chosen;scope={kind:'CAMP',camp:book().camp};startRound();return {state:'READY',mode,card_count:rows.length,camp:scope.camp,grade_authority:loaded.grade_authority}}
+ try{
+  await load();if(week()||Object.keys(book().wrongLog).some(k=>k.startsWith('G-')))await loadGloss();
+  extra.clear();
+  mode=chosen;
+  // this week's homework comes first when Ready registered one; the 48-char 구간 stay one tap away on the map
+  scope=weekParts()?{kind:'WEEK',part:weekState().part|0}:{kind:'CAMP',camp:book().camp};
+  startRound();return {state:'READY',mode,card_count:rows.length,camp:scope.camp??null,scope:scope.kind,week_count:weekCards().length,grade_authority:loaded.grade_authority}}
  catch(ex){if(typeof hsShowNotice==='function')hsShowNotice('한자 학습 자료 연결 실패: '+String(ex.message||ex));return {state:'BLOCKED',reason:String(ex.message||ex)}}
 }
-window.HideHanjaPracticeV1=Object.freeze({version:'2026.11.24-hanja-camps',open,map:async()=>{await load();renderMap();return {state:'READY'}},
- status:()=>({state:loaded?'REFERENCE_LOADED':'NOT_LOADED',cards:rows.length,camps:loaded?campCount():0,review:loaded?reviewPool().length:0})});
+window.HideHanjaPracticeV1=Object.freeze({version:'2026.11.24-hanja-week',open,map:async()=>{await load();await loadGloss();renderMap();return {state:'READY'}},
+ status:()=>({state:loaded?'REFERENCE_LOADED':'NOT_LOADED',cards:rows.length,camps:loaded?campCount():0,review:loaded?reviewPool().length:0,week:loaded?weekCards().map(x=>x.char).join(''):'',week_missing:loaded?weekMissing().join(''):''})});
 })();
