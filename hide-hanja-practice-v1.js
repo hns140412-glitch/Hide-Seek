@@ -14,7 +14,25 @@ const DESC={TRACE:'보고·소리 듣기',LINK:'한자와 음 연결',CORE:'글�
 const KO={TRACE:'처음 찾기',LINK:'연결의 길',CORE:'글자 조각',RECALL:'숨은 단어'};
 let loaded=null,rows=[],mode='TRACE',scope={kind:'CAMP',camp:0};
 let queue=[],pos=0,step='VIEW',again={},round=null;
-let started=0,wrong=0,hints=0,done=false,revealed=false;
+let started=0,wrong=0,hints=0,done=false,revealed=false,gen=0,rec=null;
+// Voice answer (TRACE cover step): the child says 뜻과 음 aloud; the device's own speech recognition
+// (Web Speech API, ko-KR) turns it into text and we compare. Hidden when the device has none.
+const SR=()=>window.SpeechRecognition||window.webkitSpeechRecognition||null;
+const DIGIT={'0':'영','1':'일','2':'이','3':'삼','4':'사','5':'오','6':'육','7':'칠','8':'팔','9':'구'};
+const norm=s=>String(s||'').replace(/10/g,'십').replace(/[0-9]/g,d=>DIGIT[d]).replace(/[^가-힣]/g,'');
+function spokenMatches(card,alts){const m=norm(card.meaning),r=norm(card.reading);return alts.some(a=>{const t=norm(a);return t.includes(m+r)||t.includes(r+m)||(t.includes(m)&&t.endsWith(r))})}
+function stopListening(){const r=rec;rec=null;try{r?.abort?.()}catch{}}
+function listen(cb){
+ const C=SR();if(!C)return cb(null);
+ stopListening();try{speechSynthesis?.cancel?.()}catch{}
+ let r;try{r=new C()}catch{return cb(null)}
+ rec=r;r.lang='ko-KR';r.interimResults=false;r.maxAlternatives=5;r.continuous=false;
+ let sent=false;const fin=v=>{if(sent)return;sent=true;if(rec===r)rec=null;cb(v)};
+ r.onresult=ev=>{const res=ev?.results?.[0],alts=[];if(res)for(let i=0;i<res.length;i++)if(res[i]?.transcript)alts.push(String(res[i].transcript));fin(alts.length?alts:null)};
+ r.onerror=()=>fin(null);r.onend=()=>fin(null);
+ try{r.start()}catch{fin(null)}
+ setTimeout(()=>{try{r.stop()}catch{}},6000);
+}
 const q=s=>document.querySelector(s);
 const e=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
 const grade=()=>{const x=window.HideLearningTermLoaderV1,c=x?.context?.()||{},p=typeof S==='object'?S.profile||{}:{};return x?.resolveGradeContext?.({...c,age:c.age||p.age||'',school_grade:c.school_grade||p.school_grade||''})||{state:'NO_GRADE_CONTEXT'}};
@@ -67,9 +85,9 @@ function options(card,field){
  const shift=(pos+campOf(card)+1)%vals.length;
  return vals.slice(shift).concat(vals.slice(0,shift));
 }
-function record(card,result){
+function record(card,result,extra){
  const g=grade(),h=book();
- const item={at:new Date().toISOString(),subject:'HANJA',mode,word_id:card.id,char:card.char,source_ref:loaded.created_from.source_id,source_sha256:loaded.created_from.sha256,grade:g.state==='RESOLVED'?g.grade:null,grade_authority:'NONE_REFERENCE_PRACTICE_ONLY',result,hintLevel:hints,wrongAttempts:wrong,responseLatencyMs:Date.now()-started,practice_only:true,scope:scope.kind,camp:campOf(card)};
+ const item={at:new Date().toISOString(),subject:'HANJA',mode,word_id:card.id,char:card.char,source_ref:loaded.created_from.source_id,source_sha256:loaded.created_from.sha256,grade:g.state==='RESOLVED'?g.grade:null,grade_authority:'NONE_REFERENCE_PRACTICE_ONLY',result,hintLevel:hints,wrongAttempts:wrong,responseLatencyMs:Date.now()-started,practice_only:true,scope:scope.kind,camp:campOf(card),...(extra||{})};
  h.records=[...h.records,item].slice(-250);
  // No canonical evidence emission: this is reference-only practice, not a verified
  // grade-specific task. Engine-owned HANJA projections must authorize promotion.
@@ -122,8 +140,8 @@ function shell(inner,extraClass,withTrail){
   '<p class="hs-hanja-authority">출처 검증 훈음 참고 학습 · '+(g.state==='RESOLVED'?'학년 맥락 확인':'학년 미확인')+' · 교과 성취 점수와 별도</p><button class="btn secondary" id="hanjaExit" type="button">학습 방법으로 돌아가기</button></section>';
 }
 function bindShell(){
- q('#hanjaExit').onclick=()=>{try{speechSynthesis?.cancel?.()}catch{}if(typeof currentTab!=='undefined')currentTab='home';if(typeof renderHome==='function')renderHome()};
- q('#hanjaMap').onclick=()=>renderMap();
+ q('#hanjaExit').onclick=()=>{stopListening();try{speechSynthesis?.cancel?.()}catch{}if(typeof currentTab!=='undefined')currentTab='home';if(typeof renderHome==='function')renderHome()};
+ q('#hanjaMap').onclick=()=>{stopListening();renderMap()};
 }
 function render(){
  if(pos>=queue.length){
@@ -132,7 +150,7 @@ function render(){
    step='COVER';queue=campRows(scope.camp).slice();pos=0;again={};round.firstSeen=new Set();
   }else return renderSummary();
  }
- const card=queue[pos];started=Date.now();wrong=0;hints=0;done=false;revealed=false;
+ stopListening();const card=queue[pos],myGen=++gen;started=Date.now();wrong=0;hints=0;done=false;revealed=false;
  const comeback=round.firstSeen.has(card.id);
  const head='<div class="learn-head"><div><span class="phase-chip">'+mode+'</span><h2>'+(mode==='TRACE'?(step==='VIEW'?'보고·소리 듣기':'가리고 떠올리기'):DESC[mode])+'</h2></div><b>'+(pos+1)+'/'+queue.length+'</b></div>';
  let body;
@@ -140,7 +158,7 @@ function render(){
   body='<div class="hs-hanja-big">'+e(card.char)+'</div><div class="hs-hanja-reveal">'+e(card.meaning)+' '+e(card.reading)+'</div><p id="hanjaFeedback" role="status" aria-live="polite"></p>'+
    '<div class="btn-row"><button class="btn secondary" id="hanjaHear" type="button">발음 듣기</button><button class="btn primary" id="hanjaNext" type="button">다음</button></div>';
  }else if(mode==='TRACE'){
-  body='<div class="hs-hanja-big">'+e(card.char)+'</div><button class="hs-hanja-cover" id="hanjaReveal" type="button">'+(comeback?'한 번 더! ':'')+'뜻과 음을 떠올려 보고 눌러서 확인</button><p id="hanjaFeedback" role="status" aria-live="polite"></p>'+
+  body='<div class="hs-hanja-big">'+e(card.char)+'</div><button class="hs-hanja-cover" id="hanjaReveal" type="button">'+(comeback?'한 번 더! ':'')+'뜻과 음을 떠올려 보고 눌러서 확인</button>'+(SR()?'<button class="btn secondary hs-hanja-say" id="hanjaSay" type="button">말로 답하기</button>':'')+'<p id="hanjaFeedback" role="status" aria-live="polite"></p>'+
    '<div class="btn-row hs-hanja-selfmark" hidden><button class="btn secondary" id="hanjaNotYet" type="button">아직이야</button><button class="btn primary" id="hanjaKnow" type="button">알았어</button></div>';
  }else{
   const field=mode==='LINK'?'reading':mode==='CORE'?'meaning':'char';
@@ -156,16 +174,32 @@ function render(){
   return;
  }
  if(mode==='TRACE'){
-  q('#hanjaReveal').onclick=()=>{
-   if(revealed)return;revealed=true;
+  let voiced=null;
+  const reveal=()=>{
+   if(revealed)return;revealed=true;stopListening();
    const b=q('#hanjaReveal');b.classList.add('open');b.innerHTML='<span class="hs-hanja-reveal">'+e(card.meaning)+' '+e(card.reading)+'</span>';b.disabled=true;
-   q('.hs-hanja-selfmark').hidden=false;hear(card);
+   q('.hs-hanja-selfmark').hidden=false;const s=q('#hanjaSay');if(s)s.hidden=true;hear(card);
   };
-  const mark=know=>{
-   if(!revealed||done)return;done=true;record(card,know?'SELF_KNOWN':'SELF_NOT_YET');
+  q('#hanjaReveal').onclick=reveal;
+  const mark=(know,result)=>{
+   if(!revealed||done||myGen!==gen)return;done=true;record(card,result||(know?'SELF_KNOWN':'SELF_NOT_YET'),voiced);
    const first=!round.firstSeen.has(card.id);round.firstSeen.add(card.id);
    if(know){if(first)round.known++}else{round.missed.add(card.id);comeBack(card)}
    pos++;render();
+  };
+  const say=q('#hanjaSay');
+  if(say)say.onclick=()=>{
+   if(revealed||done||say.disabled)return;
+   say.disabled=true;say.textContent='듣고 있어';q('#hanjaFeedback').textContent='뜻과 음을 말해 봐';
+   listen(alts=>{
+    if(myGen!==gen||done||revealed)return;
+    say.disabled=false;say.textContent='말로 답하기';
+    if(!alts){q('#hanjaFeedback').textContent='잘 안 들렸어. 한 번 더 말하거나 눌러서 확인해 봐.';return}
+    const ok=spokenMatches(card,alts);voiced={voice:true,voice_match:ok};
+    reveal();
+    if(ok){q('#hanjaFeedback').textContent='맞았어! '+card.meaning+' '+card.reading;setTimeout(()=>mark(true,'VOICE_MATCH'),900)}
+    else q('#hanjaFeedback').textContent='이렇게 들렸어: '+alts[0]+' · 맞게 떠올렸으면 알았어를 눌러';
+   });
   };
   q('#hanjaKnow').onclick=()=>mark(true);
   q('#hanjaNotYet').onclick=()=>mark(false);

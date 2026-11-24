@@ -498,5 +498,8 @@ body:has(#ocrRows) .view{padding-bottom:calc(93px + var(--safe-bottom,0px))}
 .hs-hanja-learning .hs-hanja-big{font-size:clamp(55px,13vw,80px);margin:6px auto}
 .hs-hanja-learning .hs-hanja-campbar .hs-hanja-mapbtn{min-height:40px}
 .hs-hanja-learning .hs-hanja-selfmark[hidden]{display:none}
+.hs-hanja-learning .hs-hanja-say{width:100%;min-height:52px;margin:2px 0 4px;font-size:17px}
+.hs-hanja-learning .hs-hanja-say[hidden]{display:none}
+.hs-hanja-learning .hs-hanja-say[disabled]{opacity:.7}
 .hs-hanja-learning .learn-head h2{margin:4px 0 0}
 .hs-hanja-learning .word-card{margin-top:8px;padding-top:16px;padding-bottom:16px}

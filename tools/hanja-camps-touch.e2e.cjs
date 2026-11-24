@@ -10,7 +10,10 @@ const shotDir=process.env.HANJA_SHOTS||path.join(root,'.local');
 const fails=[];const check=(v,label)=>{if(!v)fails.push(label)};
 const idOf=ch=>'hanja-'+ch.codePointAt(0).toString(16);
 async function run(browser,name,viewport){
- const ctx=await browser.newContext({viewport,hasTouch:true,isMobile:viewport.width<700,serviceWorkers:'block'}),page=await ctx.newPage();
+ const ctx=await browser.newContext({viewport,hasTouch:true,isMobile:viewport.width<700,serviceWorkers:'block'});
+ // Fake device speech recognition: answers with window.__say after a short pause.
+ await ctx.addInitScript(()=>{class F{start(){setTimeout(()=>{const t=window.__say;if(!t){this.onerror&&this.onerror({error:'no-speech'});this.onend&&this.onend();return}const res=[{transcript:t,confidence:.9}];res.isFinal=true;this.onresult&&this.onresult({results:[res]});this.onend&&this.onend()},150)}stop(){}abort(){}}window.SpeechRecognition=F;window.webkitSpeechRecognition=F});
+ const page=await ctx.newPage();
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  const tap=async sel=>{await page.locator(sel).first().tap();await page.waitForTimeout(120)};
  const shot=async label=>page.screenshot({path:path.join(shotDir,'hanja-camps-'+name+'-'+label+'.png')});
@@ -26,11 +29,21 @@ async function run(browser,name,viewport){
  const cover=await page.evaluate(()=>({h:document.querySelector('.learn-head h2').textContent,hidden:getComputedStyle(document.querySelector('.hs-hanja-selfmark')).display==='none',reveal:!!document.querySelector('.hs-hanja-learning .word-card > .hs-hanja-reveal')}));
  check(cover.h==='가리고 떠올리기'&&cover.hidden&&!cover.reveal,name+' cover step hides 훈음 '+JSON.stringify(cover));
  await shot('2-cover');
- await tap('#hanjaReveal');
- check(await page.locator('.hs-hanja-selfmark').isVisible(),name+' self mark after reveal');
- await shot('3-cover-open');
+ check(await page.locator('#hanjaSay').isVisible(),name+' voice answer button on cover step');
+ await page.evaluate(v=>{window.__say=v},name==='phone'?'날 일':'날 1');
+ await tap('#hanjaSay');
+ await page.waitForFunction(()=>(S.hanjaPractice.records||[]).some(r=>r.result==='VOICE_MATCH'&&r.voice_match===true),null,{timeout:5000});
+ await page.waitForFunction(()=>document.querySelector('.learn-head b')?.textContent==='2/5',null,{timeout:5000});
+ await page.evaluate(()=>{window.__say='물 수'});
+ await tap('#hanjaSay');
+ await page.waitForSelector('.hs-hanja-selfmark:not([hidden])');
+ const heard=await page.evaluate(()=>({fb:document.querySelector('#hanjaFeedback').textContent,sayHidden:document.querySelector('#hanjaSay').hidden}));
+ check(/이렇게 들렸어: 물 수/.test(heard.fb)&&heard.sayHidden,name+' voice mismatch shows what was heard '+JSON.stringify(heard));
+ await shot('3-cover-voice-mismatch');
  await tap('#hanjaNotYet');
- for(let i=0;i<5;i++){await tap('#hanjaReveal');await tap('#hanjaKnow')}
+ const miss=await page.evaluate(()=>S.hanjaPractice.records.at(-1));
+ check(miss.result==='SELF_NOT_YET'&&miss.voice_match===false&&!('transcript' in miss),name+' mismatch recorded without the spoken text '+JSON.stringify(miss));
+ for(let i=0;i<4;i++){await tap('#hanjaReveal');await tap('#hanjaKnow')}
  const traceDone=await page.evaluate(()=>({score:document.querySelector('.hs-hanja-score')?.textContent,miss:document.querySelectorAll('.hs-hanja-chars li.miss').length,camp:S.hanjaPractice.camps[0]}));
  check(traceDone.score==='가리고 바로 떠올린 한자 4/5'&&traceDone.miss===1&&traceDone.camp?.seen&&traceDone.camp.cover===4,name+' TRACE summary '+JSON.stringify(traceDone));
  await shot('4-trace-summary');
