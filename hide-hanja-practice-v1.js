@@ -1,38 +1,94 @@
 (() => {
 'use strict';
 if(window.HideHanjaPracticeV1)return;
-const DATA='./data/hanja-reference-practice-projection-v1.json',MODES=['TRACE','LINK','CORE','RECALL'];
-let loaded=null,rows=[],mode='TRACE',index=0,started=0,wrong=0,hints=0,done=false;
+// Hanja reference practice, rev 2026-11-24.
+// Same four freely selectable modes (TRACE / LINK / CORE / RECALL). What changed:
+//  - the 48 source-verified characters are walked in small "구간" of 5, not all 48 in one line;
+//  - TRACE = look and listen, then cover and recall (알았어 / 아직이야, 아직 comes back in the same round);
+//  - a miss (wrong, pass) is noted per character and the character comes back once at the end of the round;
+//  - "다시 만날 한자" gathers every missed character across rounds; answering one first try takes it off the list;
+//  - "48자 모두 섞어서" mixes everything; a small map shows each 구간's state. Progress lives in S.hanjaPractice.
+// Records stay practice-only (grade_authority NONE_REFERENCE_PRACTICE_ONLY); no canonical evidence is emitted.
+const DATA='./data/hanja-reference-practice-projection-v1.json',MODES=['TRACE','LINK','CORE','RECALL'],CAMP=5,AGAIN_MAX=2,REVIEW_MAX=10;
+const DESC={TRACE:'보고·소리 듣기',LINK:'한자와 음 연결',CORE:'글자의 의미 찾기',RECALL:'음·뜻에서 글자 회상'};
+const KO={TRACE:'처음 찾기',LINK:'연결의 길',CORE:'글자 조각',RECALL:'숨은 단어'};
+let loaded=null,rows=[],mode='TRACE',scope={kind:'CAMP',camp:0};
+let queue=[],pos=0,step='VIEW',again={},round=null;
+let started=0,wrong=0,hints=0,done=false,revealed=false;
 const q=s=>document.querySelector(s);
 const e=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
 const grade=()=>{const x=window.HideLearningTermLoaderV1,c=x?.context?.()||{},p=typeof S==='object'?S.profile||{}:{};return x?.resolveGradeContext?.({...c,age:c.age||p.age||'',school_grade:c.school_grade||p.school_grade||''})||{state:'NO_GRADE_CONTEXT'}};
+const persist=()=>{try{if(typeof save==='function')save()}catch{}};
 async function load(){
  if(loaded)return;
  const r=await fetch(DATA,{cache:'no-cache'});if(!r.ok)throw Error('훈음 원천 자료를 읽지 못했습니다');
  const d=await r.json();
  if(d.schema!=='TAKY_HIDE_HANJA_REFERENCE_PRACTICE_PROJECTION_V1'||d.grade_authority!=='NONE_REFERENCE_PRACTICE_ONLY')throw Error('훈음 출처·권한 미확인');
- rows=(d.items||[]).filter(x=>x?.char&&x?.reading&&x?.meaning&&/^[\u3400-\u9fff]$/.test(x.char));
+ rows=(d.items||[]).filter(x=>x?.char&&x?.reading&&x?.meaning&&/^[㐀-鿿]$/.test(x.char));
  if(rows.length<4)throw Error('확인된 한자 카드가 부족합니다');loaded=d;
 }
+function book(){
+ if(typeof S!=='object'||!S)return {records:[],camps:{},wrongLog:{},camp:0,recovered:0};
+ const h=S.hanjaPractice=S.hanjaPractice||{records:[]};
+ if(!Array.isArray(h.records))h.records=[];
+ if(!h.camps||typeof h.camps!=='object')h.camps={};
+ if(!h.wrongLog||typeof h.wrongLog!=='object')h.wrongLog={};
+ if(!Number.isInteger(h.camp))h.camp=0;
+ h.recovered=Math.max(0,h.recovered|0);
+ return h;
+}
+const campCount=()=>Math.ceil(rows.length/CAMP);
+const campRows=n=>rows.slice(n*CAMP,n*CAMP+CAMP);
+const campOf=card=>Math.floor(rows.indexOf(card)/CAMP);
+const campState=n=>{const h=book();const c=h.camps[n]=h.camps[n]||{};if(!c.best||typeof c.best!=='object')c.best={};return c};
+function reviewPool(){const log=book().wrongLog;return rows.filter(x=>(log[x.id]|0)>0).sort((a,b)=>(log[b.id]|0)-(log[a.id]|0)||rows.indexOf(a)-rows.indexOf(b))}
+function shuffled(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function scopeLabel(){
+ if(scope.kind==='REVIEW')return '다시 만날 한자';
+ if(scope.kind==='ALL')return rows.length+'자 모두 섞어서';
+ return (scope.camp+1)+'구간 · '+campRows(scope.camp).map(x=>x.char).join(' ');
+}
+function startRound(){
+ const h=book();
+ if(scope.kind==='CAMP'){scope.camp=Math.min(Math.max(0,scope.camp|0),campCount()-1);h.camp=scope.camp;queue=campRows(scope.camp)}
+ else if(scope.kind==='REVIEW')queue=reviewPool().slice(0,REVIEW_MAX);
+ else queue=shuffled(rows);
+ if(!queue.length){scope={kind:'CAMP',camp:h.camp};queue=campRows(h.camp)}
+ queue=queue.slice();pos=0;again={};
+ step=mode==='TRACE'?(scope.kind==='CAMP'?'VIEW':'COVER'):'ASK';
+ round={total:queue.length,first:0,firstSeen:new Set(),missed:new Set(),known:0,recovered:0};
+ persist();render();
+}
 function options(card,field){
- const seen=new Set([card[field]]),other=[];
- for(const x of rows){if(x.id===card.id||seen.has(x[field]))continue;seen.add(x[field]);other.push(x);if(other.length>=Math.max(3,index%8+3))break}
- const vals=[card,...other.slice(-3)];
- const shift=(index+1)%vals.length;
+ const seen=new Set([card[field]]),pool=[];
+ const mates=campRows(campOf(card)).filter(x=>x.id!==card.id),rest=rows.filter(x=>x.id!==card.id&&!mates.includes(x));
+ for(const x of mates.concat(rest)){if(seen.has(x[field]))continue;seen.add(x[field]);pool.push(x);if(pool.length>=3)break}
+ const vals=[card,...pool];
+ const shift=(pos+campOf(card)+1)%vals.length;
  return vals.slice(shift).concat(vals.slice(0,shift));
 }
 function record(card,result){
- const g=grade();
- const item={at:new Date().toISOString(),subject:'HANJA',mode,word_id:card.id,char:card.char,source_ref:loaded.created_from.source_id,source_sha256:loaded.created_from.sha256,grade:g.state==='RESOLVED'?g.grade:null,grade_authority:'NONE_REFERENCE_PRACTICE_ONLY',result,hintLevel:hints,wrongAttempts:wrong,responseLatencyMs:Date.now()-started,practice_only:true};
- S.hanjaPractice=S.hanjaPractice||{records:[]};
- S.hanjaPractice.records=[...(S.hanjaPractice.records||[]),item].slice(-250);
+ const g=grade(),h=book();
+ const item={at:new Date().toISOString(),subject:'HANJA',mode,word_id:card.id,char:card.char,source_ref:loaded.created_from.source_id,source_sha256:loaded.created_from.sha256,grade:g.state==='RESOLVED'?g.grade:null,grade_authority:'NONE_REFERENCE_PRACTICE_ONLY',result,hintLevel:hints,wrongAttempts:wrong,responseLatencyMs:Date.now()-started,practice_only:true,scope:scope.kind,camp:campOf(card)};
+ h.records=[...h.records,item].slice(-250);
  // No canonical evidence emission: this is reference-only practice, not a verified
  // grade-specific task. Engine-owned HANJA projections must authorize promotion.
- save();
+ persist();
 }
+function comeBack(card){const n=again[card.id]|0;if(n>=AGAIN_MAX)return false;again[card.id]=n+1;queue.push(card);return true}
 function finish(card,result){
  done=true;record(card,result);
- q('#hanjaFeedback').textContent=(result==='CORRECT'?'찾았어! ':'다시 찾을 수 있어! ')+card.char+' · '+card.meaning+' '+card.reading;
+ const h=book(),first=!round.firstSeen.has(card.id);round.firstSeen.add(card.id);
+ let note='';
+ if(result==='CORRECT'){
+  if(first)round.first++;
+  if(scope.kind==='REVIEW'&&(h.wrongLog[card.id]|0)>0){delete h.wrongLog[card.id];h.recovered++;round.recovered++;note=' · 다시 만날 한자에서 빠졌어'}
+ }else{
+  h.wrongLog[card.id]=(h.wrongLog[card.id]|0)+1;round.missed.add(card.id);
+  if(comeBack(card))note=' · 조금 뒤에 다시 만나';
+ }
+ persist();
+ q('#hanjaFeedback').textContent=(result==='CORRECT'?'찾았어! ':'다시 찾을 수 있어! ')+card.char+' · '+card.meaning+' '+card.reading+note;
  document.querySelectorAll('[data-hanja-answer]').forEach(b=>{b.disabled=true;if(b.dataset.hanjaAnswer===card.id)b.classList.add('correct')});
  q('#hanjaNext').disabled=false;
  q('#hanjaHint')?.setAttribute('disabled','');
@@ -54,20 +110,68 @@ function hear(card){
  a.addEventListener('error',fail,{once:true});a.addEventListener('ended',()=>{if(voice===a)voice=null},{once:true});
  try{Promise.resolve(a.play()).catch(fail)}catch{fail()}
 }
-function render(){
- const card=rows[index%rows.length];started=Date.now();wrong=0;hints=0;done=false;
- const desc={TRACE:'보고·소리 듣기',LINK:'한자와 음 연결',CORE:'글자의 의미 찾기',RECALL:'음·뜻에서 글자 회상'}[mode];
- const field=mode==='LINK'?'reading':mode==='CORE'?'meaning':'char';
- const question=mode==='TRACE'?'<div class="hs-hanja-big">'+e(card.char)+'</div><div class="hs-hanja-reveal">'+e(card.meaning)+' '+e(card.reading)+'</div>':mode==='RECALL'?'<p class="hs-hanja-question">'+e(card.meaning)+' '+e(card.reading)+'에 맞는 글자는?</p>':'<p class="hs-hanja-question"><strong class="hs-hanja-big">'+e(card.char)+'</strong>'+ (mode==='LINK'?'를 읽는 소리는?':'의 뜻은?')+'</p>';
- const choices=mode==='TRACE'?'':'<div class="choice-grid hs-hanja-options">'+options(card,field).map(o=>'<button class="choice" type="button" data-hanja-answer="'+e(o.id)+'">'+e(o[field])+'</button>').join('')+'</div>';
+function trail(){
+ // small step trail for the current round: one stone per character, filled once it was met
+ return '<ol class="hs-hanja-trail" aria-label="이번 구간 진행">'+queue.map((x,i)=>'<li class="'+(i<pos?'met':i===pos?'now':'')+'" aria-hidden="true"></li>').join('')+'</ol>';
+}
+function shell(inner,extraClass,withTrail){
  const g=grade();
- q('#view').innerHTML='<section class="learning-shell hs-hanja-learning" data-hanja-mode="'+mode+'"><div class="learn-head"><div><span class="phase-chip">'+mode+'</span><h2>'+desc+'</h2></div><b>'+((index%rows.length)+1)+'/'+rows.length+'</b></div><section class="card word-card">'+question+choices+'<p id="hanjaFeedback" role="status" aria-live="polite"></p><div class="btn-row">'+(mode==='TRACE'?'<button class="btn secondary" id="hanjaHear" type="button">발음 듣기</button>':'<button class="btn gold" id="hanjaHint" type="button">힌트</button><button class="btn secondary" id="hanjaPass" type="button">모르겠어</button>')+'<button class="btn primary" id="hanjaNext" type="button" '+(mode==='TRACE'?'':'disabled')+'>다음</button></div></section><p class="hs-hanja-authority">출처 검증 훈음 참고 학습 · '+(g.state==='RESOLVED'?'학년 맥락 확인':'학년 미확인')+' · 교과 성취 점수와 별도</p><button class="btn secondary" id="hanjaExit" type="button">학습 방법으로 돌아가기</button></section>';
- q('#hanjaExit').onclick=()=>{currentTab='home';renderHome()};
- q('#hanjaNext').onclick=()=>{if(mode==='TRACE')record(card,'EXPOSED');index++;render()};
- if(mode==='TRACE'){
+ return '<section class="learning-shell hs-hanja-learning'+(extraClass?' '+extraClass:'')+'" data-hanja-mode="'+mode+'" data-hanja-scope="'+scope.kind+'">'+
+  '<div class="hs-hanja-campbar"><button class="hs-hanja-mapbtn" id="hanjaMap" type="button" aria-label="한자 지도 열기">지도</button><span class="hs-hanja-camplabel">'+e(scopeLabel())+'</span>'+(withTrail?trail():'')+'</div>'+
+  inner+
+  '<p class="hs-hanja-authority">출처 검증 훈음 참고 학습 · '+(g.state==='RESOLVED'?'학년 맥락 확인':'학년 미확인')+' · 교과 성취 점수와 별도</p><button class="btn secondary" id="hanjaExit" type="button">학습 방법으로 돌아가기</button></section>';
+}
+function bindShell(){
+ q('#hanjaExit').onclick=()=>{try{speechSynthesis?.cancel?.()}catch{}if(typeof currentTab!=='undefined')currentTab='home';if(typeof renderHome==='function')renderHome()};
+ q('#hanjaMap').onclick=()=>renderMap();
+}
+function render(){
+ if(pos>=queue.length){
+  if(mode==='TRACE'&&step==='VIEW'){
+   campState(scope.camp).seen=true;persist();
+   step='COVER';queue=campRows(scope.camp).slice();pos=0;again={};round.firstSeen=new Set();
+  }else return renderSummary();
+ }
+ const card=queue[pos];started=Date.now();wrong=0;hints=0;done=false;revealed=false;
+ const comeback=round.firstSeen.has(card.id);
+ const head='<div class="learn-head"><div><span class="phase-chip">'+mode+'</span><h2>'+(mode==='TRACE'?(step==='VIEW'?'보고·소리 듣기':'가리고 떠올리기'):DESC[mode])+'</h2></div><b>'+(pos+1)+'/'+queue.length+'</b></div>';
+ let body;
+ if(mode==='TRACE'&&step==='VIEW'){
+  body='<div class="hs-hanja-big">'+e(card.char)+'</div><div class="hs-hanja-reveal">'+e(card.meaning)+' '+e(card.reading)+'</div><p id="hanjaFeedback" role="status" aria-live="polite"></p>'+
+   '<div class="btn-row"><button class="btn secondary" id="hanjaHear" type="button">발음 듣기</button><button class="btn primary" id="hanjaNext" type="button">다음</button></div>';
+ }else if(mode==='TRACE'){
+  body='<div class="hs-hanja-big">'+e(card.char)+'</div><button class="hs-hanja-cover" id="hanjaReveal" type="button">'+(comeback?'한 번 더! ':'')+'뜻과 음을 떠올려 보고 눌러서 확인</button><p id="hanjaFeedback" role="status" aria-live="polite"></p>'+
+   '<div class="btn-row hs-hanja-selfmark" hidden><button class="btn secondary" id="hanjaNotYet" type="button">아직이야</button><button class="btn primary" id="hanjaKnow" type="button">알았어</button></div>';
+ }else{
+  const field=mode==='LINK'?'reading':mode==='CORE'?'meaning':'char';
+  const question=mode==='RECALL'?'<p class="hs-hanja-question">'+e(card.meaning)+' '+e(card.reading)+'에 맞는 글자는?</p>':'<p class="hs-hanja-question"><strong class="hs-hanja-big">'+e(card.char)+'</strong>'+(mode==='LINK'?'를 읽는 소리는?':'의 뜻은?')+'</p>';
+  body=(comeback?'<p class="hs-hanja-again">다시 만난 한자</p>':'')+question+'<div class="choice-grid hs-hanja-options">'+options(card,field).map(o=>'<button class="choice" type="button" data-hanja-answer="'+e(o.id)+'">'+e(o[field])+'</button>').join('')+'</div>'+
+   '<p id="hanjaFeedback" role="status" aria-live="polite"></p><div class="btn-row"><button class="btn gold" id="hanjaHint" type="button">힌트</button><button class="btn secondary" id="hanjaPass" type="button">모르겠어</button><button class="btn primary" id="hanjaNext" type="button" disabled>다음</button></div>';
+ }
+ q('#view').innerHTML=shell(head+'<section class="card word-card">'+body+'</section>','',true);
+ bindShell();
+ if(mode==='TRACE'&&step==='VIEW'){
   q('#hanjaHear').onclick=()=>hear(card);
+  q('#hanjaNext').onclick=()=>{record(card,'EXPOSED');pos++;render()};
   return;
  }
+ if(mode==='TRACE'){
+  q('#hanjaReveal').onclick=()=>{
+   if(revealed)return;revealed=true;
+   const b=q('#hanjaReveal');b.classList.add('open');b.innerHTML='<span class="hs-hanja-reveal">'+e(card.meaning)+' '+e(card.reading)+'</span>';b.disabled=true;
+   q('.hs-hanja-selfmark').hidden=false;hear(card);
+  };
+  const mark=know=>{
+   if(!revealed||done)return;done=true;record(card,know?'SELF_KNOWN':'SELF_NOT_YET');
+   const first=!round.firstSeen.has(card.id);round.firstSeen.add(card.id);
+   if(know){if(first)round.known++}else{round.missed.add(card.id);comeBack(card)}
+   pos++;render();
+  };
+  q('#hanjaKnow').onclick=()=>mark(true);
+  q('#hanjaNotYet').onclick=()=>mark(false);
+  return;
+ }
+ q('#hanjaNext').onclick=()=>{pos++;render()};
  q('#hanjaHint').onclick=()=>{
   if(done)return;hints++;
   const messages=['그림처럼 글자의 모양과 전에 들은 소리를 떠올려 보자.','여러 보기의 차이점을 비교해 보자. 정답은 아직 보여주지 않을게.','어렵다면 모르겠어를 눌러 배우고 다음에 다시 만나자.'];
@@ -80,10 +184,60 @@ function render(){
   finish(card,wrong?'WRONG':hints?'HINT_USED':'CORRECT');
  });
 }
+function renderSummary(){
+ const h=book(),total=round.total,missed=[...round.missed].map(id=>rows.find(x=>x.id===id)).filter(Boolean);
+ const firstGood=mode==='TRACE'?round.known:round.first;
+ if(scope.kind==='CAMP'){
+  const c=campState(scope.camp);
+  if(mode==='TRACE'){c.seen=true;c.cover=Math.max(c.cover|0,firstGood)}
+  else c.best[mode]=Math.max(c.best[mode]|0,firstGood);
+  persist();
+ }
+ const pool=reviewPool(),nextCamp=scope.kind==='CAMP'&&scope.camp<campCount()-1;
+ const line=mode==='TRACE'?'가리고 바로 떠올린 한자 '+firstGood+'/'+total:'한 번에 찾은 한자 '+firstGood+'/'+total;
+ const met=queue.filter((x,i,a)=>a.indexOf(x)===i);
+ const inner='<div class="learn-head"><div><span class="phase-chip">'+mode+'</span><h2>'+(scope.kind==='REVIEW'?'다시 만나기 끝':scope.kind==='ALL'?'모두 섞어서 끝':(scope.camp+1)+'구간 끝')+'</h2></div></div>'+
+  '<section class="card word-card hs-hanja-summary"><p class="hs-hanja-score">'+e(line)+'</p>'+
+  '<ul class="hs-hanja-chars">'+met.map(x=>'<li class="'+(round.missed.has(x.id)?'miss':'ok')+'"><b>'+e(x.char)+'</b><small>'+e(x.meaning+' '+x.reading)+'</small></li>').join('')+'</ul>'+
+  (missed.length?'<p class="hs-hanja-note">다시 만날 한자에 넣어 뒀어: '+missed.map(x=>e(x.char)).join(' ')+'</p>':'<p class="hs-hanja-note">이번에 놓친 한자는 없어.</p>')+
+  (round.recovered?'<p class="hs-hanja-note">'+round.recovered+'자를 되찾았어.</p>':'')+
+  '<div class="btn-row hs-hanja-next">'+
+   '<button class="btn secondary" id="hanjaAgain" type="button">한 번 더</button>'+
+   (nextCamp?'<button class="btn primary" id="hanjaNextCamp" type="button">'+(scope.camp+2)+'구간으로</button>':'')+
+   (pool.length?'<button class="btn gold" id="hanjaReviewGo" type="button">다시 만날 한자 '+pool.length+'자</button>':'')+
+  '</div></section>';
+ q('#view').innerHTML=shell(inner,'hs-hanja-done');
+ bindShell();
+ q('#hanjaAgain').onclick=()=>startRound();
+ if(nextCamp)q('#hanjaNextCamp').onclick=()=>{scope={kind:'CAMP',camp:scope.camp+1};startRound()};
+ if(pool.length)q('#hanjaReviewGo').onclick=()=>{scope={kind:'REVIEW'};startRound()};
+}
+function campLine(n){
+ const c=book().camps[n];if(!c||(!c.seen&&!Object.keys(c.best||{}).length))return '아직 안 가 봤어';
+ const parts=[];if(c.seen)parts.push('떠올리기 '+(c.cover|0)+'/'+campRows(n).length);
+ for(const m of ['LINK','CORE','RECALL'])if(c.best?.[m]!=null)parts.push(KO[m]+' '+c.best[m]+'/'+campRows(n).length);
+ return parts.join(' · ');
+}
+function renderMap(){
+ try{speechSynthesis?.cancel?.()}catch{}
+ const h=book(),pool=reviewPool();
+ const tabs='<div class="hs-hanja-modes" role="group" aria-label="학습 방법">'+MODES.map(m=>'<button type="button" class="'+(m===mode?'on':'')+'" data-hanja-switch="'+m+'" aria-pressed="'+(m===mode)+'"><b>'+KO[m]+'</b><small>'+m+'</small></button>').join('')+'</div>';
+ const camps='<ol class="hs-hanja-camps">'+Array.from({length:campCount()},(_,n)=>'<li><button type="button" data-hanja-camp="'+n+'" class="'+(n===h.camp?'here':'')+'"><span class="no">'+(n+1)+'</span><span class="chars">'+campRows(n).map(x=>e(x.char)).join(' ')+'</span><small>'+e(campLine(n))+'</small></button></li>').join('')+'</ol>';
+ const more='<div class="hs-hanja-gather"><button type="button" data-hanja-scope-go="REVIEW" '+(pool.length?'':'disabled')+'><b>다시 만날 한자</b><small>'+(pool.length?pool.slice(0,8).map(x=>e(x.char)).join(' ')+(pool.length>8?' …':'')+' · '+pool.length+'자':'아직 없어')+'</small></button>'+
+  '<button type="button" data-hanja-scope-go="ALL"><b>'+rows.length+'자 모두 섞어서</b><small>'+(h.recovered?'지금까지 되찾은 한자 '+h.recovered+'자':'구간을 다 돌고 나서 해 봐')+'</small></button></div>';
+ const inner='<div class="learn-head"><div><span class="phase-chip">MAP</span><h2>한자 지도</h2></div><b>'+rows.length+'자</b></div>'+tabs+camps+more;
+ q('#view').innerHTML=shell(inner,'hs-hanja-mapview');
+ bindShell();
+ q('.hs-hanja-campbar').hidden=true;
+ document.querySelectorAll('[data-hanja-switch]').forEach(b=>b.onclick=()=>{mode=b.dataset.hanjaSwitch;renderMap()});
+ document.querySelectorAll('[data-hanja-camp]').forEach(b=>b.onclick=()=>{scope={kind:'CAMP',camp:+b.dataset.hanjaCamp};startRound()});
+ document.querySelectorAll('[data-hanja-scope-go]').forEach(b=>b.onclick=()=>{if(b.disabled)return;scope={kind:b.dataset.hanjaScopeGo};startRound()});
+}
 async function open(raw){
  const chosen=String(raw||'').toUpperCase();if(!MODES.includes(chosen))return {state:'BAD_MODE'};
- try{await load();mode=chosen;index=0;render();return {state:'READY',mode,card_count:rows.length,grade_authority:loaded.grade_authority}}
+ try{await load();mode=chosen;scope={kind:'CAMP',camp:book().camp};startRound();return {state:'READY',mode,card_count:rows.length,camp:scope.camp,grade_authority:loaded.grade_authority}}
  catch(ex){if(typeof hsShowNotice==='function')hsShowNotice('한자 학습 자료 연결 실패: '+String(ex.message||ex));return {state:'BLOCKED',reason:String(ex.message||ex)}}
 }
-window.HideHanjaPracticeV1=Object.freeze({version:'2026.10.17-hanja-reference-v1',open,status:()=>({state:loaded?'REFERENCE_LOADED':'NOT_LOADED',cards:rows.length})});
+window.HideHanjaPracticeV1=Object.freeze({version:'2026.11.24-hanja-camps',open,map:async()=>{await load();renderMap();return {state:'READY'}},
+ status:()=>({state:loaded?'REFERENCE_LOADED':'NOT_LOADED',cards:rows.length,camps:loaded?campCount():0,review:loaded?reviewPool().length:0})});
 })();

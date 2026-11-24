@@ -1,4 +1,4 @@
-
+// release rev14: hanja camps (2026-11-24)
 importScripts('./hide-release-v01.js');
 const RELEASE=globalThis.HideSeekReleaseDescriptor;
 const CACHE='hide-seek:'+RELEASE.release_id;
