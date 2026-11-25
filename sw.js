@@ -1,4 +1,4 @@
-// release rev16: sound only when the child taps (no auto 훈음, partner or crew lines) (2026-11-25)
+// release rev17: English word lists from Ready Planner (ENGLISH_WORDS_V1) + sound only on tap (2026-11-25)
 importScripts('./hide-release-v01.js');
 const RELEASE=globalThis.HideSeekReleaseDescriptor;
 const CACHE='hide-seek:'+RELEASE.release_id;
@@ -124,6 +124,7 @@ const CORE=[
   './characters/ui_cutouts/guide-24.png',
   './hide-hanja-practice-v1.js',
   './hide-hanja-week-v1.js',
+  './hide-english-words-v1.js',
   './hide-english-cycle-v1.js',
   './hide-english-pedagogy-v1.js',
   './data/hanja-reference-practice-projection-v1.json',
