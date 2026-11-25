@@ -203,7 +203,7 @@ body:has(.memory-event) #takyCrewSelectionLauncher{display:none!important}
 .hs-pedagogy .hs-piece-fixed,.hs-pedagogy .hs-piece-slot{display:grid;place-items:center;min-width:32px;min-height:42px;padding:3px;border-radius:9px;border:2px solid #a6bda5;font-size:23px;font-weight:950;font-family:ui-rounded,system-ui,sans-serif;color:#28523f;background:#f4f9f0}
 .hs-pedagogy .hs-piece-slot{background:#fff;border:2px dashed #64936c;cursor:pointer}
 .hs-pedagogy .hs-piece-keys{display:flex;flex-wrap:wrap;justify-content:center;gap:7px;padding:6px;margin:9px 0 15px}
-.hs-pedagogy .hs-piece-key{display:grid;place-items:center;border:1px solid #b5c9ba;border-bottom:4px solid #96ad9b;background:linear-gradient(#fff,#f5f8f1);border-radius:10px;min-width:38px;min-height:44px;padding:5px;font-size:20px;font-weight:850;color:#365444;cursor:pointer}
+.hs-pedagogy .hs-piece-key{display:grid;place-items:center;border:1px solid #b5c9ba;border-bottom:4px solid #96ad9b;background:linear-gradient(#fff,#f5f8f1);border-radius:10px;min-width:44px;min-height:44px;padding:5px;font-size:20px;font-weight:850;color:#365444;cursor:pointer}
 .hs-pedagogy .hs-piece-key.is-selected{outline:3px solid #71a870}
 .hs-pedagogy .hs-piece-key:disabled{opacity:.36}
 .hs-pedagogy .hs-piece-instruction{font-size:12px;line-height:1.6;color:#5a6f5e;text-align:center}
@@ -246,7 +246,7 @@ body:has(.hs-pedagogy) #partnerBar{display:none!important}
 .hs-pedagogy .hs-learning-forest-hero{min-height:clamp(206px,28dvh,310px)}
 .hs-pedagogy .hs-spelling-tiles{gap:3px;margin:12px auto 15px}
 .hs-pedagogy .hs-piece-fixed,.hs-pedagogy .hs-piece-slot{
- flex:0 0 auto;width:clamp(22px,6.2vw,31px);min-width:0;min-height:38px;
+ flex:0 0 auto;width:clamp(22px,6.2vw,31px);min-width:0;min-height:44px;
  padding:1px;font-size:clamp(15px,4.2vw,21px)
 }
 .hs-pedagogy .hs-piece-keys{margin:7px 0 12px}
