@@ -1,4 +1,4 @@
-// release rev15: hanja camps + this week's 재능 한자 from Ready (2026-11-24)
+// release rev16: sound only when the child taps (no auto 훈음, partner or crew lines) (2026-11-25)
 importScripts('./hide-release-v01.js');
 const RELEASE=globalThis.HideSeekReleaseDescriptor;
 const CACHE='hide-seek:'+RELEASE.release_id;
