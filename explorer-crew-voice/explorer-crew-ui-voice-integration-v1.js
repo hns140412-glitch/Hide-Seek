@@ -169,7 +169,8 @@
      // Do not preempt another lesson voice or native audio player.
      const audioBusy=[...document.querySelectorAll('audio')].some(a=>
        !a.paused&&!a.muted&&a.volume>0);
-     if(route.autoplay&&!audioBusy&&!document.hidden){
+     // Hide: no crew line the child did not tap for (Taky 2026-11-25); the 듣기 button still plays it.
+     if(route.autoplay&&app!=='HIDE_SEEK'&&!audioBusy&&!document.hidden){
        void consume('VERIFIED_NATIVE_LEARNING_EVENT',{event_type:route.event_type,event_id:route.event_id})
          .then(result=>{record.status=result.status;record.key=result.key||null;});
      }else{

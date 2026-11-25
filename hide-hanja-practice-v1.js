@@ -155,7 +155,8 @@ function finish(card,result){
  q('#hanjaHint')?.setAttribute('disabled','');
  q('#hanjaPass')?.setAttribute('disabled','');
 }
-// TRACE card shows "<meaning> <reading>" (훈음, e.g. 날 일); the voice says the same. Recorded clip in the bound
+// TRACE card shows "<meaning> <reading>" (훈음, e.g. 날 일); the voice says the same, ONLY when the child taps
+// 발음 듣기 (Taky 2026-11-25: no sound the child did not ask for). Recorded clip in the bound
 // companion's voice family when one exists (explorer-crew-voice/data-hanja-lines.js), otherwise device TTS.
 let voice=null;
 function hear(card){
@@ -234,7 +235,7 @@ function render(){
   const reveal=()=>{
    if(revealed)return;revealed=true;stopListening();
    const b=q('#hanjaReveal');b.classList.add('open');b.innerHTML='<span class="hs-hanja-reveal">'+e(card.meaning)+' '+e(card.reading)+'</span>';b.disabled=true;
-   q('.hs-hanja-selfmark').hidden=false;const s=q('#hanjaSay');if(s)s.hidden=true;hear(card);keepInView('.hs-hanja-selfmark');
+   q('.hs-hanja-selfmark').hidden=false;const s=q('#hanjaSay');if(s)s.hidden=true;keepInView('.hs-hanja-selfmark');
   };
   q('#hanjaReveal').onclick=reveal;
   const mark=(know,result)=>{
@@ -353,6 +354,6 @@ async function open(raw){
  catch(ex){if(typeof hsShowNotice==='function')hsShowNotice('한자 학습 자료 연결 실패: '+String(ex.message||ex));return {state:'BLOCKED',reason:String(ex.message||ex)}}
 }
 window.addEventListener('hide-hanja-week-changed',()=>{if(loaded&&document.querySelector('.hs-hanja-mapview'))loadGloss().then(()=>{if(document.querySelector('.hs-hanja-mapview'))renderMap()})});
-window.HideHanjaPracticeV1=Object.freeze({version:'2026.11.24-hanja-week',open,map:async()=>{await load();await loadGloss();renderMap();return {state:'READY'}},
+window.HideHanjaPracticeV1=Object.freeze({version:'2026.11.25-tap-only-sound',open,map:async()=>{await load();await loadGloss();renderMap();return {state:'READY'}},
  status:()=>({state:loaded?'REFERENCE_LOADED':'NOT_LOADED',cards:rows.length,camps:loaded?campCount():0,review:loaded?reviewPool().length:0,week:loaded?weekCards().map(x=>x.char).join(''):'',week_missing:loaded?weekMissing().join(''):''})});
 })();
