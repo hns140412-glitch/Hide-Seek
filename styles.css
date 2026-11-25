@@ -451,3 +451,81 @@ body:has(#ocrRows) .view{padding-bottom:calc(93px + var(--safe-bottom,0px))}
 .bottom-nav .nav-btn span{font-size:12px;line-height:1.2;font-weight:900}
 /* Companion picker lives in the menu (탐험대원 목소리 듣기); the floating launcher overlapped the companion bar. */
 #takyCrewSelectionLauncher{display:none!important}
+
+/* Hanja practice rev 2026-11-24: 구간 trail, cover-recall, map, summary */
+.hs-hanja-learning .hs-hanja-campbar{display:flex;align-items:center;gap:8px;margin:0 0 10px}
+.hs-hanja-learning .hs-hanja-mapbtn{min-height:44px;min-width:58px;border:1px solid #b9d2b0;border-radius:13px;background:#fbfff6;color:#2f5a3a;font-weight:900;font-size:14px}
+.hs-hanja-learning .hs-hanja-camplabel{flex:1;min-width:0;font-size:14px;font-weight:850;color:#36543f;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hs-hanja-learning .hs-hanja-trail{display:flex;gap:5px;list-style:none;margin:0;padding:0;flex:none}
+.hs-hanja-learning .hs-hanja-trail li{width:16px;height:9px;border-radius:9px;background:#d9e6d3}
+.hs-hanja-learning .hs-hanja-trail li.met{background:#7eaf67}
+.hs-hanja-learning .hs-hanja-trail li.now{background:#e0b64c}
+.hs-hanja-learning .hs-hanja-cover{display:block;width:100%;min-height:76px;margin:6px 0 4px;border:2px dashed #9fbf93;border-radius:18px;background:rgba(244,250,238,.9);color:#4b6a52;font-size:17px;font-weight:850}
+.hs-hanja-learning .hs-hanja-cover.open{border-style:solid;background:#fffef6}
+.hs-hanja-learning .hs-hanja-cover .hs-hanja-reveal{margin:0}
+.hs-hanja-learning .hs-hanja-selfmark .btn{flex:1;min-height:56px;font-size:17px}
+.hs-hanja-learning .hs-hanja-again{margin:0 0 4px;font-size:13px;font-weight:900;color:#a0702a}
+.hs-hanja-learning .hs-hanja-score{font-size:20px;font-weight:950;color:#2f5a3a;margin:4px 0 12px}
+.hs-hanja-learning .hs-hanja-chars{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;list-style:none;margin:0;padding:0}
+.hs-hanja-learning .hs-hanja-chars li{min-width:64px;padding:8px 6px;border-radius:14px;background:#eef6e8;border:1px solid #c6dcbc}
+.hs-hanja-learning .hs-hanja-chars li.miss{background:#fbeee0;border-color:#e2bf8f}
+.hs-hanja-learning .hs-hanja-chars b{display:block;font-size:34px;line-height:1.15;color:#31533a}
+.hs-hanja-learning .hs-hanja-chars small{font-size:12px;font-weight:800;color:#4d6553}
+.hs-hanja-learning .hs-hanja-note{margin:12px 0 0;font-size:14px;font-weight:800;color:#4d6553;line-height:1.5}
+.hs-hanja-learning .hs-hanja-next{flex-wrap:wrap}
+.hs-hanja-learning .hs-hanja-next .btn{flex:1 1 120px}
+.hs-hanja-learning .hs-hanja-modes{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:12px 0}
+.hs-hanja-learning .hs-hanja-modes button{min-height:54px;border:1px solid #c6dcbc;border-radius:14px;background:#fbfff6;color:#36543f;padding:4px}
+.hs-hanja-learning .hs-hanja-modes button.on{background:#4e873f;border-color:#3d6a33;color:#fff}
+.hs-hanja-learning .hs-hanja-modes b{display:block;font-size:14px}
+.hs-hanja-learning .hs-hanja-modes small{display:block;font-size:10px;opacity:.85}
+.hs-hanja-learning .hs-hanja-camps{display:grid;grid-template-columns:1fr 1fr;gap:8px;list-style:none;margin:0;padding:0}
+.hs-hanja-learning .hs-hanja-camps button{width:100%;min-height:74px;text-align:left;display:grid;grid-template-columns:28px 1fr;grid-template-rows:auto auto;column-gap:8px;align-items:center;border:1px solid #c6dcbc;border-radius:15px;background:rgba(255,254,249,.95);padding:8px 10px;color:var(--ink)}
+.hs-hanja-learning .hs-hanja-camps button.here{border:2px solid #4e873f}
+.hs-hanja-learning .hs-hanja-camps .no{grid-row:1/3;width:28px;height:28px;border-radius:50%;background:#dfeeda;color:#32683f;font-weight:950;display:grid;place-items:center;font-size:13px}
+.hs-hanja-learning .hs-hanja-camps .chars{font-size:19px;font-weight:850;letter-spacing:.05em;color:#31533a;white-space:nowrap;overflow:hidden;text-overflow:clip}
+.hs-hanja-learning .hs-hanja-campbar[hidden]{display:none}
+.hs-hanja-learning .hs-hanja-camps small{font-size:11px;font-weight:800;color:#5b7060}
+.hs-hanja-learning .hs-hanja-gather{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.hs-hanja-learning .hs-hanja-gather button{min-height:70px;border:1px solid #e2bf8f;border-radius:15px;background:#fff8ec;color:#5a4320;padding:8px 10px;text-align:left}
+.hs-hanja-learning .hs-hanja-gather button[disabled]{opacity:.55}
+.hs-hanja-learning .hs-hanja-gather b{display:block;font-size:15px}
+.hs-hanja-learning .hs-hanja-gather small{font-size:12px;font-weight:700}
+@media(min-width:700px){.hs-hanja-learning .hs-hanja-camps{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:520px){.hs-hanja-learning .hs-hanja-camps{grid-template-columns:1fr}.hs-hanja-learning .hs-hanja-camps button{min-height:64px}.hs-hanja-learning .hs-hanja-camps .chars{font-size:22px;letter-spacing:.14em}}
+@media(max-width:340px){.hs-hanja-learning .hs-hanja-gather{grid-template-columns:1fr}}
+
+.hs-hanja-learning .hs-hanja-big{font-size:clamp(55px,13vw,80px);margin:6px auto}
+.hs-hanja-learning .hs-hanja-campbar .hs-hanja-mapbtn{min-height:44px}
+.hs-hanja-learning .hs-hanja-selfmark[hidden]{display:none}
+.hs-hanja-learning .hs-hanja-say{width:100%;min-height:52px;margin:2px 0 4px;font-size:17px}
+.hs-hanja-learning .hs-hanja-say[hidden]{display:none}
+.hs-hanja-learning .hs-hanja-say[disabled]{opacity:.7}
+.hs-hanja-learning .learn-head h2{margin:4px 0 0}
+.hs-hanja-learning .word-card{margin-top:8px;padding-top:16px;padding-bottom:16px}
+
+/* this week's 재능 한자 (from Ready & Set) on the Hanja map */
+.hs-hanja-learning .hs-hanja-week{margin:0 0 10px}
+.hs-hanja-learning .hs-hanja-week button{width:100%;min-height:78px;text-align:left;display:grid;gap:3px;border:2px solid #d79a3c;border-radius:16px;background:#fff4df;color:#5a3d14;padding:10px 12px}
+.hs-hanja-learning .hs-hanja-week button[disabled]{opacity:.6}
+.hs-hanja-learning .hs-hanja-week b{font-size:16px}
+.hs-hanja-learning .hs-hanja-week .chars{font-size:22px;font-weight:850;letter-spacing:.12em;color:#7a4b12;overflow-wrap:anywhere}
+.hs-hanja-learning .hs-hanja-week small{font-size:12px;font-weight:750}
+.hs-hanja-learning .hs-hanja-week small.miss{color:#8a5a2b;font-weight:700}
+.hs-hanja-learning .hs-hanja-week.wait{border:1px dashed #d7b98a;border-radius:16px;padding:10px 12px;color:#6b5636;display:grid;gap:2px;background:#fffaf0}
+
+/* short phones (SE / mini height): keep question, choices and the next button on one screen */
+@media(max-height:760px) and (max-width:520px){
+ .hs-hanja-learning .learn-head h2{font-size:20px}
+ .hs-hanja-learning .hs-hanja-big{font-size:clamp(48px,12vw,62px);margin:2px auto}
+ .hs-hanja-learning .hs-hanja-question{font-size:18px;margin:2px 0 10px;line-height:1.4}
+ .hs-hanja-learning .hs-hanja-question .hs-hanja-big{margin:0 auto 4px}
+ .hs-hanja-learning .hs-hanja-options .choice{min-height:50px}
+ .hs-hanja-learning #hanjaFeedback{min-height:24px;margin:6px 0;font-size:14px;line-height:1.4}
+ .hs-hanja-learning .hs-hanja-cover{min-height:62px}
+ .hs-hanja-learning .hs-hanja-reveal{margin:6px 0}
+ .hs-hanja-learning .word-card{padding-top:12px;padding-bottom:12px}
+ .hs-hanja-learning .hs-hanja-chars b{font-size:28px}
+ .hs-hanja-learning .hs-hanja-chars li{min-width:56px;padding:6px 4px}
+ .hs-hanja-learning .hs-hanja-score{font-size:18px;margin:2px 0 8px}
+}

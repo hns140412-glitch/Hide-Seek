@@ -6,7 +6,7 @@
     runtime_version:'hide-runtime-rev07',
     data_schema_version:7,
     contract_version:1,
-    release_id:'hide-seek-rev13-launch-gate-20261118',
+    release_id:'hide-seek-rev15-hanja-week-20261124',
     master_revision:'REV_07',
     shared_runtime_basis:'TAKY@ab085e2994fd69747be17bed89e7182cb759ee63'
   });

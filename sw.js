@@ -1,4 +1,4 @@
-
+// release rev15: hanja camps + this week's 재능 한자 from Ready (2026-11-24)
 importScripts('./hide-release-v01.js');
 const RELEASE=globalThis.HideSeekReleaseDescriptor;
 const CACHE='hide-seek:'+RELEASE.release_id;
@@ -123,9 +123,11 @@ const CORE=[
   './characters/ui_cutouts/guide-23.png',
   './characters/ui_cutouts/guide-24.png',
   './hide-hanja-practice-v1.js',
+  './hide-hanja-week-v1.js',
   './hide-english-cycle-v1.js',
   './hide-english-pedagogy-v1.js',
   './data/hanja-reference-practice-projection-v1.json',
+  './data/hanja-char-gloss-reference-v1.json',
   './assets/world/hide_seek_forest_asset.png',
   './hide-term-decoder-v1.js',
   './hide-learning-term-loader-v1.js',
