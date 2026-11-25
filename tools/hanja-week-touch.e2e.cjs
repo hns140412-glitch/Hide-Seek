@@ -68,7 +68,7 @@ async function run(browser,name,viewport){
  await tap('#hanjaExit');
  await openHanja('trace');
  const first=await page.evaluate(()=>({label:document.querySelector('.hs-hanja-camplabel').textContent,count:document.querySelector('.learn-head b').textContent,big:document.querySelector('.hs-hanja-big').textContent,reveal:document.querySelector('.hs-hanja-reveal')?.textContent,overflow:document.documentElement.scrollWidth-innerWidth}));
- check(/^이번 주 구간 1\/2 · 日 月 感 減 開$/.test(first.label)&&first.count==='1/5'&&first.big==='日'&&first.reveal==='날 일'&&first.overflow<=0,name+' week part 1 starts '+JSON.stringify(first));
+ check(/^이번 주 구간 1\/2$/.test(first.label)&&first.count==='1/5'&&first.big==='日'&&first.reveal==='날 일'&&first.overflow<=0,name+' week part 1 starts '+JSON.stringify(first));
  await shot('3-week-view');
  await tap('#hanjaNext');
  check(await page.locator('.hs-hanja-reveal').textContent()==='달 월',name+' 月 훈음 from the 8급 list');
@@ -91,7 +91,7 @@ async function run(browser,name,viewport){
  check(/gloss-seed/.test(dec?.source_ref||'')&&moon?.gloss_source==='HANJA_8GEUP_PUBLIC_LIST_UNVERIFIED'&&!sun?.gloss_source&&/hanja/i.test(sun?.source_ref||''),name+' record sources '+JSON.stringify({dec:dec?.source_ref,moon:moon?.gloss_source,sun:sun?.source_ref}));
  await tap('#hanjaNextPart');
  const p2=await page.evaluate(()=>({label:document.querySelector('.hs-hanja-camplabel').textContent,count:document.querySelector('.learn-head b').textContent}));
- check(/^이번 주 구간 2\/2 · 山 鬱$/.test(p2.label)&&p2.count==='1/2',name+' week part 2 '+JSON.stringify(p2));
+ check(/^이번 주 구간 2\/2$/.test(p2.label)&&p2.count==='1/2',name+' week part 2 '+JSON.stringify(p2));
  await tap('#hanjaNext');
  check(await page.locator('.hs-hanja-reveal').textContent()==='답답할 울',name+' worksheet 훈음 used for 鬱');
 

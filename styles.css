@@ -496,7 +496,7 @@ body:has(#ocrRows) .view{padding-bottom:calc(93px + var(--safe-bottom,0px))}
 @media(max-width:340px){.hs-hanja-learning .hs-hanja-gather{grid-template-columns:1fr}}
 
 .hs-hanja-learning .hs-hanja-big{font-size:clamp(55px,13vw,80px);margin:6px auto}
-.hs-hanja-learning .hs-hanja-campbar .hs-hanja-mapbtn{min-height:40px}
+.hs-hanja-learning .hs-hanja-campbar .hs-hanja-mapbtn{min-height:44px}
 .hs-hanja-learning .hs-hanja-selfmark[hidden]{display:none}
 .hs-hanja-learning .hs-hanja-say{width:100%;min-height:52px;margin:2px 0 4px;font-size:17px}
 .hs-hanja-learning .hs-hanja-say[hidden]{display:none}
@@ -513,3 +513,19 @@ body:has(#ocrRows) .view{padding-bottom:calc(93px + var(--safe-bottom,0px))}
 .hs-hanja-learning .hs-hanja-week small{font-size:12px;font-weight:750}
 .hs-hanja-learning .hs-hanja-week small.miss{color:#8a5a2b;font-weight:700}
 .hs-hanja-learning .hs-hanja-week.wait{border:1px dashed #d7b98a;border-radius:16px;padding:10px 12px;color:#6b5636;display:grid;gap:2px;background:#fffaf0}
+
+/* short phones (SE / mini height): keep question, choices and the next button on one screen */
+@media(max-height:760px) and (max-width:520px){
+ .hs-hanja-learning .learn-head h2{font-size:20px}
+ .hs-hanja-learning .hs-hanja-big{font-size:clamp(48px,12vw,62px);margin:2px auto}
+ .hs-hanja-learning .hs-hanja-question{font-size:18px;margin:2px 0 10px;line-height:1.4}
+ .hs-hanja-learning .hs-hanja-question .hs-hanja-big{margin:0 auto 4px}
+ .hs-hanja-learning .hs-hanja-options .choice{min-height:50px}
+ .hs-hanja-learning #hanjaFeedback{min-height:24px;margin:6px 0;font-size:14px;line-height:1.4}
+ .hs-hanja-learning .hs-hanja-cover{min-height:62px}
+ .hs-hanja-learning .hs-hanja-reveal{margin:6px 0}
+ .hs-hanja-learning .word-card{padding-top:12px;padding-bottom:12px}
+ .hs-hanja-learning .hs-hanja-chars b{font-size:28px}
+ .hs-hanja-learning .hs-hanja-chars li{min-width:56px;padding:6px 4px}
+ .hs-hanja-learning .hs-hanja-score{font-size:18px;margin:2px 0 8px}
+}
