@@ -12,7 +12,7 @@ if(window.HideHanjaWeekV1)return;
 const RECORD_ID='ready-talent-week-current',SCHEMA='READY_TALENT_WEEK_V1',MAX=60;
 const clean=v=>typeof v==='string'?v.trim():'';
 const DAY=/^\d{4}-\d{2}-\d{2}$/;
-let state='NOT_CHECKED',reason='',busy=null;
+let state='NOT_CHECKED',reason='',busy=null,gen=0;
 function today(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function store(){try{return typeof S==='object'&&S?S:null}catch{return null}}
 function persist(){try{if(typeof save==='function')save()}catch{}}
@@ -56,6 +56,7 @@ function member(session){
 }
 async function refresh(){
  if(busy)return busy;
+ const my=gen;
  busy=(async()=>{
   const rt=window.TAKY_FAMILY_RUNTIME;
   if(!rt||typeof rt.getToken!=='function'||typeof rt.getFamilyId!=='function'||!clean(rt.apiBaseUrl)){
@@ -67,20 +68,22 @@ async function refresh(){
    u.searchParams.set('family_id',clean(familyId));u.searchParams.set('member_id',member(session));
    u.searchParams.set('record_type','MATERIAL_REFERENCE');u.searchParams.set('record_id',RECORD_ID);
    const res=await fetch(u.href,{headers:{authorization:'Bearer '+clean(token)},cache:'no-store'});
+   if(my!==gen)return status(); // signed out or switched while waiting: drop this answer
    if(res.status===404){setWeek(null);state='NO_WEEK';reason='USER_DATA_RECORD_NOT_FOUND';emit();return status()}
    const body=await res.json().catch(()=>null);
+   if(my!==gen)return status();
    if(!res.ok||body?.ok!==true)throw Error(clean(body?.reason)||'HTTP_'+res.status);
    const out=fromRecord(body.record);
    if(out.ok){setWeek(out.week);state='ACTIVE';reason=''}
    else{if(out.state!=='NOT_CONFIRMED')setWeek(null);state=out.state;reason=out.reason}
-  }catch(err){state=current()?'CACHED':'UNAVAILABLE';reason=clean(err?.message)||'FETCH_FAILED'}
+  }catch(err){if(my!==gen)return status();state=current()?'CACHED':'UNAVAILABLE';reason=clean(err?.message)||'FETCH_FAILED'}
   emit();return status();
- })().finally(()=>{busy=null});
+ })().finally(()=>{if(my===gen)busy=null});
  return busy;
 }
 function status(){const w=current();return {state,reason,active:!!w,week_id:w?.week_id||null,deadline:w?.deadline||null,count:w?.chars?.length||0}}
-window.addEventListener('taky-central-auth-ready',()=>void refresh());
-window.addEventListener('taky-central-auth-cleared',()=>{state=current()?'CACHED':'SIGNED_OUT';emit()});
+window.addEventListener('taky-central-auth-ready',()=>{gen++;busy=null;void refresh()});
+window.addEventListener('taky-central-auth-cleared',()=>{gen++;busy=null;state=current()?'CACHED':'SIGNED_OUT';emit()});
 window.HideHanjaWeekV1=Object.freeze({version:'2026.11.24-hanja-week',current,refresh,status,fromRecord,RECORD_ID});
 if(window.TAKY_FAMILY_RUNTIME)setTimeout(()=>void refresh(),0);
 })();

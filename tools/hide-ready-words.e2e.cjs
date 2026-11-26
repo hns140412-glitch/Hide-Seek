@@ -19,7 +19,7 @@ async function run(browser,name,viewport){
  await ctx.addInitScript(c=>{window.TAKY_FAMILY_RUNTIME=Object.freeze({apiBaseUrl:c+'/',getToken:async()=>'t'.repeat(40),getFamilyId:async()=>'TAKY-HOME',currentSession:async()=>({family_id:'TAKY-HOME',self_member_id:'OWNER',authorized_member_ids:['OWNER','CHILD']})});
   window.__sounds=[];HTMLMediaElement.prototype.play=function(){window.__sounds.push('media');return Promise.resolve()};if(window.speechSynthesis)window.speechSynthesis.speak=u=>window.__sounds.push('tts:'+u.text)},C);
  let reply={status:404,body:{ok:false,reason:'USER_DATA_RECORD_NOT_FOUND'}};const asked=[];
- await ctx.route(C+'/api/family/user-data**',r=>{const u=new URL(r.request().url());if(u.searchParams.get('record_id')!=='english-words-current')return r.fulfill({status:404,contentType:'application/json',body:'{"ok":false}'});asked.push(u.search);r.fulfill({status:reply.status,contentType:'application/json',body:JSON.stringify(reply.body)})});
+ await ctx.route(C+'/api/family/user-data**',r=>{const u=new URL(r.request().url());if(u.searchParams.get('record_id')!=='english-words-current')return r.fulfill({status:404,contentType:'application/json',body:'{"ok":false}'});asked.push(u.search);const send=()=>r.fulfill({status:reply.status,contentType:'application/json',body:JSON.stringify(reply.body)});if(reply.delay)setTimeout(send,reply.delay);else send()});
  const page=await ctx.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
  const base='http://127.0.0.1:'+port+'/index.html';
  await page.goto(base,{waitUntil:'load'});
@@ -30,6 +30,13 @@ async function run(browser,name,viewport){
  const before=await page.evaluate(()=>S.sheets.length);
  reply={status:200,body:rec('INTERPRETED',W12,'acad-20261125')};s=await refresh();
  check(s.state==='NOT_CONFIRMED'&&await page.evaluate(()=>S.sheets.length)===before,name+' interpreted not used '+JSON.stringify(s));
+ // a late answer after sign-out must not be applied (auth race)
+ reply={status:200,delay:1200,body:rec('CONFIRMED',W12,'race-late')};
+ const late=page.evaluate(()=>HideEnglishWordsV1.refresh());await page.waitForTimeout(200);
+ await page.evaluate(()=>window.dispatchEvent(new Event('taky-central-auth-cleared')));await late;await page.waitForTimeout(300);
+ check(!(await page.evaluate(()=>S.sheets.some(x=>x.sheetId==='ready-words-race-late'))),name+' late answer after sign-out dropped');
+ await page.evaluate(()=>window.dispatchEvent(new Event('taky-central-auth-ready')));await page.waitForTimeout(1600);
+ await page.evaluate(()=>{S.sheets=S.sheets.filter(x=>x.sheetId!=='ready-words-race-late');S.activeSheetId='sample';save()});
  reply={status:200,body:rec('CONFIRMED',W12,'acad-20261125',[{eng:'blurry',kor:'흐림',uncertain:true}])};s=await refresh();
  const got=await page.evaluate(()=>{const sh=S.sheets.find(x=>x.sheetId==='ready-words-acad-20261125');return {active:S.activeSheetId,n:sh?.items?.length,blurry:!!sh?.items?.some(w=>w.eng==='blurry'),cycle:HideEnglishCycleV1.status().state,toast:document.querySelector('#toast')?.textContent||''}});
  check(s.state==='ACTIVE'&&got.active==='ready-words-acad-20261125'&&got.n===12&&!got.blurry,name+' confirmed set applied '+JSON.stringify(got));
@@ -70,5 +77,5 @@ async function run(browser,name,viewport){
  finally{await browser?.close();srv.kill()}
  console.log(JSON.stringify(out));
  if(fails.length){console.error('READY_WORDS FAIL\n'+fails.join('\n'));process.exitCode=1}
- else console.log('READY_WORDS PASS: 404, interpreted ignored, confirmed set -> active sheet + cycle latest exam + notice, uncertain row dropped, progress kept, planner link, 15-word set, no sound (phone+tablet, touch)');
+ else console.log('READY_WORDS PASS: 404, interpreted ignored, confirmed set -> active sheet + cycle latest exam + notice, uncertain row dropped, late answer after sign-out dropped, progress kept, planner link, 15-word set, no sound (phone+tablet, touch)');
 })();

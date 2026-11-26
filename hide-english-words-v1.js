@@ -15,7 +15,7 @@ const clean=v=>typeof v==='string'?v.trim().replace(/\s+/g,' '):'';
 const DAY=/^\d{4}-\d{2}-\d{2}$/;
 const isEng=t=>/^[A-Za-z](?:[A-Za-z' .-]{0,38}[A-Za-z.])?$/.test(t);
 const isKor=t=>/[가-힣]/.test(t)&&t.length<=40&&!/[<>]/.test(t);
-let state='NOT_CHECKED',reason='',busy=null,last=null;
+let state='NOT_CHECKED',reason='',busy=null,last=null,gen=0;
 function store(){try{return typeof S==='object'&&S?S:null}catch{return null}}
 function persist(){try{if(typeof save==='function')save()}catch{}}
 function emit(){try{window.dispatchEvent(new CustomEvent('hide-english-words-changed',{detail:status()}))}catch{}document.documentElement.dataset.hideEnglishWords=state}
@@ -70,6 +70,7 @@ function member(session){
 }
 async function refresh(){
  if(busy)return busy;
+ const my=gen;
  busy=(async()=>{
   const rt=window.TAKY_FAMILY_RUNTIME;
   if(!rt||typeof rt.getToken!=='function'||typeof rt.getFamilyId!=='function'||!clean(rt.apiBaseUrl)){state='SIGNED_OUT';reason='NO_FAMILY_RUNTIME';emit();return status()}
@@ -79,17 +80,19 @@ async function refresh(){
    u.searchParams.set('family_id',clean(familyId));u.searchParams.set('member_id',member(session));
    u.searchParams.set('record_type','MATERIAL_REFERENCE');u.searchParams.set('record_id',RECORD_ID);
    const res=await fetch(u.href,{headers:{authorization:'Bearer '+clean(token)},cache:'no-store'});
+   if(my!==gen)return status();
    if(res.status===404){state='NO_WORDS';reason='USER_DATA_RECORD_NOT_FOUND';emit();return status()}
    const body=await res.json().catch(()=>null);
+   if(my!==gen)return status(); // signed out or switched while waiting: drop this answer
    if(!res.ok||body?.ok!==true)throw Error(clean(body?.reason)||'HTTP_'+res.status);
    const out=fromRecord(body.record);
    if(out.ok){last=apply(out.set);last.set_id=out.set.set_id;last.count=out.set.items.length;state='ACTIVE';reason='';
     if(last.isNew&&typeof toast==='function')toast('새 영어 단어 '+last.count+'개가 도착했어요');
     if(last.changed&&typeof render==='function'&&!document.querySelector('.learning-shell'))try{render()}catch{}}
    else{state=out.state;reason=out.reason}
-  }catch(err){state='UNAVAILABLE';reason=clean(err?.message)||'FETCH_FAILED'}
+  }catch(err){if(my!==gen)return status();state='UNAVAILABLE';reason=clean(err?.message)||'FETCH_FAILED'}
   emit();openFromLink();return status();
- })().finally(()=>{busy=null});
+ })().finally(()=>{if(my===gen)busy=null});
  return busy;
 }
 // Ready's Planner task "영어 단어 N개 · 하이드앤씩" opens Hide with ?open=english-words&set=<set_id>.
@@ -108,8 +111,8 @@ function openFromLink(){
  try{currentTab='explore';hsHomeSubject='ENGLISH';if(typeof viewStack!=='undefined')viewStack=[];render()}catch{}
 }
 function status(){return {state,reason,set_id:last?.set_id||null,count:last?.count||0,sheetId:last?.sheetId||null}}
-window.addEventListener('taky-central-auth-ready',()=>void refresh());
-window.addEventListener('taky-central-auth-cleared',()=>{state='SIGNED_OUT';emit()});
+window.addEventListener('taky-central-auth-ready',()=>{gen++;busy=null;void refresh()});
+window.addEventListener('taky-central-auth-cleared',()=>{gen++;busy=null;last=null;state='SIGNED_OUT';emit()});
 window.HideEnglishWordsV1=Object.freeze({version:'2026.11.25-ready-words',refresh,status,fromRecord,apply,RECORD_ID});
 if(window.TAKY_FAMILY_RUNTIME)setTimeout(()=>void refresh(),0);
 else setTimeout(()=>{if(state==='NOT_CHECKED'){state='SIGNED_OUT';openFromLink()}},1500);
