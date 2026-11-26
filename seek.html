@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#2f5a3a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="apple-touch-icon" href="./assets/icons/icon-180x180.png">
+  <title>Hide & Seek</title>
+  <link rel="stylesheet" href="./src/seek/seek.css">
+</head>
+<body data-visual-id="TAKY-LAF-HIDE-HOME-MOSSFALL-20260927-A">
+  <div id="seekApp" class="sk-app" data-tab="home">
+    <div class="sk-world" aria-hidden="true"></div>
+    <header class="sk-top">
+      <button id="skMenuBtn" class="sk-icon" type="button" aria-label="메뉴">☰</button>
+      <div class="sk-brand"><b>Hide &amp; Seek</b><small>머릿속에 숨어버린 단어 찾기</small></div>
+      <button id="skCrewBtn" class="sk-crew-chip" type="button" aria-label="함께 가는 탐험대원"><img id="skCrewImg" alt=""></button>
+    </header>
+    <main id="skView" class="sk-view" aria-live="polite"></main>
+    <aside id="skCrewBar" class="sk-crewbar" hidden><img id="skCrewBarImg" alt=""><p id="skCrewLine" role="status"></p></aside>
+    <nav id="skNav" class="sk-nav" aria-label="주요 화면">
+      <button type="button" data-tab="home"><small>HOME</small><b>홈</b></button>
+      <button type="button" data-tab="explore"><small>EXPLORE</small><b>탐험</b></button>
+      <button type="button" data-tab="catch"><small>CATCH</small><b>보물함</b></button>
+    </nav>
+  </div>
+  <div id="skSheet" class="sk-sheet" hidden></div>
+  <div id="skToast" class="sk-toast" role="status"></div>
+  <input id="skPhotoInput" type="file" accept="image/*" capture="environment" hidden>
+
+  <script src="./vendor/taky/event-envelope.js"></script>
+  <script src="./hide-release-v01.js"></script>
+  <script src="./hide-voice-pick-v1.js"></script>
+  <script src="./src/core/hide-learning-basis-v01.js"></script>
+  <script src="./hide-language-evidence.js"></script>
+  <script src="./src/core/hide-language-model.js"></script>
+  <script src="./src/core/app-store.js"></script>
+  <script src="./src/core/mission-service.js"></script>
+  <script src="./src/core/memory-engine.js"></script>
+  <script src="./src/core/trail-engine.js"></script>
+  <script src="./src/core/legacy-migration.js"></script>
+  <script src="./vendor/taky/explorer-crew/system-v2.js"></script>
+  <script src="./vendor/taky/explorer-crew/personality-registry-v2.js"></script>
+  <script src="./hide-explorer-crew-authority-consumer-v2.js"></script>
+  <script src="./explorer-crew-voice/data-guide-lines.js"></script>
+  <script src="./explorer-crew-voice/explorer-crew-guide-line-voice-v1.js"></script>
+  <script src="./taky-family-auth-runtime-v1.js"></script>
+  <script src="./taky-account-auth-config-v1.js"></script>
+  <script src="./taky-google-account-auth-v1.js"></script>
+  <script src="./taky-learning-evidence-client-v1.js"></script>
+  <script src="./taky-family-signin-v1.js"></script>
+  <script src="./src/seek/util.js"></script>
+  <script src="./src/seek/words.js"></script>
+  <script src="./src/seek/intake.js"></script>
+  <script src="./src/seek/home.js"></script>
+  <script src="./src/seek/trace.js"></script>
+  <script src="./src/seek/link.js"></script>
+  <script src="./src/seek/piece.js"></script>
+  <script src="./src/seek/recall.js"></script>
+  <script src="./src/seek/explore.js"></script>
+  <script src="./src/seek/catch.js"></script>
+  <script src="./src/seek/mock.js"></script>
+  <script src="./src/seek/family.js"></script>
+  <script src="./src/seek/app.js"></script>
+</body>
+</html>
